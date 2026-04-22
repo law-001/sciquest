@@ -50,13 +50,13 @@ export function AboutPage() {
     },
     {
       name: 'Francesca Ricafort',
-      role: '',
+      role: 'Fashionista',
       initials: 'FR',
       color: 'bg-accent-100 text-accent-700',
     },
     {
       name: 'Aezen Alcantara',
-      role: '',
+      role: 'Motorista',
       initials: 'AC',
       color: 'bg-accent-100 text-accent-700',
     },
@@ -167,11 +167,11 @@ export function AboutPage() {
               ))}
             </div>
 
-            <div className="mt-16 pt-16 border-t border-stone-700 flex items-center justify-center gap-2 text-stone-400 font-medium">
+            {/* <div className="mt-16 pt-16 border-t border-stone-700 flex items-center justify-center gap-2 text-stone-400 font-medium">
               Made with{' '}
               <Heart className="w-5 h-5 text-red-500 fill-red-500 animate-pulse" />{' '}
               for Grade 7 Students
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

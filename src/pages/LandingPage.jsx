@@ -107,14 +107,14 @@ export function LandingPage({
                 >
                   Start Learning Now
                 </Button>
-                <Button
+                {/* <Button
                   size="lg"
                   variant="outline"
                   className="w-full sm:w-auto"
                   leftIcon={<PlayCircle className="w-5 h-5" />}
                 >
                   Watch Demo
-                </Button>
+                </Button> */}
               </div>
 
               <div
@@ -123,7 +123,7 @@ export function LandingPage({
                   animationDelay: '0.4s',
                 }}
               >
-                <div className="flex -space-x-3">
+                {/* <div className="flex -space-x-3">
                   <img
                     className="w-10 h-10 rounded-full border-2 border-white object-cover"
                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
@@ -142,12 +142,12 @@ export function LandingPage({
                   <div className="w-10 h-10 rounded-full border-2 border-white bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600">
                     +2k
                   </div>
-                </div>
-                <div className="text-sm font-medium text-stone-600">
+                </div> */}
+                {/* <div className="text-sm font-medium text-stone-600">
                   Loved by over{' '}
                   <span className="font-bold text-stone-900">2,000+</span>{' '}
                   students
-                </div>
+                </div> */}
               </div>
             </div>
 
