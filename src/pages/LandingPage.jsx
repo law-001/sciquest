@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   ArrowRight,
   Star,
@@ -7,9 +7,9 @@ import {
   Zap,
   CheckCircle2,
   PlayCircle,
-} from 'lucide-react';
-import  Button  from '../components/Button';
-import  Card  from '../components/Card';
+} from "lucide-react";
+import Button from "../components/Button";
+import Card from "../components/Card";
 
 export function LandingPage({
   onStartLearning,
@@ -19,30 +19,30 @@ export function LandingPage({
   const features = [
     {
       icon: <Target className="w-6 h-6 text-primary-500" />,
-      title: 'Interactive Lessons',
+      title: "Interactive Lessons",
       description:
-        'Learn complex science concepts through engaging, interactive modules.',
+        "Learn complex science concepts through engaging, interactive modules.",
       image:
-        'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=800',
-      color: 'bg-primary-50',
+        "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=800",
+      color: "bg-primary-50",
     },
     {
       icon: <Trophy className="w-6 h-6 text-accent-500" />,
-      title: 'Gamified Learning',
+      title: "Gamified Learning",
       description:
-        'Earn badges, level up, and compete with friends while learning.',
+        "Earn badges, level up, and compete with friends while learning.",
       image:
-        'https://images.unsplash.com/photo-1587614382346-4ec70e388b28?auto=format&fit=crop&q=80&w=800',
-      color: 'bg-accent-50',
+        "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?auto=format&fit=crop&q=80&w=800",
+      color: "bg-accent-50",
     },
     {
       icon: <Zap className="w-6 h-6 text-secondary-500" />,
-      title: 'Instant Feedback',
+      title: "Instant Feedback",
       description:
-        'Get real-time feedback on quizzes to understand mistakes quickly.',
+        "Get real-time feedback on quizzes to understand mistakes quickly.",
       image:
-        'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800',
-      color: 'bg-secondary-50',
+        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800",
+      color: "bg-secondary-50",
     },
   ];
 
@@ -55,7 +55,7 @@ export function LandingPage({
         <div
           className="absolute top-40 right-10 w-72 h-72 bg-secondary-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"
           style={{
-            animationDelay: '2s',
+            animationDelay: "2s",
           }}
         />
 
@@ -73,10 +73,10 @@ export function LandingPage({
               <h1
                 className="text-5xl lg:text-7xl font-black text-stone-900 mb-6 tracking-tight animate-slide-up"
                 style={{
-                  animationDelay: '0.1s',
+                  animationDelay: "0.1s",
                 }}
               >
-                Learn Science the{' '}
+                Learn Science the{" "}
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-500 to-secondary-500">
                   Fun Way!
                 </span>
@@ -85,7 +85,7 @@ export function LandingPage({
               <p
                 className="text-xl text-stone-600 mb-8 font-medium animate-slide-up leading-relaxed"
                 style={{
-                  animationDelay: '0.2s',
+                  animationDelay: "0.2s",
                 }}
               >
                 Explore the universe, dive into biology, and master physics
@@ -96,7 +96,7 @@ export function LandingPage({
               <div
                 className="flex flex-col sm:flex-row gap-4 animate-slide-up"
                 style={{
-                  animationDelay: '0.3s',
+                  animationDelay: "0.3s",
                 }}
               >
                 <Button
@@ -120,7 +120,7 @@ export function LandingPage({
               <div
                 className="mt-10 flex items-center gap-4 animate-slide-up"
                 style={{
-                  animationDelay: '0.4s',
+                  animationDelay: "0.4s",
                 }}
               >
                 {/* <div className="flex -space-x-3">
@@ -155,7 +155,7 @@ export function LandingPage({
             <div
               className="relative animate-slide-up"
               style={{
-                animationDelay: '0.4s',
+                animationDelay: "0.4s",
               }}
             >
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-4/3 lg:aspect-auto lg:h-600px">
@@ -270,10 +270,10 @@ export function LandingPage({
 
               <ul className="space-y-6">
                 {[
-                  'Curriculum-aligned content for Grade 7',
-                  'Progress tracking for teachers and parents',
-                  'Adaptive difficulty based on performance',
-                  'Accessible on any device, anywhere',
+                  "Curriculum-aligned content for Grade 7",
+                  "Progress tracking for teachers and parents",
+                  "Adaptive difficulty based on performance",
+                  "Accessible on any device, anywhere",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start">
                     <div className="shrink-0 w-6 h-6 rounded-full bg-secondary-100 flex items-center justify-center mt-1 mr-4">
