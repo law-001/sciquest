@@ -13,13 +13,19 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
-import { WEEKS_DATA } from "../data/week-01";
+import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
 
 const ICON_MAP = { Globe2, Dna, Zap };
 
 export function LessonsPage({ onStartWeek, completedLessons = [] }) {
-  const categories = ["All Topics", "Earth Science", "Biology", "Physics"];
+  const categories = [
+    "All Topics",
+    "1st Quarter",
+    "2nd Quarter",
+    "3rd Quarter",
+    "4thQuarter",
+  ];
   const [activeCategory, setActiveCategory] = useState("All Topics");
 
   const filteredWeeks =

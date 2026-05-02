@@ -1,0 +1,463 @@
+// components/QuizContainer.jsx
+// Single-page quiz: all questions visible at once, auto-saves to localStorage,
+// Submit Quiz button at bottom, results screen after submission.
+
+import React, { useEffect, useState } from "react";
+import { ArrowLeft, CheckCircle2, RotateCcw, Star, Trophy } from "lucide-react";
+import Button from "./Button";
+import Card from "./Card";
+import Badge from "./Badge";
+import ProgressBar from "./ProgressBar";
+import { cn } from "../lib/utils";
+import {
+  MultipleChoiceQuestion,
+  TrueFalseQuestion,
+  FillInTheBlanks,
+  ShortAnswer,
+  EssayQuestion,
+  MatchingQuestion,
+  IdentificationQuestion,
+  OrderingQuestion,
+  PictureBasedQuestion,
+  CaseStudyQuestion,
+} from "./quiz-slots";
+
+// ── SLOT MAP ──────────────────────────────────────────────────────────────────
+const QUESTION_MAP = {
+  "multiple-choice": MultipleChoiceQuestion,
+  "true-false": TrueFalseQuestion,
+  "fill-blanks": FillInTheBlanks,
+  "short-answer": ShortAnswer,
+  essay: EssayQuestion,
+  matching: MatchingQuestion,
+  identification: IdentificationQuestion,
+  ordering: OrderingQuestion,
+  "picture-based": PictureBasedQuestion,
+  "case-study": CaseStudyQuestion,
+};
+
+const TYPE_LABELS = {
+  "multiple-choice": "Multiple Choice",
+  "true-false": "True / False",
+  "fill-blanks": "Fill in the Blanks",
+  "short-answer": "Short Answer",
+  essay: "Essay",
+  matching: "Matching",
+  identification: "Identification",
+  ordering: "Ordering",
+  "picture-based": "Picture-Based",
+  "case-study": "Case Study",
+};
+
+// ── Scoring helpers ───────────────────────────────────────────────────────────
+function scoreQuestion(q, answer) {
+  if (answer === undefined || answer === null) return 0;
+  const pts = q.points ?? 0;
+
+  switch (q.type) {
+    case "multiple-choice":
+    case "picture-based":
+      return answer === q.correctAnswer ? pts : 0;
+
+    case "true-false":
+      return answer === q.correctAnswer ? pts : 0;
+
+    case "fill-blanks": {
+      if (!Array.isArray(answer)) return 0;
+      const allCorrect = q.blanks.every(
+        (b, i) =>
+          b.toLowerCase().trim() === (answer[i] ?? "").toLowerCase().trim(),
+      );
+      return allCorrect ? pts : 0;
+    }
+
+    case "identification": {
+      const accepted = q.acceptedAnswers ?? [q.correctAnswer];
+      const norm = (s) => s?.toLowerCase().trim() ?? "";
+      return accepted.some((a) => norm(a) === norm(answer)) ? pts : 0;
+    }
+
+    case "ordering":
+      if (!Array.isArray(answer) || answer.length !== q.items.length) return 0;
+      return answer.every((item, i) => item === q.items[i]) ? pts : 0;
+
+    case "matching": {
+      if (!answer || typeof answer !== "object") return 0;
+      const allMatch = q.leftItems.every(
+        (l) => answer[l] === q.correctPairs[l],
+      );
+      return allMatch ? pts : 0;
+    }
+
+    case "short-answer":
+    case "essay":
+      // Award full points if answered — teacher reviews manually
+      return typeof answer === "string" && answer.trim().length > 0 ? pts : 0;
+
+    case "case-study":
+      return (q.subQuestions ?? []).reduce(
+        (sum, sq) => sum + scoreQuestion(sq, answer?.[sq.id]),
+        0,
+      );
+
+    default:
+      return 0;
+  }
+}
+
+function totalPoints(questions) {
+  return questions.reduce((sum, q) => {
+    if (q.type === "case-study") {
+      return sum + totalPoints(q.subQuestions ?? []);
+    }
+    return sum + (q.points ?? 0);
+  }, 0);
+}
+
+function isAnswered(q, answer) {
+  switch (q.type) {
+    case "multiple-choice":
+    case "picture-based":
+      return answer !== undefined && answer !== null && answer !== "";
+    case "true-false":
+      return answer === true || answer === false;
+    case "fill-blanks":
+      return Array.isArray(answer) && answer.some((a) => a?.trim());
+    case "short-answer":
+    case "essay":
+    case "identification":
+      return typeof answer === "string" && answer.trim().length > 0;
+    case "ordering":
+      return Array.isArray(answer) && answer.length > 0;
+    case "matching":
+      return answer && Object.keys(answer).length > 0;
+    case "case-study":
+      return (q.subQuestions ?? []).some((sq) =>
+        isAnswered(sq, answer?.[sq.id]),
+      );
+    default:
+      return false;
+  }
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
+  const { questions } = quiz;
+  const storageKey = `quiz-answers-${quiz.lessonId}`;
+
+  const [answers, setAnswers] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey)) ?? {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // Auto-save answers on every change
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(answers));
+  }, [answers, storageKey]);
+
+  const answeredCount = questions.filter((q) =>
+    isAnswered(q, answers[q.id]),
+  ).length;
+  const progress = Math.round((answeredCount / questions.length) * 100);
+
+  const handleChange = (questionId, answer) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+  };
+
+  const handleSubmit = () => {
+    const earned = questions.reduce(
+      (sum, q) => sum + scoreQuestion(q, answers[q.id]),
+      0,
+    );
+    const max = totalPoints(questions);
+    if (earned > max / 2) setShowConfetti(true);
+    setIsSubmitted(true);
+    localStorage.removeItem(storageKey);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleRetry = () => {
+    setAnswers({});
+    setIsSubmitted(false);
+    setShowConfetti(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ── Results screen ──────────────────────────────────────────────────────────
+  if (isSubmitted) {
+    const earned = questions.reduce(
+      (sum, q) => sum + scoreQuestion(q, answers[q.id]),
+      0,
+    );
+    const max = totalPoints(questions);
+    const passed = earned > max / 2;
+    const pct = max > 0 ? Math.round((earned / max) * 100) : 0;
+
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-hidden"
+        style={{ backgroundColor: "#fdf6e3" }}
+      >
+        {/* Confetti */}
+        {showConfetti && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(50)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-3 h-3 rounded-sm animate-confetti-fall"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][
+                    Math.floor(Math.random() * 4)
+                  ],
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <Card className="max-w-md w-full p-8 text-center relative z-10 mb-10">
+          <div
+            className={cn(
+              "w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 shadow-glow",
+              passed ? "bg-accent-100" : "bg-stone-100",
+            )}
+          >
+            <Trophy
+              className={cn(
+                "w-12 h-12",
+                passed ? "text-accent-500" : "text-stone-400",
+              )}
+            />
+          </div>
+
+          <h2 className="text-3xl font-black text-stone-900 mb-1">
+            {passed ? "Quiz Complete!" : "Keep Practicing!"}
+          </h2>
+          {lesson && (
+            <p className="text-stone-400 text-sm font-bold uppercase tracking-wider mb-6">
+              {lesson.title}
+            </p>
+          )}
+
+          <div className="rounded-2xl p-6 mb-8 bg-orange-50 border border-orange-100">
+            <div className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
+              Your Score
+            </div>
+            <div className="text-5xl font-black text-primary-600 mb-1">
+              {earned}
+              <span className="text-2xl text-stone-300"> / {max}</span>
+            </div>
+            <div className="text-sm font-bold text-stone-400 mb-4">{pct}%</div>
+            <ProgressBar
+              progress={pct}
+              color={passed ? "secondary" : "primary"}
+              size="lg"
+            />
+            <div className="flex items-center justify-center gap-2 text-accent-600 font-bold mt-4">
+              <Star className="w-4 h-4 fill-current" />
+              <span>+{earned} XP Earned</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button variant="primary" onClick={onComplete} size="lg">
+              Back to Lessons
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRetry}
+              leftIcon={<RotateCcw className="w-4 h-4" />}
+            >
+              Retry Quiz
+            </Button>
+          </div>
+        </Card>
+
+        {/* Per-question review */}
+        <div className="max-w-2xl w-full relative z-10 space-y-4">
+          <h3 className="text-xl font-black text-stone-700 mb-2">
+            Review Your Answers
+          </h3>
+          {questions.map((q, i) => {
+            const Component = QUESTION_MAP[q.type];
+            if (!Component) return null;
+            const earned = scoreQuestion(q, answers[q.id]);
+            const pts =
+              q.type === "case-study"
+                ? totalPoints(q.subQuestions ?? [])
+                : (q.points ?? 0);
+
+            return (
+              <Card key={q.id} className="p-6">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-black text-stone-400 uppercase tracking-wider">
+                        Q{i + 1}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {TYPE_LABELS[q.type] ?? q.type}
+                      </Badge>
+                    </div>
+                    <p className="font-bold text-stone-800">{q.question}</p>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 text-sm font-black px-3 py-1 rounded-full",
+                      earned === pts
+                        ? "bg-secondary-100 text-secondary-700"
+                        : earned > 0
+                          ? "bg-accent-100 text-accent-700"
+                          : "bg-red-100 text-red-600",
+                    )}
+                  >
+                    {earned}/{pts} pts
+                  </span>
+                </div>
+                <Component
+                  question={q}
+                  value={answers[q.id]}
+                  onChange={() => {}}
+                  isSubmitted
+                />
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Quiz screen (single-page) ───────────────────────────────────────────────
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: "#fdf6e3" }}>
+      {/* Sticky header */}
+      <div
+        className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50"
+        style={{ backgroundColor: "rgba(253, 246, 227, 0.92)" }}
+      >
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-14">
+            <button
+              onClick={onExit}
+              className="flex items-center gap-2 text-stone-500 hover:text-primary-600 font-bold transition-colors text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" /> Exit Quiz
+            </button>
+
+            <div className="flex items-center gap-3">
+              {lesson && (
+                <span className="hidden sm:block text-xs font-bold text-stone-400 uppercase tracking-wider">
+                  {lesson.title}
+                </span>
+              )}
+              <Badge
+                variant="accent"
+                icon={<Star className="w-3 h-3 fill-current" />}
+              >
+                {totalPoints(questions)} XP possible
+              </Badge>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="pb-3">
+            <div className="flex justify-between text-xs font-bold text-stone-400 mb-1.5">
+              <span>
+                {answeredCount} of {questions.length} answered
+              </span>
+              <span>{progress}%</span>
+            </div>
+            <ProgressBar progress={progress} color="secondary" size="sm" />
+          </div>
+        </div>
+      </div>
+
+      {/* All questions */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 pb-36 space-y-8">
+        {questions.map((q, i) => {
+          const Component = QUESTION_MAP[q.type];
+          if (!Component) return null;
+          const answered = isAnswered(q, answers[q.id]);
+
+          return (
+            <Card
+              key={q.id}
+              id={`question-${q.id}`}
+              className={cn(
+                "p-6 md:p-8 transition-all border-2",
+                answered ? "border-secondary-200" : "border-orange-100",
+              )}
+            >
+              {/* Question header */}
+              <div className="flex items-start justify-between gap-3 mb-5">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-black text-sm flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {TYPE_LABELS[q.type] ?? q.type}
+                  </Badge>
+                  {answered && (
+                    <CheckCircle2 className="w-4 h-4 text-secondary-500" />
+                  )}
+                </div>
+                <span className="text-xs font-bold text-stone-400 shrink-0">
+                  {q.points ?? 0} pts
+                </span>
+              </div>
+
+              {/* Question text */}
+              <p className="text-lg md:text-xl font-bold text-stone-900 mb-6 leading-snug">
+                {q.question}
+              </p>
+
+              {/* Slot component */}
+              <Component
+                question={q}
+                value={answers[q.id]}
+                onChange={(answer) => handleChange(q.id, answer)}
+                isSubmitted={false}
+              />
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Sticky Submit footer */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-30 border-t border-orange-200/70 backdrop-blur-md"
+        style={{ backgroundColor: "rgba(253, 246, 227, 0.95)" }}
+      >
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+          <div className="text-sm font-bold text-stone-500 hidden sm:block">
+            {answeredCount === questions.length
+              ? "All questions answered — ready to submit!"
+              : `${questions.length - answeredCount} question${
+                  questions.length - answeredCount !== 1 ? "s" : ""
+                } remaining`}
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleSubmit}
+            disabled={answeredCount === 0}
+            rightIcon={<CheckCircle2 className="w-5 h-5" />}
+            className="ml-auto px-8"
+          >
+            Submit Quiz
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

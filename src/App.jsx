@@ -10,7 +10,7 @@ import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 import { TeachersManagementPage } from "./pages/TeachersManagementPage";
 import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
-import { WEEKS_DATA } from "./data/week-01"; // ← import your data
+import { WEEKS_DATA } from "./data/lessonsweek-01"; // ← import your data
 
 export default function App() {
   const [currentView, setCurrentView] = useState("home");

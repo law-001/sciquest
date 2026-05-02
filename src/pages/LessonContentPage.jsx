@@ -1,6 +1,6 @@
 import React from "react";
 import { LessonTemplate } from "../components/LessonTemplate";
-import { WEEKS_DATA } from "../data/week-01";
+import { WEEKS_DATA } from "../data/lessonsweek-01";
 
 export function LessonContentPage({
   weekId,
