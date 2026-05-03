@@ -63,19 +63,9 @@ export function AboutPage() {
   ];
 
   return (
-    <div
-      className="min-h-screen pb-20"
-      style={{
-        backgroundColor: '#fdf6e3',
-      }}
-    >
+    <div className="min-h-screen pb-20 bg-[#fdf6e3] dark:bg-stone-900">
       {/* Hero Section */}
-      <div
-        className="border-b border-orange-200/50 pt-20 pb-16 relative overflow-hidden"
-        style={{
-          backgroundColor: '#fff7ed',
-        }}
-      >
+      <div className="border-b border-orange-200/50 dark:border-stone-700 pt-20 pb-16 relative overflow-hidden bg-primary-50 dark:bg-stone-800">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float" />
         <div
           className="absolute bottom-0 left-0 w-64 h-64 bg-accent-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float"
@@ -88,13 +78,13 @@ export function AboutPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary-100 text-primary-600 mb-8 shadow-warm animate-bounce-in">
             <BookOpen className="w-10 h-10" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-stone-900 mb-6 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-black text-stone-900 dark:text-white mb-6 tracking-tight">
             About{' '}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-500 to-secondary-500">
               SciQuest
             </span>
           </h1>
-          <p className="text-xl text-stone-600 max-w-3xl mx-auto font-medium leading-relaxed">
+          <p className="text-xl text-stone-600 dark:text-stone-300 max-w-3xl mx-auto font-medium leading-relaxed">
             An interactive web-based system designed specifically for Grade 7
             students. We believe that learning science shouldn't be about
             memorizing textbooks, but about experiencing the wonder of
@@ -106,11 +96,11 @@ export function AboutPage() {
       {/* Gamification Benefits */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-100 text-accent-700 font-bold text-sm mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 font-bold text-sm mb-4">
             <Sparkles className="w-4 h-4" />
             Why Gamification?
           </div>
-          <h2 className="text-3xl font-black text-stone-900">
+          <h2 className="text-3xl font-black text-stone-900 dark:text-white">
             The Power of Play in Education
           </h2>
         </div>
@@ -123,10 +113,10 @@ export function AboutPage() {
               >
                 {benefit.icon}
               </div>
-              <h3 className="text-xl font-bold text-stone-900 mb-4">
+              <h3 className="text-xl font-bold text-stone-900 dark:text-white mb-4">
                 {benefit.title}
               </h3>
-              <p className="text-stone-600 leading-relaxed">
+              <p className="text-stone-600 dark:text-stone-400 leading-relaxed">
                 {benefit.description}
               </p>
             </Card>

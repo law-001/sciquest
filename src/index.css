@@ -3,6 +3,9 @@
 
 @import "tailwindcss";
 
+/* Class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ====================== BASE STYLES ====================== */
 @layer base {
   html {
@@ -11,13 +14,12 @@
   
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    @apply text-stone-800 antialiased overflow-x-hidden;
-    background-color: #fdf6e3;
+    @apply text-stone-800 dark:text-stone-100 antialiased overflow-x-hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Nunito', sans-serif;
-    @apply font-bold text-stone-900;
+    @apply font-bold text-stone-900 dark:text-white;
   }
 }
 

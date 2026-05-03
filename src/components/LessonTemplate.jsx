@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   PlayCircle,
@@ -52,6 +52,25 @@ export function LessonTemplate({
   onLessonSelect,
 }) {
   const [activeSection, setActiveSection] = useState(0);
+  const [titleVisible, setTitleVisible] = useState(false);
+  const heroRef = useRef(null);
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setTitleVisible(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setHeroVisible(true); obs.disconnect(); } },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const sections = lesson?.sections ?? [];
 
@@ -67,12 +86,9 @@ export function LessonTemplate({
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#fdf6e3" }}>
+    <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
       {/* ── Sticky Header ── */}
-      <div
-        className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50"
-        style={{ backgroundColor: "rgba(253, 246, 227, 0.9)" }}
-      >
+      <div className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 bg-[#fdf6e3]/90 dark:bg-stone-900/90">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             <button
@@ -98,7 +114,7 @@ export function LessonTemplate({
 
       {/* ── Lesson Tab Nav ── */}
       {weekLessons.length > 0 && (
-        <div className="bg-white/80">
+        <div className="bg-white/80 dark:bg-stone-800/80">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex gap-3 py-2">
               {weekLessons.map((l) => {
@@ -162,15 +178,15 @@ export function LessonTemplate({
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                         activeSection === i
-                          ? "bg-primary-50 text-primary-700"
-                          : "text-stone-500 hover:text-primary-600 hover:bg-orange-50"
+                          ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
+                          : "text-stone-500 dark:text-stone-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-orange-50 dark:hover:bg-stone-700"
                       }`}
                     >
                       {s}
                     </button>
                   ))}
                 </nav>
-                <div className="mt-4 pt-4 border-t border-orange-100">
+                <div className="mt-4 pt-4 border-t border-orange-100 dark:border-stone-700">
                   <ProgressBar
                     progress={Math.round(
                       ((activeSection + 1) / sections.length) * 100,
@@ -188,34 +204,69 @@ export function LessonTemplate({
           <div className="flex-1 min-w-0">
             {/* Title Block */}
             <div className="mb-10">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge variant="primary" className="uppercase tracking-wider">
+              <div
+                className="flex items-center gap-3 mb-4"
+                style={{
+                  opacity: titleVisible ? 1 : 0,
+                  transform: titleVisible ? "translateY(0)" : "translateY(16px)",
+                  transition: "opacity 0.5s ease 0ms, transform 0.5s ease 0ms",
+                }}
+              >
+                <Badge variant="primary" className="uppercase tracking-wider transition-transform duration-300 hover:scale-105">
                   {lesson.badge}
                 </Badge>
               </div>
-              <h1 className="text-4xl md:text-5xl font-black text-stone-900 mb-4 leading-tight">
+              <h1
+                className="text-4xl md:text-5xl font-black text-stone-900 dark:text-white mb-4 leading-tight"
+                style={{
+                  opacity: titleVisible ? 1 : 0,
+                  transform: titleVisible ? "translateY(0)" : "translateY(20px)",
+                  transition: "opacity 0.55s ease 80ms, transform 0.55s ease 80ms",
+                }}
+              >
                 {lesson.title}
               </h1>
-              <p className="text-xl text-stone-600 font-medium leading-relaxed">
+              <p
+                className="text-xl text-stone-600 dark:text-stone-300 font-medium leading-relaxed"
+                style={{
+                  opacity: titleVisible ? 1 : 0,
+                  transform: titleVisible ? "translateY(0)" : "translateY(20px)",
+                  transition: "opacity 0.55s ease 180ms, transform 0.55s ease 180ms",
+                }}
+              >
                 {lesson.subtitle}
               </p>
             </div>
 
             {/* Hero Image */}
             {lesson.heroImage && (
-              <div className="rounded-3xl overflow-hidden shadow-card mb-12 border-4 border-white aspect-video relative">
+              <div
+                ref={heroRef}
+                className="group rounded-3xl overflow-hidden shadow-card mb-12 border-4 border-white aspect-video relative transition-shadow duration-300 hover:shadow-2xl"
+                style={{
+                  opacity: heroVisible ? 1 : 0,
+                  transform: heroVisible ? "translateY(0) scale(1)" : "translateY(24px) scale(0.98)",
+                  transition: "opacity 0.6s ease 260ms, transform 0.6s ease 260ms",
+                }}
+              >
                 <img
                   src={lesson.heroImage}
                   alt={lesson.heroImageAlt ?? "Lesson image"}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 {lesson.heroVideo && (
-                  <div className="absolute inset-0 bg-linear-to-t from-stone-900/50 to-transparent flex items-end p-8">
+                  <div className="absolute inset-0 bg-linear-to-t from-stone-900/50 to-transparent flex items-end p-8 transition-opacity duration-300 group-hover:from-stone-900/60">
                     <div className="flex items-center gap-4">
-                      <button className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-primary-600 hover:scale-110 transition-transform shadow-lg">
+                      <button className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-primary-600 hover:scale-110 hover:bg-white transition-all duration-200 shadow-lg">
                         <PlayCircle className="w-7 h-7" />
                       </button>
-                      <div>
+                      <div
+                        style={{
+                          opacity: heroVisible ? 1 : 0,
+                          transform: heroVisible ? "translateX(0)" : "translateX(-12px)",
+                          transition: "opacity 0.5s ease 400ms, transform 0.5s ease 400ms",
+                        }}
+                      >
                         <p className="text-white font-bold text-lg">
                           {lesson.heroVideo.label}
                         </p>
@@ -230,7 +281,7 @@ export function LessonTemplate({
             )}
 
             {/* ── Dynamic Content Sections (SLOT_MAP) ── */}
-            <div className="space-y-16 text-lg text-stone-700 leading-relaxed font-medium">
+            <div className="space-y-16 text-lg text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
               {lesson.layout.map((slot, i) => {
                 const Component = SLOT_MAP[slot.type];
                 if (!Component) return null;
@@ -246,7 +297,7 @@ export function LessonTemplate({
             </div>
 
             {/* Completion CTA */}
-            <div className="mt-16 pt-8 border-t border-orange-200">
+            <div className="mt-16 pt-8 border-t border-orange-200 dark:border-stone-700">
               <Card className="p-8 text-center bg-white">
                 <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-accent-600" />

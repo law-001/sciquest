@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Navbar } from "./components/layout/Navbar";
 import { AuthModal } from "./components/modals/AuthModal";
 import { LandingPage } from "./pages/LandingPage";
@@ -94,6 +95,7 @@ export default function App() {
 
   // ─────────────────────────────────────────────────────────
   const isPortalView =
+    currentView === "home" ||
     currentView === "admin" ||
     currentView === "teachers" ||
     currentView === "teacher-portal";
@@ -106,6 +108,7 @@ export default function App() {
             onStartLearning={handleStartLearning}
             onTeacherPortal={() => handleNavigate("teacher-portal")}
             onAdminPortal={() => handleNavigate("admin")}
+            onNavigate={handleNavigate}
           />
         );
 
@@ -163,6 +166,7 @@ export default function App() {
             onStartLearning={handleStartLearning}
             onTeacherPortal={() => handleNavigate("teacher-portal")}
             onAdminPortal={() => handleNavigate("admin")}
+            onNavigate={handleNavigate}
           />
         );
     }
@@ -170,9 +174,9 @@ export default function App() {
 
   // ─────────────────────────────────────────────────────────
   return (
+    <ThemeProvider>
     <div
-      className="min-h-screen flex flex-col font-body text-stone-800"
-      style={{ backgroundColor: "#fdf6e3" }}
+      className="min-h-screen flex flex-col font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900"
     >
       {!isPortalView && (
         <Navbar
@@ -187,7 +191,7 @@ export default function App() {
         />
       )}
 
-      <main className="grow animate-slide-up">{renderView()}</main>
+      <main className="grow">{renderView()}</main>
 
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -198,5 +202,6 @@ export default function App() {
         }}
       />
     </div>
+    </ThemeProvider>
   );
 }

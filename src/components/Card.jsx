@@ -11,7 +11,7 @@ export default function Card({
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl border border-orange-100 shadow-card overflow-hidden',
+        'bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 shadow-card overflow-hidden',
         hoverable && 'card-hover cursor-pointer',
         className
       )}

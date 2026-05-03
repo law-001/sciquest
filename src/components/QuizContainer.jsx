@@ -201,8 +201,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
 
     return (
       <div
-        className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-hidden"
-        style={{ backgroundColor: "#fdf6e3" }}
+        className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-hidden bg-[#fdf6e3] dark:bg-stone-900"
       >
         {/* Confetti */}
         {showConfetti && (
@@ -248,7 +247,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
             </p>
           )}
 
-          <div className="rounded-2xl p-6 mb-8 bg-orange-50 border border-orange-100">
+          <div className="rounded-2xl p-6 mb-8 bg-orange-50 dark:bg-stone-700/50 border border-orange-100 dark:border-stone-600">
             <div className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
               Your Score
             </div>
@@ -284,7 +283,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
 
         {/* Per-question review */}
         <div className="max-w-2xl w-full relative z-10 space-y-4">
-          <h3 className="text-xl font-black text-stone-700 mb-2">
+          <h3 className="text-xl font-black text-stone-700 dark:text-stone-200 mb-2">
             Review Your Answers
           </h3>
           {questions.map((q, i) => {
@@ -339,12 +338,9 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
 
   // ── Quiz screen (single-page) ───────────────────────────────────────────────
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#fdf6e3" }}>
+    <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
       {/* Sticky header */}
-      <div
-        className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50"
-        style={{ backgroundColor: "rgba(253, 246, 227, 0.92)" }}
-      >
+      <div className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 bg-[#fdf6e3]/92 dark:bg-stone-900/92">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <button
@@ -417,7 +413,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
               </div>
 
               {/* Question text */}
-              <p className="text-lg md:text-xl font-bold text-stone-900 mb-6 leading-snug">
+              <p className="text-lg md:text-xl font-bold text-stone-900 dark:text-white mb-6 leading-snug">
                 {q.question}
               </p>
 
@@ -434,10 +430,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
       </div>
 
       {/* Sticky Submit footer */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-30 border-t border-orange-200/70 backdrop-blur-md"
-        style={{ backgroundColor: "rgba(253, 246, 227, 0.95)" }}
-      >
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-orange-200/70 dark:border-stone-700 backdrop-blur-md bg-[#fdf6e3]/95 dark:bg-stone-900/95">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="text-sm font-bold text-stone-500 hidden sm:block">
             {answeredCount === questions.length

@@ -27,7 +27,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
   return (
     <div className="modal-backdrop">
       <div
-        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden relative animate-bounce-in"
+        className="bg-white dark:bg-stone-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden relative animate-bounce-in"
         role="dialog"
         aria-modal="true"
       >
@@ -65,10 +65,10 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-50 text-primary-500 mb-4 shadow-lg">
               <Sparkles className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-black text-stone-900 mb-2 mt-4">
+            <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-2 mt-4">
               {isLogin ? 'Welcome back, scientist!' : 'Start your journey!'}
             </h2>
-            <p className="text-stone-500 font-medium">
+            <p className="text-stone-500 dark:text-stone-400 font-medium">
               {isLogin
                 ? 'Ready to continue your experiments?'
                 : 'Join the lab and start learning science the fun way.'}
@@ -144,7 +144,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
 
           {/* Toggle */}
           <div className="mt-8 text-center">
-            <p className="text-stone-500 text-sm font-medium">
+            <p className="text-stone-500 dark:text-stone-400 text-sm font-medium">
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
                 type="button"
