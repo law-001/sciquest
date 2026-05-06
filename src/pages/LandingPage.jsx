@@ -15,13 +15,9 @@ import {
   RotateCcw,
   ChevronDown,
   Target,
-  Sun,
-  Moon,
   Star,
 } from "lucide-react";
 import Button from "../components/Button";
-import Logo from "../components/Logo";
-import { useTheme } from "../context/ThemeContext";
 import mclassroom from "../assets/modernclassroom.jpg";
 import labBg from "../assets/classroom.webp";
 
@@ -448,9 +444,7 @@ export function LandingPage({
   onAdminPortal,
   onNavigate,
 }) {
-  const { isDark, toggle } = useTheme();
   const [heroScrollY, setHeroScrollY] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubjectIdx, setActiveSubjectIdx] = useState(0);
   const [hoveredSubjectIdx, setHoveredSubjectIdx] = useState(null);
   const [achievementShown, setAchievementShown] = useState(false);
@@ -544,8 +538,6 @@ export function LandingPage({
 
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const rm = prefersReducedMotion;
-  const isScrolled = heroScrollY > vh * 0.85;
-
   const imgParallax = rm ? 0 : Math.min(heroScrollY * 0.3, vh * 0.35);
   const imgOpacity = rm ? 1 : Math.max(0.15, 1 - (heroScrollY / vh) * 0.85);
   const textParallax = rm ? 0 : Math.min(heroScrollY * 0.55, vh * 0.55);
@@ -569,183 +561,9 @@ export function LandingPage({
     setTeaserKey((k) => k + 1);
   };
 
-  /* ── Nav items ── */
-  const navItems = [
-    { label: "Home", view: "home" },
-    { label: "Lessons", view: "lessons" },
-    { label: "About", view: "about" },
-    { label: "Contact", view: "contact" },
-    { label: "Profile", view: "profile" },
-  ];
-
   return (
     <div className="flex flex-col min-h-screen bg-stone-950">
       <AchievementToast show={achievementVisible} />
-
-      {/* ════════════════════════════════════════════════
-          NAVBAR
-      ════════════════════════════════════════════════ */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-out ${
-          isScrolled
-            ? "bg-primary-50 dark:bg-stone-900 shadow-md"
-            : isMenuOpen
-              ? "bg-white/10 dark:bg-stone-900/60 backdrop-blur-md shadow-none"
-              : "bg-transparent shadow-none"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => onNavigate?.("home")}
-            >
-              <Logo
-                className={`animate-[spin_5s_linear_infinite] transition-colors duration-300 ${
-                  isScrolled ? "text-orange-500" : "text-white"
-                }`}
-              />
-              <span
-                className={`font-heading font-black text-2xl tracking-tight transition-colors duration-300 ${
-                  isScrolled ? "text-stone-900 dark:text-white" : "text-white"
-                }`}
-              >
-                SciQuest
-              </span>
-            </div>
-
-            <div className="hidden md:flex items-center gap-8">
-              {navItems.map((item) => (
-                <button
-                  key={item.view}
-                  onClick={() => onNavigate?.(item.view)}
-                  className={`text-sm font-bold font-heading transition-colors duration-300 hover:text-primary-400 ${
-                    isScrolled
-                      ? "text-stone-700 dark:text-stone-200"
-                      : "text-white/90"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="hidden md:flex items-center gap-3">
-              <button
-                onClick={toggle}
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
-                className={`p-2 rounded-xl transition-colors ${
-                  isScrolled
-                    ? "text-stone-500 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
-                    : "text-white/80 hover:bg-white/10"
-                }`}
-              >
-                {isDark ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </button>
-              <Button onClick={onStartLearning} size="sm">
-                Login / Sign Up
-              </Button>
-            </div>
-
-            <div className="md:hidden flex items-center gap-1">
-              <button
-                onClick={toggle}
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
-                className={`p-2 rounded-xl transition-colors ${
-                  isScrolled
-                    ? "text-stone-500 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
-                    : "text-white/80 hover:bg-white/10"
-                }`}
-              >
-                {isDark ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </button>
-              <Button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2"
-                variant="ghost"
-              >
-                {isMenuOpen ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke={
-                      isScrolled ? (isDark ? "#d6d3d1" : "#57534E") : "white"
-                    }
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6h12v12"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke={
-                      isScrolled ? (isDark ? "#d6d3d1" : "#57534E") : "white"
-                    }
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {isMenuOpen && (
-            <div className="md:hidden py-6 border-t border-white/20 dark:border-stone-700 backdrop-blur-md bg-white/10 dark:bg-stone-900/60 rounded-b-2xl -mx-6 px-6">
-              <div className="flex flex-col gap-6 text-lg font-medium">
-                {navItems.map((item) => (
-                  <button
-                    key={item.view}
-                    onClick={() => {
-                      onNavigate?.(item.view);
-                      setIsMenuOpen(false);
-                    }}
-                    className="text-left text-white/80 dark:text-stone-300 hover:text-white dark:hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-                <div className="pt-4 border-t border-stone-200">
-                  <Button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onStartLearning?.();
-                    }}
-                    className="w-full"
-                  >
-                    Login / Sign Up
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
 
       {/* ════════════════════════════════════════════════
           HERO
@@ -960,6 +778,7 @@ export function LandingPage({
           LEVEL UP — FEATURE PANELS
       ════════════════════════════════════════════════ */}
       <section
+        id="feature-panels"
         ref={featurePanelsRef}
         className="relative z-10 py-24 bg-amber-50 dark:bg-stone-900 overflow-hidden"
       >
@@ -1483,7 +1302,7 @@ export function LandingPage({
                   : "opacity-0 -translate-x-14"
               }`}
             >
-              <div className="absolute inset-0 bg-primary-200 rounded-[3rem] transform -rotate-3 scale-105 transition-transform duration-500 group-hover:-rotate-1" />
+              <div className="absolute inset-0 bg-primary-500 rounded-[3rem] transform -rotate-3 scale-105 transition-transform duration-500 group-hover:-rotate-1" />
               <img
                 src={mclassroom}
                 alt="Students collaborating"

@@ -96,7 +96,6 @@ export default function App() {
 
   // ─────────────────────────────────────────────────────────
   const isPortalView =
-    currentView === "home" ||
     currentView === "admin" ||
     currentView === "teachers" ||
     currentView === "teacher-portal";
@@ -192,6 +191,7 @@ export default function App() {
             setIsLoggedIn(false);
             handleNavigate("home");
           }}
+          transparent={currentView === "home"}
         />
       )}
 

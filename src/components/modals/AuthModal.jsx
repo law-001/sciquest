@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { X, Mail, Lock, User, Sparkles } from 'lucide-react';
+import React, { useState } from "react";
+import { X, Mail, Lock, User, Sparkles } from "lucide-react";
 
-import Button from '../Button';
-import Input from '../Input';
+import Button from "../Button";
+import Input from "../Input";
 
 export function AuthModal({ isOpen, onClose, onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,8 +21,8 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     }, 1200);
   };
 
-  const decorativeHeight = isLogin ? 'h-54' : 'h-60';
-  const circleHeight = isLogin ? 'h-52' : 'h-72';
+  const decorativeHeight = isLogin ? "h-54" : "h-60";
+  const circleHeight = isLogin ? "h-52" : "h-72";
 
   return (
     <div className="modal-backdrop">
@@ -32,22 +32,22 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
         aria-modal="true"
       >
         {/* Decorative Background Elements */}
-        <div 
+        <div
           className={`
             absolute top-0 left-0 w-full 
             ${decorativeHeight}
             bg-linear-to-br from-primary-100 to-accent-100 
             opacity-60 transition-all duration-500
-          `} 
+          `}
         />
-        
-        <div 
+
+        <div
           className={`
             absolute -top-12 -right-12 
             w-40 ${circleHeight}
             bg-secondary-100 rounded-full blur-3xl 
             opacity-60 transition-all duration-500
-          `} 
+          `}
         />
 
         {/* Close Button */}
@@ -66,23 +66,26 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
               <Sparkles className="w-8 h-8" />
             </div>
             <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-2 mt-4">
-              {isLogin ? 'Welcome back, scientist!' : 'Start your journey!'}
+              {isLogin ? "Welcome back, scientist!" : "Start your journey!"}
             </h2>
             <p className="text-stone-500 dark:text-stone-400 font-medium">
               {isLogin
-                ? 'Ready to continue your experiments?'
-                : 'Join the lab and start learning science the fun way.'}
+                ? "Ready to continue your experiments?"
+                : "Join the lab and start learning science the fun way."}
             </p>
           </div>
 
           {/* Form */}
-          <div className={`
+          <div
+            className={`
             transition-all duration-500
-            ${isLogin 
-              ? 'max-h-95 overflow-hidden' 
-              : 'max-h-105 overflow-y-auto pr-2'
+            ${
+              isLogin
+                ? "max-h-95 overflow-hidden"
+                : "max-h-105 overflow-y-auto pr-2"
             }
-          `}>
+          `}
+          >
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <Input
@@ -98,7 +101,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 type="email"
                 placeholder="marie@science.lab"
                 icon={<Mail className="w-5 h-5" />}
-                required
+                // required
               />
 
               <Input
@@ -106,7 +109,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 type="password"
                 placeholder="••••••••"
                 icon={<Lock className="w-5 h-5" />}
-                required
+                // required
               />
 
               {!isLogin && (
@@ -137,7 +140,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 className="w-full mt-6"
                 isLoading={isLoading}
               >
-                {isLogin ? 'Enter Lab' : 'Create Account'}
+                {isLogin ? "Enter Lab" : "Create Account"}
               </Button>
             </form>
           </div>
@@ -145,13 +148,15 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
           {/* Toggle */}
           <div className="mt-8 text-center">
             <p className="text-stone-500 dark:text-stone-400 text-sm font-medium">
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              {isLogin
+                ? "Don't have an account? "
+                : "Already have an account? "}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
                 className="font-bold text-primary-600 hover:text-primary-700 transition-colors"
               >
-                {isLogin ? 'Sign up' : 'Log in'}
+                {isLogin ? "Sign up" : "Log in"}
               </button>
             </p>
           </div>
