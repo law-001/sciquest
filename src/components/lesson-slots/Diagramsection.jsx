@@ -10,8 +10,13 @@ export default function DiagramSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -20,7 +25,9 @@ export default function DiagramSection({ id, heading, data }) {
   if (nodes.length === 0) return null;
 
   const nodeMap = {};
-  nodes.forEach((n) => { nodeMap[n.id] = n; });
+  nodes.forEach((n) => {
+    nodeMap[n.id] = n;
+  });
 
   return (
     <section
@@ -36,7 +43,7 @@ export default function DiagramSection({ id, heading, data }) {
         icon={<Dna className="w-5 h-5 text-primary-500" />}
         bg="bg-primary-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       {description && <p className="mb-6">{description}</p>}
@@ -55,7 +62,9 @@ export default function DiagramSection({ id, heading, data }) {
               className="flex flex-col items-center gap-2"
               style={{
                 opacity: visible ? 1 : 0,
-                transform: visible ? "scale(1) translateY(0)" : "scale(0.85) translateY(12px)",
+                transform: visible
+                  ? "scale(1) translateY(0)"
+                  : "scale(0.85) translateY(12px)",
                 transition: `opacity 0.5s ease ${i * 80}ms, transform 0.5s ease ${i * 80}ms`,
               }}
             >

@@ -11,6 +11,7 @@ import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 import { TeachersManagementPage } from "./pages/TeachersManagementPage";
 import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { WEEKS_DATA } from "./data/lessonsweek-01"; // ← import your data
 
 export default function App() {
@@ -159,6 +160,9 @@ export default function App() {
 
       case "teacher-portal":
         return <TeacherPortalPage onBack={() => handleNavigate("home")} />;
+
+      case "profile":
+        return <ProfilePage onNavigate={handleNavigate} />;
 
       default:
         return (

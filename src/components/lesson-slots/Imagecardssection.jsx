@@ -11,8 +11,13 @@ export default function ImageCardsSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -34,7 +39,7 @@ export default function ImageCardsSection({ id, heading, data }) {
         icon={<Microscope className="w-5 h-5 text-secondary-500" />}
         bg="bg-secondary-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -63,12 +68,16 @@ export default function ImageCardsSection({ id, heading, data }) {
                 </Badge>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-stone-900 mb-2 transition-colors duration-300 group-hover:text-secondary-700">
+                <h3 className="text-xl font-bold text-stone-900 mb-2 transition-colors duration-300 group-hover:text-secondary-500 dark:text-white">
                   {m.title}
                 </h3>
-                <p className="text-stone-600 text-base mb-3">{m.desc}</p>
-                <p className="text-stone-500 text-sm italic">e.g.</p>
-                <ul className="space-y-2 text-base text-stone-600">
+                <p className="text-stone-600 text-base mb-3 dark:text-stone-100">
+                  {m.desc}
+                </p>
+                <p className="text-stone-500 text-sm italic dark:text-stone-100">
+                  e.g.
+                </p>
+                <ul className="space-y-2 text-base text-stone-600 dark:text-stone-100">
                   {m.examples.map((ex, j) => (
                     <li
                       key={j}

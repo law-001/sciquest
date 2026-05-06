@@ -17,6 +17,7 @@ import {
   Target,
   Sun,
   Moon,
+  Star,
 } from "lucide-react";
 import Button from "../components/Button";
 import Logo from "../components/Logo";
@@ -55,10 +56,10 @@ const SUBJECTS = [
 ];
 
 const STATS = [
-  { target: 2400, suffix: "+", label: "Students" },
-  { target: 180, suffix: "+", label: "Lessons" },
-  { target: 50, suffix: "K+", label: "Quizzes Taken" },
-  { target: 1.2, suffix: "M", label: "XP Earned", decimals: 1 },
+  { target: 200, suffix: "+", label: "Students" },
+  { target: 160, suffix: "+", label: "Lessons" },
+  { target: 160, suffix: "+", label: "Quizzes" },
+  { target: 1.2, suffix: "k", label: "XP Earned", decimals: 1 },
 ];
 
 const LEADERBOARD = [
@@ -463,6 +464,9 @@ export function LandingPage({
 
   const [statsRef, statsTriggered] = useScrollTrigger(0.3);
   const [gamifRef, gamifTriggered] = useScrollTrigger(0.2);
+  const [featurePanelsRef, featurePanelsTriggered] = useScrollTrigger(0.1);
+  const [splitRef, splitTriggered] = useScrollTrigger(0.15);
+  const [ctaRef, ctaTriggered] = useScrollTrigger(0.2);
 
   const rafRef = useRef(null);
   const cycleRef = useRef(null);
@@ -571,6 +575,7 @@ export function LandingPage({
     { label: "Lessons", view: "lessons" },
     { label: "About", view: "about" },
     { label: "Contact", view: "contact" },
+    { label: "Profile", view: "profile" },
   ];
 
   return (
@@ -584,7 +589,9 @@ export function LandingPage({
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-out ${
           isScrolled
             ? "bg-primary-50 dark:bg-stone-900 shadow-md"
-            : "bg-transparent shadow-none"
+            : isMenuOpen
+              ? "bg-white/10 dark:bg-stone-900/60 backdrop-blur-md shadow-none"
+              : "bg-transparent shadow-none"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6">
@@ -709,7 +716,7 @@ export function LandingPage({
           </div>
 
           {isMenuOpen && (
-            <div className="md:hidden py-6 border-t border-white/20 dark:border-stone-700">
+            <div className="md:hidden py-6 border-t border-white/20 dark:border-stone-700 backdrop-blur-md bg-white/10 dark:bg-stone-900/60 rounded-b-2xl -mx-6 px-6">
               <div className="flex flex-col gap-6 text-lg font-medium">
                 {navItems.map((item) => (
                   <button
@@ -782,13 +789,10 @@ export function LandingPage({
           }}
         >
           {/* LIVE badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 animate-slide-up pointer-events-auto">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
-            </span>
-            <span className="text-xs font-bold text-white font-heading">
-              847 students learning right now
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 animate-slide-up pointer-events-auto">
+            <Star className="w-5 h-5 text-accent-400 fill-accent-400" />
+            <span className="text-sm font-bold text-white font-heading">
+              Grade 7 Science Curriculum
             </span>
           </div>
 
@@ -921,7 +925,14 @@ export function LandingPage({
             {STATS.map((stat, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center lg:items-start lg:px-8 gap-0.5"
+                className={`flex flex-col items-center lg:items-start lg:px-8 gap-0.5 transition-[opacity,transform] duration-700 ease-out ${
+                  statsTriggered
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-8"
+                }`}
+                style={{
+                  transitionDelay: statsTriggered ? `${i * 120}ms` : "0ms",
+                }}
               >
                 <span className="text-3xl sm:text-4xl font-black text-white font-heading tabular-nums">
                   {statsTriggered ? (
@@ -948,10 +959,19 @@ export function LandingPage({
       {/* ════════════════════════════════════════════════
           LEVEL UP — FEATURE PANELS
       ════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-24 bg-amber-50 dark:bg-stone-900 overflow-hidden">
+      <section
+        ref={featurePanelsRef}
+        className="relative z-10 py-24 bg-amber-50 dark:bg-stone-900 overflow-hidden"
+      >
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-300/20 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
+          <div
+            className={`text-center mb-14 transition-[opacity,transform] duration-700 ease-out ${
+              featurePanelsTriggered
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+          >
             <h2 className="text-3xl md:text-5xl font-black text-stone-900 dark:text-white mb-3 font-heading">
               <TypewriterText text="What you'll actually do" />
             </h2>
@@ -963,7 +983,14 @@ export function LandingPage({
           <div className="flex flex-col gap-3">
             {/* Panel: Quiz Mode */}
             <div
-              className={`rounded-2xl border transition-colors duration-300 overflow-hidden ${activePanel === "quiz" ? "border-primary-300 bg-white dark:bg-stone-800 shadow-lg" : "border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60"}`}
+              className={`rounded-2xl border overflow-hidden transition-[opacity,transform,border-color,background-color] duration-700 ease-out ${activePanel === "quiz" ? "border-primary-300 bg-white dark:bg-stone-800 shadow-lg" : "border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60"} ${
+                featurePanelsTriggered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-12"
+              }`}
+              style={{
+                transitionDelay: featurePanelsTriggered ? "100ms" : "0ms",
+              }}
             >
               <button
                 className="w-full flex items-center gap-4 p-5 text-left"
@@ -979,11 +1006,11 @@ export function LandingPage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3
-                    className={`text-lg font-black font-heading transition-colors duration-300 ${activePanel === "quiz" ? "text-primary-600" : "text-stone-800"}`}
+                    className={`text-lg font-black font-heading transition-colors duration-300 ${activePanel === "quiz" ? "text-primary-600" : "text-stone-800"} dark:text-primary-300`}
                   >
                     Quiz Mode
                   </h3>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-sm text-stone-500 dark:text-accent-50">
                     Answer questions. Earn XP. Level up.
                   </p>
                 </div>
@@ -1002,7 +1029,7 @@ export function LandingPage({
                     <p className="text-xs font-bold text-stone-400 tracking-widest uppercase mb-3">
                       True or False
                     </p>
-                    <p className="text-lg font-bold text-stone-900 mb-5 leading-snug">
+                    <p className="text-lg font-bold text-stone-900 mb-5 leading-snug dark:text-white">
                       The mitochondria is the powerhouse of the cell.
                     </p>
                     {quizAnswer === null ? (
@@ -1073,7 +1100,14 @@ export function LandingPage({
 
             {/* Panel: Explore */}
             <div
-              className={`rounded-2xl border transition-colors duration-300 overflow-hidden ${activePanel === "explore" ? "border-secondary-300 bg-white dark:bg-stone-800 shadow-lg" : "border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60"}`}
+              className={`rounded-2xl border overflow-hidden transition-[opacity,transform,border-color,background-color] duration-700 ease-out ${activePanel === "explore" ? "border-secondary-300 bg-white dark:bg-stone-800 shadow-lg" : "border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60"} ${
+                featurePanelsTriggered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-12"
+              }`}
+              style={{
+                transitionDelay: featurePanelsTriggered ? "220ms" : "0ms",
+              }}
             >
               <button
                 className="w-full flex items-center gap-4 p-5 text-left"
@@ -1089,11 +1123,11 @@ export function LandingPage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3
-                    className={`text-lg font-black font-heading transition-colors duration-300 ${activePanel === "explore" ? "text-secondary-600" : "text-stone-800"}`}
+                    className={`text-lg font-black font-heading transition-colors duration-300 ${activePanel === "explore" ? "text-secondary-600" : "text-stone-800"} dark:text-secondary-300`}
                   >
                     Explore Lessons
                   </h3>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-sm text-stone-500 dark:text-white">
                     Flip cards, diagrams, and key concepts.
                   </p>
                 </div>
@@ -1163,7 +1197,14 @@ export function LandingPage({
 
             {/* Panel: Compete */}
             <div
-              className={`rounded-2xl border transition-colors duration-300 overflow-hidden ${activePanel === "compete" ? "border-accent-300 bg-white dark:bg-stone-800 shadow-lg" : "border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60"}`}
+              className={`rounded-2xl border overflow-hidden transition-[opacity,transform,border-color,background-color] duration-700 ease-out ${activePanel === "compete" ? "border-accent-300 bg-white dark:bg-stone-800 shadow-lg" : "border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60"} ${
+                featurePanelsTriggered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-12"
+              }`}
+              style={{
+                transitionDelay: featurePanelsTriggered ? "340ms" : "0ms",
+              }}
             >
               <button
                 className="w-full flex items-center gap-4 p-5 text-left"
@@ -1179,11 +1220,11 @@ export function LandingPage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3
-                    className={`text-lg font-black font-heading transition-colors duration-300 ${activePanel === "compete" ? "text-accent-600" : "text-stone-800"}`}
+                    className={`text-lg font-black font-heading transition-colors duration-300 ${activePanel === "compete" ? "text-accent-600" : "text-stone-800"} dark:text-accent-200`}
                   >
                     Compete
                   </h3>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-sm text-stone-500 dark:text-white">
                     See where you rank against your class.
                   </p>
                 </div>
@@ -1200,11 +1241,11 @@ export function LandingPage({
                 <div
                   className={`px-5 pb-6 transition-[opacity,transform] duration-300 ease-out ${activePanel === "compete" ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-2 ">
                     {LEADERBOARD.map((entry) => (
                       <div
                         key={entry.rank}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl ${entry.isUser ? "bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/40" : "bg-stone-50 dark:bg-stone-700/50"}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl ${entry.isUser ? "border border-orange-400" : "bg-stone-50 dark:bg-stone-700/50"}`}
                       >
                         <span
                           className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${entry.rank === 1 ? "bg-amber-400 text-white" : "bg-stone-200 text-stone-600"}`}
@@ -1216,20 +1257,20 @@ export function LandingPage({
                           )}
                         </span>
                         <span
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0 "
                           style={{ backgroundColor: entry.color }}
                         >
                           {entry.name[0]}
                         </span>
                         <span
-                          className={`flex-1 text-sm font-bold ${entry.isUser ? "text-primary-700" : "text-stone-700"}`}
+                          className={`flex-1 text-sm font-bold ${entry.isUser ? "text-primary-700" : "text-stone-700"}dark:text-white`}
                         >
                           {entry.name}
                         </span>
                         <span className="text-xs text-stone-400 font-medium">
                           {entry.subject}
                         </span>
-                        <span className="text-sm font-black text-stone-800 font-heading tabular-nums">
+                        <span className="text-sm font-black text-stone-800 font-heading tabular-nums dark:text-white">
                           {entry.xp.toLocaleString()} XP
                         </span>
                       </div>
@@ -1250,14 +1291,20 @@ export function LandingPage({
         className="relative z-10 py-24 bg-stone-950 overflow-hidden"
       >
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-150 h-75 pointer-events-none"
           style={{
             background:
               "radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.12) 0%, transparent 70%)",
           }}
         />
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
+          <div
+            className={`text-center mb-14 transition-[opacity,transform] duration-700 ease-out ${
+              gamifTriggered
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+          >
             <h2 className="text-3xl md:text-5xl font-black text-white mb-3 font-heading">
               Your profile. Your progress.
             </h2>
@@ -1312,7 +1359,7 @@ export function LandingPage({
                 </div>
                 <div className="h-3 bg-stone-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-primary-500 origin-left transition-[transform] duration-[1200ms] ease-out"
+                    className="h-full rounded-full bg-primary-500 origin-left transition-[transform] duration-1200 ease-out"
                     style={{ transform: `scaleX(${xpWidth / 100})` }}
                   />
                 </div>
@@ -1422,11 +1469,20 @@ export function LandingPage({
       {/* ════════════════════════════════════════════════
           SPLIT SECTION
       ════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-24 bg-primary-50 dark:bg-stone-900 overflow-hidden">
+      <section
+        ref={splitRef}
+        className="relative z-10 py-24 bg-primary-50 dark:bg-stone-900 overflow-hidden"
+      >
         <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-primary-300/25 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="order-2 lg:order-1 relative group">
+            <div
+              className={`order-2 lg:order-1 relative group transition-[opacity,transform] duration-700 ease-out ${
+                splitTriggered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-14"
+              }`}
+            >
               <div className="absolute inset-0 bg-primary-200 rounded-[3rem] transform -rotate-3 scale-105 transition-transform duration-500 group-hover:-rotate-1" />
               <img
                 src={mclassroom}
@@ -1435,7 +1491,13 @@ export function LandingPage({
               />
             </div>
 
-            <div className="order-1 lg:order-2">
+            <div
+              className={`order-1 lg:order-2 transition-[opacity,transform] duration-700 ease-out delay-150 ${
+                splitTriggered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-14"
+              }`}
+            >
               <p className="text-sm font-bold text-primary-600 tracking-widest uppercase mb-3 font-heading">
                 Built for Grade 7
               </p>
@@ -1445,7 +1507,7 @@ export function LandingPage({
                   speed={32}
                 />
               </h2>
-              <p className="text-lg text-stone-600 mb-2 leading-relaxed">
+              <p className="text-lg text-stone-600 mb-2 leading-relaxed dark:text-white">
                 SciQuest turns the curriculum into challenges you actually want
                 to finish. No textbook walls, no boring slides.
               </p>
@@ -1489,7 +1551,7 @@ export function LandingPage({
                     >
                       <Icon className={`w-5 h-5 ${color}`} />
                     </div>
-                    <span className="text-base text-stone-700 font-medium transition-transform duration-300 group-hover/item:translate-x-1">
+                    <span className="text-base text-stone-700 font-medium transition-transform duration-300 group-hover/item:translate-x-1 dark:text-white">
                       {text}
                     </span>
                   </li>
@@ -1567,7 +1629,10 @@ export function LandingPage({
       {/* ════════════════════════════════════════════════
           CTA SECTION
       ════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-28 bg-stone-950 overflow-hidden">
+      <section
+        ref={ctaRef}
+        className="relative z-10 py-28 bg-stone-950 overflow-hidden"
+      >
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -1575,7 +1640,13 @@ export function LandingPage({
               "radial-gradient(ellipse at 50% 100%, rgba(249,115,22,0.10) 0%, transparent 60%)",
           }}
         />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+        <div
+          className={`max-w-3xl mx-auto px-4 sm:px-6 text-center transition-[opacity,transform] duration-700 ease-out ${
+            ctaTriggered
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-10"
+          }`}
+        >
           <p className="text-xs font-bold text-primary-500 tracking-widest uppercase mb-4 font-heading">
             Grade 7 Science
           </p>
@@ -1609,7 +1680,10 @@ export function LandingPage({
       {/* ════════════════════════════════════════════════
           FOOTER
       ════════════════════════════════════════════════ */}
-      <footer className="relative z-10 py-10 border-t border-stone-800 bg-stone-950">
+      <footer
+        className="relative z-10 py-10 border-t border-stone-800 bg-stone-950 animate-[fadeInUp_0.6s_ease-out_both]"
+        style={{ animationDelay: "0.2s" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
@@ -1656,6 +1730,10 @@ export function LandingPage({
         @keyframes fadeSwap {
           0%   { opacity: 0; transform: translateY(8px); filter: blur(4px); }
           100% { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes fadeInUp {
+          0%   { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

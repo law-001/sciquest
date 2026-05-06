@@ -10,8 +10,13 @@ export default function ComparisonSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -39,15 +44,19 @@ export default function ComparisonSection({ id, heading, data }) {
         icon={<Microscope className="w-5 h-5 text-accent-500" />}
         bg="bg-accent-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       {intro && <p className="mb-6">{intro}</p>}
 
       <div className="grid md:grid-cols-2 gap-6">
         <div style={colStyle(0)}>
-          <Card className={`group p-6 border-t-4 border-t-${left.color}-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}>
-            <h3 className={`text-xl font-bold text-${left.color}-700 mb-4 transition-colors duration-300 group-hover:text-${left.color}-800`}>
+          <Card
+            className={`group p-6 border-t-4 border-t-${left.color}-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}
+          >
+            <h3
+              className={`text-xl font-bold text-${left.color}-700 mb-4 transition-colors duration-300 group-hover:text-${left.color}-800`}
+            >
               {left.label}
             </h3>
             <ul className="space-y-3">
@@ -76,8 +85,12 @@ export default function ComparisonSection({ id, heading, data }) {
         </div>
 
         <div style={colStyle(120)}>
-          <Card className={`group p-6 border-t-4 border-t-${right.color}-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}>
-            <h3 className={`text-xl font-bold text-${right.color}-700 mb-4 transition-colors duration-300 group-hover:text-${right.color}-800`}>
+          <Card
+            className={`group p-6 border-t-4 border-t-${right.color}-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}
+          >
+            <h3
+              className={`text-xl font-bold text-${right.color}-700 mb-4 transition-colors duration-300 group-hover:text-${right.color}-800`}
+            >
               {right.label}
             </h3>
             <ul className="space-y-3">

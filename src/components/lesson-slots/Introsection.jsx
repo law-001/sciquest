@@ -10,8 +10,13 @@ export default function IntroSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -29,7 +34,7 @@ export default function IntroSection({ id, heading, data }) {
         icon={<BookOpen className="w-5 h-5 text-primary-500" />}
         bg="bg-primary-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       {paragraphs.map((p, i) => (
@@ -59,8 +64,10 @@ export default function IntroSection({ id, heading, data }) {
               <Lightbulb className="w-5 h-5 text-secondary-600" />
             </div>
             <div>
-              <h4 className="font-bold text-secondary-800 mb-1">Did You Know?</h4>
-              <p className="text-secondary-700 text-base">{didYouKnow}</p>
+              <h4 className="font-bold text-secondary-800 mb-1">
+                Did You Know?
+              </h4>
+              <p className="text-secondary-400 text-base">{didYouKnow}</p>
             </div>
           </div>
         </Card>

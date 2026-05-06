@@ -10,8 +10,13 @@ export default function ScenarioSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -33,7 +38,7 @@ export default function ScenarioSection({ id, heading, data }) {
         icon={<FlaskConical className="w-5 h-5 text-accent-500" />}
         bg="bg-accent-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       {intro && <p className="mb-6">{intro}</p>}

@@ -10,8 +10,13 @@ export default function ReasonCardsSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -33,7 +38,7 @@ export default function ReasonCardsSection({ id, heading, data }) {
         icon={<Dna className="w-5 h-5 text-accent-500" />}
         bg="bg-accent-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       {intro && <p className="mb-6">{intro}</p>}
@@ -57,11 +62,13 @@ export default function ReasonCardsSection({ id, heading, data }) {
                 >
                   {item.num}
                 </div>
-                <h3 className="text-xl font-bold text-stone-900 transition-colors duration-300 group-hover:text-accent-700">
+                <h3 className="text-xl font-bold text-stone-900 transition-colors duration-300 group-hover:text-accent-500 dark:text-white">
                   {item.title}
                 </h3>
               </div>
-              <p className="text-stone-600 text-base mb-3">{item.desc}</p>
+              <p className="text-stone-600 text-base mb-3 dark:text-white">
+                {item.desc}
+              </p>
               <p className="text-stone-500 text-sm italic transition-colors duration-300 group-hover:text-stone-600">
                 {item.content}
               </p>

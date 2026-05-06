@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, User } from "lucide-react";
 import Logo from "../Logo";
 import Button from "../Button";
 import { useTheme } from "../../context/ThemeContext";
@@ -66,6 +66,17 @@ export function Navbar({
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
+            <button
+              onClick={() => handleNavClick("profile")}
+              aria-label="Profile"
+              className={`p-2 rounded-xl transition-colors hover:bg-stone-200 dark:hover:bg-stone-700 ${
+                currentView === "profile"
+                  ? "text-primary-600 dark:text-primary-400"
+                  : "text-stone-500 dark:text-stone-400"
+              }`}
+            >
+              <User className="w-5 h-5" />
+            </button>
             {isLoggedIn ? (
               <Button variant="outline" onClick={onLogoutClick} size="sm">
                 Logout
@@ -123,6 +134,18 @@ export function Navbar({
                   {item.label}
                 </button>
               ))}
+
+              <button
+                onClick={() => handleNavClick("profile")}
+                className={`text-left flex items-center gap-2 transition-colors ${
+                  currentView === "profile"
+                    ? "text-primary-600 dark:text-primary-400 font-bold"
+                    : "text-zinc-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white"
+                }`}
+              >
+                <User className="w-4 h-4" />
+                Profile
+              </button>
 
               <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
                 {isLoggedIn ? (

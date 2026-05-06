@@ -34,7 +34,7 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
       : WEEKS_DATA.filter((w) => w.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-amber-50/60 dark:bg-stone-900">
+    <div className="min-h-screen bg-amber-50/60 dark:bg-stone-900 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
@@ -55,7 +55,9 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
                 <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
                   Current Level
                 </p>
-                <p className="text-xl font-black text-stone-900 dark:text-white">Level 5</p>
+                <p className="text-xl font-black text-stone-900 dark:text-white">
+                  Level 5
+                </p>
               </div>
             </div>
             <div className="w-px h-12 bg-orange-200" />
@@ -70,7 +72,7 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
         </div>
 
         {/* Category Filter */}
-        <div className="flex overflow-x-auto pb-4 mb-8 gap-3">
+        <div className="flex overflow-x-auto pb-4 mb-8 gap-3 md:pb-4 [&::-webkit-scrollbar]:hidden md:[&::-webkit-scrollbar]:block [-ms-overflow-style:none] md:[-ms-overflow-style:auto] [scrollbar-width:none] md:[scrollbar-width:auto]">
           {categories.map((cat) => (
             <button
               key={cat}

@@ -65,8 +65,13 @@ export function LessonTemplate({
     const el = heroRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setHeroVisible(true); obs.disconnect(); } },
-      { threshold: 0.15 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setHeroVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.15 },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -208,11 +213,16 @@ export function LessonTemplate({
                 className="flex items-center gap-3 mb-4"
                 style={{
                   opacity: titleVisible ? 1 : 0,
-                  transform: titleVisible ? "translateY(0)" : "translateY(16px)",
+                  transform: titleVisible
+                    ? "translateY(0)"
+                    : "translateY(16px)",
                   transition: "opacity 0.5s ease 0ms, transform 0.5s ease 0ms",
                 }}
               >
-                <Badge variant="primary" className="uppercase tracking-wider transition-transform duration-300 hover:scale-105">
+                <Badge
+                  variant="primary"
+                  className="uppercase tracking-wider transition-transform duration-300 hover:scale-105"
+                >
                   {lesson.badge}
                 </Badge>
               </div>
@@ -220,8 +230,11 @@ export function LessonTemplate({
                 className="text-4xl md:text-5xl font-black text-stone-900 dark:text-white mb-4 leading-tight"
                 style={{
                   opacity: titleVisible ? 1 : 0,
-                  transform: titleVisible ? "translateY(0)" : "translateY(20px)",
-                  transition: "opacity 0.55s ease 80ms, transform 0.55s ease 80ms",
+                  transform: titleVisible
+                    ? "translateY(0)"
+                    : "translateY(20px)",
+                  transition:
+                    "opacity 0.55s ease 80ms, transform 0.55s ease 80ms",
                 }}
               >
                 {lesson.title}
@@ -230,8 +243,11 @@ export function LessonTemplate({
                 className="text-xl text-stone-600 dark:text-stone-300 font-medium leading-relaxed"
                 style={{
                   opacity: titleVisible ? 1 : 0,
-                  transform: titleVisible ? "translateY(0)" : "translateY(20px)",
-                  transition: "opacity 0.55s ease 180ms, transform 0.55s ease 180ms",
+                  transform: titleVisible
+                    ? "translateY(0)"
+                    : "translateY(20px)",
+                  transition:
+                    "opacity 0.55s ease 180ms, transform 0.55s ease 180ms",
                 }}
               >
                 {lesson.subtitle}
@@ -245,8 +261,11 @@ export function LessonTemplate({
                 className="group rounded-3xl overflow-hidden shadow-card mb-12 border-4 border-white aspect-video relative transition-shadow duration-300 hover:shadow-2xl"
                 style={{
                   opacity: heroVisible ? 1 : 0,
-                  transform: heroVisible ? "translateY(0) scale(1)" : "translateY(24px) scale(0.98)",
-                  transition: "opacity 0.6s ease 260ms, transform 0.6s ease 260ms",
+                  transform: heroVisible
+                    ? "translateY(0) scale(1)"
+                    : "translateY(24px) scale(0.98)",
+                  transition:
+                    "opacity 0.6s ease 260ms, transform 0.6s ease 260ms",
                 }}
               >
                 <img
@@ -263,8 +282,11 @@ export function LessonTemplate({
                       <div
                         style={{
                           opacity: heroVisible ? 1 : 0,
-                          transform: heroVisible ? "translateX(0)" : "translateX(-12px)",
-                          transition: "opacity 0.5s ease 400ms, transform 0.5s ease 400ms",
+                          transform: heroVisible
+                            ? "translateX(0)"
+                            : "translateX(-12px)",
+                          transition:
+                            "opacity 0.5s ease 400ms, transform 0.5s ease 400ms",
                         }}
                       >
                         <p className="text-white font-bold text-lg">
@@ -302,7 +324,7 @@ export function LessonTemplate({
                 <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-accent-600" />
                 </div>
-                <h3 className="text-2xl font-black text-stone-900 mb-2">
+                <h3 className="text-2xl font-black text-stone-900 mb-2 dark:text-stone-100">
                   Ready to test your knowledge?
                 </h3>
                 <p className="text-stone-500 mb-8 max-w-md mx-auto">

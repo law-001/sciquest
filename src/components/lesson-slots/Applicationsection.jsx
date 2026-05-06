@@ -10,8 +10,13 @@ export default function ApplicationsSection({ id, heading, data }) {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -33,7 +38,7 @@ export default function ApplicationsSection({ id, heading, data }) {
         icon={<FlaskConical className="w-5 h-5 text-accent-500" />}
         bg="bg-accent-50"
       >
-        <p>{heading}</p>
+        <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-8">
@@ -52,10 +57,12 @@ export default function ApplicationsSection({ id, heading, data }) {
               <span className="text-3xl mb-3 inline-block transition-transform duration-300 group-hover:scale-125 group-hover:-rotate-6">
                 {app.icon}
               </span>
-              <h3 className="text-lg font-bold text-stone-900 mb-2 transition-colors duration-300 group-hover:text-accent-700">
+              <h3 className="text-lg font-bold text-stone-900 mb-2 transition-colors duration-300 group-hover:text-accent-700 dark:text-stone-100">
                 {app.title}
               </h3>
-              <p className="text-stone-600 text-base">{app.description || app.desc}</p>
+              <p className="text-stone-600 text-base dark:text-stone-100">
+                {app.description || app.desc}
+              </p>
             </Card>
           </div>
         ))}
