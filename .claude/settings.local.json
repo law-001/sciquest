@@ -1,14 +1,15 @@
 {
-  "enabledPlugins": {
-    "setupdotclaude@dotclaude": true
-  },
   "permissions": {
     "allow": [
       "Bash(mkdir -p .claude)",
       "Bash(cp C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/settings.json .claude/)",
       "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/rules .claude/)",
       "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/skills .claude/)",
-      "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/agents .claude/)"
+      "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/agents .claude/)",
+      "Bash(npm install *)"
     ]
+  },
+  "enabledPlugins": {
+    "setupdotclaude@dotclaude": true
   }
 }

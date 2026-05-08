@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
 import { AuthModal } from "./components/modals/AuthModal";
 import { LandingPage } from "./pages/LandingPage";
@@ -12,23 +13,34 @@ import { TeachersManagementPage } from "./pages/TeachersManagementPage";
 import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { WEEKS_DATA } from "./data/lessonsweek-01"; // ← import your data
+import { WEEKS_DATA } from "./data/lessonsweek-01";
 
-export default function App() {
+function AppContent() {
+  const { user, signOut } = useAuth();
   const [currentView, setCurrentView] = useState("home");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
-
-  // ── New week/lesson state (replaces old activeLessonId) ──
   const [activeWeekId, setActiveWeekId] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
-  const [completedLessons, setCompletedLessons] = useState([]); // ["lesson-1", "lesson-2", ...]
+  const [completedLessons, setCompletedLessons] = useState([]);
 
-  // ─────────────────────────────────────────────────────────
+  const isLoggedIn = !!user;
+
   const handleNavigate = (view) => {
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Called by AuthModal after successful login — navigates by role
+  const handleLogin = (role) => {
+    if (role === "admin") handleNavigate("admin");
+    else if (role === "teacher") handleNavigate("teacher-portal");
+    else handleNavigate("lessons");
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    handleNavigate("home");
   };
 
   const handleStartLearning = () => {
@@ -39,8 +51,6 @@ export default function App() {
     }
   };
 
-  // Called when a week card is clicked on LessonsPage
-  // Finds the first incomplete lesson in that week and opens it
   const handleStartWeek = (weekId) => {
     const week = WEEKS_DATA.find((w) => w.id === weekId);
     if (!week) return;
@@ -50,21 +60,16 @@ export default function App() {
     const target = firstIncomplete ?? week.lessons[0];
     setActiveWeekId(weekId);
     setActiveLessonId(target.id);
-    // mark it as reached
     if (!reachedLessons.includes(target.id)) {
       setReachedLessons((prev) => [...prev, target.id]);
     }
     handleNavigate("lesson-content");
   };
 
-  // Called when "Complete Lesson & Start Quiz" is clicked in LessonTemplate
-  // Just navigates to the quiz — completion is recorded AFTER quiz is done
   const handleGoToQuiz = () => {
     handleNavigate("quiz");
   };
 
-  // Called when the quiz is submitted/completed
-  // Marks the current lesson done, then either opens the next lesson or returns home
   const handleQuizComplete = () => {
     const week = WEEKS_DATA.find((w) => w.id === activeWeekId);
     if (!week) {
@@ -82,7 +87,6 @@ export default function App() {
 
     if (nextLesson) {
       setActiveLessonId(nextLesson.id);
-      // mark next lesson as reached
       if (!reachedLessons.includes(nextLesson.id)) {
         setReachedLessons((prev) => [...prev, nextLesson.id]);
       }
@@ -94,7 +98,6 @@ export default function App() {
     }
   };
 
-  // ─────────────────────────────────────────────────────────
   const isPortalView =
     currentView === "admin" ||
     currentView === "teachers" ||
@@ -115,8 +118,8 @@ export default function App() {
       case "lessons":
         return (
           <LessonsPage
-            onStartWeek={handleStartWeek} // ← week card click
-            completedLessons={completedLessons} // ← for progress bars & pill badges
+            onStartWeek={handleStartWeek}
+            completedLessons={completedLessons}
           />
         );
 
@@ -126,7 +129,7 @@ export default function App() {
             weekId={activeWeekId}
             activeLessonId={activeLessonId}
             completedLessons={completedLessons}
-            reachedLessons={reachedLessons} // ← add this
+            reachedLessons={reachedLessons}
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}
             onLessonSelect={(lessonId) => {
@@ -139,7 +142,7 @@ export default function App() {
       case "quiz":
         return (
           <QuizPage
-            activeLessonId={activeLessonId} // ✅ matches what QuizPage destructures
+            activeLessonId={activeLessonId}
             onBack={() => handleNavigate("lessons")}
             onComplete={handleQuizComplete}
           />
@@ -175,22 +178,15 @@ export default function App() {
     }
   };
 
-  // ─────────────────────────────────────────────────────────
   return (
-    <ThemeProvider>
-    <div
-      className="min-h-screen flex flex-col font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900"
-    >
+    <div className="min-h-screen flex flex-col font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
       {!isPortalView && (
         <Navbar
           currentView={currentView}
           onNavigate={handleNavigate}
           isLoggedIn={isLoggedIn}
           onLoginClick={() => setIsAuthModalOpen(true)}
-          onLogoutClick={() => {
-            setIsLoggedIn(false);
-            handleNavigate("home");
-          }}
+          onLogoutClick={handleLogout}
           transparent={currentView === "home"}
         />
       )}
@@ -200,12 +196,18 @@ export default function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLogin={() => {
-          setIsLoggedIn(true);
-          if (currentView === "home") handleNavigate("lessons");
-        }}
+        onLogin={handleLogin}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
