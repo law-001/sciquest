@@ -21,10 +21,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
+      setLoading(false)
       if (session?.user) {
-        fetchProfile(session.user.id).finally(() => setLoading(false))
-      } else {
-        setLoading(false)
+        fetchProfile(session.user.id)
       }
     })
 
@@ -43,10 +42,16 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signIn = async (email, password) => {
+    // Wipe any stale local token so signInWithPassword doesn't race with an
+    // in-flight auto-refresh of the old session (scope:'local' skips the network call)
+    await supabase.auth.signOut({ scope: 'local' })
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    const prof = await fetchProfile(data.user.id)
-    return prof
+    const metadata = data.user?.user_metadata ?? {}
+    // profiles table is authoritative for role (admin/teacher accounts may not have user_metadata.role)
+    const profileData = await fetchProfile(data.user.id)
+    const role = profileData?.role ?? metadata.role ?? 'student'
+    return { ...metadata, role }
   }
 
   const signUp = async ({ email, password, firstName, lastName, studentNumber, section }) => {
@@ -67,10 +72,15 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
+  const signOut = () => {
+    console.log('[signOut] called, current user:', user?.id ?? 'none')
+    supabase.auth.signOut({ scope: 'local' }).catch(err => {
+      console.error('[signOut] Supabase background error:', err)
+    })
+    console.log('[signOut] clearing user/profile state')
     setUser(null)
     setProfile(null)
+    console.log('[signOut] done')
   }
 
   return (

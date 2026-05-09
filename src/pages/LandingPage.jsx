@@ -1482,15 +1482,7 @@ export function LandingPage({
               onClick={onStartLearning}
               rightIcon={<ArrowRight className="w-5 h-5" />}
             >
-              I'm a Student
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={onTeacherPortal}
-              className="border-stone-600 text-stone-300 hover:bg-stone-800 hover:border-stone-500"
-            >
-              I'm a Teacher
+              Get Started
             </Button>
           </div>
         </div>
@@ -1526,21 +1518,6 @@ export function LandingPage({
               2026 SciQuest. An interactive learning platform for Grade 7
               Science.
             </p>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={onTeacherPortal}
-                className="text-sm font-bold text-stone-500 hover:text-secondary-400 transition-colors"
-              >
-                Teacher Portal
-              </button>
-              <span className="text-stone-700">|</span>
-              <button
-                onClick={onAdminPortal}
-                className="text-sm font-bold text-stone-500 hover:text-primary-400 transition-colors"
-              >
-                Admin Portal
-              </button>
-            </div>
           </div>
         </div>
       </footer>

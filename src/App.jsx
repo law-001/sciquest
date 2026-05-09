@@ -16,7 +16,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 
 function AppContent() {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [currentView, setCurrentView] = useState("home");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
@@ -38,9 +38,12 @@ function AppContent() {
     else handleNavigate("lessons");
   };
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    console.log('[handleLogout] start')
+    signOut();
+    console.log('[handleLogout] signOut complete, navigating home')
     handleNavigate("home");
+    console.log('[handleLogout] done')
   };
 
   const handleStartLearning = () => {
@@ -120,6 +123,8 @@ function AppContent() {
           <LessonsPage
             onStartWeek={handleStartWeek}
             completedLessons={completedLessons}
+            isLoggedIn={isLoggedIn}
+            onLoginClick={() => setIsAuthModalOpen(true)}
           />
         );
 
@@ -185,6 +190,7 @@ function AppContent() {
           currentView={currentView}
           onNavigate={handleNavigate}
           isLoggedIn={isLoggedIn}
+          userFirstName={profile?.first_name}
           onLoginClick={() => setIsAuthModalOpen(true)}
           onLogoutClick={handleLogout}
           transparent={currentView === "home"}

@@ -8,6 +8,7 @@ export function Navbar({
   currentView,
   onNavigate,
   isLoggedIn,
+  userFirstName,
   onLoginClick,
   onLogoutClick,
   transparent = false,
@@ -56,6 +57,7 @@ export function Navbar({
   };
 
   const handleLogout = () => {
+    console.log('[Navbar handleLogout] clicked, onLogoutClick is:', typeof onLogoutClick)
     setIsProfileOpen(false);
     setIsMenuOpen(false);
     onLogoutClick();
@@ -156,7 +158,7 @@ export function Navbar({
                       className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
                     >
                       <User className="w-4 h-4" />
-                      My Profile
+                      {userFirstName ?? "My Profile"}
                     </button>
                     <div className="border-t border-stone-200 dark:border-stone-700" />
                     <button

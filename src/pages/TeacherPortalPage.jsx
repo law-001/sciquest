@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -15,40 +15,47 @@ import {
   Star,
   GraduationCap,
   Atom,
-} from 'lucide-react';
-import  Card  from '../components/Card';
-import  Button  from '../components/Button';
-import  Badge  from '../components/Badge';
-import  ProgressBar  from '../components/ProgressBar';
-import { cn } from '../lib/utils';
+  LogOut,
+  Sun,
+  Moon,
+} from "lucide-react";
+import Card from "../components/Card";
+import Button from "../components/Button";
+import Badge from "../components/Badge";
+import ProgressBar from "../components/ProgressBar";
+import { cn } from "../lib/utils";
+import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export function TeacherPortalPage({ onBack }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const { signOut } = useAuth();
+  const { isDark, toggle } = useTheme();
+  const [activeTab, setActiveTab] = useState("overview");
 
   const sidebarItems = [
     {
-      id: 'overview',
-      label: 'Overview',
+      id: "overview",
+      label: "Overview",
       icon: <BarChart3 className="w-5 h-5" />,
     },
     {
-      id: 'my-classes',
-      label: 'My Classes',
+      id: "my-classes",
+      label: "My Classes",
       icon: <Users className="w-5 h-5" />,
     },
     {
-      id: 'lessons',
-      label: 'My Lessons',
+      id: "lessons",
+      label: "My Lessons",
       icon: <BookOpen className="w-5 h-5" />,
     },
     {
-      id: 'quizzes',
-      label: 'Quiz Results',
+      id: "quizzes",
+      label: "Quiz Results",
       icon: <ClipboardList className="w-5 h-5" />,
     },
     {
-      id: 'settings',
-      label: 'Settings',
+      id: "settings",
+      label: "Settings",
       icon: <Settings className="w-5 h-5" />,
     },
   ];
@@ -56,22 +63,22 @@ export function TeacherPortalPage({ onBack }) {
   const myClasses = [
     {
       id: 1,
-      name: 'Section 7-A',
-      subject: 'Biology',
+      name: "Section 7-A",
+      subject: "Biology",
       students: 35,
       avgScore: 82,
     },
     {
       id: 2,
-      name: 'Section 7-B',
-      subject: 'Biology',
+      name: "Section 7-B",
+      subject: "Biology",
       students: 32,
       avgScore: 76,
     },
     {
       id: 3,
-      name: 'Section 7-C',
-      subject: 'Earth Science',
+      name: "Section 7-C",
+      subject: "Earth Science",
       students: 38,
       avgScore: 88,
     },
@@ -79,118 +86,133 @@ export function TeacherPortalPage({ onBack }) {
 
   const recentSubmissions = [
     {
-      student: 'Alex Johnson',
-      quiz: 'Cell Structure Quiz',
+      student: "Alex Johnson",
+      quiz: "Cell Structure Quiz",
       score: 9,
       total: 10,
-      time: '2 hours ago',
+      time: "2 hours ago",
     },
     {
-      student: 'Maria Santos',
-      quiz: 'Cell Structure Quiz',
+      student: "Maria Santos",
+      quiz: "Cell Structure Quiz",
       score: 7,
       total: 10,
-      time: '3 hours ago',
+      time: "3 hours ago",
     },
     {
-      student: 'James Lee',
-      quiz: 'Forces & Motion Quiz',
+      student: "James Lee",
+      quiz: "Forces & Motion Quiz",
       score: 8,
       total: 10,
-      time: '5 hours ago',
+      time: "5 hours ago",
     },
     {
-      student: 'Emily Chen',
-      quiz: 'Cell Structure Quiz',
+      student: "Emily Chen",
+      quiz: "Cell Structure Quiz",
       score: 10,
       total: 10,
-      time: '6 hours ago',
+      time: "6 hours ago",
     },
     {
-      student: 'David Kim',
-      quiz: 'Layers of Earth Quiz',
+      student: "David Kim",
+      quiz: "Layers of Earth Quiz",
       score: 6,
       total: 10,
-      time: '1 day ago',
+      time: "1 day ago",
     },
   ];
 
   const myLessons = [
     {
       id: 1,
-      title: 'The Cell Structure',
-      category: 'Biology',
-      status: 'Published',
+      title: "The Cell Structure",
+      category: "Biology",
+      status: "Published",
       students: 67,
       completion: 72,
     },
     {
       id: 2,
-      title: 'Ecosystems & Biodiversity',
-      category: 'Biology',
-      status: 'Published',
+      title: "Ecosystems & Biodiversity",
+      category: "Biology",
+      status: "Published",
       students: 45,
       completion: 58,
     },
     {
       id: 3,
-      title: 'Layers of the Earth',
-      category: 'Earth Science',
-      status: 'Draft',
+      title: "Layers of the Earth",
+      category: "Earth Science",
+      status: "Draft",
       students: 0,
       completion: 0,
     },
     {
       id: 4,
-      title: 'The Water Cycle',
-      category: 'Earth Science',
-      status: 'Published',
+      title: "The Water Cycle",
+      category: "Earth Science",
+      status: "Published",
       students: 52,
       completion: 85,
     },
   ];
 
   return (
-    <div
-      className="min-h-screen font-body text-stone-800"
-      style={{
-        backgroundColor: '#fdf6e3',
-      }}
-    >
+    <div className="min-h-screen font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
       {/* Teacher Portal Header */}
-      <header
-        className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-orange-200/50 shadow-warm"
-        style={{
-          backgroundColor: 'rgba(255, 251, 245, 0.85)',
-        }}
-      >
+      <header className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 shadow-warm bg-[rgba(255,251,245,0.85)] dark:bg-stone-900/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-4">
-              <button
+              {/* <button
                 onClick={onBack}
                 className="flex items-center gap-2 text-stone-500 hover:text-primary-600 font-bold transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Back to Home</span>
-              </button>
+              </button> */}
               <div className="w-px h-8 bg-orange-200" />
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-secondary-100 rounded-lg text-secondary-600">
+                <div className="p-1.5 bg-secondary-100 dark:bg-secondary-900/30 rounded-lg text-secondary-600 dark:text-secondary-400">
                   <GraduationCap className="h-5 w-5" />
                 </div>
-                <span className="font-heading font-black text-lg text-stone-900">
+                <span className="font-heading font-black text-lg text-stone-900 dark:text-white">
                   Teacher Portal
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center font-bold text-sm">
+              <button
+                onClick={toggle}
+                aria-label={
+                  isDark ? "Switch to light mode" : "Switch to dark mode"
+                }
+                className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </button>
+              <div className="w-8 h-8 rounded-full bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-sm">
                 TC
               </div>
-              <span className="text-sm font-bold text-stone-700 hidden sm:inline">
+              <span className="text-sm font-bold text-stone-700 dark:text-stone-300 hidden sm:inline">
                 Ms. Chen
               </span>
+              <button
+                onClick={() => {
+                  console.log("[TeacherPortal] logout clicked");
+                  signOut();
+                  console.log("[TeacherPortal] navigating back");
+                  onBack();
+                }}
+                className="flex items-center gap-1.5 text-sm font-bold text-rose-600 hover:text-rose-700 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
             </div>
           </div>
         </div>
@@ -207,10 +229,10 @@ export function TeacherPortalPage({ onBack }) {
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
                     className={cn(
-                      'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors',
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors",
                       activeTab === item.id
-                        ? 'bg-secondary-50 text-secondary-700'
-                        : 'text-stone-600 hover:bg-orange-50 hover:text-secondary-600',
+                        ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400"
+                        : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-secondary-600 dark:hover:text-secondary-400",
                     )}
                   >
                     {item.icon}
@@ -223,13 +245,13 @@ export function TeacherPortalPage({ onBack }) {
 
           {/* Main Content */}
           <div className="flex-1 space-y-8">
-            {activeTab === 'overview' && (
+            {activeTab === "overview" && (
               <>
                 <div>
-                  <h1 className="text-3xl font-black text-stone-900 mb-1">
+                  <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
                     Welcome back, Ms. Chen!
                   </h1>
-                  <p className="text-stone-500 font-medium">
+                  <p className="text-stone-500 dark:text-stone-400 font-medium">
                     Here's what's happening with your classes today.
                   </p>
                 </div>
@@ -238,34 +260,36 @@ export function TeacherPortalPage({ onBack }) {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
                     {
-                      label: 'Total Students',
-                      value: '105',
+                      label: "Total Students",
+                      value: "105",
                       icon: <Users className="w-5 h-5 text-primary-500" />,
-                      color: 'bg-primary-50',
+                      color: "bg-primary-50",
                     },
                     {
-                      label: 'Active Lessons',
-                      value: '4',
+                      label: "Active Lessons",
+                      value: "4",
                       icon: <BookOpen className="w-5 h-5 text-secondary-500" />,
-                      color: 'bg-secondary-50',
+                      color: "bg-secondary-50",
                     },
                     {
-                      label: 'Avg. Score',
-                      value: '82%',
+                      label: "Avg. Score",
+                      value: "82%",
                       icon: <TrendingUp className="w-5 h-5 text-accent-500" />,
-                      color: 'bg-accent-50',
+                      color: "bg-accent-50",
                     },
                     {
-                      label: 'Quizzes Today',
-                      value: '23',
-                      icon: <ClipboardList className="w-5 h-5 text-science-pink" />,
-                      color: 'bg-pink-50',
+                      label: "Quizzes Today",
+                      value: "23",
+                      icon: (
+                        <ClipboardList className="w-5 h-5 text-science-pink" />
+                      ),
+                      color: "bg-pink-50",
                     },
                   ].map((stat, i) => (
                     <Card key={i} className="p-5">
                       <div
                         className={cn(
-                          'w-10 h-10 rounded-xl flex items-center justify-center mb-3',
+                          "w-10 h-10 rounded-xl flex items-center justify-center mb-3",
                           stat.color,
                         )}
                       >
@@ -311,12 +335,12 @@ export function TeacherPortalPage({ onBack }) {
                         <div className="flex items-center gap-4">
                           <span
                             className={cn(
-                              'text-sm font-black',
+                              "text-sm font-black",
                               sub.score >= 8
-                                ? 'text-secondary-600'
+                                ? "text-secondary-600"
                                 : sub.score >= 6
-                                  ? 'text-accent-600'
-                                  : 'text-red-600',
+                                  ? "text-accent-600"
+                                  : "text-red-600",
                             )}
                           >
                             {sub.score}/{sub.total}
@@ -333,7 +357,7 @@ export function TeacherPortalPage({ onBack }) {
               </>
             )}
 
-            {activeTab === 'my-classes' && (
+            {activeTab === "my-classes" && (
               <>
                 <div className="flex justify-between items-center">
                   <div>
@@ -400,7 +424,7 @@ export function TeacherPortalPage({ onBack }) {
               </>
             )}
 
-            {activeTab === 'lessons' && (
+            {activeTab === "lessons" && (
               <>
                 <div className="flex justify-between items-center">
                   <div>
@@ -433,9 +457,9 @@ export function TeacherPortalPage({ onBack }) {
                             </h3>
                             <Badge
                               variant={
-                                lesson.status === 'Published'
-                                  ? 'secondary'
-                                  : 'outline'
+                                lesson.status === "Published"
+                                  ? "secondary"
+                                  : "outline"
                               }
                               className="text-xs"
                             >
@@ -448,7 +472,7 @@ export function TeacherPortalPage({ onBack }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                        {lesson.status === 'Published' && (
+                        {lesson.status === "Published" && (
                           <div className="flex gap-6 text-center">
                             <div>
                               <p className="text-xs font-bold text-stone-500">
@@ -485,7 +509,7 @@ export function TeacherPortalPage({ onBack }) {
               </>
             )}
 
-            {activeTab === 'quizzes' && (
+            {activeTab === "quizzes" && (
               <>
                 <div>
                   <h1 className="text-3xl font-black text-stone-900 mb-1">
@@ -537,12 +561,12 @@ export function TeacherPortalPage({ onBack }) {
                             <td className="px-6 py-4">
                               <span
                                 className={cn(
-                                  'text-sm font-black',
+                                  "text-sm font-black",
                                   sub.score >= 8
-                                    ? 'text-secondary-600'
+                                    ? "text-secondary-600"
                                     : sub.score >= 6
-                                      ? 'text-accent-600'
-                                      : 'text-red-600',
+                                      ? "text-accent-600"
+                                      : "text-red-600",
                                 )}
                               >
                                 {sub.score}/{sub.total}
@@ -560,7 +584,7 @@ export function TeacherPortalPage({ onBack }) {
               </>
             )}
 
-            {activeTab === 'settings' && (
+            {activeTab === "settings" && (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-16 h-16 bg-stone-100 rounded-2xl flex items-center justify-center mb-4">
                   <Settings className="w-8 h-8 text-stone-400" />

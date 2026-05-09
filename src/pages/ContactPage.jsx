@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, MessageSquare, Send, User, Sparkles } from 'lucide-react';
 import  Card  from '../components/Card';
 import  Input  from '../components/Input';
@@ -7,6 +7,12 @@ import  Button  from '../components/Button';
 export function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -23,7 +29,11 @@ export function ContactPage() {
       <div className="max-w-5xl mx-auto">
         <div className="grid md:grid-cols-5 gap-8 md:gap-12 items-center">
           {/* Left side: Text & Illustration */}
-          <div className="md:col-span-2 text-center md:text-left">
+          <div
+            className={`md:col-span-2 text-center md:text-left transition-all duration-700 ease-out ${
+              mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
+            }`}
+          >
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-secondary-100 text-secondary-600 mb-6 shadow-warm animate-bounce-in">
               <MessageSquare className="w-8 h-8" />
             </div>
@@ -45,7 +55,12 @@ export function ContactPage() {
           </div>
 
           {/* Right side: Form */}
-          <div className="md:col-span-3">
+          <div
+            className={`md:col-span-3 transition-all duration-700 ease-out ${
+              mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
+            }`}
+            style={{ transitionDelay: '100ms' }}
+          >
             <Card className="p-8 md:p-10 shadow-xl border-0 ring-1 ring-orange-100">
               {isSubmitted ? (
                 <div className="text-center py-12 animate-bounce-in">

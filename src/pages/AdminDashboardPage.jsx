@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Users,
   BookOpen,
@@ -12,159 +12,181 @@ import {
   Trash2,
   ArrowLeft,
   Shield,
-} from 'lucide-react';
-import  Card  from '../components/Card';
-import  Button  from '../components/Button';
-import  Badge  from '../components/Badge';
-import { cn } from '../lib/utils';
+  LogOut,
+  Sun,
+  Moon,
+} from "lucide-react";
+import Card from "../components/Card";
+import Button from "../components/Button";
+import Badge from "../components/Badge";
+import { cn } from "../lib/utils";
+import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export function AdminDashboardPage({ onNavigate }) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { signOut } = useAuth();
+  const { isDark, toggle } = useTheme();
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const stats = [
     {
-      label: 'Total Students',
-      value: '1,248',
+      label: "Total Students",
+      value: "1,248",
       icon: <Users className="w-6 h-6 text-primary-500" />,
-      color: 'bg-primary-50',
+      color: "bg-primary-50",
     },
     {
-      label: 'Total Teachers',
-      value: '42',
+      label: "Total Teachers",
+      value: "42",
       icon: <GraduationCap className="w-6 h-6 text-secondary-500" />,
-      color: 'bg-secondary-50',
+      color: "bg-secondary-50",
     },
     {
-      label: 'Active Lessons',
-      value: '156',
+      label: "Active Lessons",
+      value: "156",
       icon: <BookOpen className="w-6 h-6 text-accent-500" />,
-      color: 'bg-accent-50',
+      color: "bg-accent-50",
     },
     {
-      label: 'Quiz Attempts',
-      value: '8,932',
+      label: "Quiz Attempts",
+      value: "8,932",
       icon: <HelpCircle className="w-6 h-6 text-blue-500" />,
-      color: 'bg-blue-50',
+      color: "bg-blue-50",
     },
   ];
 
   const recentUsers = [
     {
       id: 1,
-      name: 'Alex Johnson',
-      role: 'Student',
-      email: 'alex.j@school.edu',
-      status: 'Active',
-      joined: '2 days ago',
+      name: "Alex Johnson",
+      role: "Student",
+      email: "alex.j@school.edu",
+      status: "Active",
+      joined: "2 days ago",
     },
     {
       id: 2,
-      name: 'Sarah Smith',
-      role: 'Teacher',
-      email: 's.smith@school.edu',
-      status: 'Active',
-      joined: '5 days ago',
+      name: "Sarah Smith",
+      role: "Teacher",
+      email: "s.smith@school.edu",
+      status: "Active",
+      joined: "5 days ago",
     },
     {
       id: 3,
-      name: 'Michael Brown',
-      role: 'Student',
-      email: 'm.brown@school.edu',
-      status: 'Inactive',
-      joined: '1 week ago',
+      name: "Michael Brown",
+      role: "Student",
+      email: "m.brown@school.edu",
+      status: "Inactive",
+      joined: "1 week ago",
     },
     {
       id: 4,
-      name: 'Emily Davis',
-      role: 'Student',
-      email: 'e.davis@school.edu',
-      status: 'Active',
-      joined: '1 week ago',
+      name: "Emily Davis",
+      role: "Student",
+      email: "e.davis@school.edu",
+      status: "Active",
+      joined: "1 week ago",
     },
     {
       id: 5,
-      name: 'Dr. Robert Wilson',
-      role: 'Teacher',
-      email: 'r.wilson@school.edu',
-      status: 'Active',
-      joined: '2 weeks ago',
+      name: "Dr. Robert Wilson",
+      role: "Teacher",
+      email: "r.wilson@school.edu",
+      status: "Active",
+      joined: "2 weeks ago",
     },
   ];
 
   const sidebarItems = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
+      id: "dashboard",
+      label: "Dashboard",
       icon: <LayoutDashboard className="w-5 h-5" />,
     },
     {
-      id: 'users',
-      label: 'Users',
+      id: "users",
+      label: "Users",
       icon: <Users className="w-5 h-5" />,
     },
     {
-      id: 'teachers',
-      label: 'Teachers',
+      id: "teachers",
+      label: "Teachers",
       icon: <GraduationCap className="w-5 h-5" />,
     },
     {
-      id: 'lessons',
-      label: 'Lessons',
+      id: "lessons",
+      label: "Lessons",
       icon: <BookOpen className="w-5 h-5" />,
     },
     {
-      id: 'quizzes',
-      label: 'Quizzes',
+      id: "quizzes",
+      label: "Quizzes",
       icon: <HelpCircle className="w-5 h-5" />,
     },
     {
-      id: 'settings',
-      label: 'Settings',
+      id: "settings",
+      label: "Settings",
       icon: <Settings className="w-5 h-5" />,
     },
   ];
 
   return (
-    <div
-      className="min-h-screen font-body text-stone-800"
-      style={{
-        backgroundColor: '#fdf6e3',
-      }}
-    >
+    <div className="min-h-screen font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
       {/* Admin Portal Header */}
-      <header
-        className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-orange-200/50 shadow-warm"
-        style={{
-          backgroundColor: 'rgba(255, 251, 245, 0.85)',
-        }}
-      >
+      <header className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 shadow-warm bg-[rgba(255,251,245,0.85)] dark:bg-stone-900/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-4">
-              <button
+              {/* <button
                 onClick={() => onNavigate('home')}
                 className="flex items-center gap-2 text-stone-500 hover:text-primary-600 font-bold transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Back to Home</span>
-              </button>
+              </button> */}
               <div className="w-px h-8 bg-orange-200" />
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-primary-100 rounded-lg text-primary-600">
+                <div className="p-1.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
                   <Shield className="h-5 w-5" />
                 </div>
-                <span className="font-heading font-black text-lg text-stone-900">
+                <span className="font-heading font-black text-lg text-stone-900 dark:text-white">
                   Admin Portal
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
+              <button
+                onClick={toggle}
+                aria-label={
+                  isDark ? "Switch to light mode" : "Switch to dark mode"
+                }
+                className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </button>
+              <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-sm">
                 A
               </div>
-              <span className="text-sm font-bold text-stone-700 hidden sm:inline">
+              <span className="text-sm font-bold text-stone-700 dark:text-stone-300 hidden sm:inline">
                 Admin
               </span>
+              <button
+                onClick={() => {
+                  console.log("[AdminDashboard] logout clicked");
+                  signOut();
+                  console.log("[AdminDashboard] navigating home");
+                  onNavigate("home");
+                }}
+                className="flex items-center gap-1.5 text-sm font-bold text-rose-600 hover:text-rose-700 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
             </div>
           </div>
         </div>
@@ -180,17 +202,17 @@ export function AdminDashboardPage({ onNavigate }) {
                   <button
                     key={item.id}
                     onClick={() => {
-                      if (item.id === 'teachers') {
-                        onNavigate('teachers');
+                      if (item.id === "teachers") {
+                        onNavigate("teachers");
                       } else {
                         setActiveTab(item.id);
                       }
                     }}
                     className={cn(
-                      'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors',
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors",
                       activeTab === item.id
-                        ? 'bg-primary-50 text-primary-700'
-                        : 'text-stone-600 hover:bg-orange-50 hover:text-primary-600',
+                        ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
+                        : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-primary-600 dark:hover:text-primary-400",
                     )}
                   >
                     {item.icon}
@@ -205,10 +227,10 @@ export function AdminDashboardPage({ onNavigate }) {
           <div className="flex-1 space-y-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-black text-stone-900 mb-1">
+                <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
                   Admin Dashboard
                 </h1>
-                <p className="text-stone-500 font-medium">
+                <p className="text-stone-500 dark:text-stone-400 font-medium">
                   Overview and system management
                 </p>
               </div>
@@ -222,7 +244,7 @@ export function AdminDashboardPage({ onNavigate }) {
                   <div className="flex items-center gap-4">
                     <div
                       className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        "w-12 h-12 rounded-xl flex items-center justify-center",
                         stat.color,
                       )}
                     >
@@ -243,8 +265,8 @@ export function AdminDashboardPage({ onNavigate }) {
 
             {/* Users Table */}
             <Card className="overflow-hidden">
-              <div className="p-6 border-b border-orange-100 flex justify-between items-center bg-white">
-                <h2 className="text-xl font-bold text-stone-900">
+              <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-stone-900 dark:text-white">
                   Recent Users
                 </h2>
                 <Button variant="outline" size="sm">
@@ -254,7 +276,7 @@ export function AdminDashboardPage({ onNavigate }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-stone-50 border-b border-orange-100">
+                    <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
                       <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
                         Name
                       </th>
@@ -296,7 +318,7 @@ export function AdminDashboardPage({ onNavigate }) {
                         <td className="px-6 py-4">
                           <Badge
                             variant={
-                              user.role === 'Teacher' ? 'secondary' : 'primary'
+                              user.role === "Teacher" ? "secondary" : "primary"
                             }
                           >
                             {user.role}
@@ -305,18 +327,18 @@ export function AdminDashboardPage({ onNavigate }) {
                         <td className="px-6 py-4">
                           <span
                             className={cn(
-                              'inline-flex items-center gap-1.5 text-xs font-bold',
-                              user.status === 'Active'
-                                ? 'text-secondary-600'
-                                : 'text-stone-400',
+                              "inline-flex items-center gap-1.5 text-xs font-bold",
+                              user.status === "Active"
+                                ? "text-secondary-600"
+                                : "text-stone-400",
                             )}
                           >
                             <span
                               className={cn(
-                                'w-2 h-2 rounded-full',
-                                user.status === 'Active'
-                                  ? 'bg-secondary-500'
-                                  : 'bg-stone-300',
+                                "w-2 h-2 rounded-full",
+                                user.status === "Active"
+                                  ? "bg-secondary-500"
+                                  : "bg-stone-300",
                               )}
                             />
                             {user.status}

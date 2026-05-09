@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Play,
   Lock,
@@ -8,6 +8,7 @@ import {
   Zap,
   ChevronRight,
   CheckCircle2,
+  LogIn,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -15,10 +16,39 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
+import { useAuth } from "../context/AuthContext";
 
 const ICON_MAP = { Globe2, Dna, Zap };
 
-export function LessonsPage({ onStartWeek, completedLessons = [] }) {
+function useScrollTrigger(threshold = 0.1) {
+  const [el, setEl] = useState(null);
+  const [triggered, setTriggered] = useState(false);
+  const ref = useCallback((node) => setEl(node), []);
+  useEffect(() => {
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) { setTriggered(true); obs.disconnect(); }
+      },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [el, threshold]);
+  return [ref, triggered];
+}
+
+export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, onLoginClick }) {
+  const { user, profile } = useAuth();
+  const firstName = profile?.first_name || user?.user_metadata?.first_name || "";
+  const [mounted, setMounted] = useState(false);
+  const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   const categories = [
     "All Topics",
     "1st Quarter",
@@ -33,14 +63,41 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
       ? WEEKS_DATA
       : WEEKS_DATA.filter((w) => w.category === activeCategory);
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-amber-50/60 dark:bg-stone-900 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-6">
+            <LogIn className="w-10 h-10 text-primary-500" />
+          </div>
+          <h2 className="text-3xl font-black text-stone-900 dark:text-white mb-3">
+            Sign in to access lessons
+          </h2>
+          <p className="text-stone-500 dark:text-stone-400 mb-8">
+            Create a free account or log in to start your scientific journey.
+          </p>
+          <div className="flex justify-center">
+            <Button size="lg" onClick={onLoginClick}>
+              Login / Sign Up
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-amber-50/60 dark:bg-stone-900 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+        <div
+          className={`flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 transition-all duration-700 ease-out ${
+            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'
+          }`}
+        >
           <div>
             <h1 className="text-4xl font-black text-stone-900 dark:text-white mb-2">
-              Your Lessons
+              {firstName ? `Welcome back, ${firstName}!` : "Your Lessons"}
             </h1>
             <p className="text-lg text-stone-500 dark:text-stone-400">
               Continue your scientific journey.
@@ -72,7 +129,12 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
         </div>
 
         {/* Category Filter */}
-        <div className="flex overflow-x-auto pb-4 mb-8 gap-3 md:pb-4 [&::-webkit-scrollbar]:hidden md:[&::-webkit-scrollbar]:block [-ms-overflow-style:none] md:[-ms-overflow-style:auto] [scrollbar-width:none] md:[scrollbar-width:auto]">
+        <div
+          className={`flex overflow-x-auto pb-4 mb-8 gap-3 md:pb-4 [&::-webkit-scrollbar]:hidden md:[&::-webkit-scrollbar]:block [-ms-overflow-style:none] md:[-ms-overflow-style:auto] [scrollbar-width:none] md:[scrollbar-width:auto] transition-all duration-700 ease-out ${
+            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+          style={{ transitionDelay: '150ms' }}
+        >
           {categories.map((cat) => (
             <button
               key={cat}
@@ -90,8 +152,8 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
         </div>
 
         {/* Week Cards Grid — 1 card = 1 week of lessons */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredWeeks.map((week) => {
+        <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredWeeks.map((week, index) => {
             const IconComponent = ICON_MAP[week.icon] || Globe2;
 
             // Count how many lessons in this week are completed
@@ -105,8 +167,14 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
             const isFullyDone = completedCount === totalLessons;
 
             return (
-              <Card
+              <div
                 key={week.id}
+                className={`transition-all duration-700 ease-out ${
+                  cardsTriggered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
+                style={{ transitionDelay: `${index * 80}ms` }}
+              >
+              <Card
                 className={cn(
                   "flex flex-col h-full transition-all duration-300",
                   week.isLocked
@@ -213,6 +281,7 @@ export function LessonsPage({ onStartWeek, completedLessons = [] }) {
                   </div>
                 </div>
               </Card>
+              </div>
             );
           })}
         </div>
