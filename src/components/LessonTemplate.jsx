@@ -94,7 +94,7 @@ export function LessonTemplate({
     <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
       {/* ── Sticky Header ── */}
       <div className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 bg-[#fdf6e3]/90 dark:bg-stone-900/90">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             <button
               onClick={onBack}
@@ -120,7 +120,7 @@ export function LessonTemplate({
       {/* ── Lesson Tab Nav ── */}
       {weekLessons.length > 0 && (
         <div className="bg-white/80 dark:bg-stone-800/80">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex gap-3 py-2">
               {weekLessons.map((l) => {
                 const isActive = l.id === activeLessonId;
@@ -159,7 +159,7 @@ export function LessonTemplate({
       )}
 
       {/* ── Page Body ── */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* ── Sidebar TOC ── */}
           <aside className="hidden lg:block w-56 shrink-0">

@@ -1,94 +1,124 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 import {
-  X, Mail, Lock, User, Hash, BookOpen,
-  Sparkles, AlertCircle, CheckCircle2,
-} from 'lucide-react'
-import Button from '../Button'
-import Input from '../Input'
-import { useAuth } from '../../context/AuthContext'
+  X,
+  Mail,
+  Lock,
+  User,
+  Hash,
+  BookOpen,
+  Sparkles,
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import Button from "../Button";
+import Input from "../Input";
+import { useAuth } from "../../context/AuthContext";
 
 const EMPTY_FORM = {
-  email: '', password: '', confirmPassword: '',
-  firstName: '', lastName: '', studentNumber: '', section: '',
-}
+  email: "",
+  password: "",
+  confirmPassword: "",
+  firstName: "",
+  lastName: "",
+  studentNumber: "",
+  section: "",
+};
 
 export function AuthModal({ isOpen, onClose, onLogin }) {
-  const { signIn, signUp } = useAuth()
-  const [isLogin, setIsLogin] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [signupDone, setSignupDone] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
+  const { signIn, signUp } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [signupDone, setSignupDone] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    email: "",
+    studentNumber: "",
+  });
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const set = (field) => (e) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }))
-    if (error) setError('')
-  }
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    if (error) setError("");
+    if (field === "email" && fieldErrors.email)
+      setFieldErrors((p) => ({ ...p, email: "" }));
+    if (field === "studentNumber" && fieldErrors.studentNumber)
+      setFieldErrors((p) => ({ ...p, studentNumber: "" }));
+  };
 
   const handleClose = () => {
-    setError('')
-    setSignupDone(false)
-    setIsLogin(true)
-    setForm(EMPTY_FORM)
-    onClose()
-  }
+    setError("");
+    setSignupDone(false);
+    setIsLogin(true);
+    setForm(EMPTY_FORM);
+    setShowPassword(false);
+    setShowConfirm(false);
+    setFieldErrors({ email: "", studentNumber: "" });
+    onClose();
+  };
 
   const handleToggle = () => {
-    setIsLogin((v) => !v)
-    setError('')
-  }
+    setIsLogin((v) => !v);
+    setError("");
+    setFieldErrors({ email: "", studentNumber: "" });
+    setShowPassword(false);
+    setShowConfirm(false);
+  };
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-    console.log('[AuthModal:login] submitting for', form.email)
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    console.log("[AuthModal:login] submitting for", form.email);
     try {
-      console.log('[AuthModal:login] calling signIn...')
-      const profile = await signIn(form.email, form.password)
-      console.log('[AuthModal:login] signIn returned, profile:', profile)
-      onLogin(profile?.role ?? 'student')
-      handleClose()
+      console.log("[AuthModal:login] calling signIn...");
+      const profile = await signIn(form.email, form.password);
+      console.log("[AuthModal:login] signIn returned, profile:", profile);
+      onLogin(profile?.role ?? "student");
+      handleClose();
     } catch (err) {
-      console.error('[AuthModal:login] error:', err.message)
-      setError(err.message || 'Invalid email or password.')
+      console.error("[AuthModal:login] error:", err.message);
+      setError(err.message || "Invalid email or password.");
     } finally {
-      setIsLoading(false)
-      console.log('[AuthModal:login] done, isLoading set to false')
+      setIsLoading(false);
+      console.log("[AuthModal:login] done, isLoading set to false");
     }
-  }
+  };
 
   const handleSignup = async (e) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError("");
 
     if (!form.firstName.trim() || !form.lastName.trim()) {
-      setError('First and last name are required.')
-      return
+      setError("First and last name are required.");
+      return;
     }
     if (!form.studentNumber.trim()) {
-      setError('Student number is required.')
-      return
+      setError("Student number is required.");
+      return;
     }
     if (!form.section.trim()) {
-      setError('Section is required.')
-      return
+      setError("Section is required.");
+      return;
     }
     if (form.password.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
+      setError("Password must be at least 6 characters.");
+      return;
     }
     if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.')
-      return
+      setError("Passwords do not match.");
+      return;
     }
 
-    setIsLoading(true)
-    console.log('[AuthModal:signup] submitting for', form.email)
+    setIsLoading(true);
+    console.log("[AuthModal:signup] submitting for", form.email);
     try {
-      console.log('[AuthModal:signup] calling signUp...')
+      console.log("[AuthModal:signup] calling signUp...");
       const result = await signUp({
         email: form.email,
         password: form.password,
@@ -96,22 +126,34 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
         lastName: form.lastName.trim(),
         studentNumber: form.studentNumber.trim(),
         section: form.section.trim(),
-      })
-      console.log('[AuthModal:signup] signUp returned, has session:', !!result.session)
+      });
+      console.log(
+        "[AuthModal:signup] signUp returned, has session:",
+        !!result.session,
+      );
       if (result.session) {
-        onLogin('student')
-        handleClose()
+        onLogin("student");
+        handleClose();
       } else {
-        setSignupDone(true)
+        setSignupDone(true);
       }
     } catch (err) {
-      console.error('[AuthModal:signup] error:', err.message)
-      setError(err.message || 'Signup failed. Please try again.')
+      console.error("[AuthModal:signup] error:", err.message);
+      const msg = err.message ?? "";
+      if (err.code === "student_number_taken") {
+        setFieldErrors((p) => ({ ...p, studentNumber: "Already registered" }));
+      } else if (
+        /already registered|already in use|email.*exist|user.*exist/i.test(msg)
+      ) {
+        setFieldErrors((p) => ({ ...p, email: "Already taken" }));
+      } else {
+        setError(msg || "Signup failed. Please try again.");
+      }
     } finally {
-      setIsLoading(false)
-      console.log('[AuthModal:signup] done, isLoading set to false')
+      setIsLoading(false);
+      console.log("[AuthModal:signup] done, isLoading set to false");
     }
-  }
+  };
 
   if (signupDone) {
     return (
@@ -137,22 +179,28 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
               Account Created!
             </h2>
             <p className="text-stone-500 dark:text-stone-400 font-medium mb-6">
-              Check your email{' '}
-              <strong className="text-stone-700 dark:text-stone-200">{form.email}</strong>{' '}
+              Check your email{" "}
+              <strong className="text-stone-700 dark:text-stone-200">
+                {form.email}
+              </strong>{" "}
               and click the verification link, then log in.
             </p>
             <Button
               variant="primary"
               size="md"
               className="w-full"
-              onClick={() => { setSignupDone(false); setIsLogin(true); setError('') }}
+              onClick={() => {
+                setSignupDone(false);
+                setIsLogin(true);
+                setError("");
+              }}
             >
               Go to Log In
             </Button>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -164,10 +212,10 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       >
         {/* Decorative background */}
         <div
-          className={`absolute top-0 left-0 w-full ${isLogin ? 'h-54' : 'h-64'} bg-linear-to-br from-primary-100 to-accent-100 opacity-60 transition-all duration-500`}
+          className={`absolute top-0 left-0 w-full ${isLogin ? "h-34" : "h-34"} bg-linear-to-br from-primary-100 to-accent-100 opacity-60 transition-all duration-500`}
         />
         <div
-          className={`absolute -top-12 -right-12 w-40 ${isLogin ? 'h-52' : 'h-72'} bg-secondary-100 rounded-full blur-3xl opacity-60 transition-all duration-500`}
+          className={`absolute -top-12 -right-12 w-40 ${isLogin ? "h-38" : "h-48"} bg-secondary-100 rounded-full blur-3xl opacity-60 transition-all duration-500`}
         />
 
         <button
@@ -178,19 +226,19 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
           <X className="w-5 h-5" />
         </button>
 
-        <div className="px-8 pt-10 pb-8 relative z-10">
+        <div className="px-8 pt-6 pb-8 relative z-10">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-50 text-primary-500 mb-4 shadow-lg">
-              <Sparkles className="w-8 h-8" />
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-primary-50 text-primary-500 mb-2 shadow-md">
+              <Sparkles className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-2 mt-4">
-              {isLogin ? 'Welcome back, scientist!' : 'Start your journey!'}
+            <h2 className="text-xl font-black text-stone-900 dark:text-white mb-1">
+              {isLogin ? "Welcome back, scientist!" : "Start your journey!"}
             </h2>
-            <p className="text-stone-500 dark:text-stone-400 font-medium">
+            <p className="text-stone-500 dark:text-stone-50 font-medium text-sm">
               {isLogin
-                ? 'Ready to continue your experiments?'
-                : 'Create your student account to start.'}
+                ? "Ready to continue your experiments?"
+                : "Create your student account to start."}
             </p>
           </div>
 
@@ -206,8 +254,8 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
           <div
             className={`transition-all duration-500 ${
               isLogin
-                ? 'max-h-96 overflow-hidden'
-                : 'max-h-128 overflow-y-auto pr-1'
+                ? "max-h-96 overflow-hidden"
+                : "max-h-128 overflow-y-auto pr-1"
             }`}
           >
             <form
@@ -222,7 +270,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       placeholder="Marie"
                       icon={<User className="w-4 h-4" />}
                       value={form.firstName}
-                      onChange={set('firstName')}
+                      onChange={set("firstName")}
                       required
                     />
                     <Input
@@ -230,7 +278,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       placeholder="Curie"
                       icon={<User className="w-4 h-4" />}
                       value={form.lastName}
-                      onChange={set('lastName')}
+                      onChange={set("lastName")}
                       required
                     />
                   </div>
@@ -240,7 +288,8 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       placeholder="2024-0001"
                       icon={<Hash className="w-4 h-4" />}
                       value={form.studentNumber}
-                      onChange={set('studentNumber')}
+                      onChange={set("studentNumber")}
+                      error={fieldErrors.studentNumber}
                       required
                     />
                     <Input
@@ -248,7 +297,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       placeholder="STEM-A"
                       icon={<BookOpen className="w-4 h-4" />}
                       value={form.section}
-                      onChange={set('section')}
+                      onChange={set("section")}
                       required
                     />
                   </div>
@@ -261,28 +310,61 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 placeholder="marie@science.lab"
                 icon={<Mail className="w-5 h-5" />}
                 value={form.email}
-                onChange={set('email')}
+                onChange={set("email")}
+                error={fieldErrors.email}
                 required
               />
 
               <Input
                 label="Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 icon={<Lock className="w-5 h-5" />}
                 value={form.password}
-                onChange={set('password')}
+                onChange={set("password")}
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="text-stone-400 hover:text-stone-600 transition-colors"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                }
                 required
               />
 
               {!isLogin && (
                 <Input
                   label="Confirm Password"
-                  type="password"
+                  type={showConfirm ? "text" : "password"}
                   placeholder="••••••••"
                   icon={<Lock className="w-5 h-5" />}
                   value={form.confirmPassword}
-                  onChange={set('confirmPassword')}
+                  onChange={set("confirmPassword")}
+                  rightElement={
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm((v) => !v)}
+                      className="text-stone-400 hover:text-stone-600 transition-colors"
+                      aria-label={
+                        showConfirm ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showConfirm ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  }
                   required
                 />
               )}
@@ -305,7 +387,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 className="w-full mt-2"
                 isLoading={isLoading}
               >
-                {isLogin ? 'Enter Lab' : 'Create Account'}
+                {isLogin ? "Enter Lab" : "Create Account"}
               </Button>
             </form>
           </div>
@@ -313,18 +395,20 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
           {/* Toggle */}
           <div className="mt-6 text-center">
             <p className="text-stone-500 dark:text-stone-400 text-sm font-medium">
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              {isLogin
+                ? "Don't have an account? "
+                : "Already have an account? "}
               <button
                 type="button"
                 onClick={handleToggle}
                 className="font-bold text-primary-600 hover:text-primary-700 transition-colors"
               >
-                {isLogin ? 'Sign up' : 'Log in'}
+                {isLogin ? "Sign up" : "Log in"}
               </button>
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
