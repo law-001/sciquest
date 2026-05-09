@@ -83,6 +83,13 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  const verifyEmailOtp = async (email, token) => {
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' })
+    if (error) throw error
+    if (data.user) await fetchProfile(data.user.id)
+    return data
+  }
+
   const signOut = () => {
     console.log('[signOut] called, current user:', user?.id ?? 'none')
     supabase.auth.signOut({ scope: 'local' }).catch(err => {
@@ -95,7 +102,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp }}>
       {children}
     </AuthContext.Provider>
   )

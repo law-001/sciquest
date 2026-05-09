@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   X,
   Mail,
@@ -8,9 +8,9 @@ import {
   BookOpen,
   Sparkles,
   AlertCircle,
-  CheckCircle2,
   Eye,
   EyeOff,
+  ShieldCheck,
 } from "lucide-react";
 import Button from "../Button";
 import Input from "../Input";
@@ -27,11 +27,13 @@ const EMPTY_FORM = {
 };
 
 export function AuthModal({ isOpen, onClose, onLogin }) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, verifyEmailOtp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [signupDone, setSignupDone] = useState(false);
+  const [phase, setPhase] = useState("form"); // "form" | "verify"
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", "", "", ""]);
+  const otpRefs = useRef([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -53,7 +55,8 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
 
   const handleClose = () => {
     setError("");
-    setSignupDone(false);
+    setPhase("form");
+    setOtpDigits(["", "", "", "", "", "", "", ""]);
     setIsLogin(true);
     setForm(EMPTY_FORM);
     setShowPassword(false);
@@ -134,8 +137,11 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       if (result.session) {
         onLogin("student");
         handleClose();
+      } else if (result.user?.identities?.length === 0) {
+        setFieldErrors((p) => ({ ...p, email: "Already taken" }));
       } else {
-        setSignupDone(true);
+        setPhase("verify");
+        setOtpDigits(["", "", "", "", "", "", "", ""]);
       }
     } catch (err) {
       console.error("[AuthModal:signup] error:", err.message);
@@ -155,15 +161,86 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     }
   };
 
-  if (signupDone) {
+  const handleOtpChange = (index, value) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const next = [...otpDigits];
+    next[index] = digit;
+    setOtpDigits(next);
+    if (digit && index < 7) otpRefs.current[index + 1]?.focus();
+    if (error) setError("");
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 8);
+    const next = ["", "", "", "", "", "", "", ""];
+    for (let i = 0; i < pasted.length; i++) next[i] = pasted[i];
+    setOtpDigits(next);
+    const focusIndex = Math.min(pasted.length, 7);
+    otpRefs.current[focusIndex]?.focus();
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    const token = otpDigits.join("");
+    if (token.length < 8) {
+      setError("Please enter the 8-digit code from your email.");
+      return;
+    }
+    setIsLoading(true);
+    setError("");
+    try {
+      const result = await verifyEmailOtp(form.email, token);
+      if (result.session) {
+        onLogin("student");
+        handleClose();
+      }
+    } catch (err) {
+      setError(err.message || "Invalid or expired code. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await signUp({
+        email: form.email,
+        password: form.password,
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        studentNumber: form.studentNumber.trim(),
+        section: form.section.trim(),
+      });
+      setOtpDigits(["", "", "", "", "", "", "", ""]);
+      otpRefs.current[0]?.focus();
+    } catch {
+      setError("Could not resend the code. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (phase === "verify") {
     return (
       <div className="modal-backdrop">
         <div
-          className="bg-white dark:bg-stone-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden relative animate-bounce-in"
+          className="bg-white dark:bg-stone-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative animate-bounce-in"
           role="dialog"
           aria-modal="true"
         >
-          <div className="absolute top-0 left-0 w-full h-40 bg-linear-to-br from-green-50 to-emerald-100 opacity-60" />
+          <div className="absolute top-0 left-0 w-full h-47 bg-linear-to-br from-primary-50 to-accent-100 opacity-60" />
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-white/70 rounded-full transition-all z-20"
@@ -171,32 +248,72 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
           >
             <X className="w-5 h-5" />
           </button>
-          <div className="px-8 py-14 relative z-10 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-green-100 text-green-600 mb-6 shadow-lg">
-              <CheckCircle2 className="w-8 h-8" />
+          <div className="px-8 py-12 relative z-10">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-50 text-primary-500 mb-4 shadow-md">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-white mb-2">
+                Verify your email
+              </h2>
+              <p className="text-stone-500 dark:text-stone-100 text-sm font-medium">
+                We sent an 8-digit code to{" "}
+                <strong className="text-stone-700 dark:text-stone-50 break-all">
+                  {form.email}
+                </strong>
+              </p>
             </div>
-            <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-3">
-              Account Created!
-            </h2>
-            <p className="text-stone-500 dark:text-stone-400 font-medium mb-6">
-              Check your email{" "}
-              <strong className="text-stone-700 dark:text-stone-200">
-                {form.email}
-              </strong>{" "}
-              and click the verification link, then log in.
-            </p>
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full"
-              onClick={() => {
-                setSignupDone(false);
-                setIsLogin(true);
-                setError("");
-              }}
-            >
-              Go to Log In
-            </Button>
+
+            {error && (
+              <div className="flex items-start gap-2 p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleVerify} className="space-y-5">
+              <div className="flex justify-center gap-2">
+                {otpDigits.map((digit, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => (otpRefs.current[i] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    onPaste={i === 0 ? handleOtpPaste : undefined}
+                    className="w-11 h-14 text-center text-xl font-black rounded-xl border-2 border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all"
+                    aria-label={`Digit ${i + 1}`}
+                  />
+                ))}
+              </div>
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                className="w-full"
+                isLoading={isLoading}
+              >
+                Verify &amp; Create Account
+              </Button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <p className="text-stone-500 dark:text-stone-400 text-sm font-medium">
+                Didn&apos;t receive a code?{" "}
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isLoading}
+                  className="font-bold text-primary-600 hover:text-primary-700 transition-colors disabled:opacity-50"
+                >
+                  Resend
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
