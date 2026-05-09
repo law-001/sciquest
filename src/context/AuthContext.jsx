@@ -55,6 +55,17 @@ export function AuthProvider({ children }) {
   }
 
   const signUp = async ({ email, password, firstName, lastName, studentNumber, section }) => {
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('student_number', studentNumber)
+      .maybeSingle()
+    if (existing) {
+      const err = new Error('Student number is already registered.')
+      err.code = 'student_number_taken'
+      throw err
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
