@@ -367,7 +367,13 @@ const INITIAL_USERS = [
 function UsersTab() {
   const [users, setUsers] = useState(INITIAL_USERS);
   const [userToRemove, setUserToRemove] = useState(null);
+  const [showRemoveSearch, setShowRemoveSearch] = useState(false);
+  const [removeQuery, setRemoveQuery] = useState("");
   const containerRef = useRef(null);
+
+  const removeSearchResults = removeQuery.trim()
+    ? users.filter((u) => u.name.toLowerCase().includes(removeQuery.toLowerCase()))
+    : [];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -396,7 +402,60 @@ function UsersTab() {
             <h2 className="text-lg font-bold text-stone-900 dark:text-white">All Users</h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">{users.length} accounts</p>
           </div>
+          <button
+            onClick={() => { setShowRemoveSearch((v) => !v); setRemoveQuery(""); }}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors",
+              showRemoveSearch
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+            )}
+          >
+            <UserX className="w-4 h-4" />
+            Remove User
+          </button>
         </div>
+
+        {showRemoveSearch && (
+          <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
+            <input
+              autoFocus
+              type="text"
+              value={removeQuery}
+              onChange={(e) => setRemoveQuery(e.target.value)}
+              placeholder="Search by name..."
+              className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
+            />
+            {removeQuery.trim() && (
+              <div className="mt-3 space-y-1.5">
+                {removeSearchResults.length === 0 ? (
+                  <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">No users found</p>
+                ) : (
+                  removeSearchResults.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setUserToRemove(user)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
