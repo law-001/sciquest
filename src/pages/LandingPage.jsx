@@ -440,7 +440,6 @@ function CountUp({
 /* ─────────────────────────────────────────────────────────── */
 export function LandingPage({
   onStartLearning,
-  onTeacherPortal,
   onAdminPortal,
   onNavigate,
 }) {

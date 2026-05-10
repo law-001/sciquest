@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
@@ -9,15 +9,15 @@ import { QuizPage } from "./pages/QuizPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
 import { AdminDashboardPage } from "./pages/AdminDashboardPage";
-import { TeachersManagementPage } from "./pages/TeachersManagementPage";
 import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 
 function AppContent() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const [currentView, setCurrentView] = useState("home");
+  const initialRedirectDone = useRef(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
   const [activeWeekId, setActiveWeekId] = useState(null);
@@ -25,6 +25,17 @@ function AppContent() {
   const [completedLessons, setCompletedLessons] = useState([]);
 
   const isLoggedIn = !!user;
+
+  // On refresh, once the restored session + profile are ready, redirect by role
+  useEffect(() => {
+    if (loading || initialRedirectDone.current) return;
+    initialRedirectDone.current = true;
+    if (!user) return;
+    const role = profile?.role ?? 'student';
+    if (role === 'admin') setCurrentView('admin');
+    else if (role === 'teacher') setCurrentView('teacher-portal');
+    else setCurrentView('lessons');
+  }, [loading]);
 
   const handleNavigate = (view) => {
     setCurrentView(view);
@@ -103,7 +114,6 @@ function AppContent() {
 
   const isPortalView =
     currentView === "admin" ||
-    currentView === "teachers" ||
     currentView === "teacher-portal";
 
   const renderView = () => {
@@ -161,9 +171,6 @@ function AppContent() {
 
       case "admin":
         return <AdminDashboardPage onNavigate={handleNavigate} />;
-
-      case "teachers":
-        return <TeachersManagementPage onNavigate={handleNavigate} />;
 
       case "teacher-portal":
         return <TeacherPortalPage onBack={() => handleNavigate("home")} />;

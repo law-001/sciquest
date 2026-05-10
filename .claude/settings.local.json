@@ -6,7 +6,9 @@
       "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/rules .claude/)",
       "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/skills .claude/)",
       "Bash(cp -r C:/Users/markd/.claude/plugins/cache/dotclaude/setupdotclaude/c3e5ceac521c/template/agents .claude/)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\markd\\\\sciquest\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   },
   "enabledPlugins": {
