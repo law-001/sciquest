@@ -50,11 +50,8 @@ function AppContent() {
   };
 
   const handleLogout = () => {
-    console.log('[handleLogout] start')
     signOut();
-    console.log('[handleLogout] signOut complete, navigating home')
     handleNavigate("home");
-    console.log('[handleLogout] done')
   };
 
   const handleStartLearning = () => {
