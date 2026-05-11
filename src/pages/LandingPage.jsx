@@ -25,51 +25,152 @@ import labBg from "../assets/classroom.webp";
 /* ─── Hero scene colour tokens ─────────────────────────────── */
 const SCENE_CFG = {
   earth: {
-    light: { top:'#fff4e8', bot:'#ffe7d3', c:['#ffe2cc','#fbb98a','#fb923c','#ef6f3a','#d94f2a'] },
-    dark:  { top:'#0d1830', bot:'#142142', c:['#2b5fbe','#2a78d6','#4a98e8','#79b6f0','#a8d2f7'] },
+    light: {
+      top: "#fff4e8",
+      bot: "#ffe7d3",
+      c: ["#ffe2cc", "#fbb98a", "#fb923c", "#ef6f3a", "#d94f2a"],
+    },
+    dark: {
+      top: "#0d1830",
+      bot: "#142142",
+      c: ["#2b5fbe", "#2a78d6", "#4a98e8", "#79b6f0", "#a8d2f7"],
+    },
   },
   biology: {
-    light: { top:'#e8f7e6', bot:'#cdebc7', c:['#cce8b7','#94c97a','#5fa752','#3a7c3a','#1e5631'] },
-    dark:  { top:'#0b1a14', bot:'#0f2620', c:['#1a3a2a','#22513a','#306d4d','#4a8e6a','#7ab98e'] },
+    light: {
+      top: "#e8f7e6",
+      bot: "#cdebc7",
+      c: ["#cce8b7", "#94c97a", "#5fa752", "#3a7c3a", "#1e5631"],
+    },
+    dark: {
+      top: "#0b1a14",
+      bot: "#0f2620",
+      c: ["#1a3a2a", "#22513a", "#306d4d", "#4a8e6a", "#7ab98e"],
+    },
   },
   physics: {
-    light: { top:'#f2eefb', bot:'#e3dbf6', rings:['#b39ddb','#7e57c2','#512da8'] },
-    dark:  { top:'#0a0822', bot:'#120b35', rings:['#2f2266','#3f2d85','#5b41b4'] },
+    light: {
+      top: "#f2eefb",
+      bot: "#e3dbf6",
+      rings: ["#b39ddb", "#7e57c2", "#512da8"],
+    },
+    dark: {
+      top: "#0a0822",
+      bot: "#120b35",
+      rings: ["#2f2266", "#3f2d85", "#5b41b4"],
+    },
   },
 };
 
 const EARTH_PATHS = [
-  'M0,180 C80,110 180,230 260,170 C360,100 440,240 540,180 C660,110 740,240 860,180 C980,130 1080,230 1180,170 C1280,110 1380,220 1440,180 L1440,600 L0,600 Z',
-  'M0,280 C100,200 200,310 320,250 C460,190 540,310 660,260 C800,210 900,320 1040,270 C1180,230 1280,310 1440,260 L1440,600 L0,600 Z',
-  'M0,370 C140,300 240,390 380,340 C520,280 620,390 760,340 C900,300 1020,395 1180,345 C1320,310 1400,390 1440,360 L1440,600 L0,600 Z',
-  'M0,450 C140,400 280,470 440,435 C580,410 720,475 860,440 C1020,410 1180,475 1440,435 L1440,600 L0,600 Z',
-  'M0,520 C160,490 320,535 500,515 C660,500 820,540 980,515 C1140,495 1280,535 1440,510 L1440,600 L0,600 Z',
+  "M0,180 C80,110 180,230 260,170 C360,100 440,240 540,180 C660,110 740,240 860,180 C980,130 1080,230 1180,170 C1280,110 1380,220 1440,180 L1440,600 L0,600 Z",
+  "M0,280 C100,200 200,310 320,250 C460,190 540,310 660,260 C800,210 900,320 1040,270 C1180,230 1280,310 1440,260 L1440,600 L0,600 Z",
+  "M0,370 C140,300 240,390 380,340 C520,280 620,390 760,340 C900,300 1020,395 1180,345 C1320,310 1400,390 1440,360 L1440,600 L0,600 Z",
+  "M0,450 C140,400 280,470 440,435 C580,410 720,475 860,440 C1020,410 1180,475 1440,435 L1440,600 L0,600 Z",
+  "M0,520 C160,490 320,535 500,515 C660,500 820,540 980,515 C1140,495 1280,535 1440,510 L1440,600 L0,600 Z",
 ];
 const BIO_PATHS = [
-  'M0,200 L120,40 L240,180 L380,30 L520,170 L660,20 L820,160 L980,40 L1140,180 L1280,50 L1440,170 L1440,600 L0,600 Z',
-  'M0,300 L100,110 L220,280 L340,90 L480,260 L620,70 L760,260 L900,90 L1060,250 L1200,100 L1340,260 L1440,200 L1440,600 L0,600 Z',
-  'M0,400 L160,200 L300,380 L460,220 L620,380 L780,210 L940,380 L1100,230 L1280,380 L1440,300 L1440,600 L0,600 Z',
-  'M0,480 L40,450 L70,475 L100,440 L130,475 L170,445 L210,478 L260,448 L310,476 L360,442 L420,478 L470,448 L530,478 L590,446 L650,478 L710,446 L770,478 L830,446 L890,478 L950,442 L1010,478 L1070,446 L1130,478 L1190,448 L1260,478 L1330,446 L1400,478 L1440,460 L1440,600 L0,600 Z',
-  'M0,540 C200,510 360,550 540,535 C720,520 880,555 1060,535 C1240,520 1360,545 1440,530 L1440,600 L0,600 Z',
+  "M0,200 L120,40 L240,180 L380,30 L520,170 L660,20 L820,160 L980,40 L1140,180 L1280,50 L1440,170 L1440,600 L0,600 Z",
+  "M0,300 L100,110 L220,280 L340,90 L480,260 L620,70 L760,260 L900,90 L1060,250 L1200,100 L1340,260 L1440,200 L1440,600 L0,600 Z",
+  "M0,400 L160,200 L300,380 L460,220 L620,380 L780,210 L940,380 L1100,230 L1280,380 L1440,300 L1440,600 L0,600 Z",
+  "M0,480 L40,450 L70,475 L100,440 L130,475 L170,445 L210,478 L260,448 L310,476 L360,442 L420,478 L470,448 L530,478 L590,446 L650,478 L710,446 L770,478 L830,446 L890,478 L950,442 L1010,478 L1070,446 L1130,478 L1190,448 L1260,478 L1330,446 L1400,478 L1440,460 L1440,600 L0,600 Z",
+  "M0,540 C200,510 360,550 540,535 C720,520 880,555 1060,535 C1240,520 1360,545 1440,530 L1440,600 L0,600 Z",
 ];
-const LAYER_HEIGHTS_EARTH = ['82%','68%','52%','34%','20%'];
-const LAYER_HEIGHTS_BIO   = ['92%','78%','60%','32%','20%'];
+const LAYER_HEIGHTS_EARTH = ["82%", "68%", "52%", "34%", "20%"];
+const LAYER_HEIGHTS_BIO = ["92%", "78%", "60%", "32%", "20%"];
 
 const HERO_ORB_CFG = [
-  { scene:'biology',  label:'Biology',      sub:'Cells · Plants · People', IconComp:Dna,   lightColor:'#2f7a3a', darkColor:'#9bd9a4', lightActiveBg:'linear-gradient(160deg,#e8f7e6,#cdebc7)', darkActiveBg:'linear-gradient(160deg,#1e3a2a,#0f2620)', borderColor:'#5fa752', shadow:'rgba(47,122,58,0.45)' },
-  { scene:'earth',    label:'Earth Science',sub:'Weather · Rocks · Sky',   IconComp:Globe2, lightColor:'#ea580c', darkColor:'#fdba74', lightActiveBg:'linear-gradient(160deg,#fff4e8,#ffe7d3)', darkActiveBg:'linear-gradient(160deg,#1c2a3e,#142142)', borderColor:'#f97316', shadow:'rgba(234,88,12,0.35)' },
-  { scene:'physics',  label:'Physics',      sub:'Forces · Energy · Motion',IconComp:Atom,  lightColor:'#5b3fbf', darkColor:'#c4b5fd', lightActiveBg:'linear-gradient(160deg,#f2eefb,#e3dbf6)', darkActiveBg:'linear-gradient(160deg,#1a1340,#120b35)', borderColor:'#7c3aed', shadow:'rgba(124,58,237,0.35)' },
+  {
+    scene: "biology",
+    label: "Biology",
+    sub: "Cells · Plants · People",
+    IconComp: Dna,
+    lightColor: "#2f7a3a",
+    darkColor: "#9bd9a4",
+    lightActiveBg: "linear-gradient(160deg,#e8f7e6,#cdebc7)",
+    darkActiveBg: "linear-gradient(160deg,#1e3a2a,#0f2620)",
+    borderColor: "#5fa752",
+    shadow: "rgba(47,122,58,0.45)",
+  },
+  {
+    scene: "earth",
+    label: "Earth Science",
+    sub: "Weather · Rocks · Sky",
+    IconComp: Globe2,
+    lightColor: "#ea580c",
+    darkColor: "#fdba74",
+    lightActiveBg: "linear-gradient(160deg,#fff4e8,#ffe7d3)",
+    darkActiveBg: "linear-gradient(160deg,#1c2a3e,#142142)",
+    borderColor: "#f97316",
+    shadow: "rgba(234,88,12,0.35)",
+  },
+  {
+    scene: "physics",
+    label: "Physics",
+    sub: "Forces · Energy · Motion",
+    IconComp: Atom,
+    lightColor: "#5b3fbf",
+    darkColor: "#c4b5fd",
+    lightActiveBg: "linear-gradient(160deg,#f2eefb,#e3dbf6)",
+    darkActiveBg: "linear-gradient(160deg,#1a1340,#120b35)",
+    borderColor: "#7c3aed",
+    shadow: "rgba(124,58,237,0.35)",
+  },
 ];
 
 const PHYS_ATOMS = [
-  { style:{ width:'62vmin',height:'62vmin',bottom:'-10vmin',right:'-12vmin' },
-    electrons:[{anim:'sq-ao1 7s linear infinite'},{anim:'sq-ao2 9s linear infinite'},{anim:'sq-ao3 11s linear infinite'}] },
-  { style:{ width:'30vmin',height:'30vmin',bottom:'6vmin',left:'-4vmin',opacity:.85 },
-    electrons:[{anim:'sq-bo1 5s linear infinite'},{anim:'sq-bo2 7s linear infinite'}] },
-  { style:{ width:'36vmin',height:'36vmin',top:'-8vmin',right:'6vmin',opacity:.75 },
-    electrons:[{anim:'sq-co1 8s linear infinite'},{anim:'sq-co2 6s linear infinite'}] },
-  { style:{ width:'22vmin',height:'22vmin',top:'-2vmin',left:'8vmin',opacity:.8 },
-    electrons:[{anim:'sq-do1 5.5s linear infinite'},{anim:'sq-do2 8s linear infinite'}] },
+  {
+    style: {
+      width: "62vmin",
+      height: "62vmin",
+      bottom: "-10vmin",
+      right: "-12vmin",
+    },
+    electrons: [
+      { anim: "sq-ao1 7s linear infinite" },
+      { anim: "sq-ao2 9s linear infinite" },
+      { anim: "sq-ao3 11s linear infinite" },
+    ],
+  },
+  {
+    style: {
+      width: "30vmin",
+      height: "30vmin",
+      bottom: "6vmin",
+      left: "-4vmin",
+      opacity: 0.85,
+    },
+    electrons: [
+      { anim: "sq-bo1 5s linear infinite" },
+      { anim: "sq-bo2 7s linear infinite" },
+    ],
+  },
+  {
+    style: {
+      width: "36vmin",
+      height: "36vmin",
+      top: "-8vmin",
+      right: "6vmin",
+      opacity: 0.75,
+    },
+    electrons: [
+      { anim: "sq-co1 8s linear infinite" },
+      { anim: "sq-co2 6s linear infinite" },
+    ],
+  },
+  {
+    style: {
+      width: "22vmin",
+      height: "22vmin",
+      top: "-2vmin",
+      left: "8vmin",
+      opacity: 0.8,
+    },
+    electrons: [
+      { anim: "sq-do1 5.5s linear infinite" },
+      { anim: "sq-do2 8s linear infinite" },
+    ],
+  },
 ];
 
 /* ─────────────────────────────────────────────────────────── */
@@ -489,11 +590,7 @@ function CountUp({
 /* ─────────────────────────────────────────────────────────── */
 /*  LandingPage                                                 */
 /* ─────────────────────────────────────────────────────────── */
-export function LandingPage({
-  onStartLearning,
-  onAdminPortal,
-  onNavigate,
-}) {
+export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
   const [heroScrollY, setHeroScrollY] = useState(0);
   const [activeSubjectIdx, setActiveSubjectIdx] = useState(0);
   const [hoveredSubjectIdx, setHoveredSubjectIdx] = useState(null);
@@ -527,25 +624,33 @@ export function LandingPage({
   const subject = SUBJECTS[displayedSubjectIdx];
 
   const sceneKey = subject.key;
-  const sceneCfg = (SCENE_CFG[sceneKey] ?? SCENE_CFG.earth)[isDark ? 'dark' : 'light'];
+  const sceneCfg = (SCENE_CFG[sceneKey] ?? SCENE_CFG.earth)[
+    isDark ? "dark" : "light"
+  ];
 
-  const heroStars = useMemo(() =>
-    Array.from({ length: 60 }, () => ({
-      l: Math.random() * 100 + '%',
-      t: Math.random() * 60 + '%',
-      delay: +(Math.random() * 3).toFixed(2),
-      dur: +(2 + Math.random() * 2).toFixed(1),
-      scale: +(0.5 + Math.random() * 1.2).toFixed(2),
-    })), []);
+  const heroStars = useMemo(
+    () =>
+      Array.from({ length: 60 }, () => ({
+        l: Math.random() * 100 + "%",
+        t: Math.random() * 60 + "%",
+        delay: +(Math.random() * 3).toFixed(2),
+        dur: +(2 + Math.random() * 2).toFixed(1),
+        scale: +(0.5 + Math.random() * 1.2).toFixed(2),
+      })),
+    [],
+  );
 
-  const physParticles = useMemo(() =>
-    Array.from({ length: 30 }, () => ({
-      l: Math.random() * 100 + '%',
-      t: Math.random() * 100 + '%',
-      delay: +(Math.random() * 8).toFixed(2),
-      dur: +(5 + Math.random() * 6).toFixed(1),
-      op: +(0.3 + Math.random() * 0.5).toFixed(2),
-    })), []);
+  const physParticles = useMemo(
+    () =>
+      Array.from({ length: 30 }, () => ({
+        l: Math.random() * 100 + "%",
+        t: Math.random() * 100 + "%",
+        delay: +(Math.random() * 8).toFixed(2),
+        dur: +(5 + Math.random() * 6).toFixed(1),
+        op: +(0.3 + Math.random() * 0.5).toFixed(2),
+      })),
+    [],
+  );
 
   /* XP bar animation */
   useEffect(() => {
@@ -605,7 +710,11 @@ export function LandingPage({
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
-    let tX = 0, tY = 0, cX = 0, cY = 0, raf;
+    let tX = 0,
+      tY = 0,
+      cX = 0,
+      cY = 0,
+      raf;
     const t0 = performance.now();
     const depths = [6, 12, 20, 30, 44];
     const onMove = (e) => {
@@ -613,12 +722,15 @@ export function LandingPage({
       tX = ((e.clientX - r.left) / r.width - 0.5) * 2;
       tY = ((e.clientY - r.top) / r.height - 0.5) * 2;
     };
-    const onLeave = () => { tX = 0; tY = 0; };
+    const onLeave = () => {
+      tX = 0;
+      tY = 0;
+    };
     const tick = () => {
       const t = (performance.now() - t0) / 1000;
       cX += (tX - cX) * 0.06;
       cY += (tY - cY) * 0.06;
-      hero.querySelectorAll('.sq-parallax-layer').forEach((el, i) => {
+      hero.querySelectorAll(".sq-parallax-layer").forEach((el, i) => {
         const d = depths[i % depths.length];
         const bob = Math.sin(t * 0.55 + i * 0.7) * (2 + i * 1.1);
         const drift = Math.sin(t * 0.22 + i * 0.9) * (3 + i * 1.2);
@@ -626,12 +738,12 @@ export function LandingPage({
       });
       raf = requestAnimationFrame(tick);
     };
-    hero.addEventListener('mousemove', onMove);
-    hero.addEventListener('mouseleave', onLeave);
+    hero.addEventListener("mousemove", onMove);
+    hero.addEventListener("mouseleave", onLeave);
     raf = requestAnimationFrame(tick);
     return () => {
-      hero.removeEventListener('mousemove', onMove);
-      hero.removeEventListener('mouseleave', onLeave);
+      hero.removeEventListener("mousemove", onMove);
+      hero.removeEventListener("mouseleave", onLeave);
       cancelAnimationFrame(raf);
     };
   }, []);
@@ -683,13 +795,13 @@ export function LandingPage({
         style={{
           paddingTop: 80,
           background: `linear-gradient(180deg, ${sceneCfg.top} 0%, ${sceneCfg.bot} 100%)`,
-          transition: 'background 1.2s ease',
+          transition: "background 1.2s ease",
         }}
       >
         {/* Stars — visible in dark mode */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ opacity: isDark ? 1 : 0, transition: 'opacity 1s ease' }}
+          style={{ opacity: isDark ? 1 : 0, transition: "opacity 1s ease" }}
           aria-hidden="true"
         >
           {heroStars.map((s, i) => (
@@ -697,8 +809,10 @@ export function LandingPage({
               key={i}
               className="absolute rounded-full bg-white"
               style={{
-                width: 3, height: 3,
-                left: s.l, top: s.t,
+                width: 3,
+                height: 3,
+                left: s.l,
+                top: s.t,
                 opacity: 0.6,
                 animation: `sq-twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
                 transform: `scale(${s.scale})`,
@@ -713,44 +827,61 @@ export function LandingPage({
           aria-hidden="true"
           style={{
             top: isDark ? 70 : 110,
-            right: isDark ? '14%' : '8%',
-            width: 130, height: 130,
+            right: isDark ? "14%" : "8%",
+            width: 130,
+            height: 130,
             zIndex: 6,
-            opacity: sceneKey === 'physics' ? 0 : 1,
-            transition: 'top 1s ease, right 1s ease, opacity 1s ease',
+            opacity: sceneKey === "physics" ? 0 : 1,
+            transition: "top 1s ease, right 1s ease, opacity 1s ease",
           }}
         >
           <span
             className="absolute inset-0 rounded-full"
-            style={{ border: '1px dashed rgba(250,204,21,0.45)', animation: 'sq-spin 22s linear infinite' }}
+            style={{
+              border: "1px dashed rgba(250,204,21,0.45)",
+              animation: "sq-spin 22s linear infinite",
+            }}
           />
           <span
             className="absolute inset-0 rounded-full"
             style={{
               background: isDark
-                ? 'radial-gradient(circle at 60% 40%, #fff8c4, #fde047 70%)'
-                : 'radial-gradient(circle at 35% 35%, #fff4a3, #facc15 65%)',
-              boxShadow: '0 0 90px 30px rgba(253,224,71,0.5), 0 0 30px 8px rgba(253,224,71,0.5)',
-              clipPath: isDark ? 'circle(45% at 65% 50%)' : 'circle(50% at 50% 50%)',
-              transition: 'clip-path 1s ease, background 1s ease',
+                ? "radial-gradient(circle at 60% 40%, #fff8c4, #fde047 70%)"
+                : "radial-gradient(circle at 35% 35%, #fff4a3, #facc15 65%)",
+              boxShadow:
+                "0 0 90px 30px rgba(253,224,71,0.5), 0 0 30px 8px rgba(253,224,71,0.5)",
+              clipPath: isDark
+                ? "circle(45% at 65% 50%)"
+                : "circle(50% at 50% 50%)",
+              transition: "clip-path 1s ease, background 1s ease",
             }}
           />
         </div>
 
         {/* Hero text */}
-        <div className="relative max-w-4xl mx-auto px-6 pt-14 pb-6 text-center" style={{ zIndex: 25 }}>
+        <div
+          className="relative max-w-4xl mx-auto px-6 pt-14 pb-6 text-center"
+          style={{ zIndex: 25 }}
+        >
           <div
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[11px] font-bold tracking-widest uppercase mb-5"
             style={{
-              background: isDark ? 'rgba(26,36,64,0.85)' : 'rgba(255,255,255,0.9)',
-              borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(28,25,23,0.08)',
-              color: isDark ? '#b8b4ad' : '#57534e',
-              backdropFilter: 'blur(8px)',
+              background: isDark
+                ? "rgba(26,36,64,0.85)"
+                : "rgba(255,255,255,0.9)",
+              borderColor: isDark
+                ? "rgba(255,255,255,0.08)"
+                : "rgba(28,25,23,0.08)",
+              color: isDark ? "#b8b4ad" : "#57534e",
+              backdropFilter: "blur(8px)",
             }}
           >
             <span
               className="w-1.5 h-1.5 rounded-full"
-              style={{ background: '#f97316', animation: 'sq-pulse 2s ease-in-out infinite' }}
+              style={{
+                background: "#f97316",
+                animation: "sq-pulse 2s ease-in-out infinite",
+              }}
             />
             Grade 7 · Interactive Science
           </div>
@@ -758,20 +889,27 @@ export function LandingPage({
           <h1
             className="font-black leading-none tracking-tighter mb-3.5 font-heading"
             style={{
-              fontSize: 'clamp(42px,7vw,88px)',
-              letterSpacing: '-0.03em',
-              color: isDark ? '#f5f5f4' : '#292524',
+              fontSize: "clamp(42px,7vw,88px)",
+              letterSpacing: "-0.03em",
+              color: isDark ? "#f5f5f4" : "#292524",
             }}
           >
-            Pick a world. Start an{' '}
+            Pick a world. Start an{" "}
             <span
               style={{
-                color: sceneKey === 'biology'
-                  ? (isDark ? '#9bd9a4' : '#2f7a3a')
-                  : sceneKey === 'physics'
-                  ? (isDark ? '#c4b5fd' : '#5b3fbf')
-                  : (isDark ? '#fdba74' : '#ea580c'),
-                transition: 'color 1s ease',
+                color:
+                  sceneKey === "biology"
+                    ? isDark
+                      ? "#9bd9a4"
+                      : "#2f7a3a"
+                    : sceneKey === "physics"
+                      ? isDark
+                        ? "#c4b5fd"
+                        : "#5b3fbf"
+                      : isDark
+                        ? "#fdba74"
+                        : "#ea580c",
+                transition: "color 1s ease",
               }}
             >
               adventure
@@ -781,16 +919,25 @@ export function LandingPage({
 
           <p
             className="max-w-lg mx-auto"
-            style={{ fontSize: 'clamp(15px,1.4vw,18px)', color: isDark ? '#b8b4ad' : '#57534e', lineHeight: 1.55 }}
+            style={{
+              fontSize: "clamp(15px,1.4vw,18px)",
+              color: isDark ? "#b8b4ad" : "#57534e",
+              lineHeight: 1.55,
+            }}
           >
-            Three big subjects, one playful place to explore them.
+            Three big subjects, one playful place to explore them hello world.
           </p>
         </div>
 
         {/* Orbs */}
         <div
           className="relative flex flex-wrap justify-center items-end gap-6 sm:gap-10 px-6"
-          style={{ zIndex: 25, maxWidth: 1100, margin: '0 auto', paddingBottom: 40 }}
+          style={{
+            zIndex: 25,
+            maxWidth: 1100,
+            margin: "0 auto",
+            paddingBottom: 40,
+          }}
         >
           {HERO_ORB_CFG.map((orb) => {
             const isActive = sceneKey === orb.scene;
@@ -798,7 +945,10 @@ export function LandingPage({
             return (
               <button
                 key={orb.scene}
-                onClick={() => { setActiveSubjectIdx(orbIdx); setHoveredSubjectIdx(null); }}
+                onClick={() => {
+                  setActiveSubjectIdx(orbIdx);
+                  setHoveredSubjectIdx(null);
+                }}
                 onMouseEnter={() => handleOrbEnter(orbIdx)}
                 onMouseLeave={handleOrbLeave}
                 className="relative flex flex-col items-center mb-10 sm:mb-16"
@@ -807,36 +957,59 @@ export function LandingPage({
                 <span
                   className="relative flex items-center justify-center rounded-full border"
                   style={{
-                    width: 'clamp(78px,9vw,110px)',
-                    height: 'clamp(78px,9vw,110px)',
-                    background: isActive ? (isDark ? orb.darkActiveBg : orb.lightActiveBg) : (isDark ? '#1a2440' : '#ffffff'),
-                    borderColor: isActive ? orb.borderColor : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(28,25,23,0.08)'),
-                    boxShadow: isActive ? `0 30px 60px -22px ${orb.shadow}` : '0 14px 30px -16px rgba(28,25,23,0.25)',
-                    transform: isActive ? 'translateY(-10px) scale(1.04)' : 'translateY(0) scale(1)',
-                    transition: 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, background 0.6s ease, border-color 0.4s ease',
+                    width: "clamp(78px,9vw,110px)",
+                    height: "clamp(78px,9vw,110px)",
+                    background: isActive
+                      ? isDark
+                        ? orb.darkActiveBg
+                        : orb.lightActiveBg
+                      : isDark
+                        ? "#1a2440"
+                        : "#ffffff",
+                    borderColor: isActive
+                      ? orb.borderColor
+                      : isDark
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(28,25,23,0.08)",
+                    boxShadow: isActive
+                      ? `0 30px 60px -22px ${orb.shadow}`
+                      : "0 14px 30px -16px rgba(28,25,23,0.25)",
+                    transform: isActive
+                      ? "translateY(-10px) scale(1.04)"
+                      : "translateY(0) scale(1)",
+                    transition:
+                      "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, background 0.6s ease, border-color 0.4s ease",
                   }}
                 >
                   <span
                     className="absolute inset-0 rounded-full pointer-events-none"
                     style={{
-                      border: isActive ? `2px solid ${orb.borderColor}` : '1px dashed rgba(0,0,0,0.10)',
-                      animation: 'sq-spin 28s linear infinite',
+                      border: isActive
+                        ? `2px solid ${orb.borderColor}`
+                        : "1px dashed rgba(0,0,0,0.10)",
+                      animation: "sq-spin 28s linear infinite",
                       opacity: isActive ? 1 : 0.55,
                     }}
                   />
                   <orb.IconComp
                     strokeWidth={1.6}
                     style={{
-                      width: '50%', height: '50%',
+                      width: "50%",
+                      height: "50%",
                       color: isDark ? orb.darkColor : orb.lightColor,
-                      transition: 'color 0.4s ease',
+                      transition: "color 0.4s ease",
                     }}
                   />
                 </span>
                 {/* Label */}
                 <span
                   className="absolute font-black text-sm sm:text-base whitespace-nowrap font-heading"
-                  style={{ bottom: -30, left: '50%', transform: 'translateX(-50%)', color: isDark ? '#f5f5f4' : '#292524' }}
+                  style={{
+                    bottom: -30,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    color: isDark ? "#f5f5f4" : "#292524",
+                  }}
                 >
                   {orb.label}
                 </span>
@@ -844,10 +1017,12 @@ export function LandingPage({
                 <span
                   className="absolute text-[11px] font-medium uppercase tracking-widest whitespace-nowrap"
                   style={{
-                    bottom: -50, left: '50%', transform: 'translateX(-50%)',
-                    color: isDark ? '#b8b4ad' : '#57534e',
+                    bottom: -50,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    color: isDark ? "#b8b4ad" : "#57534e",
                     opacity: isActive ? 1 : 0,
-                    transition: 'opacity 0.3s ease',
+                    transition: "opacity 0.3s ease",
                   }}
                 >
                   {orb.sub}
@@ -861,7 +1036,9 @@ export function LandingPage({
               onClick={() => onStartLearning?.(sceneKey)}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Enter {HERO_ORB_CFG.find((o) => o.scene === sceneKey)?.label ?? 'Science'}
+              Enter{" "}
+              {HERO_ORB_CFG.find((o) => o.scene === sceneKey)?.label ??
+                "Science"}
             </Button>
           </div>
         </div>
@@ -869,71 +1046,152 @@ export function LandingPage({
         {/* Scene layers */}
         <div
           className="absolute inset-x-0 bottom-0 pointer-events-none"
-          style={{ height: '62vh', minHeight: 420, zIndex: 10 }}
+          style={{ height: "62vh", minHeight: 420, zIndex: 10 }}
           aria-hidden="true"
         >
           {/* Earth clouds */}
-          <div className="absolute inset-0" style={{ opacity: sceneKey === 'earth' ? 1 : 0, transition: 'opacity 1s ease' }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              opacity: sceneKey === "earth" ? 1 : 0,
+              transition: "opacity 1s ease",
+            }}
+          >
             {EARTH_PATHS.map((d, i) => (
               <div
                 key={i}
                 className="sq-parallax-layer absolute inset-x-0 bottom-0"
-                style={{ height: LAYER_HEIGHTS_EARTH[i], willChange: 'transform' }}
+                style={{
+                  height: LAYER_HEIGHTS_EARTH[i],
+                  willChange: "transform",
+                }}
               >
-                <svg viewBox="0 0 1440 600" preserveAspectRatio="none" style={{ display: 'block', width: '120%', marginLeft: '-10%' }}>
-                  <path fill={SCENE_CFG.earth[isDark ? 'dark' : 'light'].c[i]} d={d} />
+                <svg
+                  viewBox="0 0 1440 600"
+                  preserveAspectRatio="none"
+                  style={{
+                    display: "block",
+                    width: "120%",
+                    marginLeft: "-10%",
+                  }}
+                >
+                  <path
+                    fill={SCENE_CFG.earth[isDark ? "dark" : "light"].c[i]}
+                    d={d}
+                  />
                 </svg>
               </div>
             ))}
           </div>
 
           {/* Biology mountains */}
-          <div className="absolute inset-0" style={{ opacity: sceneKey === 'biology' ? 1 : 0, transition: 'opacity 1s ease' }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              opacity: sceneKey === "biology" ? 1 : 0,
+              transition: "opacity 1s ease",
+            }}
+          >
             {BIO_PATHS.map((d, i) => (
               <div
                 key={i}
                 className="sq-parallax-layer absolute inset-x-0 bottom-0"
-                style={{ height: LAYER_HEIGHTS_BIO[i], willChange: 'transform' }}
+                style={{
+                  height: LAYER_HEIGHTS_BIO[i],
+                  willChange: "transform",
+                }}
               >
-                <svg viewBox="0 0 1440 600" preserveAspectRatio="none" style={{ display: 'block', width: '120%', marginLeft: '-10%' }}>
-                  <path fill={SCENE_CFG.biology[isDark ? 'dark' : 'light'].c[i]} d={d} />
+                <svg
+                  viewBox="0 0 1440 600"
+                  preserveAspectRatio="none"
+                  style={{
+                    display: "block",
+                    width: "120%",
+                    marginLeft: "-10%",
+                  }}
+                >
+                  <path
+                    fill={SCENE_CFG.biology[isDark ? "dark" : "light"].c[i]}
+                    d={d}
+                  />
                 </svg>
               </div>
             ))}
           </div>
 
           {/* Physics atoms */}
-          <div className="absolute inset-0 overflow-hidden" style={{ opacity: sceneKey === 'physics' ? 1 : 0, transition: 'opacity 1s ease' }}>
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              opacity: sceneKey === "physics" ? 1 : 0,
+              transition: "opacity 1s ease",
+            }}
+          >
             {physParticles.map((p, i) => (
               <span
                 key={i}
                 className="absolute rounded-full"
                 style={{
-                  width: 5, height: 5,
-                  left: p.l, top: p.t,
-                  background: isDark ? '#fde047' : '#7c3aed',
-                  boxShadow: `0 0 8px 1px ${isDark ? 'rgba(253,224,71,0.4)' : 'rgba(124,58,237,0.4)'}`,
+                  width: 5,
+                  height: 5,
+                  left: p.l,
+                  top: p.t,
+                  background: isDark ? "#fde047" : "#7c3aed",
+                  boxShadow: `0 0 8px 1px ${isDark ? "rgba(253,224,71,0.4)" : "rgba(124,58,237,0.4)"}`,
                   opacity: p.op,
                   animation: `sq-ptFloat ${p.dur}s ease-in-out ${p.delay}s infinite`,
                 }}
               />
             ))}
             {PHYS_ATOMS.map((atom, ai) => {
-              const rings = isDark ? SCENE_CFG.physics.dark.rings : SCENE_CFG.physics.light.rings;
+              const rings = isDark
+                ? SCENE_CFG.physics.dark.rings
+                : SCENE_CFG.physics.light.rings;
               return (
-                <div key={ai} className="absolute rounded-full" style={{ ...atom.style }}>
+                <div
+                  key={ai}
+                  className="absolute rounded-full"
+                  style={{ ...atom.style }}
+                >
                   {rings.map((rc, ri) => (
-                    <span key={ri} className="absolute inset-0 rounded-full" style={{ border: `2px solid ${rc}`, opacity: 0.55, transform: `rotate(${ri * 60}deg)` }} />
+                    <span
+                      key={ri}
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        border: `2px solid ${rc}`,
+                        opacity: 0.55,
+                        transform: `rotate(${ri * 60}deg)`,
+                      }}
+                    />
                   ))}
                   <span
                     className="absolute rounded-full"
-                    style={{ width: 14, height: 14, left: '50%', top: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle at 30% 30%, #fff7c4, #facc15 65%)', boxShadow: '0 0 30px 8px rgba(253,224,71,0.4)' }}
+                    style={{
+                      width: 14,
+                      height: 14,
+                      left: "50%",
+                      top: "50%",
+                      transform: "translate(-50%,-50%)",
+                      background:
+                        "radial-gradient(circle at 30% 30%, #fff7c4, #facc15 65%)",
+                      boxShadow: "0 0 30px 8px rgba(253,224,71,0.4)",
+                    }}
                   />
                   {atom.electrons.map((e, ei) => (
                     <span
                       key={ei}
                       className="absolute rounded-full"
-                      style={{ width: 14, height: 14, top: '50%', left: '50%', marginTop: -7, marginLeft: -7, background: `radial-gradient(circle at 30% 30%, #fff, ${isDark ? '#a8d2f7' : '#8a6dde'})`, boxShadow: '0 0 14px 2px rgba(167,139,250,0.5)', animation: e.anim }}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        top: "50%",
+                        left: "50%",
+                        marginTop: -7,
+                        marginLeft: -7,
+                        background: `radial-gradient(circle at 30% 30%, #fff, ${isDark ? "#a8d2f7" : "#8a6dde"})`,
+                        boxShadow: "0 0 14px 2px rgba(167,139,250,0.5)",
+                        animation: e.anim,
+                      }}
                     />
                   ))}
                 </div>
