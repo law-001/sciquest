@@ -783,7 +783,7 @@ export function LandingPage({
             className="max-w-lg mx-auto"
             style={{ fontSize: 'clamp(15px,1.4vw,18px)', color: isDark ? '#b8b4ad' : '#57534e', lineHeight: 1.55 }}
           >
-            Three big subjects, one playful place to explore them.
+            Three big subjects, one playful place to explore them hellow orld.
           </p>
         </div>
 
