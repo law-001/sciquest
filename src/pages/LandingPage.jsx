@@ -925,7 +925,8 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
               lineHeight: 1.55,
             }}
           >
-            Three big subjects, one playful place to explore them hello world.
+            Three big subjects, one playful place to explore them hello world
+            hello world.
           </p>
         </div>
 
