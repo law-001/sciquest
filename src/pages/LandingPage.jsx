@@ -18,8 +18,59 @@ import {
   Star,
 } from "lucide-react";
 import Button from "../components/Button";
+import { useTheme } from "../context/ThemeContext";
 import mclassroom from "../assets/modernclassroom.jpg";
 import labBg from "../assets/classroom.webp";
+
+/* ─── Hero scene colour tokens ─────────────────────────────── */
+const SCENE_CFG = {
+  earth: {
+    light: { top:'#fff4e8', bot:'#ffe7d3', c:['#ffe2cc','#fbb98a','#fb923c','#ef6f3a','#d94f2a'] },
+    dark:  { top:'#0d1830', bot:'#142142', c:['#2b5fbe','#2a78d6','#4a98e8','#79b6f0','#a8d2f7'] },
+  },
+  biology: {
+    light: { top:'#e8f7e6', bot:'#cdebc7', c:['#cce8b7','#94c97a','#5fa752','#3a7c3a','#1e5631'] },
+    dark:  { top:'#0b1a14', bot:'#0f2620', c:['#1a3a2a','#22513a','#306d4d','#4a8e6a','#7ab98e'] },
+  },
+  physics: {
+    light: { top:'#f2eefb', bot:'#e3dbf6', rings:['#b39ddb','#7e57c2','#512da8'] },
+    dark:  { top:'#0a0822', bot:'#120b35', rings:['#2f2266','#3f2d85','#5b41b4'] },
+  },
+};
+
+const EARTH_PATHS = [
+  'M0,180 C80,110 180,230 260,170 C360,100 440,240 540,180 C660,110 740,240 860,180 C980,130 1080,230 1180,170 C1280,110 1380,220 1440,180 L1440,600 L0,600 Z',
+  'M0,280 C100,200 200,310 320,250 C460,190 540,310 660,260 C800,210 900,320 1040,270 C1180,230 1280,310 1440,260 L1440,600 L0,600 Z',
+  'M0,370 C140,300 240,390 380,340 C520,280 620,390 760,340 C900,300 1020,395 1180,345 C1320,310 1400,390 1440,360 L1440,600 L0,600 Z',
+  'M0,450 C140,400 280,470 440,435 C580,410 720,475 860,440 C1020,410 1180,475 1440,435 L1440,600 L0,600 Z',
+  'M0,520 C160,490 320,535 500,515 C660,500 820,540 980,515 C1140,495 1280,535 1440,510 L1440,600 L0,600 Z',
+];
+const BIO_PATHS = [
+  'M0,200 L120,40 L240,180 L380,30 L520,170 L660,20 L820,160 L980,40 L1140,180 L1280,50 L1440,170 L1440,600 L0,600 Z',
+  'M0,300 L100,110 L220,280 L340,90 L480,260 L620,70 L760,260 L900,90 L1060,250 L1200,100 L1340,260 L1440,200 L1440,600 L0,600 Z',
+  'M0,400 L160,200 L300,380 L460,220 L620,380 L780,210 L940,380 L1100,230 L1280,380 L1440,300 L1440,600 L0,600 Z',
+  'M0,480 L40,450 L70,475 L100,440 L130,475 L170,445 L210,478 L260,448 L310,476 L360,442 L420,478 L470,448 L530,478 L590,446 L650,478 L710,446 L770,478 L830,446 L890,478 L950,442 L1010,478 L1070,446 L1130,478 L1190,448 L1260,478 L1330,446 L1400,478 L1440,460 L1440,600 L0,600 Z',
+  'M0,540 C200,510 360,550 540,535 C720,520 880,555 1060,535 C1240,520 1360,545 1440,530 L1440,600 L0,600 Z',
+];
+const LAYER_HEIGHTS_EARTH = ['82%','68%','52%','34%','20%'];
+const LAYER_HEIGHTS_BIO   = ['92%','78%','60%','32%','20%'];
+
+const HERO_ORB_CFG = [
+  { scene:'biology',  label:'Biology',      sub:'Cells · Plants · People', IconComp:Dna,   lightColor:'#2f7a3a', darkColor:'#9bd9a4', lightActiveBg:'linear-gradient(160deg,#e8f7e6,#cdebc7)', darkActiveBg:'linear-gradient(160deg,#1e3a2a,#0f2620)', borderColor:'#5fa752', shadow:'rgba(47,122,58,0.45)' },
+  { scene:'earth',    label:'Earth Science',sub:'Weather · Rocks · Sky',   IconComp:Globe2, lightColor:'#ea580c', darkColor:'#fdba74', lightActiveBg:'linear-gradient(160deg,#fff4e8,#ffe7d3)', darkActiveBg:'linear-gradient(160deg,#1c2a3e,#142142)', borderColor:'#f97316', shadow:'rgba(234,88,12,0.35)' },
+  { scene:'physics',  label:'Physics',      sub:'Forces · Energy · Motion',IconComp:Atom,  lightColor:'#5b3fbf', darkColor:'#c4b5fd', lightActiveBg:'linear-gradient(160deg,#f2eefb,#e3dbf6)', darkActiveBg:'linear-gradient(160deg,#1a1340,#120b35)', borderColor:'#7c3aed', shadow:'rgba(124,58,237,0.35)' },
+];
+
+const PHYS_ATOMS = [
+  { style:{ width:'62vmin',height:'62vmin',bottom:'-10vmin',right:'-12vmin' },
+    electrons:[{anim:'sq-ao1 7s linear infinite'},{anim:'sq-ao2 9s linear infinite'},{anim:'sq-ao3 11s linear infinite'}] },
+  { style:{ width:'30vmin',height:'30vmin',bottom:'6vmin',left:'-4vmin',opacity:.85 },
+    electrons:[{anim:'sq-bo1 5s linear infinite'},{anim:'sq-bo2 7s linear infinite'}] },
+  { style:{ width:'36vmin',height:'36vmin',top:'-8vmin',right:'6vmin',opacity:.75 },
+    electrons:[{anim:'sq-co1 8s linear infinite'},{anim:'sq-co2 6s linear infinite'}] },
+  { style:{ width:'22vmin',height:'22vmin',top:'-2vmin',left:'8vmin',opacity:.8 },
+    electrons:[{anim:'sq-do1 5.5s linear infinite'},{anim:'sq-do2 8s linear infinite'}] },
+];
 
 /* ─────────────────────────────────────────────────────────── */
 /*  Subject themes                                              */
@@ -455,6 +506,9 @@ export function LandingPage({
   const [teaserKey, setTeaserKey] = useState(0);
   const [xpWidth, setXpWidth] = useState(0);
 
+  const { isDark } = useTheme();
+  const heroRef = useRef(null);
+
   const [statsRef, statsTriggered] = useScrollTrigger(0.3);
   const [gamifRef, gamifTriggered] = useScrollTrigger(0.2);
   const [featurePanelsRef, featurePanelsTriggered] = useScrollTrigger(0.1);
@@ -471,6 +525,27 @@ export function LandingPage({
   const displayedSubjectIdx =
     hoveredSubjectIdx !== null ? hoveredSubjectIdx : activeSubjectIdx;
   const subject = SUBJECTS[displayedSubjectIdx];
+
+  const sceneKey = subject.key;
+  const sceneCfg = (SCENE_CFG[sceneKey] ?? SCENE_CFG.earth)[isDark ? 'dark' : 'light'];
+
+  const heroStars = useMemo(() =>
+    Array.from({ length: 60 }, () => ({
+      l: Math.random() * 100 + '%',
+      t: Math.random() * 60 + '%',
+      delay: +(Math.random() * 3).toFixed(2),
+      dur: +(2 + Math.random() * 2).toFixed(1),
+      scale: +(0.5 + Math.random() * 1.2).toFixed(2),
+    })), []);
+
+  const physParticles = useMemo(() =>
+    Array.from({ length: 30 }, () => ({
+      l: Math.random() * 100 + '%',
+      t: Math.random() * 100 + '%',
+      delay: +(Math.random() * 8).toFixed(2),
+      dur: +(5 + Math.random() * 6).toFixed(1),
+      op: +(0.3 + Math.random() * 0.5).toFixed(2),
+    })), []);
 
   /* XP bar animation */
   useEffect(() => {
@@ -526,6 +601,41 @@ export function LandingPage({
     };
   }, [hoveredSubjectIdx, prefersReducedMotion]);
 
+  /* Hero mouse parallax */
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+    let tX = 0, tY = 0, cX = 0, cY = 0, raf;
+    const t0 = performance.now();
+    const depths = [6, 12, 20, 30, 44];
+    const onMove = (e) => {
+      const r = hero.getBoundingClientRect();
+      tX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      tY = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    };
+    const onLeave = () => { tX = 0; tY = 0; };
+    const tick = () => {
+      const t = (performance.now() - t0) / 1000;
+      cX += (tX - cX) * 0.06;
+      cY += (tY - cY) * 0.06;
+      hero.querySelectorAll('.sq-parallax-layer').forEach((el, i) => {
+        const d = depths[i % depths.length];
+        const bob = Math.sin(t * 0.55 + i * 0.7) * (2 + i * 1.1);
+        const drift = Math.sin(t * 0.22 + i * 0.9) * (3 + i * 1.2);
+        el.style.transform = `translate3d(${cX * d + drift}px,${cY * d * 0.4 + bob}px,0)`;
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    hero.addEventListener('mousemove', onMove);
+    hero.addEventListener('mouseleave', onLeave);
+    raf = requestAnimationFrame(tick);
+    return () => {
+      hero.removeEventListener('mousemove', onMove);
+      hero.removeEventListener('mouseleave', onLeave);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   const handleOrbEnter = useCallback((idx) => setHoveredSubjectIdx(idx), []);
   const handleOrbLeave = useCallback(() => setHoveredSubjectIdx(null), []);
   const handleOrbClick = useCallback(
@@ -567,167 +677,286 @@ export function LandingPage({
       {/* ════════════════════════════════════════════════
           HERO
       ════════════════════════════════════════════════ */}
-      <section className="sticky top-0 min-h-screen overflow-hidden">
+      <section
+        ref={heroRef}
+        className="relative min-h-screen overflow-hidden"
+        style={{
+          paddingTop: 80,
+          background: `linear-gradient(180deg, ${sceneCfg.top} 0%, ${sceneCfg.bot} 100%)`,
+          transition: 'background 1.2s ease',
+        }}
+      >
+        {/* Stars — visible in dark mode */}
         <div
-          className="absolute inset-x-0 top-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
+          style={{ opacity: isDark ? 1 : 0, transition: 'opacity 1s ease' }}
+          aria-hidden="true"
+        >
+          {heroStars.map((s, i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-white"
+              style={{
+                width: 3, height: 3,
+                left: s.l, top: s.t,
+                opacity: 0.6,
+                animation: `sq-twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+                transform: `scale(${s.scale})`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Celestial body (sun / crescent moon) */}
+        <div
+          className="absolute pointer-events-none"
+          aria-hidden="true"
           style={{
-            height: "calc(100% + 240px)",
-            transform: `translateY(-${imgParallax}px)`,
-            opacity: imgOpacity,
-            willChange: "transform, opacity",
+            top: isDark ? 70 : 110,
+            right: isDark ? '14%' : '8%',
+            width: 130, height: 130,
+            zIndex: 6,
+            opacity: sceneKey === 'physics' ? 0 : 1,
+            transition: 'top 1s ease, right 1s ease, opacity 1s ease',
           }}
         >
-          <img
-            src={labBg}
-            alt="Science laboratory"
-            className="w-full h-full object-cover object-center"
+          <span
+            className="absolute inset-0 rounded-full"
+            style={{ border: '1px dashed rgba(250,204,21,0.45)', animation: 'sq-spin 22s linear infinite' }}
+          />
+          <span
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle at 60% 40%, #fff8c4, #fde047 70%)'
+                : 'radial-gradient(circle at 35% 35%, #fff4a3, #facc15 65%)',
+              boxShadow: '0 0 90px 30px rgba(253,224,71,0.5), 0 0 30px 8px rgba(253,224,71,0.5)',
+              clipPath: isDark ? 'circle(45% at 65% 50%)' : 'circle(50% at 50% 50%)',
+              transition: 'clip-path 1s ease, background 1s ease',
+            }}
           />
         </div>
 
-        <div className="absolute inset-0 bg-linear-to-b from-stone-900/60 via-stone-900/70 to-stone-900/92 pointer-events-none" />
-
-        <div className="absolute inset-0">
-          <ParticleField accentColor={subject.accent} active={heroOnScreen} />
-        </div>
-
-        <div
-          className="absolute inset-0 pointer-events-none transition-colors duration-700"
-          style={{
-            background: `radial-gradient(circle at 50% 40%, ${subject.accentSoft} 0%, transparent 55%)`,
-          }}
-        />
-
-        <div
-          className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 text-center pointer-events-none"
-          style={{
-            transform: `translateY(-${textParallax}px)`,
-            opacity: textOpacity,
-            willChange: "transform, opacity",
-          }}
-        >
-          {/* LIVE badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 animate-slide-up pointer-events-auto">
-            <Star className="w-5 h-5 text-accent-400 fill-accent-400" />
-            <span className="text-sm font-bold text-white font-heading">
-              Grade 7 Science Curriculum
-            </span>
+        {/* Hero text */}
+        <div className="relative max-w-4xl mx-auto px-6 pt-14 pb-6 text-center" style={{ zIndex: 25 }}>
+          <div
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[11px] font-bold tracking-widest uppercase mb-5"
+            style={{
+              background: isDark ? 'rgba(26,36,64,0.85)' : 'rgba(255,255,255,0.9)',
+              borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(28,25,23,0.08)',
+              color: isDark ? '#b8b4ad' : '#57534e',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: '#f97316', animation: 'sq-pulse 2s ease-in-out infinite' }}
+            />
+            Grade 7 · Interactive Science
           </div>
 
-          {/* Headline */}
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-3 tracking-tighter animate-slide-up max-w-4xl leading-none"
-            style={{ animationDelay: "0.1s" }}
+            className="font-black leading-none tracking-tighter mb-3.5 font-heading"
+            style={{
+              fontSize: 'clamp(42px,7vw,88px)',
+              letterSpacing: '-0.03em',
+              color: isDark ? '#f5f5f4' : '#292524',
+            }}
           >
-            Learn{" "}
+            Pick a world. Start an{' '}
             <span
-              key={subject.key}
-              className="inline-block animate-[fadeSwap_0.6s_ease-out]"
-              style={{ color: subject.accent }}
+              style={{
+                color: sceneKey === 'biology'
+                  ? (isDark ? '#9bd9a4' : '#2f7a3a')
+                  : sceneKey === 'physics'
+                  ? (isDark ? '#c4b5fd' : '#5b3fbf')
+                  : (isDark ? '#fdba74' : '#ea580c'),
+                transition: 'color 1s ease',
+              }}
             >
-              {subject.label}
+              adventure
             </span>
-            <br />
-            the Fun Way.
+            .
           </h1>
 
           <p
-            key={`tag-${subject.key}`}
-            className="text-base sm:text-lg text-stone-200 mb-8 font-medium leading-relaxed max-w-xl animate-[fadeSwap_0.5s_ease-out]"
+            className="max-w-lg mx-auto"
+            style={{ fontSize: 'clamp(15px,1.4vw,18px)', color: isDark ? '#b8b4ad' : '#57534e', lineHeight: 1.55 }}
           >
-            {subject.tagline}. Grade 7 Science, built like a game. Earn XP,
-            unlock badges, top the leaderboard.
+            Three big subjects, one playful place to explore them.
           </p>
+        </div>
 
-          {/* Subject orbs */}
-          <div
-            className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 pointer-events-auto"
-            role="tablist"
-            aria-label="Choose your subject"
-          >
-            {SUBJECTS.map((s, idx) => {
-              const Icon = s.icon;
-              const isActive = displayedSubjectIdx === idx;
-              return (
-                <button
-                  key={s.key}
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-label={`Explore ${s.label}`}
-                  onMouseEnter={() => handleOrbEnter(idx)}
-                  onMouseLeave={handleOrbLeave}
-                  onFocus={() => handleOrbEnter(idx)}
-                  onBlur={handleOrbLeave}
-                  onClick={() => handleOrbClick(idx)}
-                  className={`group relative flex flex-col items-center gap-2.5 transition-transform duration-500 ${
-                    isActive ? "scale-110" : "scale-100 hover:scale-105"
-                  }`}
+        {/* Orbs */}
+        <div
+          className="relative flex flex-wrap justify-center items-end gap-6 sm:gap-10 px-6"
+          style={{ zIndex: 25, maxWidth: 1100, margin: '0 auto', paddingBottom: 40 }}
+        >
+          {HERO_ORB_CFG.map((orb) => {
+            const isActive = sceneKey === orb.scene;
+            const orbIdx = SUBJECTS.findIndex((s) => s.key === orb.scene);
+            return (
+              <button
+                key={orb.scene}
+                onClick={() => { setActiveSubjectIdx(orbIdx); setHoveredSubjectIdx(null); }}
+                onMouseEnter={() => handleOrbEnter(orbIdx)}
+                onMouseLeave={handleOrbLeave}
+                className="relative flex flex-col items-center mb-10 sm:mb-16"
+                aria-label={orb.label}
+              >
+                <span
+                  className="relative flex items-center justify-center rounded-full border"
+                  style={{
+                    width: 'clamp(78px,9vw,110px)',
+                    height: 'clamp(78px,9vw,110px)',
+                    background: isActive ? (isDark ? orb.darkActiveBg : orb.lightActiveBg) : (isDark ? '#1a2440' : '#ffffff'),
+                    borderColor: isActive ? orb.borderColor : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(28,25,23,0.08)'),
+                    boxShadow: isActive ? `0 30px 60px -22px ${orb.shadow}` : '0 14px 30px -16px rgba(28,25,23,0.25)',
+                    transform: isActive ? 'translateY(-10px) scale(1.04)' : 'translateY(0) scale(1)',
+                    transition: 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, background 0.6s ease, border-color 0.4s ease',
+                  }}
                 >
                   <span
-                    className={`absolute inset-0 rounded-full blur-2xl transition-opacity duration-500 ${isActive ? "opacity-80" : "opacity-25"}`}
-                    style={{ backgroundColor: s.accent }}
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center border-2 backdrop-blur-md transition-all duration-500"
+                    className="absolute inset-0 rounded-full pointer-events-none"
                     style={{
-                      borderColor: isActive
-                        ? s.accent
-                        : "rgba(255,255,255,0.25)",
-                      background: isActive
-                        ? `radial-gradient(circle at 30% 30%, ${s.accentSoft}, rgba(15,23,42,0.6))`
-                        : "rgba(15,23,42,0.45)",
-                      boxShadow: isActive
-                        ? `0 0 40px ${s.accent}55, inset 0 0 24px ${s.accent}33`
-                        : "none",
+                      border: isActive ? `2px solid ${orb.borderColor}` : '1px dashed rgba(0,0,0,0.10)',
+                      animation: 'sq-spin 28s linear infinite',
+                      opacity: isActive ? 1 : 0.55,
                     }}
-                  >
-                    <span
-                      className={`absolute inset-1 rounded-full border border-dashed transition-opacity duration-500 ${isActive ? "opacity-60" : "opacity-0"}`}
-                      style={{
-                        borderColor: s.accent,
-                        animation: isActive
-                          ? "spin 6s linear infinite"
-                          : "none",
-                      }}
-                      aria-hidden="true"
-                    />
-                    <Icon
-                      className="w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-500"
-                      style={{
-                        color: isActive ? s.accent : "rgba(255,255,255,0.85)",
-                      }}
-                    />
-                  </span>
+                  />
+                  <orb.IconComp
+                    strokeWidth={1.6}
+                    style={{
+                      width: '50%', height: '50%',
+                      color: isDark ? orb.darkColor : orb.lightColor,
+                      transition: 'color 0.4s ease',
+                    }}
+                  />
+                </span>
+                {/* Label */}
+                <span
+                  className="absolute font-black text-sm sm:text-base whitespace-nowrap font-heading"
+                  style={{ bottom: -30, left: '50%', transform: 'translateX(-50%)', color: isDark ? '#f5f5f4' : '#292524' }}
+                >
+                  {orb.label}
+                </span>
+                {/* Sub-label */}
+                <span
+                  className="absolute text-[11px] font-medium uppercase tracking-widest whitespace-nowrap"
+                  style={{
+                    bottom: -50, left: '50%', transform: 'translateX(-50%)',
+                    color: isDark ? '#b8b4ad' : '#57534e',
+                    opacity: isActive ? 1 : 0,
+                    transition: 'opacity 0.3s ease',
+                  }}
+                >
+                  {orb.sub}
+                </span>
+              </button>
+            );
+          })}
+          <div className="w-full flex justify-center pt-4">
+            <Button
+              size="md"
+              onClick={() => onStartLearning?.(sceneKey)}
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              Enter {HERO_ORB_CFG.find((o) => o.scene === sceneKey)?.label ?? 'Science'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Scene layers */}
+        <div
+          className="absolute inset-x-0 bottom-0 pointer-events-none"
+          style={{ height: '62vh', minHeight: 420, zIndex: 10 }}
+          aria-hidden="true"
+        >
+          {/* Earth clouds */}
+          <div className="absolute inset-0" style={{ opacity: sceneKey === 'earth' ? 1 : 0, transition: 'opacity 1s ease' }}>
+            {EARTH_PATHS.map((d, i) => (
+              <div
+                key={i}
+                className="sq-parallax-layer absolute inset-x-0 bottom-0"
+                style={{ height: LAYER_HEIGHTS_EARTH[i], willChange: 'transform' }}
+              >
+                <svg viewBox="0 0 1440 600" preserveAspectRatio="none" style={{ display: 'block', width: '120%', marginLeft: '-10%' }}>
+                  <path fill={SCENE_CFG.earth[isDark ? 'dark' : 'light'].c[i]} d={d} />
+                </svg>
+              </div>
+            ))}
+          </div>
+
+          {/* Biology mountains */}
+          <div className="absolute inset-0" style={{ opacity: sceneKey === 'biology' ? 1 : 0, transition: 'opacity 1s ease' }}>
+            {BIO_PATHS.map((d, i) => (
+              <div
+                key={i}
+                className="sq-parallax-layer absolute inset-x-0 bottom-0"
+                style={{ height: LAYER_HEIGHTS_BIO[i], willChange: 'transform' }}
+              >
+                <svg viewBox="0 0 1440 600" preserveAspectRatio="none" style={{ display: 'block', width: '120%', marginLeft: '-10%' }}>
+                  <path fill={SCENE_CFG.biology[isDark ? 'dark' : 'light'].c[i]} d={d} />
+                </svg>
+              </div>
+            ))}
+          </div>
+
+          {/* Physics atoms */}
+          <div className="absolute inset-0 overflow-hidden" style={{ opacity: sceneKey === 'physics' ? 1 : 0, transition: 'opacity 1s ease' }}>
+            {physParticles.map((p, i) => (
+              <span
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: 5, height: 5,
+                  left: p.l, top: p.t,
+                  background: isDark ? '#fde047' : '#7c3aed',
+                  boxShadow: `0 0 8px 1px ${isDark ? 'rgba(253,224,71,0.4)' : 'rgba(124,58,237,0.4)'}`,
+                  opacity: p.op,
+                  animation: `sq-ptFloat ${p.dur}s ease-in-out ${p.delay}s infinite`,
+                }}
+              />
+            ))}
+            {PHYS_ATOMS.map((atom, ai) => {
+              const rings = isDark ? SCENE_CFG.physics.dark.rings : SCENE_CFG.physics.light.rings;
+              return (
+                <div key={ai} className="absolute rounded-full" style={{ ...atom.style }}>
+                  {rings.map((rc, ri) => (
+                    <span key={ri} className="absolute inset-0 rounded-full" style={{ border: `2px solid ${rc}`, opacity: 0.55, transform: `rotate(${ri * 60}deg)` }} />
+                  ))}
                   <span
-                    className={`relative text-xs sm:text-sm font-bold tracking-wide font-heading transition-colors duration-500 ${
-                      isActive ? "text-white" : "text-white/70"
-                    }`}
-                  >
-                    {s.label}
-                  </span>
-                </button>
+                    className="absolute rounded-full"
+                    style={{ width: 14, height: 14, left: '50%', top: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle at 30% 30%, #fff7c4, #facc15 65%)', boxShadow: '0 0 30px 8px rgba(253,224,71,0.4)' }}
+                  />
+                  {atom.electrons.map((e, ei) => (
+                    <span
+                      key={ei}
+                      className="absolute rounded-full"
+                      style={{ width: 14, height: 14, top: '50%', left: '50%', marginTop: -7, marginLeft: -7, background: `radial-gradient(circle at 30% 30%, #fff, ${isDark ? '#a8d2f7' : '#8a6dde'})`, boxShadow: '0 0 14px 2px rgba(167,139,250,0.5)', animation: e.anim }}
+                    />
+                  ))}
+                </div>
               );
             })}
           </div>
-
-          <div
-            className="flex flex-col sm:flex-row gap-3 animate-slide-up pointer-events-auto"
-            style={{ animationDelay: "0.3s" }}
-          >
-            <Button
-              size="md"
-              onClick={() => onStartLearning?.(subject.key)}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Start Learning {subject.label}
-            </Button>
-          </div>
-
-          <p className="mt-6 text-xs text-white/40 font-medium tracking-wide hidden sm:block">
-            Move your cursor through the particles · Tap an orb to switch
-            subject
-          </p>
         </div>
+
+        <style>{`
+          @keyframes sq-spin    { to { transform: rotate(360deg); } }
+          @keyframes sq-pulse   { 0%,100%{opacity:.5;transform:scale(.85)} 50%{opacity:1;transform:scale(1.15)} }
+          @keyframes sq-twinkle { 0%,100%{opacity:.3;transform:scale(.6)} 50%{opacity:1;transform:scale(1)} }
+          @keyframes sq-ptFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-30px)} }
+          @keyframes sq-ao1 { from{transform:rotate(0) translateX(31vmin) rotate(0)} to{transform:rotate(360deg) translateX(31vmin) rotate(-360deg)} }
+          @keyframes sq-ao2 { from{transform:rotate(60deg) translateX(31vmin) rotate(-60deg)} to{transform:rotate(420deg) translateX(31vmin) rotate(-420deg)} }
+          @keyframes sq-ao3 { from{transform:rotate(-60deg) translateX(31vmin) rotate(60deg)} to{transform:rotate(300deg) translateX(31vmin) rotate(-300deg)} }
+          @keyframes sq-bo1 { from{transform:rotate(0) translateX(15vmin) rotate(0)} to{transform:rotate(360deg) translateX(15vmin) rotate(-360deg)} }
+          @keyframes sq-bo2 { from{transform:rotate(60deg) translateX(15vmin) rotate(-60deg)} to{transform:rotate(420deg) translateX(15vmin) rotate(-420deg)} }
+          @keyframes sq-co1 { from{transform:rotate(30deg) translateX(18vmin) rotate(-30deg)} to{transform:rotate(390deg) translateX(18vmin) rotate(-390deg)} }
+          @keyframes sq-co2 { from{transform:rotate(-30deg) translateX(18vmin) rotate(30deg)} to{transform:rotate(330deg) translateX(18vmin) rotate(-330deg)} }
+          @keyframes sq-do1 { from{transform:rotate(15deg) translateX(11vmin) rotate(-15deg)} to{transform:rotate(375deg) translateX(11vmin) rotate(-375deg)} }
+          @keyframes sq-do2 { from{transform:rotate(-45deg) translateX(11vmin) rotate(45deg)} to{transform:rotate(315deg) translateX(11vmin) rotate(-315deg)} }
+        `}</style>
       </section>
 
       {/* ════════════════════════════════════════════════

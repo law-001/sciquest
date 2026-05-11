@@ -88,12 +88,12 @@ export function Navbar({
           >
             <Logo
               className={`animate-[spin_5s_linear_infinite] transition-colors duration-500 ${
-                hero ? "text-white" : "text-orange-500"
+                hero ? (isDark ? "text-white" : "text-orange-500") : "text-orange-500"
               }`}
             />
             <span
               className={`font-heading font-black text-2xl tracking-tight transition-colors duration-500 ${
-                hero ? "text-white" : "text-stone-900 dark:text-white"
+                hero ? (isDark ? "text-white" : "text-stone-900") : "text-stone-900 dark:text-white"
               }`}
             >
               SciQuest
@@ -108,7 +108,9 @@ export function Navbar({
                 onClick={() => handleNavClick(item.view)}
                 className={`text-sm font-bold font-heading transition-colors duration-500 ${
                   hero
-                    ? "text-white/90 hover:text-primary-400"
+                    ? isDark
+                      ? "text-white/90 hover:text-primary-400"
+                      : "text-stone-900 hover:text-primary-600"
                     : currentView === item.view
                       ? "text-primary-600 dark:text-primary-400"
                       : "text-stone-700 dark:text-stone-300 hover:text-primary-600 dark:hover:text-primary-400"
@@ -126,7 +128,9 @@ export function Navbar({
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               className={`p-2 rounded-xl transition-colors duration-500 ${
                 hero
-                  ? "text-white/80 hover:bg-white/10"
+                  ? isDark
+                    ? "text-white/80 hover:bg-white/10"
+                    : "text-stone-700 hover:bg-stone-100"
                   : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
               }`}
             >
@@ -141,7 +145,9 @@ export function Navbar({
                   aria-expanded={isProfileOpen}
                   className={`flex items-center gap-1 p-2 rounded-xl transition-colors duration-500 ${
                     hero
-                      ? "text-white/80 hover:bg-white/10"
+                      ? isDark
+                        ? "text-white/80 hover:bg-white/10"
+                        : "text-stone-700 hover:bg-stone-100"
                       : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
                   }`}
                 >
@@ -185,7 +191,9 @@ export function Navbar({
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               className={`p-2 rounded-xl transition-colors duration-500 ${
                 hero
-                  ? "text-white/80 hover:bg-white/10"
+                  ? isDark
+                    ? "text-white/80 hover:bg-white/10"
+                    : "text-stone-700 hover:bg-stone-100"
                   : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
               }`}
             >
@@ -198,12 +206,12 @@ export function Navbar({
             >
               {isMenuOpen ? (
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                  stroke={hero ? "white" : isDark ? "#d6d3d1" : "#57534E"}>
+                  stroke={hero ? (isDark ? "white" : "#1c1917") : isDark ? "#d6d3d1" : "#57534E"}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6h12v12" />
                 </svg>
               ) : (
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                  stroke={hero ? "white" : isDark ? "#d6d3d1" : "#57534E"}>
+                  stroke={hero ? (isDark ? "white" : "#1c1917") : isDark ? "#d6d3d1" : "#57534E"}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
@@ -225,7 +233,9 @@ export function Navbar({
                   onClick={() => handleNavClick(item.view)}
                   className={`text-left transition-colors duration-500 ${
                     hero
-                      ? "text-white/80 dark:text-stone-300 hover:text-white dark:hover:text-white"
+                      ? isDark
+                        ? "text-white/80 hover:text-white"
+                        : "text-stone-900 hover:text-stone-700"
                       : currentView === item.view
                         ? "text-primary-600 dark:text-primary-400 font-bold"
                         : "text-zinc-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white"
