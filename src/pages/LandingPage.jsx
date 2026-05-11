@@ -76,7 +76,7 @@ const BIO_PATHS = [
   "M0,480 L40,450 L70,475 L100,440 L130,475 L170,445 L210,478 L260,448 L310,476 L360,442 L420,478 L470,448 L530,478 L590,446 L650,478 L710,446 L770,478 L830,446 L890,478 L950,442 L1010,478 L1070,446 L1130,478 L1190,448 L1260,478 L1330,446 L1400,478 L1440,460 L1440,600 L0,600 Z",
   "M0,540 C200,510 360,550 540,535 C720,520 880,555 1060,535 C1240,520 1360,545 1440,530 L1440,600 L0,600 Z",
 ];
-const LAYER_HEIGHTS_EARTH = ["97%", "85%", "71%", "55%", "41"];
+const LAYER_HEIGHTS_EARTH = ["94%", "82%", "68%", "52%", "38"];
 const LAYER_HEIGHTS_BIO = ["92%", "78%", "60%", "32%", "20%"];
 
 const HERO_ORB_CFG = [
@@ -716,7 +716,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
       cY = 0,
       raf;
     const t0 = performance.now();
-    const depths = [18, 36, 58, 85, 120];
+    const depths = [6, 12, 20, 30, 44];
     const onMove = (e) => {
       const r = hero.getBoundingClientRect();
       tX = ((e.clientX - r.left) / r.width - 0.5) * 2;
@@ -732,8 +732,8 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
       cY += (tY - cY) * 0.06;
       hero.querySelectorAll(".sq-parallax-layer").forEach((el, i) => {
         const d = depths[i % depths.length];
-        const bob = Math.sin(t * 0.55 + i * 0.7) * (6 + i * 2.8);
-        const drift = Math.sin(t * 0.22 + i * 0.9) * (8 + i * 3.2);
+        const bob = Math.sin(t * 0.55 + i * 0.7) * (2 + i * 1.1);
+        const drift = Math.sin(t * 0.22 + i * 0.9) * (3 + i * 1.2);
         el.style.transform = `translate3d(${cX * d + drift}px,${cY * d * 0.4 + bob}px,0)`;
       });
       raf = requestAnimationFrame(tick);
