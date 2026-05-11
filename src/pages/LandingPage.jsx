@@ -948,7 +948,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
               lineHeight: 1.55,
             }}
           >
-            Three big dicks subjects, one playful place to explore them. 
+            Three big dicks dicks subjects, one playful place to explore them. 
           </p>
         </div>
 
