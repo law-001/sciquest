@@ -21,12 +21,10 @@ export function Navbar({
 
   useEffect(() => {
     if (!transparent) return;
-    const target = document.getElementById("feature-panels");
+    const target = document.getElementById("sq-hero");
     if (!target) return;
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsScrolled(entry.isIntersecting || entry.boundingClientRect.top < 0);
-      },
+      ([entry]) => setIsScrolled(!entry.isIntersecting),
       { threshold: 0 }
     );
     observer.observe(target);

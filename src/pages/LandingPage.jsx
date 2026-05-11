@@ -28,12 +28,12 @@ const SCENE_CFG = {
     light: {
       top: "#fff4e8",
       bot: "#ffe7d3",
-      c: ["#ffe2cc", "#fbb98a", "#fb923c", "#ef6f3a", "#d94f2a"],
+      c: ["#f5c898", "#f0a060", "#e87830", "#d45518", "#b83808"],
     },
     dark: {
       top: "#0d1830",
       bot: "#142142",
-      c: ["#2b5fbe", "#2a78d6", "#4a98e8", "#79b6f0", "#a8d2f7"],
+      c: ["#4070cc", "#5090e0", "#6ab0ee", "#8dc8f5", "#b8e0fb"],
     },
   },
   biology: {
@@ -52,12 +52,12 @@ const SCENE_CFG = {
     light: {
       top: "#f2eefb",
       bot: "#e3dbf6",
-      rings: ["#b39ddb", "#7e57c2", "#512da8"],
+      rings: ["#8b6ec8", "#5b35a8", "#3a1888"],
     },
     dark: {
       top: "#0a0822",
       bot: "#120b35",
-      rings: ["#2f2266", "#3f2d85", "#5b41b4"],
+      rings: ["#7858d4", "#a07ae8", "#c9b8fc"],
     },
   },
 };
@@ -76,7 +76,7 @@ const BIO_PATHS = [
   "M0,480 L40,450 L70,475 L100,440 L130,475 L170,445 L210,478 L260,448 L310,476 L360,442 L420,478 L470,448 L530,478 L590,446 L650,478 L710,446 L770,478 L830,446 L890,478 L950,442 L1010,478 L1070,446 L1130,478 L1190,448 L1260,478 L1330,446 L1400,478 L1440,460 L1440,600 L0,600 Z",
   "M0,540 C200,510 360,550 540,535 C720,520 880,555 1060,535 C1240,520 1360,545 1440,530 L1440,600 L0,600 Z",
 ];
-const LAYER_HEIGHTS_EARTH = ["82%", "68%", "52%", "34%", "20%"];
+const LAYER_HEIGHTS_EARTH = ["97%", "85%", "71%", "55%", "41"];
 const LAYER_HEIGHTS_BIO = ["92%", "78%", "60%", "32%", "20%"];
 
 const HERO_ORB_CFG = [
@@ -149,7 +149,7 @@ const PHYS_ATOMS = [
     style: {
       width: "36vmin",
       height: "36vmin",
-      top: "-8vmin",
+      top: "2vmin",
       right: "6vmin",
       opacity: 0.75,
     },
@@ -162,7 +162,7 @@ const PHYS_ATOMS = [
     style: {
       width: "22vmin",
       height: "22vmin",
-      top: "-2vmin",
+      top: "4vmin",
       left: "8vmin",
       opacity: 0.8,
     },
@@ -790,8 +790,9 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
           HERO
       ════════════════════════════════════════════════ */}
       <section
+        id="sq-hero"
         ref={heroRef}
-        className="relative min-h-screen overflow-hidden"
+        className="relative min-h-screen overflow-hidden flex flex-col justify-center"
         style={{
           paddingTop: 80,
           background: `linear-gradient(180deg, ${sceneCfg.top} 0%, ${sceneCfg.bot} 100%)`,
@@ -830,7 +831,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
             right: isDark ? "14%" : "8%",
             width: 130,
             height: 130,
-            zIndex: 6,
+            zIndex: 15,
             opacity: sceneKey === "physics" ? 0 : 1,
             transition: "top 1s ease, right 1s ease, opacity 1s ease",
           }}
@@ -860,7 +861,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
 
         {/* Hero text */}
         <div
-          className="relative max-w-4xl mx-auto px-6 pt-14 pb-6 text-center"
+          className="relative max-w-4xl mx-auto px-6 pb-6 text-center"
           style={{ zIndex: 25 }}
         >
           <div
@@ -925,7 +926,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
               lineHeight: 1.55,
             }}
           >
-            Three big subjects, one playful place to explore them
+            Three big subjects, one playful place to explore them.
           </p>
         </div>
 
@@ -936,7 +937,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
             zIndex: 25,
             maxWidth: 1100,
             margin: "0 auto",
-            paddingBottom: 40,
+            paddingBottom: 20,
           }}
         >
           {HERO_ORB_CFG.map((orb) => {
@@ -951,7 +952,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                 }}
                 onMouseEnter={() => handleOrbEnter(orbIdx)}
                 onMouseLeave={handleOrbLeave}
-                className="relative flex flex-col items-center mb-10 sm:mb-16"
+                className="relative flex flex-col items-center mb-8"
                 aria-label={orb.label}
               >
                 <span
@@ -1030,7 +1031,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
               </button>
             );
           })}
-          <div className="w-full flex justify-center pt-4">
+          <div className="w-full flex justify-center">
             <Button
               size="md"
               onClick={() => onStartLearning?.(sceneKey)}
@@ -1041,6 +1042,72 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                 "Science"}
             </Button>
           </div>
+        </div>
+
+        {/* Physics atoms — top of hero (rendered at hero level so top positions are relative to full hero) */}
+        <div
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          style={{
+            opacity: sceneKey === "physics" ? 1 : 0,
+            transition: "opacity 1s ease",
+            zIndex: 10,
+          }}
+          aria-hidden="true"
+        >
+          {PHYS_ATOMS.slice(2).map((atom, ai) => {
+            const rings = isDark
+              ? SCENE_CFG.physics.dark.rings
+              : SCENE_CFG.physics.light.rings;
+            return (
+              <div
+                key={ai}
+                className="absolute rounded-full"
+                style={{ ...atom.style }}
+              >
+                {rings.map((rc, ri) => (
+                  <span
+                    key={ri}
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      border: `2px solid ${rc}`,
+                      opacity: 0.85,
+                      transform: `rotate(${ri * 60}deg)`,
+                    }}
+                  />
+                ))}
+                <span
+                  className="absolute rounded-full"
+                  style={{
+                    width: 14,
+                    height: 14,
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%,-50%)",
+                    background:
+                      "radial-gradient(circle at 30% 30%, #fff7c4, #facc15 65%)",
+                    boxShadow: "0 0 30px 8px rgba(253,224,71,0.4)",
+                  }}
+                />
+                {atom.electrons.map((e, ei) => (
+                  <span
+                    key={ei}
+                    className="absolute rounded-full"
+                    style={{
+                      width: 14,
+                      height: 14,
+                      top: "50%",
+                      left: "50%",
+                      marginTop: -7,
+                      marginLeft: -7,
+                      background: `radial-gradient(circle at 30% 30%, #fff, ${isDark ? "#a8d2f7" : "#8a6dde"})`,
+                      boxShadow: "0 0 14px 2px rgba(167,139,250,0.5)",
+                      animation: e.anim,
+                    }}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </div>
 
         {/* Scene layers */}
@@ -1143,7 +1210,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                 }}
               />
             ))}
-            {PHYS_ATOMS.map((atom, ai) => {
+            {PHYS_ATOMS.slice(0, 2).map((atom, ai) => {
               const rings = isDark
                 ? SCENE_CFG.physics.dark.rings
                 : SCENE_CFG.physics.light.rings;
