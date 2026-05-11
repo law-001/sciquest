@@ -754,7 +754,10 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
   useEffect(() => {
     const t1 = setTimeout(() => setHeroReady(true), 80);
     const t2 = setTimeout(() => setHeroAnimDone(true), 1100);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   const handleOrbEnter = useCallback((idx) => setHoveredSubjectIdx(idx), []);
@@ -876,12 +879,12 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
             transform: heroAnimDone
               ? `translateY(${-textParallax}px)`
               : heroReady
-                ? 'translateY(0px)'
-                : 'translateY(40px)',
+                ? "translateY(0px)"
+                : "translateY(40px)",
             opacity: heroAnimDone ? textOpacity : heroReady ? 1 : 0,
             transition: heroAnimDone
-              ? 'none'
-              : 'transform 1s cubic-bezier(0.16,1,0.3,1), opacity 0.85s ease',
+              ? "none"
+              : "transform 1s cubic-bezier(0.16,1,0.3,1), opacity 0.85s ease",
           }}
         >
           <div
@@ -960,7 +963,9 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
             maxWidth: 1100,
             margin: "0 auto",
             paddingBottom: 20,
-            transform: heroAnimDone ? `translateY(${-textParallax}px)` : undefined,
+            transform: heroAnimDone
+              ? `translateY(${-textParallax}px)`
+              : undefined,
             opacity: heroAnimDone ? textOpacity : undefined,
           }}
         >
@@ -1060,7 +1065,10 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
           })}
           <div
             className="w-full flex justify-center"
-            style={{ animation: 'sq-heroOrbIn 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.72s both' }}
+            style={{
+              animation:
+                "sq-heroOrbIn 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.72s both",
+            }}
           >
             <Button
               size="md"
