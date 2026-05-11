@@ -602,6 +602,8 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
   const [teaserAnswer, setTeaserAnswer] = useState(null);
   const [teaserKey, setTeaserKey] = useState(0);
   const [xpWidth, setXpWidth] = useState(0);
+  const [heroReady, setHeroReady] = useState(false);
+  const [heroAnimDone, setHeroAnimDone] = useState(false);
 
   const { isDark } = useTheme();
   const heroRef = useRef(null);
@@ -748,6 +750,13 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
     };
   }, []);
 
+  /* Hero entrance timing */
+  useEffect(() => {
+    const t1 = setTimeout(() => setHeroReady(true), 80);
+    const t2 = setTimeout(() => setHeroAnimDone(true), 1100);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
   const handleOrbEnter = useCallback((idx) => setHoveredSubjectIdx(idx), []);
   const handleOrbLeave = useCallback(() => setHoveredSubjectIdx(null), []);
   const handleOrbClick = useCallback(
@@ -862,7 +871,18 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
         {/* Hero text */}
         <div
           className="relative max-w-4xl mx-auto px-6 pb-6 text-center"
-          style={{ zIndex: 25 }}
+          style={{
+            zIndex: 25,
+            transform: heroAnimDone
+              ? `translateY(${-textParallax}px)`
+              : heroReady
+                ? 'translateY(0px)'
+                : 'translateY(40px)',
+            opacity: heroAnimDone ? textOpacity : heroReady ? 1 : 0,
+            transition: heroAnimDone
+              ? 'none'
+              : 'transform 1s cubic-bezier(0.16,1,0.3,1), opacity 0.85s ease',
+          }}
         >
           <div
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[11px] font-bold tracking-widest uppercase mb-5"
@@ -940,6 +960,8 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
             maxWidth: 1100,
             margin: "0 auto",
             paddingBottom: 20,
+            transform: heroAnimDone ? `translateY(${-textParallax}px)` : undefined,
+            opacity: heroAnimDone ? textOpacity : undefined,
           }}
         >
           {HERO_ORB_CFG.map((orb) => {
@@ -956,6 +978,9 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                 onMouseLeave={handleOrbLeave}
                 className="relative flex flex-col items-center mb-8"
                 aria-label={orb.label}
+                style={{
+                  animation: `sq-heroOrbIn 0.72s cubic-bezier(0.34,1.56,0.64,1) ${0.32 + orbIdx * 0.13}s both`,
+                }}
               >
                 <span
                   className="relative flex items-center justify-center rounded-full border"
@@ -1033,7 +1058,10 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
               </button>
             );
           })}
-          <div className="w-full flex justify-center">
+          <div
+            className="w-full flex justify-center"
+            style={{ animation: 'sq-heroOrbIn 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.72s both' }}
+          >
             <Button
               size="md"
               onClick={() => onStartLearning?.(sceneKey)}
@@ -1271,6 +1299,11 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
 
         <style>{`
           @keyframes sq-spin    { to { transform: rotate(360deg); } }
+          @keyframes sq-heroOrbIn {
+            0%   { opacity: 0; transform: scale(0.62) translateY(30px); }
+            60%  { transform: scale(1.07) translateY(-6px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+          }
           @keyframes sq-pulse   { 0%,100%{opacity:.5;transform:scale(.85)} 50%{opacity:1;transform:scale(1.15)} }
           @keyframes sq-twinkle { 0%,100%{opacity:.3;transform:scale(.6)} 50%{opacity:1;transform:scale(1)} }
           @keyframes sq-ptFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-30px)} }
