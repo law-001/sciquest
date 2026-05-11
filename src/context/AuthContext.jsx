@@ -28,13 +28,17 @@ export function AuthProvider({ children }) {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setUser(session?.user ?? null)
-        if (session?.user) {
-          await fetchProfile(session.user.id)
-        } else {
+        if (!session?.user) {
           setProfile(null)
+          return
         }
+        // Defer the profiles query: this callback runs while supabase-js holds
+        // the auth lock, and supabase.from(...) needs that same lock to read the
+        // access token. Calling it synchronously here deadlocks — which makes a
+        // login after a prior logout hang forever (supabase-js #1239).
+        setTimeout(() => { fetchProfile(session.user.id) }, 0)
       }
     )
 
@@ -91,14 +95,9 @@ export function AuthProvider({ children }) {
   }
 
   const signOut = () => {
-    console.log('[signOut] called, current user:', user?.id ?? 'none')
-    supabase.auth.signOut({ scope: 'local' }).catch(err => {
-      console.error('[signOut] Supabase background error:', err)
-    })
-    console.log('[signOut] clearing user/profile state')
+    supabase.auth.signOut({ scope: 'local' }).catch(() => {})
     setUser(null)
     setProfile(null)
-    console.log('[signOut] done')
   }
 
   return (

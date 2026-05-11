@@ -55,7 +55,6 @@ export function Navbar({
   };
 
   const handleLogout = () => {
-    console.log('[Navbar handleLogout] clicked, onLogoutClick is:', typeof onLogoutClick)
     setIsProfileOpen(false);
     setIsMenuOpen(false);
     onLogoutClick();

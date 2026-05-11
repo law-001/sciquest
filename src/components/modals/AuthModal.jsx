@@ -77,19 +77,14 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    console.log("[AuthModal:login] submitting for", form.email);
     try {
-      console.log("[AuthModal:login] calling signIn...");
       const profile = await signIn(form.email, form.password);
-      console.log("[AuthModal:login] signIn returned, profile:", profile);
       onLogin(profile?.role ?? "student");
       handleClose();
     } catch (err) {
-      console.error("[AuthModal:login] error:", err.message);
       setError(err.message || "Invalid email or password.");
     } finally {
       setIsLoading(false);
-      console.log("[AuthModal:login] done, isLoading set to false");
     }
   };
 
@@ -119,9 +114,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     }
 
     setIsLoading(true);
-    console.log("[AuthModal:signup] submitting for", form.email);
     try {
-      console.log("[AuthModal:signup] calling signUp...");
       const result = await signUp({
         email: form.email,
         password: form.password,
@@ -130,10 +123,6 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
         studentNumber: form.studentNumber.trim(),
         section: form.section.trim(),
       });
-      console.log(
-        "[AuthModal:signup] signUp returned, has session:",
-        !!result.session,
-      );
       if (result.session) {
         onLogin("student");
         handleClose();
@@ -144,7 +133,6 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
         setOtpDigits(["", "", "", "", "", "", "", ""]);
       }
     } catch (err) {
-      console.error("[AuthModal:signup] error:", err.message);
       const msg = err.message ?? "";
       if (err.code === "student_number_taken") {
         setFieldErrors((p) => ({ ...p, studentNumber: "Already registered" }));
@@ -157,7 +145,6 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       }
     } finally {
       setIsLoading(false);
-      console.log("[AuthModal:signup] done, isLoading set to false");
     }
   };
 
