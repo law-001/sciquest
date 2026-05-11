@@ -716,7 +716,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
       cY = 0,
       raf;
     const t0 = performance.now();
-    const depths = [40, 80, 130, 190, 260];
+    const depths = [18, 36, 58, 85, 120];
     const onMove = (e) => {
       const r = hero.getBoundingClientRect();
       tX = ((e.clientX - r.left) / r.width - 0.5) * 2;
@@ -732,8 +732,8 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
       cY += (tY - cY) * 0.06;
       hero.querySelectorAll(".sq-parallax-layer").forEach((el, i) => {
         const d = depths[i % depths.length];
-        const bob = Math.sin(t * 0.55 + i * 0.7) * (18 + i * 8);
-        const drift = Math.sin(t * 0.22 + i * 0.9) * (22 + i * 9);
+        const bob = Math.sin(t * 0.55 + i * 0.7) * (6 + i * 2.8);
+        const drift = Math.sin(t * 0.22 + i * 0.9) * (8 + i * 3.2);
         el.style.transform = `translate3d(${cX * d + drift}px,${cY * d * 0.4 + bob}px,0)`;
       });
       raf = requestAnimationFrame(tick);
