@@ -28,6 +28,7 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import { cn } from "../lib/utils";
+import { fetchUsers, fetchRecentUsers, fetchTeachers, fetchDashboardCounts, fetchSectionCounts, deleteUser } from "../lib/users";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
@@ -103,7 +104,7 @@ function Modal({ onClose, children }) {
 
 // ─── Remove User Modal ────────────────────────────────────────────────────────
 
-function RemoveUserModal({ user, onConfirm, onClose }) {
+function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
   return (
     <Modal onClose={onClose}>
       <div className="flex items-center gap-3 mb-4">
@@ -121,14 +122,16 @@ function RemoveUserModal({ user, onConfirm, onClose }) {
         ({user.email})? Their account, progress, and all associated records will be permanently deleted.
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>Cancel</Button>
         <button
           onClick={() => onConfirm(user)}
-          className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors active:scale-95"
+          disabled={isLoading}
+          className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold text-sm transition-colors active:scale-95"
         >
-          Remove User
+          {isLoading ? "Removing…" : "Remove User"}
         </button>
       </div>
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
     </Modal>
   );
 }
@@ -211,7 +214,7 @@ function InviteTeacherModal({ onClose }) {
 const SECTION_COLORS = ["#f97316", "#14b8a6", "#eab308", "#8b5cf6", "#3b82f6"];
 const ACTIVITY_COLORS = ["#22c55e", "#a8a29e"];
 
-function DashboardTab({ stats, recentUsers }) {
+function DashboardTab({ stats, recentUsers, sectionData }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -225,13 +228,11 @@ function DashboardTab({ stats, recentUsers }) {
     return () => ctx.revert();
   }, []);
 
-  const sectionData = [
-    { label: "STEM-A", value: 318, color: SECTION_COLORS[0] },
-    { label: "STEM-B", value: 287, color: SECTION_COLORS[1] },
-    { label: "STEM-C", value: 256, color: SECTION_COLORS[2] },
-    { label: "STEM-D", value: 231, color: SECTION_COLORS[3] },
-    { label: "Others",  value: 156, color: SECTION_COLORS[4] },
-  ];
+  const sectionSlices = (sectionData ?? []).map((d, i) => ({
+    ...d,
+    color: SECTION_COLORS[i % SECTION_COLORS.length],
+  }));
+  const totalSectionStudents = sectionSlices.reduce((s, d) => s + d.value, 0);
   const activityData = [
     { label: "Active",   value: 987, color: ACTIVITY_COLORS[0] },
     { label: "Inactive", value: 261, color: ACTIVITY_COLORS[1] },
@@ -278,31 +279,39 @@ function DashboardTab({ stats, recentUsers }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-                {recentUsers.map((user) => (
-                  <tr key={user.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
-                        </div>
-                      </div>
+                {recentUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+                      No recent users
                     </td>
-                    <td className="px-6 py-4">
-                      <Badge variant={user.role === "Teacher" ? "secondary" : "primary"}>{user.role}</Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", user.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
-                        <span className={cn("w-2 h-2 rounded-full", user.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.joined}</td>
                   </tr>
-                ))}
+                ) : (
+                  recentUsers.map((user) => (
+                    <tr key={user.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
+                            <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge variant={user.role === "Teacher" ? "secondary" : "primary"}>{user.role}</Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", user.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
+                          <span className={cn("w-2 h-2 rounded-full", user.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
+                          {user.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.joined}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -312,20 +321,30 @@ function DashboardTab({ stats, recentUsers }) {
         <div className="space-y-4">
           <Card className="analytics-card p-5">
             <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">Student Sections</h3>
-            <div className="flex justify-center mb-4">
-              <DonutChart data={sectionData} size={160} label={{ value: "1,248", sub: "students" }} />
-            </div>
-            <div className="space-y-2">
-              {sectionData.map((d) => (
-                <div key={d.label} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
-                    <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">{d.label}</span>
-                  </div>
-                  <span className="text-xs font-bold text-stone-900 dark:text-white">{d.value}</span>
+            {totalSectionStudents === 0 ? (
+              <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-8">No students yet</p>
+            ) : (
+              <>
+                <div className="flex justify-center mb-4">
+                  <DonutChart
+                    data={sectionSlices}
+                    size={160}
+                    label={{ value: totalSectionStudents.toLocaleString(), sub: "students" }}
+                  />
                 </div>
-              ))}
-            </div>
+                <div className="space-y-2">
+                  {sectionSlices.map((d) => (
+                    <div key={d.label} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
+                        <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">{d.label}</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-900 dark:text-white">{d.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </Card>
 
           <Card className="analytics-card p-5">
@@ -353,23 +372,24 @@ function DashboardTab({ stats, recentUsers }) {
 
 // ─── Users Tab ─────────────────────────────────────────────────────────────────
 
-const INITIAL_USERS = [
-  { id: 1, name: "Alex Johnson",      role: "Student", email: "alex.j@school.edu",       status: "Active",   joined: "2 days ago",  section: "STEM-A" },
-  { id: 2, name: "Sarah Smith",       role: "Teacher", email: "s.smith@school.edu",       status: "Active",   joined: "5 days ago",  section: "—" },
-  { id: 3, name: "Michael Brown",     role: "Student", email: "m.brown@school.edu",       status: "Inactive", joined: "1 week ago",  section: "STEM-B" },
-  { id: 4, name: "Emily Davis",       role: "Student", email: "e.davis@school.edu",       status: "Active",   joined: "1 week ago",  section: "STEM-A" },
-  { id: 5, name: "Dr. Robert Wilson", role: "Teacher", email: "r.wilson@school.edu",      status: "Active",   joined: "2 weeks ago", section: "—" },
-  { id: 6, name: "James Martinez",    role: "Student", email: "j.mart@school.edu",        status: "Active",   joined: "2 weeks ago", section: "STEM-C" },
-  { id: 7, name: "Lisa Chen",         role: "Student", email: "l.chen@school.edu",        status: "Inactive", joined: "3 weeks ago", section: "STEM-D" },
-  { id: 8, name: "David Kim",         role: "Student", email: "d.kim@school.edu",         status: "Active",   joined: "1 month ago", section: "STEM-B" },
-];
-
 function UsersTab() {
-  const [users, setUsers] = useState(INITIAL_USERS);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [userToRemove, setUserToRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState(null);
   const [showRemoveSearch, setShowRemoveSearch] = useState(false);
   const [removeQuery, setRemoveQuery] = useState("");
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchUsers()
+      .then((rows) => { if (!cancelled) { setUsers(rows); setLoading(false); } })
+      .catch((err) => { if (!cancelled) { setLoadError(err.message ?? "Failed to load users"); setLoading(false); } });
+    return () => { cancelled = true; };
+  }, []);
 
   const removeSearchResults = removeQuery.trim()
     ? users.filter((u) => u.name.toLowerCase().includes(removeQuery.toLowerCase()))
@@ -379,14 +399,22 @@ function UsersTab() {
     const ctx = gsap.context(() => {
       gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
       gsap.from(".anim-card", { y: 22, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.15 });
-      gsap.from(".anim-card tbody tr", { x: -15, opacity: 0, duration: 0.35, stagger: 0.04, ease: "power2.out", delay: 0.3 });
     }, containerRef);
     return () => ctx.revert();
   }, []);
 
-  const handleConfirmRemove = (user) => {
-    setUsers((prev) => prev.filter((u) => u.id !== user.id));
-    setUserToRemove(null);
+  const handleConfirmRemove = async (user) => {
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await deleteUser(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setUserToRemove(null);
+    } catch (err) {
+      setRemoveError(err.message ?? "Failed to remove user");
+    } finally {
+      setRemoving(false);
+    }
   };
 
   return (
@@ -400,7 +428,9 @@ function UsersTab() {
         <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-stone-900 dark:text-white">All Users</h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400">{users.length} accounts</p>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {loading ? "Loading…" : `${users.length} accounts`}
+            </p>
           </div>
           <button
             onClick={() => { setShowRemoveSearch((v) => !v); setRemoveQuery(""); }}
@@ -469,41 +499,55 @@ function UsersTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-              {users.map((user) => (
-                <tr key={user.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                        {user.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
-                        <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge variant={user.role === "Teacher" ? "secondary" : "primary"}>{user.role}</Badge>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.section}</td>
-                  <td className="px-6 py-4">
-                    <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", user.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
-                      <span className={cn("w-2 h-2 rounded-full", user.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.joined}</td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => setUserToRemove(user)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Remove
-                    </button>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">Loading users…</td>
                 </tr>
-              ))}
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400">{loadError}</td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">No users yet</td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge variant={user.role === "Teacher" ? "secondary" : "primary"}>{user.role}</Badge>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.section}</td>
+                    <td className="px-6 py-4">
+                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", user.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
+                        <span className={cn("w-2 h-2 rounded-full", user.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
+                        {user.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.joined}</td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => setUserToRemove(user)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -513,7 +557,9 @@ function UsersTab() {
         <RemoveUserModal
           user={userToRemove}
           onConfirm={handleConfirmRemove}
-          onClose={() => setUserToRemove(null)}
+          onClose={() => { if (!removing) { setUserToRemove(null); setRemoveError(null); } }}
+          isLoading={removing}
+          error={removeError}
         />
       )}
     </div>
@@ -522,23 +568,26 @@ function UsersTab() {
 
 // ─── Teachers Tab ──────────────────────────────────────────────────────────────
 
-const TEACHERS_LIST = [
-  { id: 1, name: "Sarah Smith",       email: "s.smith@school.edu",  classes: 3, students: 87,  status: "Active",   joined: "5 days ago" },
-  { id: 2, name: "Dr. Robert Wilson", email: "r.wilson@school.edu", classes: 4, students: 112, status: "Active",   joined: "2 weeks ago" },
-  { id: 3, name: "Maria Garcia",      email: "m.garcia@school.edu", classes: 2, students: 65,  status: "Active",   joined: "1 month ago" },
-  { id: 4, name: "James Patterson",   email: "j.patt@school.edu",   classes: 1, students: 34,  status: "Inactive", joined: "2 months ago" },
-];
-
 function TeachersTab() {
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchTeachers()
+      .then((rows) => { if (!cancelled) { setTeachers(rows); setLoading(false); } })
+      .catch((err) => { if (!cancelled) { setLoadError(err.message ?? "Failed to load teachers"); setLoading(false); } });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
       gsap.from(".anim-invite-btn", { x: 20, opacity: 0, duration: 0.45, ease: "power2.out", delay: 0.05 });
       gsap.from(".anim-card", { y: 22, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.15 });
-      gsap.from(".anim-card tbody tr", { x: -15, opacity: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", delay: 0.3 });
     }, containerRef);
     return () => ctx.revert();
   }, []);
@@ -560,7 +609,9 @@ function TeachersTab() {
       <Card className="anim-card overflow-hidden">
         <div className="p-6 border-b border-orange-100 dark:border-stone-700">
           <h2 className="text-lg font-bold text-stone-900 dark:text-white">All Teachers</h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">{TEACHERS_LIST.length} teachers</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            {loading ? "Loading…" : `${teachers.length} teachers`}
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -574,30 +625,44 @@ function TeachersTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-              {TEACHERS_LIST.map((teacher) => (
-                <tr key={teacher.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                        {teacher.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-stone-900 dark:text-white">{teacher.name}</p>
-                        <p className="text-xs text-stone-500 dark:text-stone-400">{teacher.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">{teacher.classes}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">{teacher.students}</td>
-                  <td className="px-6 py-4">
-                    <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", teacher.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
-                      <span className={cn("w-2 h-2 rounded-full", teacher.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
-                      {teacher.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{teacher.joined}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">Loading teachers…</td>
                 </tr>
-              ))}
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400">{loadError}</td>
+                </tr>
+              ) : teachers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">No teachers yet</td>
+                </tr>
+              ) : (
+                teachers.map((teacher) => (
+                  <tr key={teacher.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {teacher.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">{teacher.name}</p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">{teacher.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">{teacher.classes}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">{teacher.students}</td>
+                    <td className="px-6 py-4">
+                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", teacher.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
+                        <span className={cn("w-2 h-2 rounded-full", teacher.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
+                        {teacher.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{teacher.joined}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -926,6 +991,9 @@ export function AdminDashboardPage({ onNavigate }) {
   const { isDark, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [counts, setCounts] = useState(null);
+  const [sectionData, setSectionData] = useState([]);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -938,43 +1006,51 @@ export function AdminDashboardPage({ onNavigate }) {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchRecentUsers(5), fetchDashboardCounts(), fetchSectionCounts()])
+      .then(([rows, dashboardCounts, sections]) => {
+        if (cancelled) return;
+        setRecentUsers(rows);
+        setCounts(dashboardCounts);
+        setSectionData(sections);
+      })
+      .catch(() => { /* dashboard falls back to placeholders on failure */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const totalLessons = WEEKS_DATA.reduce((sum, week) => sum + week.lessons.length, 0);
+  const showCount = (n) => (n == null ? "…" : n.toLocaleString());
+
   const stats = [
     {
       label:   "Total Students",
-      value:   "1,248",
+      value:   showCount(counts?.students),
       icon:    <Users className="w-6 h-6 text-primary-500" />,
       bgLight: "bg-primary-50",
       bgDark:  "dark:bg-primary-900/20",
     },
     {
       label:   "Total Teachers",
-      value:   "42",
+      value:   showCount(counts?.teachers),
       icon:    <GraduationCap className="w-6 h-6 text-secondary-500" />,
       bgLight: "bg-secondary-50",
       bgDark:  "dark:bg-secondary-900/20",
     },
     {
       label:   "Active Lessons",
-      value:   "156",
+      value:   totalLessons.toLocaleString(),
       icon:    <BookOpen className="w-6 h-6 text-accent-500" />,
       bgLight: "bg-accent-50",
       bgDark:  "dark:bg-accent-900/20",
     },
     {
-      label:   "Quiz Attempts",
-      value:   "8,932",
+      label:   "Lessons Completed",
+      value:   showCount(counts?.completedLessons),
       icon:    <HelpCircle className="w-6 h-6 text-blue-500" />,
       bgLight: "bg-blue-50",
       bgDark:  "dark:bg-blue-900/20",
     },
-  ];
-
-  const recentUsers = [
-    { id: 1, name: "Alex Johnson",      role: "Student", email: "alex.j@school.edu",   status: "Active",   joined: "2 days ago" },
-    { id: 2, name: "Sarah Smith",       role: "Teacher", email: "s.smith@school.edu",  status: "Active",   joined: "5 days ago" },
-    { id: 3, name: "Michael Brown",     role: "Student", email: "m.brown@school.edu",  status: "Inactive", joined: "1 week ago" },
-    { id: 4, name: "Emily Davis",       role: "Student", email: "e.davis@school.edu",  status: "Active",   joined: "1 week ago" },
-    { id: 5, name: "Dr. Robert Wilson", role: "Teacher", email: "r.wilson@school.edu", status: "Active",   joined: "2 weeks ago" },
   ];
 
   const TabContent = ADMIN_TAB_MAP[activeTab] ?? DashboardTab;
@@ -1079,7 +1155,7 @@ export function AdminDashboardPage({ onNavigate }) {
 
           {/* Main content — rendered via ADMIN_TAB_MAP slot map */}
           <main className="flex-1 min-w-0">
-            <TabContent stats={stats} recentUsers={recentUsers} />
+            <TabContent stats={stats} recentUsers={recentUsers} sectionData={sectionData} />
           </main>
         </div>
       </div>
