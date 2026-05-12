@@ -9,6 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
+//KEEPS THEM LOGGED IN IF persistSession TRUE. refresh will logout if false. 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: { persistSession: false },
+  auth: { persistSession: true },
 })

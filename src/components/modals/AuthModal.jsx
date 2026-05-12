@@ -11,6 +11,9 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
+  ChevronDown,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import Button from "../Button";
 import Input from "../Input";
@@ -26,6 +29,15 @@ const EMPTY_FORM = {
   section: "",
 };
 
+const PASSWORD_RULES = [
+  { id: "length", label: "At least 8 characters", test: (v) => v.length >= 8 },
+  { id: "upper", label: "At least 1 uppercase letter", test: (v) => /[A-Z]/.test(v) },
+  { id: "lower", label: "At least 1 lowercase letter", test: (v) => /[a-z]/.test(v) },
+  { id: "number", label: "At least 1 number", test: (v) => /[0-9]/.test(v) },
+];
+
+const isPasswordStrong = (v) => PASSWORD_RULES.every((rule) => rule.test(v));
+
 export function AuthModal({ isOpen, onClose, onLogin }) {
   const { signIn, signUp, verifyEmailOtp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -37,6 +49,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
     studentNumber: "",
@@ -53,6 +66,20 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       setFieldErrors((p) => ({ ...p, studentNumber: "" }));
   };
 
+  const setName = (field) => (e) => {
+    const value = e.target.value.replace(/[^\p{L} ]/gu, "");
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (error) setError("");
+  };
+
+  const setStudentNumber = (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setForm((prev) => ({ ...prev, studentNumber: value }));
+    if (error) setError("");
+    if (fieldErrors.studentNumber)
+      setFieldErrors((p) => ({ ...p, studentNumber: "" }));
+  };
+
   const handleClose = () => {
     setError("");
     setPhase("form");
@@ -61,6 +88,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     setForm(EMPTY_FORM);
     setShowPassword(false);
     setShowConfirm(false);
+    setPasswordFocused(false);
     setFieldErrors({ email: "", studentNumber: "" });
     onClose();
   };
@@ -71,6 +99,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     setFieldErrors({ email: "", studentNumber: "" });
     setShowPassword(false);
     setShowConfirm(false);
+    setPasswordFocused(false);
   };
 
   const handleLogin = async (e) => {
@@ -96,6 +125,13 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       setError("First and last name are required.");
       return;
     }
+    if (!form.email.trim().toLowerCase().endsWith("@student.fatima.edu.ph")) {
+      setFieldErrors((p) => ({
+        ...p,
+        email: "Use your @student.fatima.edu.ph email",
+      }));
+      return;
+    }
     if (!form.studentNumber.trim()) {
       setError("Student number is required.");
       return;
@@ -104,8 +140,9 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       setError("Section is required.");
       return;
     }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!isPasswordStrong(form.password)) {
+      setError("Please make sure your password meets all the requirements.");
+      setPasswordFocused(true);
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -374,7 +411,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       placeholder="Marie"
                       icon={<User className="w-4 h-4" />}
                       value={form.firstName}
-                      onChange={set("firstName")}
+                      onChange={setName("firstName")}
                       required
                     />
                     <Input
@@ -382,28 +419,47 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       placeholder="Curie"
                       icon={<User className="w-4 h-4" />}
                       value={form.lastName}
-                      onChange={set("lastName")}
+                      onChange={setName("lastName")}
                       required
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <Input
                       label="Student No."
-                      placeholder="2024-0001"
+                      placeholder="20240001"
+                      inputMode="numeric"
                       icon={<Hash className="w-4 h-4" />}
                       value={form.studentNumber}
-                      onChange={set("studentNumber")}
+                      onChange={setStudentNumber}
                       error={fieldErrors.studentNumber}
                       required
                     />
-                    <Input
-                      label="Section"
-                      placeholder="STEM-A"
-                      icon={<BookOpen className="w-4 h-4" />}
-                      value={form.section}
-                      onChange={set("section")}
-                      required
-                    />
+                    <div className="w-full">
+                      <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1.5 font-heading">
+                        Section
+                      </label>
+                      <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
+                          <BookOpen className="w-4 h-4" />
+                        </div>
+                        <select
+                          value={form.section}
+                          onChange={set("section")}
+                          required
+                          className="w-full h-10 rounded-xl border-2 border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 pl-10 pr-9 py-2 text-stone-900 dark:text-stone-100 appearance-none focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 dark:focus:ring-primary-400/10 transition-all"
+                        >
+                          <option value="" disabled>
+                            Select section
+                          </option>
+                          <option value="STEM-A">STEM-A</option>
+                          <option value="STEM-B">STEM-B</option>
+                          <option value="STEM-C">STEM-C</option>
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
+                          <ChevronDown className="w-4 h-4" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
@@ -411,7 +467,9 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
               <Input
                 label="Email Address"
                 type="email"
-                placeholder="marie@science.lab"
+                placeholder={
+                  isLogin ? "marie@science.lab" : "marie@student.fatima.edu.ph"
+                }
                 icon={<Mail className="w-5 h-5" />}
                 value={form.email}
                 onChange={set("email")}
@@ -426,6 +484,8 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 icon={<Lock className="w-5 h-5" />}
                 value={form.password}
                 onChange={set("password")}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
                 rightElement={
                   <button
                     type="button"
@@ -444,6 +504,31 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 }
                 required
               />
+
+              {!isLogin && passwordFocused && (
+                <div className="rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900/40 px-4 py-3 space-y-1.5 text-sm">
+                  {PASSWORD_RULES.map((rule) => {
+                    const pass = rule.test(form.password);
+                    return (
+                      <div
+                        key={rule.id}
+                        className={`flex items-center gap-2 font-medium ${
+                          pass
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-stone-500 dark:text-stone-400"
+                        }`}
+                      >
+                        {pass ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <XCircle className="w-4 h-4 shrink-0 text-red-500" />
+                        )}
+                        <span>{rule.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {!isLogin && (
                 <Input
