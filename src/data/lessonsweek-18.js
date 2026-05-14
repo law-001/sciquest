@@ -25,7 +25,7 @@ export const week18 = {
     {
       id: "lesson-52",
       weekId: "week-18",
-      lessonNumber: 1,
+      lessonNumber: 52,
       title: "Sexual vs. Asexual Reproduction",
       badge: "Lesson 1",
       subtitle:
@@ -168,7 +168,7 @@ export const week18 = {
     {
       id: "lesson-53",
       weekId: "week-18",
-      lessonNumber: 2,
+      lessonNumber: 53,
       title: "Advantages and Disadvantages of Each",
       badge: "Lesson 2",
       subtitle: "Weighing the trade-offs of sexual and asexual reproduction",
@@ -284,7 +284,7 @@ export const week18 = {
     {
       id: "lesson-54",
       weekId: "week-18",
-      lessonNumber: 3,
+      lessonNumber: 54,
       title: "Examples in Nature",
       badge: "Lesson 3",
       subtitle:

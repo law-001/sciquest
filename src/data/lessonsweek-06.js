@@ -28,7 +28,7 @@ export const week06 = {
     {
       id: "lesson-16",
       weekId: "week-6",
-      lessonNumber: 1,
+      lessonNumber: 16,
       title: "Mixtures and Solutions",
       badge: "Lesson 16",
       subtitle:
@@ -184,7 +184,7 @@ export const week06 = {
     {
       id: "lesson-17",
       weekId: "week-6",
-      lessonNumber: 2,
+      lessonNumber: 17,
       title: "Solubility",
       badge: "Lesson 17",
       subtitle:
@@ -315,7 +315,7 @@ export const week06 = {
     {
       id: "lesson-18",
       weekId: "week-6",
-      lessonNumber: 3,
+      lessonNumber: 18,
       title: "Factors Affecting the Rate of Dissolving",
       badge: "Lesson 18",
       subtitle:

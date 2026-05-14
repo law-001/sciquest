@@ -28,7 +28,7 @@ export const week03 = {
     {
       id: "lesson-7",
       weekId: "week-3",
-      lessonNumber: 1,
+      lessonNumber: 7,
       title: "Melting and Freezing",
       badge: "Lesson 7",
       subtitle:
@@ -192,7 +192,7 @@ export const week03 = {
     {
       id: "lesson-8",
       weekId: "week-3",
-      lessonNumber: 2,
+      lessonNumber: 8,
       title: "Evaporation and Condensation",
       badge: "Lesson 8",
       subtitle:
@@ -339,7 +339,7 @@ export const week03 = {
     {
       id: "lesson-9",
       weekId: "week-3",
-      lessonNumber: 3,
+      lessonNumber: 9,
       title: "Sublimation and Deposition",
       badge: "Lesson 9",
       subtitle:

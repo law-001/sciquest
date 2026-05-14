@@ -28,16 +28,22 @@ export const week14 = {
     {
       id: "lesson-40",
       weekId: "week-14",
-      lessonNumber: 1,
+      lessonNumber: 40,
       title: "Comparing Plant and Animal Cells",
       badge: "Lesson 40",
-      subtitle: "Identify what plant and animal cells share and what makes each unique.",
+      subtitle:
+        "Identify what plant and animal cells share and what makes each unique.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
       heroImageAlt: "Side-by-side comparison diagram of plant and animal cells",
 
-      sections: ["Overview", "Plant vs. Animal Cells", "Structure Gallery", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Plant vs. Animal Cells",
+        "Structure Gallery",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -96,7 +102,8 @@ export const week14 = {
                 color: "primary",
                 desc: "Both plant and animal cells contain these essential organelles for basic life functions.",
                 image: microscope,
-                imageAlt: "Diagram showing organelles common to both plant and animal cells",
+                imageAlt:
+                  "Diagram showing organelles common to both plant and animal cells",
                 examples: [
                   "Nucleus — DNA and control center",
                   "Mitochondria — ATP energy production",
@@ -110,7 +117,8 @@ export const week14 = {
                 color: "secondary",
                 desc: "These three structures are found exclusively in plant cells and are critical to plant life.",
                 image: globe,
-                imageAlt: "Diagram of plant cell showing chloroplasts and central vacuole",
+                imageAlt:
+                  "Diagram of plant cell showing chloroplasts and central vacuole",
                 examples: [
                   "Cell Wall — rigid cellulose structure",
                   "Chloroplasts — photosynthesis",
@@ -124,7 +132,8 @@ export const week14 = {
                 color: "primary",
                 desc: "Animal cells have specialized structures for cell division and intracellular digestion.",
                 image: simulation,
-                imageAlt: "Diagram of animal cell showing centrioles and multiple vacuoles",
+                imageAlt:
+                  "Diagram of animal cell showing centrioles and multiple vacuoles",
                 examples: [
                   "Centrioles — organize spindle fibers in cell division",
                   "Multiple small vacuoles — temporary storage",
@@ -180,16 +189,23 @@ export const week14 = {
     {
       id: "lesson-41",
       weekId: "week-14",
-      lessonNumber: 2,
+      lessonNumber: 41,
       title: "Unique Structures in Plant Cells",
       badge: "Lesson 41",
-      subtitle: "Explore the cell wall, chloroplasts, central vacuole, and plastids — structures found only in plant cells.",
+      subtitle:
+        "Explore the cell wall, chloroplasts, central vacuole, and plastids — structures found only in plant cells.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: globe,
-      heroImageAlt: "Microscopic image of plant cells showing green chloroplasts",
+      heroImageAlt:
+        "Microscopic image of plant cells showing green chloroplasts",
 
-      sections: ["Overview", "Key Concepts", "Plant-Specific Structures", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Plant-Specific Structures",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -302,16 +318,23 @@ export const week14 = {
     {
       id: "lesson-42",
       weekId: "week-14",
-      lessonNumber: 3,
+      lessonNumber: 42,
       title: "Unique Structures in Animal Cells",
       badge: "Lesson 42",
-      subtitle: "Learn about centrioles, lysosomes, cilia, and flagella — structures that give animal cells their distinctive capabilities.",
+      subtitle:
+        "Learn about centrioles, lysosomes, cilia, and flagella — structures that give animal cells their distinctive capabilities.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
-      heroImageAlt: "Microscope image of animal cells with visible centrioles and cilia",
+      heroImageAlt:
+        "Microscope image of animal cells with visible centrioles and cilia",
 
-      sections: ["Overview", "Key Concepts", "Real-Life Cell Scenarios", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Real-Life Cell Scenarios",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -375,22 +398,28 @@ export const week14 = {
                 title: "Cilia Clearing the Airways",
                 situation:
                   "You breathe in air containing dust particles, pollen, and bacteria. These get trapped in the sticky mucus that lines your trachea (windpipe).",
-                question: "How does your body prevent these particles from reaching and damaging your lungs?",
-                skill: "The cells lining the trachea are covered in thousands of cilia. These cilia beat in coordinated, wave-like strokes to sweep mucus — along with the trapped particles — upward and out of the airway toward the throat, where it is swallowed or expelled. This is called the mucociliary escalator.",
+                question:
+                  "How does your body prevent these particles from reaching and damaging your lungs?",
+                skill:
+                  "The cells lining the trachea are covered in thousands of cilia. These cilia beat in coordinated, wave-like strokes to sweep mucus — along with the trapped particles — upward and out of the airway toward the throat, where it is swallowed or expelled. This is called the mucociliary escalator.",
               },
               {
                 title: "Lysosomes Destroying Bacteria",
                 situation:
                   "A white blood cell (neutrophil) detects a bacterium and engulfs it through phagocytosis, forming a pouch (phagosome) around the bacterium inside the cell.",
-                question: "How does the white blood cell destroy the bacterium it has captured?",
-                skill: "Lysosomes fuse with the phagosome and release their digestive enzymes directly onto the trapped bacterium. The enzymes break down the bacterium's proteins, membrane, and DNA, neutralizing the threat. The broken-down components are then recycled or expelled from the cell.",
+                question:
+                  "How does the white blood cell destroy the bacterium it has captured?",
+                skill:
+                  "Lysosomes fuse with the phagosome and release their digestive enzymes directly onto the trapped bacterium. The enzymes break down the bacterium's proteins, membrane, and DNA, neutralizing the threat. The broken-down components are then recycled or expelled from the cell.",
               },
               {
                 title: "Sperm Propelled by Flagellum",
                 situation:
                   "A sperm cell must travel through the female reproductive tract — a fluid environment — to reach and fertilize an egg. The distance it must travel relative to its size is equivalent to a human swimming across an ocean.",
-                question: "What structure allows the sperm to move through fluid, and how does it work?",
-                skill: "The sperm cell has a single long flagellum — a microtubule-based extension at its tail. Motor proteins cause the microtubule pairs in the flagellum to slide against each other, generating a whipping motion. This rhythmic beating propels the sperm forward through the fluid of the reproductive tract.",
+                question:
+                  "What structure allows the sperm to move through fluid, and how does it work?",
+                skill:
+                  "The sperm cell has a single long flagellum — a microtubule-based extension at its tail. Motor proteins cause the microtubule pairs in the flagellum to slide against each other, generating a whipping motion. This rhythmic beating propels the sperm forward through the fluid of the reproductive tract.",
               },
             ],
           },

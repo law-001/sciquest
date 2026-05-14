@@ -28,7 +28,7 @@ export const week08 = {
     {
       id: "lesson-22",
       weekId: "week-8",
-      lessonNumber: 1,
+      lessonNumber: 22,
       title: "Properties of Acids and Bases",
       badge: "Lesson 22",
       subtitle:
@@ -169,7 +169,7 @@ export const week08 = {
     {
       id: "lesson-23",
       weekId: "week-8",
-      lessonNumber: 2,
+      lessonNumber: 23,
       title: "The pH Scale",
       badge: "Lesson 23",
       subtitle:
@@ -304,7 +304,7 @@ export const week08 = {
     {
       id: "lesson-24",
       weekId: "week-8",
-      lessonNumber: 3,
+      lessonNumber: 24,
       title: "Neutralization and Salts",
       badge: "Lesson 24",
       subtitle:

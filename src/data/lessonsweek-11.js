@@ -28,7 +28,7 @@ export const week11 = {
     {
       id: "lesson-31",
       weekId: "week-11",
-      lessonNumber: 1,
+      lessonNumber: 31,
       title: "History and Parts of the Microscope",
       badge: "Lesson 31",
       subtitle:
@@ -199,7 +199,7 @@ export const week11 = {
     {
       id: "lesson-32",
       weekId: "week-11",
-      lessonNumber: 2,
+      lessonNumber: 32,
       title: "Using the Microscope Correctly",
       badge: "Lesson 32",
       subtitle:
@@ -364,7 +364,7 @@ export const week11 = {
     {
       id: "lesson-33",
       weekId: "week-11",
-      lessonNumber: 3,
+      lessonNumber: 33,
       title: "Preparing Microscope Slides",
       badge: "Lesson 33",
       subtitle:
