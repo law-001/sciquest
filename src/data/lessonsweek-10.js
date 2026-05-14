@@ -17,7 +17,7 @@ export const week10 = {
   category: "Laboratory Skills",
   description:
     "Learn essential safety rules, hazard symbols, and emergency procedures to keep yourself and others safe in the laboratory.",
-  icon: "Shield",
+  icon: "ShieldAlert",
   color: "primary",
   xpReward: 225,
   isLocked: false,
@@ -31,13 +31,20 @@ export const week10 = {
       lessonNumber: 1,
       title: "Laboratory Safety Rules",
       badge: "Lesson 28",
-      subtitle: "Understand the essential safety rules every student must follow in the laboratory and why each rule exists.",
+      subtitle:
+        "Understand the essential safety rules every student must follow in the laboratory and why each rule exists.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: modernclassroom,
-      heroImageAlt: "Students in a science lab wearing safety goggles and lab gowns",
+      heroImageAlt:
+        "Students in a science lab wearing safety goggles and lab gowns",
 
-      sections: ["Overview", "Key Terms", "Safety Rules and Reasons", "Applications"],
+      sections: [
+        "Overview",
+        "Key Terms",
+        "Safety Rules and Reasons",
+        "Applications",
+      ],
 
       layout: [
         {
@@ -96,42 +103,48 @@ export const week10 = {
                 title: "Always Wear PPE",
                 color: "primary",
                 desc: "Protects eyes, skin, and clothing from chemical hazards",
-                content: "A single drop of strong acid reaching your eye without protection can cause permanent blindness — goggles must be worn from the start of the lab.",
+                content:
+                  "A single drop of strong acid reaching your eye without protection can cause permanent blindness — goggles must be worn from the start of the lab.",
               },
               {
                 num: 2,
                 title: "No Food or Drink in the Lab",
                 color: "secondary",
                 desc: "Prevents accidental ingestion of chemicals",
-                content: "Chemicals can contaminate food and drink, and snacking near chemicals is one of the most common causes of accidental poisoning in laboratories.",
+                content:
+                  "Chemicals can contaminate food and drink, and snacking near chemicals is one of the most common causes of accidental poisoning in laboratories.",
               },
               {
                 num: 3,
                 title: "Dispose of Waste Properly",
                 color: "accent",
                 desc: "Protects the environment and prevents chemical reactions in drains",
-                content: "Pouring certain chemicals down the drain can damage pipes, pollute water, or create dangerous reactions with other waste materials.",
+                content:
+                  "Pouring certain chemicals down the drain can damage pipes, pollute water, or create dangerous reactions with other waste materials.",
               },
               {
                 num: 4,
                 title: "Follow Teacher Instructions",
                 color: "primary",
                 desc: "Ensures the experiment is conducted safely and correctly",
-                content: "Teachers know the specific hazards of each experiment. Improvising procedures or skipping steps can lead to unexpected and dangerous chemical reactions.",
+                content:
+                  "Teachers know the specific hazards of each experiment. Improvising procedures or skipping steps can lead to unexpected and dangerous chemical reactions.",
               },
               {
                 num: 5,
                 title: "No Horseplay",
                 color: "secondary",
                 desc: "Prevents accidents caused by distraction or loss of control",
-                content: "A moment of distraction near a Bunsen burner, an open chemical container, or fragile glassware can cause serious injuries to multiple people.",
+                content:
+                  "A moment of distraction near a Bunsen burner, an open chemical container, or fragile glassware can cause serious injuries to multiple people.",
               },
               {
                 num: 6,
                 title: "Know the Emergency Exits",
                 color: "accent",
                 desc: "Enables rapid evacuation in case of fire or gas leak",
-                content: "In an emergency, every second counts. Knowing exit routes in advance prevents panic and ensures everyone can evacuate quickly and safely.",
+                content:
+                  "In an emergency, every second counts. Knowing exit routes in advance prevents panic and ensures everyone can evacuate quickly and safely.",
               },
             ],
           },
@@ -184,13 +197,19 @@ export const week10 = {
       lessonNumber: 2,
       title: "Safety Symbols and Hazards",
       badge: "Lesson 29",
-      subtitle: "Learn to recognize and interpret GHS hazard symbols so you can handle chemicals safely and choose the correct protective equipment.",
+      subtitle:
+        "Learn to recognize and interpret GHS hazard symbols so you can handle chemicals safely and choose the correct protective equipment.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: equation,
       heroImageAlt: "GHS hazard symbols displayed on chemical containers",
 
-      sections: ["Overview", "Hazard Categories", "Reading Hazard Labels", "Real-Lab Scenarios"],
+      sections: [
+        "Overview",
+        "Hazard Categories",
+        "Reading Hazard Labels",
+        "Real-Lab Scenarios",
+      ],
 
       layout: [
         {
@@ -231,7 +250,8 @@ export const week10 = {
                 color: "secondary",
                 desc: "Health hazard symbols warn of chemicals that can harm the body through skin contact, inhalation, or ingestion. The level of risk ranges from mild irritation to fatal toxicity.",
                 image: lab,
-                imageAlt: "Toxic skull, health hazard exclamation, and corrosive GHS symbols",
+                imageAlt:
+                  "Toxic skull, health hazard exclamation, and corrosive GHS symbols",
                 examples: [
                   "Skull and crossbones — acutely toxic substances (e.g., methanol, strong acids)",
                   "Exclamation mark — irritants and substances causing mild health effects",
@@ -245,7 +265,8 @@ export const week10 = {
                 color: "primary",
                 desc: "The environmental hazard symbol warns of substances that are harmful to aquatic organisms or the broader environment. These must be disposed of carefully to prevent pollution.",
                 image: globe,
-                imageAlt: "Environmental hazard GHS symbol with dead fish and tree",
+                imageAlt:
+                  "Environmental hazard GHS symbol with dead fish and tree",
                 examples: [
                   "Dead fish and tree symbol — harmful to aquatic life (e.g., certain pesticides, heavy metals)",
                   "Chemicals in this category must never be poured down drains",
@@ -280,22 +301,28 @@ export const week10 = {
                 title: "Unlabeled Bottle",
                 situation:
                   "A student finds a clear bottle of liquid on the reagent shelf. The label has been rubbed off and no information is visible. The student needs a solvent for their experiment.",
-                question: "Should the student use the liquid? What should they do instead?",
-                skill: "Never use an unlabeled chemical. The student should report the bottle to the teacher immediately. Without knowing the identity and hazards of the substance, using it could cause a fire, chemical burns, or toxic exposure.",
+                question:
+                  "Should the student use the liquid? What should they do instead?",
+                skill:
+                  "Never use an unlabeled chemical. The student should report the bottle to the teacher immediately. Without knowing the identity and hazards of the substance, using it could cause a fire, chemical burns, or toxic exposure.",
               },
               {
                 title: "Disposing of Chemicals",
                 situation:
                   "After an experiment, a student has leftover sodium hydroxide solution (a corrosive base) and wants to pour it down the laboratory sink to clean up quickly.",
-                question: "Is this safe? What factors should the student check before disposing of any chemical?",
-                skill: "Check the GHS label and your teacher's disposal instructions first. Many corrosive chemicals can damage pipes or react with other substances in the drain. Dilute bases may be safely flushed with large amounts of water, but this must be confirmed with the teacher.",
+                question:
+                  "Is this safe? What factors should the student check before disposing of any chemical?",
+                skill:
+                  "Check the GHS label and your teacher's disposal instructions first. Many corrosive chemicals can damage pipes or react with other substances in the drain. Dilute bases may be safely flushed with large amounts of water, but this must be confirmed with the teacher.",
               },
               {
                 title: "Choosing PPE",
                 situation:
                   "A student is about to perform an experiment using a flammable solvent (acetone) and a corrosive acid (hydrochloric acid). The GHS labels show both a flame symbol and a skull and crossbones.",
-                question: "What PPE should the student put on before beginning? Is regular clothing sufficient?",
-                skill: "The student must wear safety goggles (eye protection from splashes and vapors), chemical-resistant gloves (hand protection from both the acid and solvent), and a lab gown (body protection). No open flames should be present due to the flammable solvent.",
+                question:
+                  "What PPE should the student put on before beginning? Is regular clothing sufficient?",
+                skill:
+                  "The student must wear safety goggles (eye protection from splashes and vapors), chemical-resistant gloves (hand protection from both the acid and solvent), and a lab gown (body protection). No open flames should be present due to the flammable solvent.",
               },
             ],
           },
@@ -312,13 +339,20 @@ export const week10 = {
       lessonNumber: 3,
       title: "Emergency Procedures",
       badge: "Lesson 30",
-      subtitle: "Learn the step-by-step procedures for responding to common laboratory emergencies, including chemical spills, fires, cuts, and eye injuries.",
+      subtitle:
+        "Learn the step-by-step procedures for responding to common laboratory emergencies, including chemical spills, fires, cuts, and eye injuries.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: flowchart,
-      heroImageAlt: "Emergency response flowchart showing steps for lab accidents",
+      heroImageAlt:
+        "Emergency response flowchart showing steps for lab accidents",
 
-      sections: ["Overview", "Chemical Spill on Skin", "Minor vs Major Emergencies", "Applications"],
+      sections: [
+        "Overview",
+        "Chemical Spill on Skin",
+        "Minor vs Major Emergencies",
+        "Applications",
+      ],
 
       layout: [
         {

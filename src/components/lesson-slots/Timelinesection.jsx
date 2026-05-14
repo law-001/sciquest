@@ -68,12 +68,14 @@ export default function TimelineSection({ id, heading, data }) {
             <Card
               className={`group flex-1 p-6 border-l-4 border-l-${step.color}-500 mb-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md`}
             >
-              <h3 className="text-xl font-bold text-stone-900 mb-2 transition-colors duration-300 group-hover:text-primary-700">
+              <h3 className="text-xl font-bold text-stone-900 mb-2 transition-colors duration-300 group-hover:text-primary-700 dark:text-stone-200">
                 {step.title}
               </h3>
-              <p className="text-stone-600 text-base">{step.description}</p>
+              <p className="text-stone-600 text-base dark:text-stone-300">
+                {step.description}
+              </p>
               {step.tip && (
-                <p className="text-sm text-stone-500 italic mt-3 transition-colors duration-300 group-hover:text-stone-600">
+                <p className="text-sm text-stone-500 italic mt-3 transition-colors duration-300 dark:text-stone-300">
                   💡 Tip: {step.tip}
                 </p>
               )}

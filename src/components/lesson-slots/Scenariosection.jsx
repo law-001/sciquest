@@ -54,17 +54,21 @@ export default function ScenarioSection({ id, heading, data }) {
             }}
           >
             <Card className="group p-6 border-l-4 border-l-accent-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-              <h3 className="text-xl font-bold text-stone-900 mb-3 transition-colors duration-300 group-hover:text-accent-700">
+              <h3 className="text-xl font-bold text-stone-900 mb-3 transition-colors duration-300 group-hover:text-accent-400 dark:text-stone-100">
                 {sc.title}
               </h3>
-              <p className="text-stone-600 text-base mb-4">{sc.situation}</p>
-              <div className="bg-accent-50 rounded-xl p-4 transition-all duration-300 group-hover:bg-accent-100 group-hover:scale-[1.01]">
+              <p className="text-stone-600 text-base mb-4 dark:text-stone-300">
+                {sc.situation}
+              </p>
+              <div className="bg-accent-100 rounded-xl p-4 transition-all duration-300 group-hover:bg-stone-500 group-hover:scale-[1.01] dark:bg-stone-500 ">
                 <p className="text-accent-800 font-bold text-sm mb-1">
                   🤔 Think About It:
                 </p>
-                <p className="text-accent-700 text-base">{sc.question}</p>
+                <p className="text-stone-300 text-base group-hover:text-accent-400">
+                  {sc.question}
+                </p>
               </div>
-              <p className="text-sm text-stone-500 italic mt-3 transition-colors duration-300 group-hover:text-stone-600">
+              <p className="text-sm text-stone-500 italic mt-3 transition-colors duration-300 group-hover:text-stone-600 dark:text-stone-300">
                 Skill used: {sc.skill}
               </p>
             </Card>

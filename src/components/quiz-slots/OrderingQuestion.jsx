@@ -11,12 +11,7 @@ function shuffle(arr) {
   return a;
 }
 
-export function OrderingQuestion({
-  question,
-  value,
-  onChange,
-  isSubmitted,
-}) {
+export function OrderingQuestion({ question, value, onChange, isSubmitted }) {
   const [order, setOrder] = useState(() =>
     value?.length === question.items.length ? value : shuffle(question.items),
   );
@@ -59,7 +54,7 @@ export function OrderingQuestion({
                 ? "border-secondary-400 bg-secondary-50 text-secondary-700"
                 : isWrongPos
                   ? "border-red-300 bg-red-50 text-red-700"
-                  : "border-orange-200 bg-white text-stone-700",
+                  : "border-orange-200 bg-white text-stone-700 dark:bg-stone-700 dark:text-stone-100",
             )}
           >
             <span className="w-6 text-center text-xs font-black text-stone-400 shrink-0">

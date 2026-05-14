@@ -11,11 +11,31 @@ import {
   Star,
   Globe2,
   Dna,
-  Zap,
   ChevronRight,
   CheckCircle2,
   LogIn,
+  Shapes,
+  Atom,
+  Thermometer,
+  FlaskConical,
+  Ruler,
+  Droplets,
+  TestTube,
+  FlaskRound,
+  ShieldCheck,
+  ShieldAlert,
+  ScanSearch,
+  BookOpen,
+  CircleDot,
+  Leaf,
+  Copy,
+  Shuffle,
+  Heart,
+  GitCompare,
+  Network,
+  Zap,
 } from "lucide-react";
+
 import Card from "../components/Card";
 import Button from "../components/Button";
 import ProgressBar from "../components/ProgressBar";
@@ -24,7 +44,28 @@ import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
 
-const ICON_MAP = { Globe2, Dna, Zap };
+const ICON_MAP = {
+  Shapes, // 1. Scientific Models
+  Atom, // 2. Particle Model of Matter
+  Thermometer, // 3. Changes in State of Matter
+  FlaskConical, // 4. Scientific Investigation
+  Ruler, // 5. Measurement in Space
+  Droplets, // 6. Solutions and Solubility
+  TestTube, // 7. Concentration of Solutions
+  FlaskRound, // 8. Acids, Bases and Salts
+  ShieldCheck, // 9. Laboratory Equipment
+  ShieldAlert, // 10. Laboratory Safety
+  ScanSearch, // 11. The Microscope
+  BookOpen, // 12. Cell Theory
+  CircleDot, // 13. Cell Parts and Functions
+  Leaf, // 14. Plant and Animal Cells
+  Copy, // 15. Cell Reproduction: Mitosis
+  Shuffle, // 16. Cell Reproduction: Meiosis
+  Heart, // 17. Fertilization and Reproduction
+  GitCompare, // 18. Types of Reproduction Compared
+  Network, // 19. Food Chains and Food Webs
+  Zap, // 20. Energy Flow and Biological Organization
+};
 
 function useScrollTrigger(threshold = 0.1) {
   const [el, setEl] = useState(null);

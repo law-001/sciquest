@@ -17,7 +17,7 @@ export const week08 = {
   category: "Chemistry",
   description:
     "Explore the properties of acids and bases, understand the pH scale, and learn about neutralization reactions.",
-  icon: "Activity",
+  icon: "FlaskRound",
   color: "secondary",
   xpReward: 225,
   isLocked: false,
@@ -31,11 +31,13 @@ export const week08 = {
       lessonNumber: 1,
       title: "Properties of Acids and Bases",
       badge: "Lesson 22",
-      subtitle: "Learn to identify acids and bases by their physical properties and how they behave in chemical reactions.",
+      subtitle:
+        "Learn to identify acids and bases by their physical properties and how they behave in chemical reactions.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
-      heroImageAlt: "Litmus paper tests showing color changes in acid and base solutions",
+      heroImageAlt:
+        "Litmus paper tests showing color changes in acid and base solutions",
 
       sections: ["Overview", "Key Terms", "Acids vs Bases", "Applications"],
 
@@ -170,11 +172,13 @@ export const week08 = {
       lessonNumber: 2,
       title: "The pH Scale",
       badge: "Lesson 23",
-      subtitle: "Understand the pH scale and use chemical indicators to classify everyday substances as acids, bases, or neutral.",
+      subtitle:
+        "Understand the pH scale and use chemical indicators to classify everyday substances as acids, bases, or neutral.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
-      heroImageAlt: "pH scale chart showing colors from red (acid) to purple (base)",
+      heroImageAlt:
+        "pH scale chart showing colors from red (acid) to purple (base)",
 
       sections: ["Overview", "pH Categories", "Key Ideas", "Applications"],
 
@@ -303,13 +307,20 @@ export const week08 = {
       lessonNumber: 3,
       title: "Neutralization and Salts",
       badge: "Lesson 24",
-      subtitle: "Learn how acids and bases react to form salts and water, and explore where neutralization reactions occur in everyday life.",
+      subtitle:
+        "Learn how acids and bases react to form salts and water, and explore where neutralization reactions occur in everyday life.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: equation,
-      heroImageAlt: "Chemical equation showing acid plus base yields salt plus water",
+      heroImageAlt:
+        "Chemical equation showing acid plus base yields salt plus water",
 
-      sections: ["Overview", "Key Terms", "Steps of Neutralization", "Everyday Neutralization"],
+      sections: [
+        "Overview",
+        "Key Terms",
+        "Steps of Neutralization",
+        "Everyday Neutralization",
+      ],
 
       layout: [
         {
@@ -421,22 +432,28 @@ export const week08 = {
                 title: "Antacid for Heartburn",
                 situation:
                   "A person experiences heartburn after eating spicy food. Their stomach has produced too much HCl, causing a burning sensation in the esophagus. They take a chewable antacid tablet containing calcium carbonate (CaCO₃).",
-                question: "What type of chemical reaction is occurring? What are the products?",
-                skill: "Neutralization — the basic calcium carbonate reacts with excess HCl to form calcium chloride (a salt), water, and carbon dioxide gas, relieving the acidity.",
+                question:
+                  "What type of chemical reaction is occurring? What are the products?",
+                skill:
+                  "Neutralization — the basic calcium carbonate reacts with excess HCl to form calcium chloride (a salt), water, and carbon dioxide gas, relieving the acidity.",
               },
               {
                 title: "Treating Soil Acidity",
                 situation:
                   "A farmer tests the soil and finds it has a pH of 4.5 — too acidic for growing vegetables. The farmer spreads powdered agricultural lime (calcium oxide, CaO) over the field.",
-                question: "How does adding lime change the soil? What type of reaction is this?",
-                skill: "Lime is a base that neutralizes the excess acid in the soil, raising the pH to a range suitable for plant growth — this is neutralization applied to agriculture.",
+                question:
+                  "How does adding lime change the soil? What type of reaction is this?",
+                skill:
+                  "Lime is a base that neutralizes the excess acid in the soil, raising the pH to a range suitable for plant growth — this is neutralization applied to agriculture.",
               },
               {
                 title: "Cleaning with Baking Soda",
                 situation:
                   "To remove a stubborn stain caused by a mild acid (like fruit juice), a student sprinkles baking soda (NaHCO₃) on the stain and adds a few drops of water before scrubbing.",
-                question: "Why does the baking soda help remove the acidic stain? What products are formed?",
-                skill: "Baking soda is a mild base that neutralizes the acid in the stain, breaking it down into salt, water, and CO₂ gas, making it easier to wash away.",
+                question:
+                  "Why does the baking soda help remove the acidic stain? What products are formed?",
+                skill:
+                  "Baking soda is a mild base that neutralizes the acid in the stain, breaking it down into salt, water, and CO₂ gas, making it easier to wash away.",
               },
             ],
           },

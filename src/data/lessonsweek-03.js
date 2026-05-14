@@ -17,7 +17,7 @@ export const week03 = {
   category: "Matter",
   description:
     "Explore how matter changes from one state to another when heat is added or removed.",
-  icon: "Droplets",
+  icon: "Thermometer",
   color: "accent",
   xpReward: 225,
   isLocked: false,

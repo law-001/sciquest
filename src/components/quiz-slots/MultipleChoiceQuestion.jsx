@@ -15,13 +15,15 @@ export function MultipleChoiceQuestion({
         const isCorrect = option === question.correctAnswer;
 
         let cls =
-          "border-orange-200 hover:border-primary-300 hover:bg-primary-50/50 text-stone-700 cursor-pointer";
+          "border-stone-200 dark:border-stone-700 hover:border-primary-300 hover:bg-primary-50/50 text-stone-700 cursor-pointer dark:text-stone-300";
         if (isSubmitted) {
           if (isCorrect)
-            cls = "border-secondary-400 bg-secondary-50 text-secondary-700 cursor-default";
+            cls =
+              "border-secondary-400 bg-secondary-50 text-secondary-700 cursor-default";
           else if (isSelected)
             cls = "border-red-300 bg-red-50 text-red-700 cursor-default";
-          else cls = "border-orange-100 text-stone-400 opacity-60 cursor-default";
+          else
+            cls = "border-orange-100 text-stone-400 opacity-60 cursor-default";
         } else if (isSelected) {
           cls =
             "border-primary-500 bg-primary-50 text-primary-700 ring-4 ring-primary-500/10 cursor-pointer";

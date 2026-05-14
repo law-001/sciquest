@@ -17,7 +17,7 @@ export const week07 = {
   category: "Chemistry",
   description:
     "Understand how to describe and calculate the concentration of solutions, and learn about dilution.",
-  icon: "Percent",
+  icon: "TestTube",
   color: "primary",
   xpReward: 225,
   isLocked: false,
@@ -31,11 +31,13 @@ export const week07 = {
       lessonNumber: 1,
       title: "What is Concentration?",
       badge: "Lesson 19",
-      subtitle: "Learn what concentration means, how it is expressed, and how concentrated and dilute solutions differ.",
+      subtitle:
+        "Learn what concentration means, how it is expressed, and how concentrated and dilute solutions differ.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
-      heroImageAlt: "Two beakers side by side showing concentrated and dilute solutions",
+      heroImageAlt:
+        "Two beakers side by side showing concentrated and dilute solutions",
 
       sections: ["Overview", "Key Terms", "Key Concepts", "Applications"],
 
@@ -150,13 +152,19 @@ export const week07 = {
       lessonNumber: 2,
       title: "Measuring and Calculating Concentration",
       badge: "Lesson 20",
-      subtitle: "Practice calculating concentration using the percent by mass formula and learn to read concentration labels on everyday products.",
+      subtitle:
+        "Practice calculating concentration using the percent by mass formula and learn to read concentration labels on everyday products.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: equation,
       heroImageAlt: "Concentration formula written on a whiteboard",
 
-      sections: ["Overview", "Types of Concentration", "Concentrated vs Dilute", "Real-Life Scenarios"],
+      sections: [
+        "Overview",
+        "Types of Concentration",
+        "Concentrated vs Dilute",
+        "Real-Life Scenarios",
+      ],
 
       layout: [
         {
@@ -262,22 +270,28 @@ export const week07 = {
                 title: "The Sports Drink",
                 situation:
                   "A student mixes 15 g of electrolyte powder into 285 g of water to make a sports drink. The total mass of the solution is 300 g.",
-                question: "What is the percent by mass concentration of the electrolyte powder in the sports drink?",
-                skill: "Percent by mass = (15 ÷ 300) × 100 = 5%. The sports drink is a 5% electrolyte solution.",
+                question:
+                  "What is the percent by mass concentration of the electrolyte powder in the sports drink?",
+                skill:
+                  "Percent by mass = (15 ÷ 300) × 100 = 5%. The sports drink is a 5% electrolyte solution.",
               },
               {
                 title: "Reading the Bleach Label",
                 situation:
                   "A bottle of household bleach is labeled '5% sodium hypochlorite.' The safety instructions say to dilute it to 0.5% for surface disinfection.",
-                question: "Is the bleach in the bottle concentrated or dilute relative to the recommended cleaning solution?",
-                skill: "The bottle contains concentrated bleach (5%) that must be diluted tenfold to reach the safe working concentration of 0.5% for everyday use.",
+                question:
+                  "Is the bleach in the bottle concentrated or dilute relative to the recommended cleaning solution?",
+                skill:
+                  "The bottle contains concentrated bleach (5%) that must be diluted tenfold to reach the safe working concentration of 0.5% for everyday use.",
               },
               {
                 title: "Adjusting Fertilizer",
                 situation:
                   "A farmer has a liquid fertilizer concentrate labeled '20% nitrogen by mass.' The recommended application concentration is 4% nitrogen.",
-                question: "Is the concentrate more or less concentrated than the working solution? How should the farmer adjust it?",
-                skill: "The concentrate (20%) is five times more concentrated than needed (4%). The farmer must dilute it with water before applying it to avoid damaging the crops.",
+                question:
+                  "Is the concentrate more or less concentrated than the working solution? How should the farmer adjust it?",
+                skill:
+                  "The concentrate (20%) is five times more concentrated than needed (4%). The farmer must dilute it with water before applying it to avoid damaging the crops.",
               },
             ],
           },
@@ -294,13 +308,20 @@ export const week07 = {
       lessonNumber: 3,
       title: "Dilution and Saturated Solutions",
       badge: "Lesson 21",
-      subtitle: "Understand how dilution reduces concentration and explore the fascinating behavior of supersaturated solutions.",
+      subtitle:
+        "Understand how dilution reduces concentration and explore the fascinating behavior of supersaturated solutions.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: flowchart,
-      heroImageAlt: "Diagram showing dilution process from concentrated to dilute solution",
+      heroImageAlt:
+        "Diagram showing dilution process from concentrated to dilute solution",
 
-      sections: ["Overview", "Key Terms", "Preparing a Diluted Solution", "Applications"],
+      sections: [
+        "Overview",
+        "Key Terms",
+        "Preparing a Diluted Solution",
+        "Applications",
+      ],
 
       layout: [
         {
