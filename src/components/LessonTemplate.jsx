@@ -177,11 +177,16 @@ export function LessonTemplate({
                         const el = document.getElementById(`section-${i}`);
                         if (el) {
                           const headerOffset = 72;
-                          const top =
-                            el.getBoundingClientRect().top +
-                            window.scrollY -
-                            headerOffset;
-                          window.scrollTo({ top, behavior: "smooth" });
+                          let top = 0;
+                          let node = el;
+                          while (node) {
+                            top += node.offsetTop;
+                            node = node.offsetParent;
+                          }
+                          window.scrollTo({
+                            top: top - headerOffset,
+                            behavior: "smooth",
+                          });
                         }
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
