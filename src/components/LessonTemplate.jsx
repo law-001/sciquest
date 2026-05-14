@@ -52,14 +52,82 @@ export function LessonTemplate({
   onLessonSelect,
 }) {
   const [activeSection, setActiveSection] = useState(0);
+  const [prevLessonId, setPrevLessonId] = useState(lesson?.id);
   const [titleVisible, setTitleVisible] = useState(false);
   const heroRef = useRef(null);
   const [heroVisible, setHeroVisible] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Reset section position when switching lessons (render-phase reset)
+  if (lesson?.id !== prevLessonId) {
+    setPrevLessonId(lesson?.id);
+    setActiveSection(0);
+  }
 
   useEffect(() => {
     const t = setTimeout(() => setTitleVisible(true), 60);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    setScrollProgress(0);
+  }, [lesson?.id]);
+
+  useEffect(() => {
+    let rafId = null;
+    const getOffsetTop = (el) => {
+      let top = 0;
+      let node = el;
+      while (node) {
+        top += node.offsetTop;
+        node = node.offsetParent;
+      }
+      return top;
+    };
+    const update = () => {
+      rafId = null;
+      const startEl = document.getElementById("section-0");
+      const endEl = document.getElementById("lesson-cta");
+      if (!startEl || !endEl) {
+        setScrollProgress(0);
+        return;
+      }
+      const headerOffset = 72;
+      const startY = getOffsetTop(startEl) - headerOffset;
+      const endY = getOffsetTop(endEl) - window.innerHeight;
+      const range = endY - startY;
+      if (range <= 0) {
+        setScrollProgress(0);
+      } else {
+        const pct = ((window.scrollY - startY) / range) * 100;
+        setScrollProgress(Math.max(0, Math.min(100, Math.round(pct))));
+      }
+
+      // Sync active section with scroll position
+      let current = 0;
+      for (let i = 0; ; i++) {
+        const el = document.getElementById(`section-${i}`);
+        if (!el) break;
+        const top = getOffsetTop(el) - headerOffset;
+        if (window.scrollY + 1 >= top) current = i;
+        else break;
+      }
+      setActiveSection(current);
+    };
+    const onScroll = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
+  }, [lesson?.id]);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -78,6 +146,59 @@ export function LessonTemplate({
   }, []);
 
   const sections = lesson?.sections ?? [];
+
+  const scrollToSection = (i) => {
+    setActiveSection(i);
+    const el = document.getElementById(`section-${i}`);
+    if (!el) return;
+    const headerOffset = 72;
+    let top = 0;
+    let node = el;
+    while (node) {
+      top += node.offsetTop;
+      node = node.offsetParent;
+    }
+    window.scrollTo({ top: top - headerOffset, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (sections.length === 0) return;
+    const handleKey = (e) => {
+      if (e.key !== "Enter") return;
+      const t = e.target;
+      // Skip when typing in inputs or editable content
+      if (
+        t instanceof HTMLInputElement ||
+        t instanceof HTMLTextAreaElement ||
+        t instanceof HTMLSelectElement ||
+        (t instanceof HTMLElement && t.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      setActiveSection((curr) => {
+        const lastIndex = sections.length - 1;
+        // At the final section, Enter scrolls to the completion CTA.
+        const targetId =
+          curr === lastIndex ? "lesson-cta" : `section-${curr + 1}`;
+        requestAnimationFrame(() => {
+          const el = document.getElementById(targetId);
+          if (!el) return;
+          const headerOffset = 72;
+          let top = 0;
+          let node = el;
+          while (node) {
+            top += node.offsetTop;
+            node = node.offsetParent;
+          }
+          window.scrollTo({ top: top - headerOffset, behavior: "smooth" });
+        });
+        return Math.min(curr + 1, lastIndex);
+      });
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [sections.length]);
 
   if (!lesson) {
     return (
@@ -172,23 +293,7 @@ export function LessonTemplate({
                   {sections.map((s, i) => (
                     <button
                       key={i}
-                      onClick={() => {
-                        setActiveSection(i);
-                        const el = document.getElementById(`section-${i}`);
-                        if (el) {
-                          const headerOffset = 72;
-                          let top = 0;
-                          let node = el;
-                          while (node) {
-                            top += node.offsetTop;
-                            node = node.offsetParent;
-                          }
-                          window.scrollTo({
-                            top: top - headerOffset,
-                            behavior: "smooth",
-                          });
-                        }
-                      }}
+                      onClick={() => scrollToSection(i)}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                         activeSection === i
                           ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
@@ -201,9 +306,7 @@ export function LessonTemplate({
                 </nav>
                 <div className="mt-4 pt-4 border-t border-orange-100 dark:border-stone-700">
                   <ProgressBar
-                    progress={Math.round(
-                      ((activeSection + 1) / sections.length) * 100,
-                    )}
+                    progress={scrollProgress}
                     color="secondary"
                     size="sm"
                     showLabel
@@ -327,7 +430,10 @@ export function LessonTemplate({
             </div>
 
             {/* Completion CTA */}
-            <div className="mt-16 pt-8 border-t border-orange-200 dark:border-stone-700">
+            <div
+              id="lesson-cta"
+              className="mt-16 pt-8 border-t border-orange-200 dark:border-stone-700"
+            >
               <Card className="p-8 text-center bg-white">
                 <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-accent-600" />
