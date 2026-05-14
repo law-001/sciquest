@@ -174,12 +174,15 @@ export function LessonTemplate({
                       key={i}
                       onClick={() => {
                         setActiveSection(i);
-                        document
-                          .getElementById(`section-${i}`)
-                          ?.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start",
-                          });
+                        const el = document.getElementById(`section-${i}`);
+                        if (el) {
+                          const headerOffset = 72;
+                          const top =
+                            el.getBoundingClientRect().top +
+                            window.scrollY -
+                            headerOffset;
+                          window.scrollTo({ top, behavior: "smooth" });
+                        }
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                         activeSection === i
