@@ -1,23 +1,34 @@
-// data/quizzesweek-01.js
-// ─── ADD / EDIT QUIZZES HERE ONLY ────────────────────────────────────────────
-// Keyed by lessonId. Each question requires a `type` field that maps
-// to a quiz-slot component in components/quiz-slots/.
-//
-// Supported types:
-//   multiple-choice | true-false | fill-blanks | short-answer | essay
-//   matching | identification | ordering | picture-based | case-study
+// Week 1 quizzes — Grade 7 Science: Scientific Models
+// One quiz type per lesson. Aggregates all weeks via imports.
 
-export const QUIZZES_DATA = {
-  // ── Week 1 ─────────────────────────────────────────────────────────────────
+import { QUIZZES_WEEK_02 } from "./quizzesweek-02";
+import { QUIZZES_WEEK_03 } from "./quizzesweek-03";
+import { QUIZZES_WEEK_04 } from "./quizzesweek-04";
+import { QUIZZES_WEEK_05 } from "./quizzesweek-05";
+import { QUIZZES_WEEK_06 } from "./quizzesweek-06";
+import { QUIZZES_WEEK_07 } from "./quizzesweek-07";
+import { QUIZZES_WEEK_08 } from "./quizzesweek-08";
+import { QUIZZES_WEEK_09 } from "./quizzesweek-09";
+import { QUIZZES_WEEK_10 } from "./quizzesweek-10";
+import { QUIZZES_WEEK_11 } from "./quizzesweek-11";
+import { QUIZZES_WEEK_12 } from "./quizzesweek-12";
+import { QUIZZES_WEEK_13 } from "./quizzesweek-13";
+import { QUIZZES_WEEK_14 } from "./quizzesweek-14";
+import { QUIZZES_WEEK_15 } from "./quizzesweek-15";
+import { QUIZZES_WEEK_16 } from "./quizzesweek-16";
+import { QUIZZES_WEEK_17 } from "./quizzesweek-17";
+import { QUIZZES_WEEK_18 } from "./quizzesweek-18";
+import { QUIZZES_WEEK_19 } from "./quizzesweek-19";
+import { QUIZZES_WEEK_20 } from "./quizzesweek-20";
 
+export const QUIZZES_WEEK_01 = {
+  // ── Lesson 1: Uses of Scientific Models — multiple-choice ──────────────────
   "lesson-1": {
     lessonId: "lesson-1",
     title: "Uses of Scientific Models",
-    description:
-      "Test your understanding of how and why scientists use models.",
-    timeLimit: 1800,
+    description: "Test your understanding of how and why scientists use models.",
+    timeLimit: 900,
     questions: [
-      // ── 1. Multiple Choice ─────────────────────────────────────────────────
       {
         id: "q1",
         type: "multiple-choice",
@@ -28,384 +39,169 @@ export const QUIZZES_DATA = {
           "A type of laboratory experiment",
           "A diagram drawn by hand only",
         ],
-        correctAnswer:
-          "A simplified representation used to explain or predict phenomena",
+        correctAnswer: "A simplified representation used to explain or predict phenomena",
         points: 5,
-        explanation:
-          "Scientific models simplify complex phenomena to make them easier to study and communicate.",
+        explanation: "Scientific models simplify complex phenomena to make them easier to study and communicate.",
       },
-
-      // ── 2. True / False ────────────────────────────────────────────────────
       {
         id: "q2",
-        type: "true-false",
-        question:
-          "A scientific model must always be a physical, tangible object.",
-        correctAnswer: false,
-        points: 3,
-        explanation:
-          "Models can be physical, mathematical, conceptual, or computational.",
+        type: "multiple-choice",
+        question: "Which of the following is a reason scientists use models?",
+        options: [
+          "To make phenomena more complicated",
+          "To replace experiments entirely",
+          "To visualize things that cannot be seen directly",
+          "To eliminate the need for data collection",
+        ],
+        correctAnswer: "To visualize things that cannot be seen directly",
+        points: 5,
+        explanation: "Models help scientists study phenomena that are too small, large, fast, or dangerous to observe directly.",
       },
-
-      // ── 3. Fill in the Blanks ──────────────────────────────────────────────
       {
         id: "q3",
-        type: "fill-blanks",
-        question:
-          "Scientists use models because some phenomena are too ___, ___, fast, or ___ to observe directly.",
-        blanks: ["small", "large", "dangerous"],
-        points: 6,
-        explanation:
-          "Scale and safety constraints make direct observation impractical for many phenomena.",
+        type: "multiple-choice",
+        question: "A globe is an example of which type of scientific model?",
+        options: ["Mathematical model", "Simulation model", "Physical model", "Conceptual model"],
+        correctAnswer: "Physical model",
+        points: 5,
+        explanation: "A globe is a tangible, three-dimensional object that represents the Earth at a smaller scale.",
       },
-
-      // ── 4. Short Answer ────────────────────────────────────────────────────
       {
         id: "q4",
-        type: "short-answer",
-        question:
-          "In your own words, explain why scientists need to update or replace models over time.",
-        points: 10,
-        rubric:
-          "Should mention new evidence, improved technology, or a better understanding of the phenomenon.",
+        type: "multiple-choice",
+        question: "Which type of model uses equations and numbers to describe a system?",
+        options: ["Physical model", "Conceptual model", "Simulation model", "Mathematical model"],
+        correctAnswer: "Mathematical model",
+        points: 5,
+        explanation: "Mathematical models use equations to describe relationships and make predictions.",
       },
-
-      // ── 5. Matching ────────────────────────────────────────────────────────
       {
         id: "q5",
-        type: "matching",
-        question: "Match each model type to its correct example.",
-        leftItems: [
-          "Physical Model",
-          "Mathematical Model",
-          "Simulation Model",
-          "Conceptual Model",
-        ],
-        rightItems: [
-          "F = ma",
-          "Globe of the Earth",
-          "Flight Simulator",
-          "Food Web Diagram",
-        ],
-        correctPairs: {
-          "Physical Model": "Globe of the Earth",
-          "Mathematical Model": "F = ma",
-          "Simulation Model": "Flight Simulator",
-          "Conceptual Model": "Food Web Diagram",
-        },
-        points: 8,
-      },
-
-      // ── 6. Identification ──────────────────────────────────────────────────
-      {
-        id: "q6",
-        type: "identification",
-        question:
-          "Name the type of model that uses computer programs to mimic real-world processes.",
-        correctAnswer: "simulation model",
-        acceptedAnswers: [
-          "simulation model",
-          "simulation",
-          "computational model",
-          "computer simulation",
-          "computer model",
-        ],
-        points: 5,
-      },
-
-      // ── 7. Ordering / Sequencing ───────────────────────────────────────────
-      {
-        id: "q7",
-        type: "ordering",
-        question:
-          "Put the following steps of model development in the correct order (drag or use the arrows):",
-        items: [
-          "Identify the phenomenon to model",
-          "Gather observations and data",
-          "Build and test the model",
-          "Use the model to make predictions",
-          "Revise the model based on results",
-        ],
-        points: 10,
-      },
-
-      // ── 8. Essay ───────────────────────────────────────────────────────────
-      {
-        id: "q8",
-        type: "essay",
-        question:
-          "Describe a real-world situation where a scientific model was crucial. What type of model was used and what were its limitations?",
-        minWords: 50,
-        points: 15,
-      },
-
-      // ── 9. Picture-Based ───────────────────────────────────────────────────
-      {
-        id: "q9",
-        type: "picture-based",
-        question: "What type of scientific model does this diagram represent?",
-        imageUrl: "/images/quiz/bohr-model.png",
-        imageAlt:
-          "Diagram showing electrons orbiting a nucleus in fixed shells (Bohr model)",
+        type: "multiple-choice",
+        question: "Why should scientific models be updated or replaced over time?",
         options: [
-          "Physical Model",
-          "Conceptual Model",
-          "Mathematical Model",
-          "Simulation Model",
+          "Because they are always wrong",
+          "Because new evidence and technology improve our understanding",
+          "Because students find them boring",
+          "Because they become too accurate",
         ],
-        correctAnswer: "Conceptual Model",
+        correctAnswer: "Because new evidence and technology improve our understanding",
         points: 5,
-        explanation:
-          "The Bohr model is a conceptual model — it simplifies atomic structure to show key relationships.",
-      },
-
-      // ── 10. Case Study ─────────────────────────────────────────────────────
-      {
-        id: "q10",
-        type: "case-study",
-        question: "Read the scenario below and answer the sub-questions.",
-        scenario:
-          "Dr. Reyes is studying the spread of a new virus. She creates a computer program that simulates how the virus spreads through a population based on contact rates, infection probability, and recovery time. She uses this model to predict whether a vaccination campaign will slow the outbreak.",
-        subQuestions: [
-          {
-            id: "q10a",
-            type: "multiple-choice",
-            question: "What type of model is Dr. Reyes using?",
-            options: [
-              "Physical Model",
-              "Simulation Model",
-              "Conceptual Model",
-              "Mathematical Model",
-            ],
-            correctAnswer: "Simulation Model",
-            points: 5,
-          },
-          {
-            id: "q10b",
-            type: "true-false",
-            question:
-              "Dr. Reyes's model can predict real-world outcomes with 100% certainty.",
-            correctAnswer: false,
-            points: 3,
-            explanation:
-              "All models simplify reality and carry assumptions, so predictions are probabilistic, not certain.",
-          },
-          {
-            id: "q10c",
-            type: "short-answer",
-            question:
-              "List one limitation of using this type of model to predict real-world outcomes.",
-            points: 5,
-          },
-        ],
+        explanation: "Science is self-correcting — models evolve as new data and technologies become available.",
       },
     ],
   },
 
+  // ── Lesson 2: Science Process Skills — true-false ─────────────────────────
   "lesson-2": {
     lessonId: "lesson-2",
-    title: "Types of Scientific Models",
+    title: "Integrated Science Process Skills and the Scientific Method",
+    description: "Test your knowledge of science process skills and scientific attitudes.",
     timeLimit: 900,
     questions: [
       {
         id: "q1",
-        type: "multiple-choice",
-        question:
-          "Which type of model uses equations to describe relationships?",
-        options: [
-          "Physical Model",
-          "Conceptual Model",
-          "Mathematical Model",
-          "Simulation Model",
-        ],
-        correctAnswer: "Mathematical Model",
+        type: "true-false",
+        question: "Observation uses only the sense of sight to gather information.",
+        correctAnswer: false,
         points: 5,
+        explanation: "Observation uses all five senses — sight, hearing, touch, taste, and smell — as well as scientific instruments.",
       },
       {
         id: "q2",
-        type: "multiple-choice",
-        question:
-          "A flight simulator used to train pilots is an example of which model type?",
-        options: [
-          "Physical Model",
-          "Conceptual Model",
-          "Mathematical Model",
-          "Simulation Model",
-        ],
-        correctAnswer: "Simulation Model",
+        type: "true-false",
+        question: "An inference is a conclusion based on observations and prior knowledge.",
+        correctAnswer: true,
         points: 5,
+        explanation: "Inference goes beyond what is directly seen by using past experience and existing knowledge to explain observations.",
       },
       {
         id: "q3",
-        type: "multiple-choice",
-        question: "The Bohr model of the atom is an example of a:",
-        options: [
-          "Physical Model",
-          "Conceptual Model",
-          "Simulation Model",
-          "Mathematical Model",
-        ],
-        correctAnswer: "Conceptual Model",
+        type: "true-false",
+        question: "A prediction is the same as a random guess about what will happen.",
+        correctAnswer: false,
         points: 5,
+        explanation: "A prediction is based on patterns and prior observations — it must be testable, unlike a random guess.",
+      },
+      {
+        id: "q4",
+        type: "true-false",
+        question: "Integrity means a scientist should report data honestly, even if results do not support the hypothesis.",
+        correctAnswer: true,
+        points: 5,
+        explanation: "Scientific integrity requires honest reporting of all results, regardless of whether they support the original hypothesis.",
+      },
+      {
+        id: "q5",
+        type: "true-false",
+        question: "Classification involves grouping objects based on their shared properties.",
+        correctAnswer: true,
+        points: 5,
+        explanation: "Classification is a basic science process skill that organizes objects or data based on similarities and differences.",
       },
     ],
   },
 
+  // ── Lesson 3: Models in Real Life — matching ───────────────────────────────
   "lesson-3": {
     lessonId: "lesson-3",
     title: "Models in Real Life",
+    description: "Match real-world applications to the correct model type.",
     timeLimit: 900,
     questions: [
       {
         id: "q1",
-        type: "multiple-choice",
-        question:
-          "Which real-life application uses computer models to predict future conditions?",
-        options: [
-          "Atomic Models",
-          "Weather Forecasting",
-          "Engineering Designs",
-          "Physical Models",
+        type: "matching",
+        question: "Match each real-world application to its correct model type.",
+        leftItems: [
+          "Weather forecasting program",
+          "Globe of the Earth",
+          "Newton's F = ma equation",
+          "Food web diagram",
+          "Flight simulator for pilot training",
+          "Bohr model of the atom",
         ],
-        correctAnswer: "Weather Forecasting",
-        points: 5,
-      },
-      {
-        id: "q2",
-        type: "multiple-choice",
-        question: "Engineers build scaled-down models of bridges to:",
-        options: [
-          "Decorate their offices",
-          "Test strength before building the real thing",
-          "Replace mathematical equations",
-          "Create conceptual diagrams",
+        rightItems: [
+          "Physical Model",
+          "Mathematical Model",
+          "Conceptual Model",
+          "Simulation Model",
         ],
-        correctAnswer: "Test strength before building the real thing",
-        points: 5,
-      },
-      {
-        id: "q3",
-        type: "true-false",
-        question:
-          "Scientific models can be improved or replaced when new evidence appears.",
-        correctAnswer: true,
-        points: 5,
-        explanation:
-          "Science is self-correcting — models evolve as new data and technologies emerge.",
+        correctPairs: {
+          "Weather forecasting program": "Simulation Model",
+          "Globe of the Earth": "Physical Model",
+          "Newton's F = ma equation": "Mathematical Model",
+          "Food web diagram": "Conceptual Model",
+          "Flight simulator for pilot training": "Simulation Model",
+          "Bohr model of the atom": "Conceptual Model",
+        },
+        points: 15,
       },
     ],
   },
+};
 
-  // ── Week 2 ─────────────────────────────────────────────────────────────────
-
-  "lesson-4": {
-    lessonId: "lesson-4",
-    title: "Cell Structure",
-    timeLimit: 900,
-    questions: [
-      {
-        id: "q1",
-        type: "multiple-choice",
-        question: 'Which part of the cell is known as the "powerhouse"?',
-        options: ["Nucleus", "Mitochondria", "Ribosome", "Cell Membrane"],
-        correctAnswer: "Mitochondria",
-        points: 5,
-      },
-      {
-        id: "q2",
-        type: "multiple-choice",
-        question: "What is the main function of the cell membrane?",
-        options: [
-          "Produce energy",
-          "Store DNA",
-          "Control what enters and exits",
-          "Make proteins",
-        ],
-        correctAnswer: "Control what enters and exits",
-        points: 5,
-      },
-      {
-        id: "q3",
-        type: "multiple-choice",
-        question:
-          'Which organelle is considered the "command center" of the cell?',
-        options: ["Nucleus", "Cytoplasm", "Golgi Apparatus", "Lysosome"],
-        correctAnswer: "Nucleus",
-        points: 5,
-      },
-    ],
-  },
-
-  "lesson-5": {
-    lessonId: "lesson-5",
-    title: "Cell Functions",
-    timeLimit: 900,
-    questions: [
-      {
-        id: "q1",
-        type: "multiple-choice",
-        question: "Which organelle produces proteins in the cell?",
-        options: ["Mitochondria", "Ribosome", "Vacuole", "Nucleus"],
-        correctAnswer: "Ribosome",
-        points: 5,
-      },
-      {
-        id: "q2",
-        type: "multiple-choice",
-        question: "What does the Golgi apparatus do?",
-        options: [
-          "Produces energy",
-          "Stores DNA",
-          "Packages and ships proteins",
-          "Controls cell division",
-        ],
-        correctAnswer: "Packages and ships proteins",
-        points: 5,
-      },
-      {
-        id: "q3",
-        type: "multiple-choice",
-        question:
-          "Which organelle breaks down waste materials inside the cell?",
-        options: ["Nucleus", "Ribosome", "Lysosome", "Mitochondria"],
-        correctAnswer: "Lysosome",
-        points: 5,
-      },
-    ],
-  },
-
-  "lesson-6": {
-    lessonId: "lesson-6",
-    title: "Cell Division",
-    timeLimit: 900,
-    questions: [
-      {
-        id: "q1",
-        type: "multiple-choice",
-        question: "What is the process called when a cell duplicates itself?",
-        options: ["Meiosis", "Mitosis", "Photosynthesis", "Osmosis"],
-        correctAnswer: "Mitosis",
-        points: 5,
-      },
-      {
-        id: "q2",
-        type: "multiple-choice",
-        question: "How many daughter cells does mitosis produce?",
-        options: ["1", "2", "3", "4"],
-        correctAnswer: "2",
-        points: 5,
-      },
-      {
-        id: "q3",
-        type: "multiple-choice",
-        question:
-          "Which type of cell division is used to produce sex cells (sperm and egg)?",
-        options: ["Mitosis", "Binary fission", "Meiosis", "Budding"],
-        correctAnswer: "Meiosis",
-        points: 5,
-      },
-    ],
-  },
+export const QUIZZES_DATA = {
+  ...QUIZZES_WEEK_01,
+  ...QUIZZES_WEEK_02,
+  ...QUIZZES_WEEK_03,
+  ...QUIZZES_WEEK_04,
+  ...QUIZZES_WEEK_05,
+  ...QUIZZES_WEEK_06,
+  ...QUIZZES_WEEK_07,
+  ...QUIZZES_WEEK_08,
+  ...QUIZZES_WEEK_09,
+  ...QUIZZES_WEEK_10,
+  ...QUIZZES_WEEK_11,
+  ...QUIZZES_WEEK_12,
+  ...QUIZZES_WEEK_13,
+  ...QUIZZES_WEEK_14,
+  ...QUIZZES_WEEK_15,
+  ...QUIZZES_WEEK_16,
+  ...QUIZZES_WEEK_17,
+  ...QUIZZES_WEEK_18,
+  ...QUIZZES_WEEK_19,
+  ...QUIZZES_WEEK_20,
 };
 
 export function getQuizByLesson(lessonId) {

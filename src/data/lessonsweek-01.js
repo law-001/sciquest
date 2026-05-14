@@ -7,6 +7,26 @@ import web from "../assets/web.jpg";
 import equation from "../assets/equation.jpg";
 import simulation from "../assets/simulation.jpg";
 
+import { week02 } from "./lessonsweek-02";
+import { week03 } from "./lessonsweek-03";
+import { week04 } from "./lessonsweek-04";
+import { week05 } from "./lessonsweek-05";
+import { week06 } from "./lessonsweek-06";
+import { week07 } from "./lessonsweek-07";
+import { week08 } from "./lessonsweek-08";
+import { week09 } from "./lessonsweek-09";
+import { week10 } from "./lessonsweek-10";
+import { week11 } from "./lessonsweek-11";
+import { week12 } from "./lessonsweek-12";
+import { week13 } from "./lessonsweek-13";
+import { week14 } from "./lessonsweek-14";
+import { week15 } from "./lessonsweek-15";
+import { week16 } from "./lessonsweek-16";
+import { week17 } from "./lessonsweek-17";
+import { week18 } from "./lessonsweek-18";
+import { week19 } from "./lessonsweek-19";
+import { week20 } from "./lessonsweek-20";
+
 const week01 = {
   id: "week-1",
   weekNumber: 1,
@@ -734,7 +754,7 @@ const week01 = {
     },
 
     // ═══════════════════════════════════════════════════
-    // LESSON 3 — Models in Real Life (placeholder)
+    // LESSON 3 — Models in Real Life
     // ═══════════════════════════════════════════════════
     {
       id: "lesson-3",
@@ -742,22 +762,162 @@ const week01 = {
       lessonNumber: 3,
       badge: "Lesson 3",
       title: "Models in Real Life",
-      subtitle: "See how scientific models are applied in the real world.",
-      readTime: "~10 min read",
+      subtitle: "Discover how scientific models are used every day by doctors, engineers, and scientists to solve real-world problems.",
+      readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
-      heroImageAlt: "Simulation",
-      heroVideo: null,
+      heroImageAlt: "Computer simulation model",
 
-      sections: ["Introduction"],
+      sections: ["Introduction", "Models in Action", "Real-Life Scenarios", "Impact of Models"],
 
       layout: [
         {
           type: "intro",
           heading: "Introduction",
           data: {
-            paragraphs: ["Lesson 3 intro text here..."],
-            didYouKnow: "Did you know fact for lesson 3...",
+            paragraphs: [
+              "Scientific models are not just for textbooks. They are used every day by <strong class='text-primary-700'>doctors, engineers, weather forecasters, and environmentalists</strong> to solve real problems and make life-changing decisions.",
+              "A model does not need to be perfect to be useful. Even a simplified version of a system can help scientists predict outcomes, avoid disasters, and design better technology. In this lesson, we explore how different types of models are applied in the real world.",
+            ],
+            didYouKnow:
+              "NASA engineers use mathematical models called 'finite element models' to simulate stress on rocket parts before launching — preventing costly failures in space!",
+          },
+        },
+        {
+          type: "imageCards",
+          heading: "Models in Action",
+          data: {
+            cards: [
+              {
+                title: "Weather Forecasting",
+                label: "Simulation",
+                variant: "primary",
+                color: "primary",
+                desc: "Meteorologists use computer simulation models to predict weather patterns up to 10 days in advance.",
+                image: simulation,
+                imageAlt: "Weather simulation model",
+                examples: [
+                  "Track storm and typhoon paths",
+                  "Predict rainfall and flooding",
+                  "Issue public storm warnings in advance",
+                ],
+              },
+              {
+                title: "Medical Models",
+                label: "Physical & Math",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Doctors use 3D physical models and mathematical models to understand diseases and plan surgery.",
+                image: microscope,
+                imageAlt: "Medical imaging model",
+                examples: [
+                  "3D anatomical models for surgical planning",
+                  "Mathematical models predicting drug dosage",
+                  "Computer simulations of tumor growth",
+                ],
+              },
+              {
+                title: "Engineering Design",
+                label: "Physical & Math",
+                variant: "primary",
+                color: "primary",
+                desc: "Engineers build scale models and use equations to test safety before constructing bridges, buildings, and aircraft.",
+                image: equation,
+                imageAlt: "Engineering blueprint",
+                examples: [
+                  "Scale models of bridges to test strength",
+                  "Aerodynamic simulations for aircraft",
+                  "Car crash simulations using computers",
+                ],
+              },
+              {
+                title: "Climate Science",
+                label: "Simulation",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Climate scientists use powerful computer models to study how Earth's temperature changes over decades.",
+                image: globe,
+                imageAlt: "Climate model globe",
+                examples: [
+                  "Predict sea level rise from melting ice caps",
+                  "Study the effects of greenhouse gases",
+                  "Project long-term global temperature trends",
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: "scenario",
+          heading: "Real-Life Scenarios",
+          data: {
+            intro:
+              "Let's see how real people use scientific models in their work. For each scenario, identify the type of model and explain how it helps.",
+            scenarios: [
+              {
+                title: "The Typhoon Warning",
+                situation:
+                  "A weather forecaster enters data about wind speed, air pressure, and sea temperature into a computer. The program generates a map showing where a typhoon will likely hit in 3 days.",
+                question:
+                  "What type of model is the computer program? How does it help protect people?",
+                skill:
+                  "Simulation model — it processes real data to predict future events, giving communities time to evacuate and prepare.",
+              },
+              {
+                title: "Building a Safe Bridge",
+                situation:
+                  "Before constructing a bridge, engineers build a small-scale version and apply forces to test where it bends or breaks. They then redesign the structure based on the results.",
+                question:
+                  "What type of model are the engineers using? What is the benefit of testing a small version first?",
+                skill:
+                  "Physical model — it allows engineers to find weaknesses in the design before spending millions on the real structure.",
+              },
+              {
+                title: "Tracking a New Disease",
+                situation:
+                  "A scientist creates a computer program that simulates how an illness spreads through a school based on how often students are in contact. She uses it to determine if closing one grade level can stop the spread.",
+                question:
+                  "What type of model is the scientist using? What assumptions might limit its accuracy?",
+                skill:
+                  "Simulation model — it imitates real-world spread patterns, but assumes all students have the same contact rates, which may not be true.",
+              },
+            ],
+          },
+        },
+        {
+          type: "applications",
+          heading: "Impact of Models",
+          data: {
+            apps: [
+              {
+                title: "Disaster Preparedness",
+                description:
+                  "Simulation models of typhoons, floods, and earthquakes help governments plan evacuations and save thousands of lives each year.",
+                icon: "🌀",
+                color: "border-l-primary-500",
+              },
+              {
+                title: "Medicine and Surgery",
+                description:
+                  "3D physical models and mathematical models help surgeons plan complex operations and develop life-saving treatments.",
+                icon: "🏥",
+                color: "border-l-secondary-500",
+              },
+              {
+                title: "Sustainable Energy",
+                description:
+                  "Engineers use mathematical and simulation models to design more efficient solar panels, wind turbines, and batteries.",
+                icon: "⚡",
+                color: "border-l-accent-500",
+              },
+              {
+                title: "Environmental Protection",
+                description:
+                  "Climate scientists use simulation models to study pollution, deforestation, and ocean acidification, guiding policies that protect ecosystems.",
+                icon: "🌍",
+                color: "border-l-primary-500",
+              },
+            ],
           },
         },
       ],
@@ -765,4 +925,9 @@ const week01 = {
   ],
 };
 
-export const WEEKS_DATA = [week01];
+export const WEEKS_DATA = [
+  week01, week02, week03, week04, week05,
+  week06, week07, week08, week09, week10,
+  week11, week12, week13, week14, week15,
+  week16, week17, week18, week19, week20,
+];
