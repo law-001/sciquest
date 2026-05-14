@@ -34,6 +34,10 @@ import {
   GitCompare,
   Network,
   Zap,
+  Search,
+  X,
+  SlidersHorizontal,
+  ChevronDown,
 } from "lucide-react";
 
 import Card from "../components/Card";
@@ -120,6 +124,9 @@ export function LessonsPage({
     "4th Quarter": { min: 31, max: 40 },
   };
   const [activeCategory, setActiveCategory] = useState("All Topics");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filteredWeeks = useMemo(() => {
     if (activeCategory === "All Topics") return WEEKS_DATA;
@@ -130,6 +137,20 @@ export function LessonsPage({
       return num >= range.min && num <= range.max;
     });
   }, [activeCategory]);
+
+  const displayedWeeks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return filteredWeeks;
+    return filteredWeeks.filter(
+      (week) =>
+        week.title?.toLowerCase().includes(q) ||
+        week.description?.toLowerCase().includes(q) ||
+        week.category?.toLowerCase().includes(q) ||
+        String(week.weekNumber).includes(q) ||
+        `week ${week.weekNumber}`.includes(q) ||
+        week.lessons?.some((l) => l.title?.toLowerCase().includes(q)),
+    );
+  }, [filteredWeeks, searchQuery]);
 
   if (!isLoggedIn) {
     return (
@@ -196,35 +217,170 @@ export function LessonsPage({
           </Card>
         </div>
 
-        {/* Category Filter */}
+        {/* Category Filter + Search */}
         <div
-          className={`flex overflow-x-auto pb-4 mb-8 gap-3 md:pb-4 [&::-webkit-scrollbar]:hidden md:[&::-webkit-scrollbar]:block [-ms-overflow-style:none] md:[-ms-overflow-style:auto] [scrollbar-width:none] md:[scrollbar-width:auto] transition-all duration-700 ease-out ${
+          className={`mb-8 transition-all duration-700 ease-out ${
             mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
           style={{ transitionDelay: "150ms" }}
         >
-          {categories.map((cat) => (
+          {/* ── Mobile top bar: Filters toggle + Search icon ── */}
+          <div className="flex items-center gap-2 md:hidden">
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => setFiltersOpen((p) => !p)}
               className={cn(
-                "px-6 py-2.5 my-1 rounded-full font-bold whitespace-nowrap transition-all hover:-translate-y-1 hover:shadow-card-hover",
-                activeCategory === cat
-                  ? "bg-stone-800 dark:bg-stone-600 text-white shadow-md"
-                  : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-600 hover:border-primary-300 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-stone-700",
+                "flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm border transition-all",
+                filtersOpen
+                  ? "bg-stone-800 dark:bg-stone-600 text-white border-stone-800 dark:border-stone-600 shadow-md"
+                  : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-orange-200 dark:border-stone-600",
               )}
             >
-              {cat}
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {activeCategory !== "All Topics" && (
+                <span className="w-2 h-2 rounded-full bg-primary-500" />
+              )}
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${filtersOpen ? "rotate-180" : ""}`}
+              />
             </button>
-          ))}
+
+            <div className="ml-auto">
+              {searchOpen ? (
+                <div className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 rounded-full px-3 py-2 focus-within:border-primary-400 dark:focus-within:border-primary-500 transition-colors">
+                  <Search className="w-4 h-4 text-stone-400 shrink-0" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="w-36 text-sm font-medium bg-transparent text-stone-700 dark:text-stone-200 placeholder-stone-400 outline-none"
+                  />
+                  <button
+                    onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                    className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                    aria-label="Close search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-600 dark:text-stone-300 transition-colors"
+                  aria-label="Search lessons"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Mobile collapsible filter pills ── */}
+          <div
+            className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+              filtersOpen ? "max-h-40 opacity-100 mt-3" : "max-h-0 opacity-0 pointer-events-none"
+            }`}
+          >
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => {
+                const isComingSoon =
+                  cat === "3rd Quarter" || cat === "4th Quarter";
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      if (isComingSoon) return;
+                      setActiveCategory(cat);
+                      setFiltersOpen(false);
+                    }}
+                    disabled={isComingSoon}
+                    className={cn(
+                      "relative px-5 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all",
+                      isComingSoon
+                        ? "bg-white dark:bg-stone-800 text-stone-400 dark:text-stone-500 border border-orange-200 dark:border-stone-600 opacity-60 cursor-not-allowed"
+                        : activeCategory === cat
+                          ? "bg-stone-800 dark:bg-stone-600 text-white shadow-md"
+                          : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-600",
+                    )}
+                  >
+                    {cat}
+                    {isComingSoon && (
+                      <span className="ml-1.5 text-[9px] font-bold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full">
+                        Soon
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Desktop: pills + search bar inline ── */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {categories.map((cat) => {
+                const isComingSoon =
+                  cat === "3rd Quarter" || cat === "4th Quarter";
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => !isComingSoon && setActiveCategory(cat)}
+                    disabled={isComingSoon}
+                    className={cn(
+                      "relative px-6 py-2.5 my-1 rounded-full font-bold whitespace-nowrap transition-all",
+                      isComingSoon
+                        ? "bg-white dark:bg-stone-800 text-stone-400 dark:text-stone-500 border border-orange-200 dark:border-stone-600 opacity-60 cursor-not-allowed"
+                        : activeCategory === cat
+                          ? "bg-stone-800 dark:bg-stone-600 text-white shadow-md hover:-translate-y-1 hover:shadow-card-hover"
+                          : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-600 hover:border-primary-300 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-stone-700 hover:-translate-y-1 hover:shadow-card-hover",
+                    )}
+                  >
+                    {cat}
+                    {isComingSoon && (
+                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full">
+                        Soon
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="shrink-0 flex items-center gap-2 bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 rounded-full px-4 py-2.5 w-56 focus-within:border-primary-400 dark:focus-within:border-primary-500 transition-colors">
+              <Search className="w-4 h-4 text-stone-400 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search lessons..."
+                className="bg-transparent text-sm font-medium text-stone-700 dark:text-stone-200 placeholder-stone-400 outline-none w-full"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200" aria-label="Clear search">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Week Cards Grid — 1 card = 1 week of lessons */}
+        {displayedWeeks.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Search className="w-10 h-10 text-stone-300 dark:text-stone-600 mb-4" />
+            <p className="text-stone-500 dark:text-stone-400 font-bold">No lessons match "{searchQuery}"</p>
+            <button onClick={() => setSearchQuery("")} className="mt-3 text-sm text-primary-500 hover:underline font-bold">
+              Clear search
+            </button>
+          </div>
+        )}
         <div
           ref={cardsRef}
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {filteredWeeks.map((week, index) => {
+          {displayedWeeks.map((week, index) => {
             const IconComponent = ICON_MAP[week.icon] || Globe2;
 
             // Count how many lessons in this week are completed
