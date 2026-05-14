@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Play,
   Lock,
@@ -28,9 +34,12 @@ function useScrollTrigger(threshold = 0.1) {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) { setTriggered(true); obs.disconnect(); }
+        if (entry.isIntersecting) {
+          setTriggered(true);
+          obs.disconnect();
+        }
       },
-      { threshold }
+      { threshold },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -38,9 +47,15 @@ function useScrollTrigger(threshold = 0.1) {
   return [ref, triggered];
 }
 
-export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, onLoginClick }) {
+export function LessonsPage({
+  onStartWeek,
+  completedLessons = [],
+  isLoggedIn,
+  onLoginClick,
+}) {
   const { user, profile } = useAuth();
-  const firstName = profile?.first_name || user?.user_metadata?.first_name || "";
+  const firstName =
+    profile?.first_name || user?.user_metadata?.first_name || "";
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
 
@@ -54,14 +69,26 @@ export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, on
     "1st Quarter",
     "2nd Quarter",
     "3rd Quarter",
-    "4thQuarter",
+    "4th Quarter", // ← fixed the typo/missing space from your original
   ];
+
+  const QUARTER_RANGES = {
+    "1st Quarter": { min: 1, max: 10 },
+    "2nd Quarter": { min: 11, max: 20 },
+    "3rd Quarter": { min: 21, max: 30 },
+    "4th Quarter": { min: 31, max: 40 },
+  };
   const [activeCategory, setActiveCategory] = useState("All Topics");
 
-  const filteredWeeks =
-    activeCategory === "All Topics"
-      ? WEEKS_DATA
-      : WEEKS_DATA.filter((w) => w.category === activeCategory);
+  const filteredWeeks = useMemo(() => {
+    if (activeCategory === "All Topics") return WEEKS_DATA;
+    const range = QUARTER_RANGES[activeCategory];
+    if (!range) return WEEKS_DATA;
+    return WEEKS_DATA.filter((week) => {
+      const num = parseInt(week.id.replace(/\D/g, ""), 10);
+      return num >= range.min && num <= range.max;
+    });
+  }, [activeCategory]);
 
   if (!isLoggedIn) {
     return (
@@ -92,7 +119,7 @@ export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, on
         {/* Header */}
         <div
           className={`flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 transition-all duration-700 ease-out ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6"
           }`}
         >
           <div>
@@ -131,9 +158,9 @@ export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, on
         {/* Category Filter */}
         <div
           className={`flex overflow-x-auto pb-4 mb-8 gap-3 md:pb-4 [&::-webkit-scrollbar]:hidden md:[&::-webkit-scrollbar]:block [-ms-overflow-style:none] md:[-ms-overflow-style:auto] [scrollbar-width:none] md:[scrollbar-width:auto] transition-all duration-700 ease-out ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
-          style={{ transitionDelay: '150ms' }}
+          style={{ transitionDelay: "150ms" }}
         >
           {categories.map((cat) => (
             <button
@@ -152,7 +179,10 @@ export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, on
         </div>
 
         {/* Week Cards Grid — 1 card = 1 week of lessons */}
-        <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          ref={cardsRef}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {filteredWeeks.map((week, index) => {
             const IconComponent = ICON_MAP[week.icon] || Globe2;
 
@@ -170,117 +200,119 @@ export function LessonsPage({ onStartWeek, completedLessons = [], isLoggedIn, on
               <div
                 key={week.id}
                 className={`transition-all duration-700 ease-out ${
-                  cardsTriggered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                  cardsTriggered
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-10"
                 }`}
                 style={{ transitionDelay: `${index * 80}ms` }}
               >
-              <Card
-                className={cn(
-                  "flex flex-col h-full transition-all duration-300",
-                  week.isLocked
-                    ? "opacity-75 grayscale-[0.5]"
-                    : "hover:-translate-y-1 hover:shadow-card-hover",
-                )}
-              >
-                <div className="p-6 flex-1 flex flex-col">
-                  {/* Icon + XP */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div
+                <Card
+                  className={cn(
+                    "flex flex-col h-full transition-all duration-300",
+                    week.isLocked
+                      ? "opacity-75 grayscale-[0.5]"
+                      : "hover:-translate-y-1 hover:shadow-card-hover",
+                  )}
+                >
+                  <div className="p-6 flex-1 flex flex-col">
+                    {/* Icon + XP */}
+                    <div className="flex justify-between items-start mb-4">
+                      <div
+                        className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center shadow-warm",
+                          `bg-${week.color}-100`,
+                        )}
+                      >
+                        <IconComponent
+                          className={`w-8 h-8 text-${week.color}-500`}
+                        />
+                      </div>
+                      <Badge
+                        variant={week.isLocked ? "outline" : "accent"}
+                        icon={<Star className="w-3 h-3 fill-current" />}
+                      >
+                        +{week.xpReward} XP
+                      </Badge>
+                    </div>
+
+                    {/* Week label */}
+                    <span
                       className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center shadow-warm",
-                        `bg-${week.color}-100`,
+                        "text-xs font-bold uppercase tracking-wider mb-1",
+                        `text-${week.color}-600`,
                       )}
                     >
-                      <IconComponent
-                        className={`w-8 h-8 text-${week.color}-500`}
-                      />
+                      Week {week.weekNumber} · {week.category}
+                    </span>
+
+                    <h3 className="text-xl font-bold text-stone-900 dark:text-white mb-2">
+                      {week.title}
+                    </h3>
+                    <p className="text-stone-500 dark:text-stone-400 text-sm mb-4 flex-1">
+                      {week.description}
+                    </p>
+
+                    {/* Sub-lesson pills */}
+                    <div className="flex gap-2 mb-5 flex-wrap">
+                      {week.lessons.map((lesson) => {
+                        const isDone = completedLessons.includes(lesson.id);
+                        return (
+                          <span
+                            key={lesson.id}
+                            className={cn(
+                              "text-xs font-bold px-3 py-1 rounded-full border",
+                              isDone
+                                ? "bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border-secondary-200 dark:border-secondary-800/50"
+                                : "bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 border-stone-200 dark:border-stone-600",
+                            )}
+                          >
+                            {isDone ? "✓ " : ""}Lesson {lesson.lessonNumber}
+                          </span>
+                        );
+                      })}
                     </div>
-                    <Badge
-                      variant={week.isLocked ? "outline" : "accent"}
-                      icon={<Star className="w-3 h-3 fill-current" />}
-                    >
-                      +{week.xpReward} XP
-                    </Badge>
-                  </div>
 
-                  {/* Week label */}
-                  <span
-                    className={cn(
-                      "text-xs font-bold uppercase tracking-wider mb-1",
-                      `text-${week.color}-600`,
+                    {/* Progress bar (shown if started) */}
+                    {weekProgress > 0 && !week.isLocked && (
+                      <div className="mb-5">
+                        <ProgressBar
+                          progress={weekProgress}
+                          color={isFullyDone ? "secondary" : "primary"}
+                          showLabel
+                        />
+                      </div>
                     )}
-                  >
-                    Week {week.weekNumber} · {week.category}
-                  </span>
 
-                  <h3 className="text-xl font-bold text-stone-900 dark:text-white mb-2">
-                    {week.title}
-                  </h3>
-                  <p className="text-stone-500 dark:text-stone-400 text-sm mb-4 flex-1">
-                    {week.description}
-                  </p>
-
-                  {/* Sub-lesson pills */}
-                  <div className="flex gap-2 mb-5 flex-wrap">
-                    {week.lessons.map((lesson) => {
-                      const isDone = completedLessons.includes(lesson.id);
-                      return (
-                        <span
-                          key={lesson.id}
-                          className={cn(
-                            "text-xs font-bold px-3 py-1 rounded-full border",
-                            isDone
-                              ? "bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border-secondary-200 dark:border-secondary-800/50"
-                              : "bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 border-stone-200 dark:border-stone-600",
-                          )}
+                    {/* CTA Button */}
+                    <div className="mt-auto pt-4 border-t border-orange-100 dark:border-stone-700">
+                      {week.isLocked ? (
+                        <Button
+                          variant="ghost"
+                          className="w-full"
+                          disabled
+                          leftIcon={<Lock className="w-4 h-4" />}
                         >
-                          {isDone ? "✓ " : ""}Lesson {lesson.lessonNumber}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  {/* Progress bar (shown if started) */}
-                  {weekProgress > 0 && !week.isLocked && (
-                    <div className="mb-5">
-                      <ProgressBar
-                        progress={weekProgress}
-                        color={isFullyDone ? "secondary" : "primary"}
-                        showLabel
-                      />
+                          Locked
+                        </Button>
+                      ) : (
+                        <Button
+                          variant={isFullyDone ? "outline" : "primary"}
+                          className="w-full"
+                          onClick={() => onStartWeek(week.id)}
+                          rightIcon={
+                            !isFullyDone && <ChevronRight className="w-4 h-4" />
+                          }
+                        >
+                          {isFullyDone
+                            ? "Review Week"
+                            : weekProgress > 0
+                              ? "Continue"
+                              : "Start Week"}
+                        </Button>
+                      )}
                     </div>
-                  )}
-
-                  {/* CTA Button */}
-                  <div className="mt-auto pt-4 border-t border-orange-100 dark:border-stone-700">
-                    {week.isLocked ? (
-                      <Button
-                        variant="ghost"
-                        className="w-full"
-                        disabled
-                        leftIcon={<Lock className="w-4 h-4" />}
-                      >
-                        Locked
-                      </Button>
-                    ) : (
-                      <Button
-                        variant={isFullyDone ? "outline" : "primary"}
-                        className="w-full"
-                        onClick={() => onStartWeek(week.id)}
-                        rightIcon={
-                          !isFullyDone && <ChevronRight className="w-4 h-4" />
-                        }
-                      >
-                        {isFullyDone
-                          ? "Review Week"
-                          : weekProgress > 0
-                            ? "Continue"
-                            : "Start Week"}
-                      </Button>
-                    )}
                   </div>
-                </div>
-              </Card>
+                </Card>
               </div>
             );
           })}
