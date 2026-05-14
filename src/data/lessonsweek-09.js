@@ -28,7 +28,7 @@ export const week09 = {
     {
       id: "lesson-25",
       weekId: "week-9",
-      lessonNumber: 1,
+      lessonNumber: 25,
       title: "Common Laboratory Equipment",
       badge: "Lesson 25",
       subtitle:
@@ -170,7 +170,7 @@ export const week09 = {
     {
       id: "lesson-26",
       weekId: "week-9",
-      lessonNumber: 2,
+      lessonNumber: 26,
       title: "Using the Microscope",
       badge: "Lesson 26",
       subtitle:
@@ -339,7 +339,7 @@ export const week09 = {
     {
       id: "lesson-27",
       weekId: "week-9",
-      lessonNumber: 3,
+      lessonNumber: 27,
       title: "Proper Handling of Lab Materials",
       badge: "Lesson 27",
       subtitle:

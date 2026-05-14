@@ -28,7 +28,7 @@ export const week12 = {
     {
       id: "lesson-34",
       weekId: "week-12",
-      lessonNumber: 1,
+      lessonNumber: 34,
       title: "Development of Cell Theory",
       badge: "Lesson 34",
       subtitle:
@@ -193,7 +193,7 @@ export const week12 = {
     {
       id: "lesson-35",
       weekId: "week-12",
-      lessonNumber: 2,
+      lessonNumber: 35,
       title: "Types of Cells: Prokaryotes and Eukaryotes",
       badge: "Lesson 35",
       subtitle:
@@ -330,7 +330,7 @@ export const week12 = {
     {
       id: "lesson-36",
       weekId: "week-12",
-      lessonNumber: 3,
+      lessonNumber: 36,
       title: "Cell Diversity",
       badge: "Lesson 36",
       subtitle:

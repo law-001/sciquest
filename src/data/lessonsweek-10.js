@@ -28,7 +28,7 @@ export const week10 = {
     {
       id: "lesson-28",
       weekId: "week-10",
-      lessonNumber: 1,
+      lessonNumber: 28,
       title: "Laboratory Safety Rules",
       badge: "Lesson 28",
       subtitle:
@@ -194,7 +194,7 @@ export const week10 = {
     {
       id: "lesson-29",
       weekId: "week-10",
-      lessonNumber: 2,
+      lessonNumber: 29,
       title: "Safety Symbols and Hazards",
       badge: "Lesson 29",
       subtitle:
@@ -336,7 +336,7 @@ export const week10 = {
     {
       id: "lesson-30",
       weekId: "week-10",
-      lessonNumber: 3,
+      lessonNumber: 30,
       title: "Emergency Procedures",
       badge: "Lesson 30",
       subtitle:

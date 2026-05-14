@@ -28,7 +28,7 @@ export const week13 = {
     {
       id: "lesson-37",
       weekId: "week-13",
-      lessonNumber: 1,
+      lessonNumber: 37,
       title: "Cell Membrane and Cell Wall",
       badge: "Lesson 37",
       subtitle:
@@ -172,7 +172,7 @@ export const week13 = {
     {
       id: "lesson-38",
       weekId: "week-13",
-      lessonNumber: 2,
+      lessonNumber: 38,
       title: "Nucleus and Cell Organelles",
       badge: "Lesson 38",
       subtitle:
@@ -330,7 +330,7 @@ export const week13 = {
     {
       id: "lesson-39",
       weekId: "week-13",
-      lessonNumber: 3,
+      lessonNumber: 39,
       title: "Cytoplasm and Cytoskeleton",
       badge: "Lesson 39",
       subtitle:

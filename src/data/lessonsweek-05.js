@@ -28,7 +28,7 @@ export const week05 = {
     {
       id: "lesson-13",
       weekId: "week-5",
-      lessonNumber: 1,
+      lessonNumber: 13,
       title: "SI Units and Measurement Tools",
       badge: "Lesson 13",
       subtitle:
@@ -192,7 +192,7 @@ export const week05 = {
     {
       id: "lesson-14",
       weekId: "week-5",
-      lessonNumber: 2,
+      lessonNumber: 14,
       title: "Measuring Length, Mass, and Volume",
       badge: "Lesson 14",
       subtitle:
@@ -346,7 +346,7 @@ export const week05 = {
     {
       id: "lesson-15",
       weekId: "week-5",
-      lessonNumber: 3,
+      lessonNumber: 15,
       title: "Accuracy, Precision, and Errors",
       badge: "Lesson 15",
       subtitle:

@@ -25,7 +25,7 @@ export const week19 = {
     {
       id: "lesson-55",
       weekId: "week-19",
-      lessonNumber: 1,
+      lessonNumber: 55,
       title: "Producers, Consumers, and Decomposers",
       badge: "Lesson 1",
       subtitle: "The fundamental roles organisms play in an ecosystem",
@@ -184,7 +184,7 @@ export const week19 = {
     {
       id: "lesson-56",
       weekId: "week-19",
-      lessonNumber: 2,
+      lessonNumber: 56,
       title: "Food Chains",
       badge: "Lesson 2",
       subtitle: "How energy flows in a linear sequence through an ecosystem",
@@ -317,7 +317,7 @@ export const week19 = {
     {
       id: "lesson-57",
       weekId: "week-19",
-      lessonNumber: 3,
+      lessonNumber: 57,
       title: "Food Webs",
       badge: "Lesson 3",
       subtitle: "How interconnected food chains create a complex web of life",

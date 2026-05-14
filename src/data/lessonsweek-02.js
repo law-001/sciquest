@@ -28,7 +28,7 @@ export const week02 = {
     {
       id: "lesson-4",
       weekId: "week-2",
-      lessonNumber: 1,
+      lessonNumber: 4,
       title: "What is Matter?",
       badge: "Lesson 4",
       subtitle:
@@ -187,7 +187,7 @@ export const week02 = {
     {
       id: "lesson-5",
       weekId: "week-2",
-      lessonNumber: 2,
+      lessonNumber: 5,
       title: "Particle Theory of Matter",
       badge: "Lesson 5",
       subtitle:
@@ -327,7 +327,7 @@ export const week02 = {
     {
       id: "lesson-6",
       weekId: "week-2",
-      lessonNumber: 3,
+      lessonNumber: 6,
       title: "States of Matter",
       badge: "Lesson 6",
       subtitle:
@@ -337,12 +337,7 @@ export const week02 = {
       heroImage: equation,
       heroImageAlt: "Diagram showing the three main states of matter",
 
-      sections: [
-        "Introduction",
-        "Key Terms",
-        "Solid vs. Gas",
-        "Applications",
-      ],
+      sections: ["Introduction", "Key Terms", "Solid vs. Gas", "Applications"],
 
       layout: [
         // ── Section 0: Intro ──

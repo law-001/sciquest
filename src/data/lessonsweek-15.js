@@ -28,16 +28,23 @@ export const week15 = {
     {
       id: "lesson-43",
       weekId: "week-15",
-      lessonNumber: 1,
+      lessonNumber: 43,
       title: "The Cell Cycle",
       badge: "Lesson 43",
-      subtitle: "Understand the ordered phases of a cell's life and what happens at each stage before and during division.",
+      subtitle:
+        "Understand the ordered phases of a cell's life and what happens at each stage before and during division.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: flowchart,
-      heroImageAlt: "Circular diagram of the cell cycle showing interphase and mitotic phase",
+      heroImageAlt:
+        "Circular diagram of the cell cycle showing interphase and mitotic phase",
 
-      sections: ["Overview", "Key Concepts", "Phases of the Cell Cycle", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Phases of the Cell Cycle",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -194,16 +201,23 @@ export const week15 = {
     {
       id: "lesson-44",
       weekId: "week-15",
-      lessonNumber: 2,
+      lessonNumber: 44,
       title: "Stages of Mitosis",
       badge: "Lesson 44",
-      subtitle: "Walk through each stage of mitosis and understand exactly what happens to the chromosomes at each step.",
+      subtitle:
+        "Walk through each stage of mitosis and understand exactly what happens to the chromosomes at each step.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
-      heroImageAlt: "Microscope images showing four stages of mitosis in dividing cells",
+      heroImageAlt:
+        "Microscope images showing four stages of mitosis in dividing cells",
 
-      sections: ["Overview", "Stages of Mitosis", "Key Ideas", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Stages of Mitosis",
+        "Key Ideas",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -231,7 +245,8 @@ export const week15 = {
                 color: "primary",
                 desc: "Chromosomes condense and become visible, the spindle apparatus forms, and the nuclear envelope breaks down.",
                 image: microscope,
-                imageAlt: "Microscope image of a cell in prophase with condensed chromosomes",
+                imageAlt:
+                  "Microscope image of a cell in prophase with condensed chromosomes",
                 examples: [
                   "Chromosomes condense — become short and thick",
                   "Spindle fibers begin to form from centrioles",
@@ -245,7 +260,8 @@ export const week15 = {
                 color: "secondary",
                 desc: "Chromosomes line up at the cell's equator (metaphase plate), attached to spindle fibers from both poles.",
                 image: simulation,
-                imageAlt: "Diagram of metaphase showing chromosomes aligned at the center",
+                imageAlt:
+                  "Diagram of metaphase showing chromosomes aligned at the center",
                 examples: [
                   "Chromosomes align at the metaphase plate (cell center)",
                   "Spindle fibers from opposite poles attach to centromeres",
@@ -259,7 +275,8 @@ export const week15 = {
                 color: "primary",
                 desc: "Sister chromatids are pulled apart to opposite poles of the cell as spindle fibers shorten.",
                 image: equation,
-                imageAlt: "Diagram showing sister chromatids being pulled to opposite poles in anaphase",
+                imageAlt:
+                  "Diagram showing sister chromatids being pulled to opposite poles in anaphase",
                 examples: [
                   "Sister chromatids separate and are pulled apart",
                   "Spindle fibers shorten, pulling chromosomes toward poles",
@@ -273,7 +290,8 @@ export const week15 = {
                 color: "secondary",
                 desc: "Nuclear envelopes reform around each set of chromosomes, then the cytoplasm divides to form two daughter cells.",
                 image: lab,
-                imageAlt: "Diagram of telophase showing two forming nuclei and cytokinesis",
+                imageAlt:
+                  "Diagram of telophase showing two forming nuclei and cytokinesis",
                 examples: [
                   "Nuclear envelopes reform around each pole",
                   "Chromosomes decondense back to chromatin",
@@ -344,16 +362,23 @@ export const week15 = {
     {
       id: "lesson-45",
       weekId: "week-15",
-      lessonNumber: 3,
+      lessonNumber: 45,
       title: "Importance and Applications of Mitosis",
       badge: "Lesson 45",
-      subtitle: "Understand why mitosis is essential for life and how its breakdown leads to cancer.",
+      subtitle:
+        "Understand why mitosis is essential for life and how its breakdown leads to cancer.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
-      heroImageAlt: "Lab setting with researchers studying cell division patterns",
+      heroImageAlt:
+        "Lab setting with researchers studying cell division patterns",
 
-      sections: ["Overview", "Why Mitosis Matters", "Mitosis in Real Life", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Why Mitosis Matters",
+        "Mitosis in Real Life",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -431,22 +456,28 @@ export const week15 = {
                 title: "Skin Healing After a Cut",
                 situation:
                   "You scrape your knee and lose several layers of skin cells. Within hours, the area begins to heal, and within days, new skin covers the wound.",
-                question: "What is happening at the cellular level during this healing process?",
-                skill: "Cells at the edges of the wound receive chemical signals that trigger their cell cycles. They enter the cycle, complete interphase (growing and copying their DNA), then undergo mitosis to produce new skin cells. These new cells fill in and cover the wound. The process continues until the wound is fully covered, then stops when cells make contact (contact inhibition).",
+                question:
+                  "What is happening at the cellular level during this healing process?",
+                skill:
+                  "Cells at the edges of the wound receive chemical signals that trigger their cell cycles. They enter the cycle, complete interphase (growing and copying their DNA), then undergo mitosis to produce new skin cells. These new cells fill in and cover the wound. The process continues until the wound is fully covered, then stops when cells make contact (contact inhibition).",
               },
               {
                 title: "Cancer Cells Dividing Without Stopping",
                 situation:
                   "A mutation in a lung cell disables the G1 checkpoint. The cell begins dividing even when it receives signals telling it to stop. After many divisions, a visible tumor forms.",
-                question: "How does disabling the checkpoint lead to a tumor, and why is this dangerous?",
-                skill: "Checkpoints normally prevent cells from dividing if conditions are not right or if DNA is damaged. When a checkpoint is disabled by mutation, cells divide continuously without verifying that division is appropriate. The resulting uncontrolled divisions produce a mass of cells (a tumor). If these cells also lose the ability to stay in one place, the cancer can spread to other organs — a process called metastasis.",
+                question:
+                  "How does disabling the checkpoint lead to a tumor, and why is this dangerous?",
+                skill:
+                  "Checkpoints normally prevent cells from dividing if conditions are not right or if DNA is damaged. When a checkpoint is disabled by mutation, cells divide continuously without verifying that division is appropriate. The resulting uncontrolled divisions produce a mass of cells (a tumor). If these cells also lose the ability to stay in one place, the cancer can spread to other organs — a process called metastasis.",
               },
               {
                 title: "Stem Cells in Therapy",
                 situation:
                   "A patient with a damaged spinal cord receives a treatment where laboratory-grown stem cells are injected into the injury site. The stem cells divide and differentiate into nerve cells.",
-                question: "How is mitosis involved in this stem cell therapy, and why is it important?",
-                skill: "The stem cells use mitosis to produce many daughter cells at the injury site. These daughter cells then receive chemical signals that guide them through differentiation — they become specialized nerve cells. The new nerve cells can form connections and potentially restore some function to the damaged spinal cord. Without controlled mitosis, there would be no way to produce the large number of replacement cells needed for tissue repair.",
+                question:
+                  "How is mitosis involved in this stem cell therapy, and why is it important?",
+                skill:
+                  "The stem cells use mitosis to produce many daughter cells at the injury site. These daughter cells then receive chemical signals that guide them through differentiation — they become specialized nerve cells. The new nerve cells can form connections and potentially restore some function to the damaged spinal cord. Without controlled mitosis, there would be no way to produce the large number of replacement cells needed for tissue repair.",
               },
             ],
           },

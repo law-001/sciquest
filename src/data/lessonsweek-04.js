@@ -28,7 +28,7 @@ export const week04 = {
     {
       id: "lesson-10",
       weekId: "week-4",
-      lessonNumber: 1,
+      lessonNumber: 10,
       title: "Parts of a Scientific Investigation",
       badge: "Lesson 10",
       subtitle:
@@ -208,7 +208,7 @@ export const week04 = {
     {
       id: "lesson-11",
       weekId: "week-4",
-      lessonNumber: 2,
+      lessonNumber: 11,
       title: "Variables and Controls",
       badge: "Lesson 11",
       subtitle:
@@ -335,7 +335,7 @@ export const week04 = {
     {
       id: "lesson-12",
       weekId: "week-4",
-      lessonNumber: 3,
+      lessonNumber: 12,
       title: "Data Collection and Recording",
       badge: "Lesson 12",
       subtitle:

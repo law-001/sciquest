@@ -28,7 +28,7 @@ export const week07 = {
     {
       id: "lesson-19",
       weekId: "week-7",
-      lessonNumber: 1,
+      lessonNumber: 19,
       title: "What is Concentration?",
       badge: "Lesson 19",
       subtitle:
@@ -149,7 +149,7 @@ export const week07 = {
     {
       id: "lesson-20",
       weekId: "week-7",
-      lessonNumber: 2,
+      lessonNumber: 20,
       title: "Measuring and Calculating Concentration",
       badge: "Lesson 20",
       subtitle:
@@ -305,7 +305,7 @@ export const week07 = {
     {
       id: "lesson-21",
       weekId: "week-7",
-      lessonNumber: 3,
+      lessonNumber: 21,
       title: "Dilution and Saturated Solutions",
       badge: "Lesson 21",
       subtitle:
