@@ -26,7 +26,7 @@ export function IdentificationQuestion({
             ? isCorrect
               ? "border-secondary-400 bg-secondary-50 text-secondary-700"
               : "border-red-300 bg-red-50 text-red-700"
-            : "border-orange-200 focus:border-primary-400 text-stone-700 bg-white/60",
+            : "border-orange-100 focus:border-primary-400 text-stone-700 placeholder:text-stone-300",
         )}
       />
 

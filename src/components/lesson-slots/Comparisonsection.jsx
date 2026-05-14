@@ -75,7 +75,7 @@ export default function ComparisonSection({ id, heading, data }) {
                   >
                     {i + 1}
                   </div>
-                  <p className="text-stone-700 text-base font-medium transition-transform duration-300 group-hover/item:translate-x-0.5">
+                  <p className="text-stone-700 text-base font-medium transition-transform duration-300 group-hover/item:translate-x-0.5 dark:text-stone-200">
                     {item}
                   </p>
                 </li>
@@ -109,7 +109,7 @@ export default function ComparisonSection({ id, heading, data }) {
                   >
                     {i + 1}
                   </div>
-                  <p className="text-stone-700 text-base font-medium transition-transform duration-300 group-hover/item:translate-x-0.5">
+                  <p className="text-stone-700 text-base font-medium transition-transform duration-300 group-hover/item:translate-x-0.5 dark:text-stone-200">
                     {item}
                   </p>
                 </li>

@@ -1,7 +1,12 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 
-export function FillInTheBlanks({ question, value = [], onChange, isSubmitted }) {
+export function FillInTheBlanks({
+  question,
+  value = [],
+  onChange,
+  isSubmitted,
+}) {
   const parts = question.question.split("___");
 
   const handleChange = (index, text) => {
@@ -11,12 +16,11 @@ export function FillInTheBlanks({ question, value = [], onChange, isSubmitted })
   };
 
   const isBlankCorrect = (i) =>
-    question.blanks[i]?.toLowerCase().trim() ===
-    value[i]?.toLowerCase().trim();
+    question.blanks[i]?.toLowerCase().trim() === value[i]?.toLowerCase().trim();
 
   return (
     <div className="space-y-3">
-      <div className="text-lg font-medium text-stone-800 leading-loose">
+      <div className="text-lg font-medium text-stone-800 leading-loose dark:text-stone-200">
         {parts.map((part, i) => (
           <span key={i}>
             {part}
@@ -29,7 +33,7 @@ export function FillInTheBlanks({ question, value = [], onChange, isSubmitted })
                   disabled={isSubmitted}
                   placeholder="..."
                   className={cn(
-                    "border-b-2 bg-transparent px-2 py-0.5 text-center font-bold focus:outline-none min-w-28 transition-colors",
+                    "border-b-2 bg-transparent px-2 py-0.5 text-center font-bold focus:outline-none min-w-28 transition-colors ",
                     isSubmitted
                       ? isBlankCorrect(i)
                         ? "border-secondary-500 text-secondary-700"

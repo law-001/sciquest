@@ -17,7 +17,7 @@ export const week12 = {
   category: "Life Science",
   description:
     "Explore the development of cell theory and discover the diversity of cells in living organisms.",
-  icon: "Circle",
+  icon: "BookOpen",
   color: "primary",
   xpReward: 225,
   isLocked: false,
@@ -31,13 +31,20 @@ export const week12 = {
       lessonNumber: 1,
       title: "Development of Cell Theory",
       badge: "Lesson 34",
-      subtitle: "Trace the discoveries of key scientists that led to the three principles of modern cell theory.",
+      subtitle:
+        "Trace the discoveries of key scientists that led to the three principles of modern cell theory.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
-      heroImageAlt: "Historical microscope illustration representing cell theory development",
+      heroImageAlt:
+        "Historical microscope illustration representing cell theory development",
 
-      sections: ["Overview", "Key Concepts", "Scientists and Their Contributions", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Scientists and Their Contributions",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -189,13 +196,20 @@ export const week12 = {
       lessonNumber: 2,
       title: "Types of Cells: Prokaryotes and Eukaryotes",
       badge: "Lesson 35",
-      subtitle: "Compare the two major categories of cells and understand what makes each type unique.",
+      subtitle:
+        "Compare the two major categories of cells and understand what makes each type unique.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
-      heroImageAlt: "Diagram comparing prokaryotic and eukaryotic cell structures",
+      heroImageAlt:
+        "Diagram comparing prokaryotic and eukaryotic cell structures",
 
-      sections: ["Overview", "Cell Type Gallery", "Side-by-Side Comparison", "Key Distinctions"],
+      sections: [
+        "Overview",
+        "Cell Type Gallery",
+        "Side-by-Side Comparison",
+        "Key Distinctions",
+      ],
 
       layout: [
         {
@@ -251,7 +265,8 @@ export const week12 = {
                 color: "primary",
                 desc: "Eukaryotic cells with a nucleus, cell wall, and chloroplasts for photosynthesis.",
                 image: globe,
-                imageAlt: "Diagram of a plant eukaryotic cell with chloroplasts",
+                imageAlt:
+                  "Diagram of a plant eukaryotic cell with chloroplasts",
                 examples: [
                   "Nucleus, cell wall, chloroplasts",
                   "Large central vacuole",
@@ -318,13 +333,20 @@ export const week12 = {
       lessonNumber: 3,
       title: "Cell Diversity",
       badge: "Lesson 36",
-      subtitle: "Explore how cells become specialized for specific functions and why cell diversity is essential for life.",
+      subtitle:
+        "Explore how cells become specialized for specific functions and why cell diversity is essential for life.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
-      heroImageAlt: "Collage of different specialized cell types under microscope",
+      heroImageAlt:
+        "Collage of different specialized cell types under microscope",
 
-      sections: ["Overview", "Key Concepts", "Specialized Cell Types", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Specialized Cell Types",
+        "Real-World Applications",
+      ],
 
       layout: [
         {

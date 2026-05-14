@@ -69,7 +69,7 @@ export default function ReasonCardsSection({ id, heading, data }) {
               <p className="text-stone-600 text-base mb-3 dark:text-white">
                 {item.desc}
               </p>
-              <p className="text-stone-500 text-sm italic transition-colors duration-300 group-hover:text-stone-600">
+              <p className="text-stone-500 text-sm italic transition-colors duration-300 dark:text-stone-300">
                 {item.content}
               </p>
             </Card>

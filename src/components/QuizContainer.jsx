@@ -200,9 +200,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
     const pct = max > 0 ? Math.round((earned / max) * 100) : 0;
 
     return (
-      <div
-        className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-hidden bg-[#fdf6e3] dark:bg-stone-900"
-      >
+      <div className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-hidden bg-[#fdf6e3] dark:bg-stone-900">
         {/* Confetti */}
         {showConfetti && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -340,7 +338,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
   return (
     <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
       {/* Sticky header */}
-      <div className="sticky top-0 z-30 backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 bg-[#fdf6e3]/92 dark:bg-stone-900/92">
+      <div className="top-0 z-30 backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 bg-[#fdf6e3]/92 dark:bg-stone-900/92">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <button
@@ -430,7 +428,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
       </div>
 
       {/* Sticky Submit footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-orange-200/70 dark:border-stone-700 backdrop-blur-md bg-[#fdf6e3]/95 dark:bg-stone-900/95">
+      <div className="bottom-0 left-0 right-0 z-30 border-t border-orange-200/70 dark:border-stone-700 backdrop-blur-md bg-[#fdf6e3]/95 dark:bg-stone-900/95">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="text-sm font-bold text-stone-500 hidden sm:block">
             {answeredCount === questions.length

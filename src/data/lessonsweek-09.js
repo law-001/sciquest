@@ -17,7 +17,7 @@ export const week09 = {
   category: "Laboratory Skills",
   description:
     "Identify and learn how to properly use common laboratory equipment found in a science laboratory.",
-  icon: "Microscope",
+  icon: "ShieldCheck",
   color: "accent",
   xpReward: 225,
   isLocked: false,
@@ -31,13 +31,20 @@ export const week09 = {
       lessonNumber: 1,
       title: "Common Laboratory Equipment",
       badge: "Lesson 25",
-      subtitle: "Identify the purpose of common laboratory equipment and learn the rules for their proper care and storage.",
+      subtitle:
+        "Identify the purpose of common laboratory equipment and learn the rules for their proper care and storage.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
-      heroImageAlt: "Array of common laboratory glassware and equipment on a bench",
+      heroImageAlt:
+        "Array of common laboratory glassware and equipment on a bench",
 
-      sections: ["Overview", "Types of Equipment", "Care and Storage", "Applications"],
+      sections: [
+        "Overview",
+        "Types of Equipment",
+        "Care and Storage",
+        "Applications",
+      ],
 
       layout: [
         {
@@ -64,7 +71,8 @@ export const week09 = {
                 color: "primary",
                 desc: "Measuring tools allow scientists to collect precise quantitative data. Accurate measurement is essential for reproducible and reliable results.",
                 image: equation,
-                imageAlt: "Graduated cylinder, thermometer, and balance on a lab bench",
+                imageAlt:
+                  "Graduated cylinder, thermometer, and balance on a lab bench",
                 examples: [
                   "Graduated cylinder — measures liquid volume in millilitres",
                   "Thermometer — measures temperature in °C",
@@ -92,7 +100,8 @@ export const week09 = {
                 color: "primary",
                 desc: "Containment equipment holds, stores, and allows reactions to take place safely. Different vessels are used for different purposes.",
                 image: simulation,
-                imageAlt: "Beakers, Erlenmeyer flask, and test tubes arranged on a shelf",
+                imageAlt:
+                  "Beakers, Erlenmeyer flask, and test tubes arranged on a shelf",
                 examples: [
                   "Beaker — holds liquids and is used for mixing and heating",
                   "Erlenmeyer flask — ideal for reactions requiring swirling",
@@ -164,13 +173,19 @@ export const week09 = {
       lessonNumber: 2,
       title: "Using the Microscope",
       badge: "Lesson 26",
-      subtitle: "Learn the parts of a compound microscope, how to calculate magnification, and the correct procedure for making observations.",
+      subtitle:
+        "Learn the parts of a compound microscope, how to calculate magnification, and the correct procedure for making observations.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
       heroImageAlt: "Close-up of a compound microscope with labeled parts",
 
-      sections: ["Overview", "Key Terms", "How to Use a Microscope", "Applications"],
+      sections: [
+        "Overview",
+        "Key Terms",
+        "How to Use a Microscope",
+        "Applications",
+      ],
 
       layout: [
         {
@@ -327,13 +342,20 @@ export const week09 = {
       lessonNumber: 3,
       title: "Proper Handling of Lab Materials",
       badge: "Lesson 27",
-      subtitle: "Learn the correct procedures for safely handling chemicals, glassware, heat sources, and biological specimens in the laboratory.",
+      subtitle:
+        "Learn the correct procedures for safely handling chemicals, glassware, heat sources, and biological specimens in the laboratory.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: modernclassroom,
-      heroImageAlt: "Students properly handling lab materials while wearing safety equipment",
+      heroImageAlt:
+        "Students properly handling lab materials while wearing safety equipment",
 
-      sections: ["Overview", "Why Safe Handling Matters", "Emergency Scenarios", "Applications"],
+      sections: [
+        "Overview",
+        "Why Safe Handling Matters",
+        "Emergency Scenarios",
+        "Applications",
+      ],
 
       layout: [
         {
@@ -360,35 +382,40 @@ export const week09 = {
                 title: "Prevent Cuts from Broken Glass",
                 color: "primary",
                 desc: "Broken glassware causes the most common lab injuries",
-                content: "Always inspect glassware for chips and cracks. Use dustpan and brush (never bare hands) to clean up broken glass.",
+                content:
+                  "Always inspect glassware for chips and cracks. Use dustpan and brush (never bare hands) to clean up broken glass.",
               },
               {
                 num: 2,
                 title: "Prevent Chemical Burns",
                 color: "secondary",
                 desc: "Corrosive chemicals can permanently damage skin and eyes",
-                content: "Wear gloves and goggles. In case of spill on skin, flush immediately with large amounts of water for at least 15 minutes.",
+                content:
+                  "Wear gloves and goggles. In case of spill on skin, flush immediately with large amounts of water for at least 15 minutes.",
               },
               {
                 num: 3,
                 title: "Prevent Fire and Burns",
                 color: "accent",
                 desc: "Open flames and hot glassware are serious burn hazards",
-                content: "Never leave a Bunsen burner unattended. Use tongs to handle hot equipment. Keep flammable materials away from open flames.",
+                content:
+                  "Never leave a Bunsen burner unattended. Use tongs to handle hot equipment. Keep flammable materials away from open flames.",
               },
               {
                 num: 4,
                 title: "Prevent Contamination",
                 color: "primary",
                 desc: "Biological specimens and chemicals can cause illness if ingested",
-                content: "Never eat or drink in the laboratory. Wash hands thoroughly after every lab session. Dispose of biological waste properly.",
+                content:
+                  "Never eat or drink in the laboratory. Wash hands thoroughly after every lab session. Dispose of biological waste properly.",
               },
               {
                 num: 5,
                 title: "Protect the Environment",
                 color: "secondary",
                 desc: "Improper disposal of chemicals harms ecosystems",
-                content: "Never pour chemicals down the drain without checking disposal instructions. Follow your teacher's guidelines for chemical disposal.",
+                content:
+                  "Never pour chemicals down the drain without checking disposal instructions. Follow your teacher's guidelines for chemical disposal.",
               },
             ],
           },
@@ -404,22 +431,28 @@ export const week09 = {
                 title: "Broken Glass on the Bench",
                 situation:
                   "During an experiment, a student accidentally knocks a beaker off the bench. It shatters on the floor, scattering glass fragments. The student is not injured.",
-                question: "What should the student do immediately? What should NOT be done?",
-                skill: "Notify the teacher immediately. Do not pick up glass with bare hands — use a dustpan and brush. Keep other students away from the area until it is fully cleaned. Dispose of glass in a labeled 'sharps' or 'broken glass' container.",
+                question:
+                  "What should the student do immediately? What should NOT be done?",
+                skill:
+                  "Notify the teacher immediately. Do not pick up glass with bare hands — use a dustpan and brush. Keep other students away from the area until it is fully cleaned. Dispose of glass in a labeled 'sharps' or 'broken glass' container.",
               },
               {
                 title: "Chemical Spill on Skin",
                 situation:
                   "A student accidentally spills a small amount of dilute acid on their forearm while pouring. The skin begins to feel warm and slightly irritated.",
-                question: "What is the correct first response? How long should the treatment continue?",
-                skill: "Immediately flood the affected area with large amounts of cold running water for at least 15 minutes. Remove any contaminated clothing if safe to do so. Notify the teacher and seek medical attention if irritation persists.",
+                question:
+                  "What is the correct first response? How long should the treatment continue?",
+                skill:
+                  "Immediately flood the affected area with large amounts of cold running water for at least 15 minutes. Remove any contaminated clothing if safe to do so. Notify the teacher and seek medical attention if irritation persists.",
               },
               {
                 title: "Overheating Test Tube",
                 situation:
                   "A student is heating a liquid in a test tube over a Bunsen burner. The liquid begins to boil rapidly and the student notices small droplets of liquid being ejected from the tube.",
-                question: "What should the student do to prevent injury to themselves and classmates?",
-                skill: "Point the open end of the test tube away from all people immediately. Remove the heat source. Hold the test tube at a 45° angle while heating — never point it at anyone. Heat gently and continuously move the tube through the flame.",
+                question:
+                  "What should the student do to prevent injury to themselves and classmates?",
+                skill:
+                  "Point the open end of the test tube away from all people immediately. Remove the heat source. Hold the test tube at a 45° angle while heating — never point it at anyone. Heat gently and continuously move the tube through the flame.",
               },
             ],
           },

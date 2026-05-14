@@ -34,7 +34,7 @@ const week01 = {
   category: "Scientific Method",
   description:
     "Explore how scientists use models to understand the world around us.",
-  icon: "Globe2",
+  icon: "Shapes",
   color: "primary",
   xpReward: 225,
   isLocked: false,
@@ -762,13 +762,19 @@ const week01 = {
       lessonNumber: 3,
       badge: "Lesson 3",
       title: "Models in Real Life",
-      subtitle: "Discover how scientific models are used every day by doctors, engineers, and scientists to solve real-world problems.",
+      subtitle:
+        "Discover how scientific models are used every day by doctors, engineers, and scientists to solve real-world problems.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
       heroImageAlt: "Computer simulation model",
 
-      sections: ["Introduction", "Models in Action", "Real-Life Scenarios", "Impact of Models"],
+      sections: [
+        "Introduction",
+        "Models in Action",
+        "Real-Life Scenarios",
+        "Impact of Models",
+      ],
 
       layout: [
         {
@@ -926,8 +932,24 @@ const week01 = {
 };
 
 export const WEEKS_DATA = [
-  week01, week02, week03, week04, week05,
-  week06, week07, week08, week09, week10,
-  week11, week12, week13, week14, week15,
-  week16, week17, week18, week19, week20,
+  week01,
+  week02,
+  week03,
+  week04,
+  week05,
+  week06,
+  week07,
+  week08,
+  week09,
+  week10,
+  week11,
+  week12,
+  week13,
+  week14,
+  week15,
+  week16,
+  week17,
+  week18,
+  week19,
+  week20,
 ];

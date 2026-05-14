@@ -17,7 +17,7 @@ export const week13 = {
   category: "Life Science",
   description:
     "Discover the organelles inside cells and understand what each structure does to keep the cell alive.",
-  icon: "Settings2",
+  icon: "CircleDot",
   color: "secondary",
   xpReward: 225,
   isLocked: false,
@@ -31,13 +31,19 @@ export const week13 = {
       lessonNumber: 1,
       title: "Cell Membrane and Cell Wall",
       badge: "Lesson 37",
-      subtitle: "Understand the structure and function of the cell membrane and cell wall, and how they differ.",
+      subtitle:
+        "Understand the structure and function of the cell membrane and cell wall, and how they differ.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
       heroImageAlt: "Microscopic cross-section showing cell membrane structure",
 
-      sections: ["Overview", "Key Concepts", "Membrane vs. Wall", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Membrane vs. Wall",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -169,13 +175,19 @@ export const week13 = {
       lessonNumber: 2,
       title: "Nucleus and Cell Organelles",
       badge: "Lesson 38",
-      subtitle: "Explore the nucleus and key organelles that power, build, and maintain the cell.",
+      subtitle:
+        "Explore the nucleus and key organelles that power, build, and maintain the cell.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
       heroImageAlt: "Colorized electron microscope image of cell organelles",
 
-      sections: ["Overview", "Organelle Gallery", "Key Organelle Functions", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Organelle Gallery",
+        "Key Organelle Functions",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -203,7 +215,8 @@ export const week13 = {
                 color: "primary",
                 desc: "The nucleus contains the cell's DNA and directs all cellular activities including growth, metabolism, and reproduction.",
                 image: microscope,
-                imageAlt: "Nucleus of a cell showing nuclear membrane and nucleolus",
+                imageAlt:
+                  "Nucleus of a cell showing nuclear membrane and nucleolus",
                 examples: [
                   "Contains DNA (genetic instructions)",
                   "Nucleolus produces ribosomes",
@@ -217,7 +230,8 @@ export const week13 = {
                 color: "secondary",
                 desc: "Mitochondria convert glucose and oxygen into ATP energy through cellular respiration.",
                 image: simulation,
-                imageAlt: "Diagram of mitochondria showing inner membrane folds",
+                imageAlt:
+                  "Diagram of mitochondria showing inner membrane folds",
                 examples: [
                   "Mitochondria produce ATP",
                   "Site of cellular respiration",
@@ -319,13 +333,20 @@ export const week13 = {
       lessonNumber: 3,
       title: "Cytoplasm and Cytoskeleton",
       badge: "Lesson 39",
-      subtitle: "Understand the role of cytoplasm as the cell's internal environment and the cytoskeleton as its structural framework.",
+      subtitle:
+        "Understand the role of cytoplasm as the cell's internal environment and the cytoskeleton as its structural framework.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
-      heroImageAlt: "Microscope image showing cytoskeleton network inside a cell",
+      heroImageAlt:
+        "Microscope image showing cytoskeleton network inside a cell",
 
-      sections: ["Overview", "Key Concepts", "Cytoskeleton Roles", "Practical Scenarios"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Cytoskeleton Roles",
+        "Practical Scenarios",
+      ],
 
       layout: [
         {
@@ -440,22 +461,28 @@ export const week13 = {
                 title: "Muscle Cell Contraction",
                 situation:
                   "When you bend your arm, your bicep muscle contracts. At the cellular level, thousands of muscle cells shorten simultaneously to produce this movement.",
-                question: "Which cytoskeletal component is responsible for muscle contraction, and how does it work?",
-                skill: "Microfilaments made of actin interact with myosin proteins. The myosin proteins grip actin filaments and pull them, shortening the cell. When many muscle cells do this simultaneously, the whole muscle contracts and produces movement.",
+                question:
+                  "Which cytoskeletal component is responsible for muscle contraction, and how does it work?",
+                skill:
+                  "Microfilaments made of actin interact with myosin proteins. The myosin proteins grip actin filaments and pull them, shortening the cell. When many muscle cells do this simultaneously, the whole muscle contracts and produces movement.",
               },
               {
                 title: "Sperm Cell Swimming",
                 situation:
                   "A human sperm cell must swim from the cervix through the uterus and into the fallopian tube to fertilize an egg — a journey that takes hours.",
-                question: "How does the sperm cell generate the force needed to swim such a long distance?",
-                skill: "The sperm uses a single long flagellum — a whip-like extension built from bundled microtubules. Motor proteins cause the microtubule bundles to slide against each other, creating the rhythmic whipping motion that propels the sperm forward.",
+                question:
+                  "How does the sperm cell generate the force needed to swim such a long distance?",
+                skill:
+                  "The sperm uses a single long flagellum — a whip-like extension built from bundled microtubules. Motor proteins cause the microtubule bundles to slide against each other, creating the rhythmic whipping motion that propels the sperm forward.",
               },
               {
                 title: "Why Cells Don't Collapse",
                 situation:
                   "A cell is filled mostly with water-based cytoplasm. Water does not hold a shape on its own, yet cells maintain their shape even when jostled or squeezed.",
-                question: "What prevents a cell from collapsing into a formless blob?",
-                skill: "The cytoskeleton acts as an internal scaffold. A network of microtubules and microfilaments extends throughout the cytoplasm, resisting compression and tension to maintain the cell's structure — much like the steel frame of a building prevents it from collapsing.",
+                question:
+                  "What prevents a cell from collapsing into a formless blob?",
+                skill:
+                  "The cytoskeleton acts as an internal scaffold. A network of microtubules and microfilaments extends throughout the cytoplasm, resisting compression and tension to maintain the cell's structure — much like the steel frame of a building prevents it from collapsing.",
               },
             ],
           },

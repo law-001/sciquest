@@ -17,7 +17,7 @@ export const week06 = {
   category: "Chemistry",
   description:
     "Learn about mixtures, solutions, and the factors that affect how substances dissolve.",
-  icon: "Beaker",
+  icon: "Droplets",
   color: "accent",
   xpReward: 225,
   isLocked: false,
@@ -31,7 +31,8 @@ export const week06 = {
       lessonNumber: 1,
       title: "Mixtures and Solutions",
       badge: "Lesson 16",
-      subtitle: "Understand the difference between pure substances and mixtures, and learn how solutions are formed.",
+      subtitle:
+        "Understand the difference between pure substances and mixtures, and learn how solutions are formed.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
@@ -186,13 +187,19 @@ export const week06 = {
       lessonNumber: 2,
       title: "Solubility",
       badge: "Lesson 17",
-      subtitle: "Explore what solubility means, what affects it, and how we classify solutions by how much solute they contain.",
+      subtitle:
+        "Explore what solubility means, what affects it, and how we classify solutions by how much solute they contain.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: equation,
       heroImageAlt: "Graph showing solubility curves for different substances",
 
-      sections: ["Overview", "Factors Affecting Solubility", "Key Concepts", "Saturated vs Unsaturated"],
+      sections: [
+        "Overview",
+        "Factors Affecting Solubility",
+        "Key Concepts",
+        "Saturated vs Unsaturated",
+      ],
 
       layout: [
         {
@@ -219,21 +226,24 @@ export const week06 = {
                 title: "Temperature (Solids)",
                 color: "primary",
                 desc: "Higher temperature increases solubility of most solids",
-                content: "e.g. More sugar dissolves in hot tea than in iced tea",
+                content:
+                  "e.g. More sugar dissolves in hot tea than in iced tea",
               },
               {
                 num: 2,
                 title: "Temperature (Gases)",
                 color: "secondary",
                 desc: "Higher temperature decreases solubility of gases",
-                content: "e.g. Warm soda goes flat faster because CO₂ escapes more easily",
+                content:
+                  "e.g. Warm soda goes flat faster because CO₂ escapes more easily",
               },
               {
                 num: 3,
                 title: "Pressure (Gases)",
                 color: "accent",
                 desc: "Higher pressure increases solubility of gases in liquids",
-                content: "e.g. Carbonated drinks are sealed under pressure to keep CO₂ dissolved",
+                content:
+                  "e.g. Carbonated drinks are sealed under pressure to keep CO₂ dissolved",
               },
               {
                 num: 4,
@@ -308,13 +318,20 @@ export const week06 = {
       lessonNumber: 3,
       title: "Factors Affecting the Rate of Dissolving",
       badge: "Lesson 18",
-      subtitle: "Discover how stirring, temperature, and particle size control how quickly a substance dissolves.",
+      subtitle:
+        "Discover how stirring, temperature, and particle size control how quickly a substance dissolves.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: simulation,
-      heroImageAlt: "Student stirring a solution in a beaker during a lab activity",
+      heroImageAlt:
+        "Student stirring a solution in a beaker during a lab activity",
 
-      sections: ["Overview", "Key Terms", "Lab Experiment Steps", "Applications"],
+      sections: [
+        "Overview",
+        "Key Terms",
+        "Lab Experiment Steps",
+        "Applications",
+      ],
 
       layout: [
         {

@@ -17,7 +17,7 @@ export const week11 = {
   category: "Life Science",
   description:
     "Learn the history and parts of the microscope and how to prepare and observe slides correctly.",
-  icon: "Search",
+  icon: "ScanSearch",
   color: "accent",
   xpReward: 225,
   isLocked: false,
@@ -31,13 +31,19 @@ export const week11 = {
       lessonNumber: 1,
       title: "History and Parts of the Microscope",
       badge: "Lesson 31",
-      subtitle: "Discover how the microscope was invented and learn the names and functions of its main parts.",
+      subtitle:
+        "Discover how the microscope was invented and learn the names and functions of its main parts.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: microscope,
       heroImageAlt: "Close-up view of a compound microscope",
 
-      sections: ["Overview", "Key Concepts", "Historical Milestones", "Microscope Parts"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Historical Milestones",
+        "Microscope Parts",
+      ],
 
       layout: [
         {
@@ -145,7 +151,8 @@ export const week11 = {
                 color: "primary",
                 desc: "The eyepiece, arm, and body tube form the upper structure of the microscope.",
                 image: microscope,
-                imageAlt: "Upper parts of a microscope including eyepiece and arm",
+                imageAlt:
+                  "Upper parts of a microscope including eyepiece and arm",
                 examples: [
                   "Eyepiece (Ocular Lens) — 10x magnification",
                   "Arm — used to carry the microscope",
@@ -195,13 +202,19 @@ export const week11 = {
       lessonNumber: 2,
       title: "Using the Microscope Correctly",
       badge: "Lesson 32",
-      subtitle: "Learn the proper techniques for carrying, focusing, and calculating magnification with a microscope.",
+      subtitle:
+        "Learn the proper techniques for carrying, focusing, and calculating magnification with a microscope.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
       heroImageAlt: "Student using a microscope in a science lab",
 
-      sections: ["Overview", "Proper Handling Rules", "Practical Scenarios", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Proper Handling Rules",
+        "Practical Scenarios",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
@@ -229,35 +242,40 @@ export const week11 = {
                 title: "Carry with Both Hands",
                 color: "primary",
                 desc: "Always use one hand on the arm and one under the base",
-                content: "This prevents dropping or tilting the microscope, which could damage the lenses or the light source.",
+                content:
+                  "This prevents dropping or tilting the microscope, which could damage the lenses or the light source.",
               },
               {
                 num: 2,
                 title: "Start with Low Power",
                 color: "secondary",
                 desc: "Begin with the 4x objective before switching to higher magnification",
-                content: "Low power gives a wider field of view, making it easier to locate the specimen before zooming in.",
+                content:
+                  "Low power gives a wider field of view, making it easier to locate the specimen before zooming in.",
               },
               {
                 num: 3,
                 title: "Coarse Focus First",
                 color: "accent",
                 desc: "Use the coarse knob first, then fine-tune with the fine knob",
-                content: "The coarse knob makes large adjustments for initial focusing; the fine knob sharpens the image without risk of breaking the slide.",
+                content:
+                  "The coarse knob makes large adjustments for initial focusing; the fine knob sharpens the image without risk of breaking the slide.",
               },
               {
                 num: 4,
                 title: "Never Focus Downward on High Power",
                 color: "primary",
                 desc: "Avoid moving the objective down toward the slide at high magnification",
-                content: "At high power, the objective lens is very close to the slide. Moving it down can crack the slide and scratch the expensive lens.",
+                content:
+                  "At high power, the objective lens is very close to the slide. Moving it down can crack the slide and scratch the expensive lens.",
               },
               {
                 num: 5,
                 title: "Clean Lenses Properly",
                 color: "secondary",
                 desc: "Use only lens paper — never tissue or cloth — to clean microscope lenses",
-                content: "Regular cloth or tissue can scratch the lens coating, permanently blurring the image and damaging the microscope.",
+                content:
+                  "Regular cloth or tissue can scratch the lens coating, permanently blurring the image and damaging the microscope.",
               },
             ],
           },
@@ -274,22 +292,28 @@ export const week11 = {
                 title: "Wrong Focus Knob",
                 situation:
                   "Maria is viewing a cheek cell slide at 40x objective. The image is blurry, so she grabs the coarse adjustment knob and turns it quickly.",
-                question: "What mistake is Maria making, and what should she do instead?",
-                skill: "At high magnification, only the fine adjustment knob should be used. Using the coarse knob at 40x risks cracking the slide or scratching the lens. Maria should use the fine knob to slowly sharpen the image.",
+                question:
+                  "What mistake is Maria making, and what should she do instead?",
+                skill:
+                  "At high magnification, only the fine adjustment knob should be used. Using the coarse knob at 40x risks cracking the slide or scratching the lens. Maria should use the fine knob to slowly sharpen the image.",
               },
               {
                 title: "Switching to High Power Too Soon",
                 situation:
                   "Carlos places a slide on the stage and immediately clicks the 40x objective into position without locating the specimen first.",
-                question: "Why is this a problem, and what should Carlos have done first?",
-                skill: "Carlos should have started with the lowest power (4x) to locate and center the specimen first. Jumping to high power without locating the specimen makes it nearly impossible to find what you're looking for.",
+                question:
+                  "Why is this a problem, and what should Carlos have done first?",
+                skill:
+                  "Carlos should have started with the lowest power (4x) to locate and center the specimen first. Jumping to high power without locating the specimen makes it nearly impossible to find what you're looking for.",
               },
               {
                 title: "Calculating Total Magnification",
                 situation:
                   "A microscope has a 10x eyepiece. A student is using the 40x objective lens to view a plant cell.",
-                question: "What is the total magnification the student is seeing?",
-                skill: "Total magnification = eyepiece × objective = 10x × 40x = 400x. The student is viewing the plant cell at 400 times its actual size.",
+                question:
+                  "What is the total magnification the student is seeing?",
+                skill:
+                  "Total magnification = eyepiece × objective = 10x × 40x = 400x. The student is viewing the plant cell at 400 times its actual size.",
               },
             ],
           },
@@ -343,13 +367,20 @@ export const week11 = {
       lessonNumber: 3,
       title: "Preparing Microscope Slides",
       badge: "Lesson 33",
-      subtitle: "Learn how to prepare wet and dry mount slides and use stains to observe cells more clearly.",
+      subtitle:
+        "Learn how to prepare wet and dry mount slides and use stains to observe cells more clearly.",
       readTime: "~12 min read",
       xp: 75,
       heroImage: lab,
-      heroImageAlt: "Prepared microscope slides and staining equipment on a lab bench",
+      heroImageAlt:
+        "Prepared microscope slides and staining equipment on a lab bench",
 
-      sections: ["Overview", "Key Concepts", "Slide Preparation Steps", "Real-World Applications"],
+      sections: [
+        "Overview",
+        "Key Concepts",
+        "Slide Preparation Steps",
+        "Real-World Applications",
+      ],
 
       layout: [
         {
