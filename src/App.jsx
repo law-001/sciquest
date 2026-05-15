@@ -17,7 +17,10 @@ import {
   fetchProgress,
   markLessonComplete,
   saveQuizAttempt,
+  totalXpEarned,
 } from "./lib/progress";
+import { levelFromXp } from "./lib/xp-config";
+import { XpToast } from "./components/XpToast";
 
 function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
@@ -28,24 +31,31 @@ function AppContent() {
   const [activeWeekId, setActiveWeekId] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [completedRows, setCompletedRows] = useState([]);
   const [quizAttempts, setQuizAttempts] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   const isLoggedIn = !!user;
   const isStudent = profile?.role === "student";
+
+  const totalXp = totalXpEarned(completedRows, quizAttempts);
+  const currentLevel = levelFromXp(totalXp);
 
   // Hydrate progress + quiz attempts from Supabase whenever a student logs in.
   // Staff don't have student_progress rows, so we skip the fetch for them.
   useEffect(() => {
     if (!user || !isStudent) {
       setCompletedLessons([]);
+      setCompletedRows([]);
       setQuizAttempts([]);
       return;
     }
     let cancelled = false;
     fetchProgress(user.id)
-      .then(({ completedLessons: done, attempts }) => {
+      .then(({ completedLessons: done, completedRows: rows, attempts }) => {
         if (cancelled) return;
         setCompletedLessons(done);
+        setCompletedRows(rows);
         setQuizAttempts(attempts);
         // Anything completed is also "reached" — keeps the lesson tab nav consistent.
         setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
@@ -55,6 +65,13 @@ function AppContent() {
       });
     return () => { cancelled = true };
   }, [user?.id, isStudent]);
+
+  const pushNotification = (n) => {
+    setNotifications((prev) => [...prev, { id: Date.now() + Math.random(), ...n }]);
+  };
+  const dismissNotification = (id) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   // On refresh, once the restored session + profile are ready, redirect by role
   useEffect(() => {
@@ -111,9 +128,10 @@ function AppContent() {
     handleNavigate("quiz");
   };
 
-  // Called by QuizContainer's onComplete with { score, maxScore } (or undefined
-  // if the user bailed before submitting). Persists the attempt + lesson
-  // completion to Supabase for students; optimistically updates local state.
+  // Called by QuizContainer's onComplete with { score, maxScore, xpEarned,
+  // pendingGradeCount } (or undefined if the user bailed). Persists the
+  // attempt + lesson completion to Supabase for students; optimistically
+  // updates local state and fires XP / level-up toasts.
   const handleQuizComplete = (result) => {
     const week = WEEKS_DATA.find((w) => w.id === activeWeekId);
     if (!week) {
@@ -121,26 +139,53 @@ function AppContent() {
       return;
     }
 
+    const lesson = week.lessons.find((l) => l.id === activeLessonId);
     const lessonId = activeLessonId;
     const weekId = week.id;
     const studentId = user?.id;
+    const alreadyComplete = completedLessons.includes(lessonId);
+
+    // Lesson XP is awarded once. Quiz XP fires every attempt.
+    const lessonXp = alreadyComplete ? 0 : (lesson?.xp ?? 0);
+    const quizXp = result && Number.isFinite(result.xpEarned) ? result.xpEarned : 0;
+    const xpDelta = lessonXp + quizXp;
 
     // Optimistic local update — UI doesn't wait on the network.
-    const updated = completedLessons.includes(lessonId)
-      ? completedLessons
-      : [...completedLessons, lessonId];
-    setCompletedLessons(updated);
+    if (!alreadyComplete) {
+      setCompletedLessons((prev) => [...prev, lessonId]);
+      setCompletedRows((prev) => [
+        ...prev,
+        { lesson_id: lessonId, week_id: weekId, completed: true, completed_at: new Date().toISOString(), xp_awarded: lessonXp },
+      ]);
+    }
 
     if (result && Number.isFinite(result.score) && Number.isFinite(result.maxScore)) {
       setQuizAttempts((prev) => [
-        { lesson_id: lessonId, week_id: weekId, score: result.score, max_score: result.maxScore, submitted_at: new Date().toISOString() },
+        {
+          lesson_id: lessonId,
+          week_id: weekId,
+          score: result.score,
+          max_score: result.maxScore,
+          xp_awarded: quizXp,
+          pending_grade_count: result.pendingGradeCount ?? 0,
+          submitted_at: new Date().toISOString(),
+        },
         ...prev,
       ]);
     }
 
+    // Toast(s). XP earned first; level-up next if it crossed a threshold.
+    if (xpDelta > 0) {
+      pushNotification({ kind: "xp", amount: xpDelta, detail: lesson?.title });
+    }
+    const newLevel = levelFromXp(totalXp + xpDelta);
+    if (newLevel > currentLevel) {
+      pushNotification({ kind: "level-up", level: newLevel });
+    }
+
     // Persist for logged-in students. Staff/anonymous: skip writes silently.
     if (studentId && isStudent) {
-      markLessonComplete(studentId, weekId, lessonId).catch((err) => {
+      markLessonComplete(studentId, weekId, lessonId, lessonXp).catch((err) => {
         console.error("Failed to mark lesson complete:", err);
       });
       if (result && Number.isFinite(result.score) && Number.isFinite(result.maxScore)) {
@@ -150,6 +195,8 @@ function AppContent() {
           lessonId,
           score: result.score,
           maxScore: result.maxScore,
+          xpAwarded: quizXp,
+          pendingGradeCount: result.pendingGradeCount ?? 0,
         }).catch((err) => {
           console.error("Failed to save quiz attempt:", err);
         });
@@ -194,6 +241,7 @@ function AppContent() {
             onStartWeek={handleStartWeek}
             completedLessons={completedLessons}
             quizAttempts={quizAttempts}
+            totalXp={totalXp}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsAuthModalOpen(true)}
           />
@@ -278,6 +326,8 @@ function AppContent() {
         onClose={() => setIsAuthModalOpen(false)}
         onLogin={handleLogin}
       />
+
+      <XpToast notifications={notifications} onDismiss={dismissNotification} />
     </div>
   );
 }

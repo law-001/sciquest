@@ -7,12 +7,12 @@ export async function fetchProgress(studentId) {
   const [progressRes, attemptsRes] = await Promise.all([
     supabase
       .from('student_progress')
-      .select('lesson_id, week_id, completed, completed_at')
+      .select('lesson_id, week_id, completed, completed_at, xp_awarded')
       .eq('student_id', studentId)
       .eq('completed', true),
     supabase
       .from('quiz_attempts')
-      .select('lesson_id, week_id, score, max_score, submitted_at')
+      .select('lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
       .eq('student_id', studentId)
       .order('submitted_at', { ascending: false }),
   ])
@@ -20,13 +20,15 @@ export async function fetchProgress(studentId) {
   if (attemptsRes.error) throw attemptsRes.error
   return {
     completedLessons: (progressRes.data ?? []).map((r) => r.lesson_id),
+    completedRows: progressRes.data ?? [],
     attempts: attemptsRes.data ?? [],
   }
 }
 
 // Upsert on the unique (student_id, lesson_id) — re-completing is a no-op.
-// Safe to call repeatedly.
-export async function markLessonComplete(studentId, weekId, lessonId) {
+// `xpAwarded` is captured at completion time and frozen on the row so a later
+// XP config change doesn't retroactively rewrite history.
+export async function markLessonComplete(studentId, weekId, lessonId, xpAwarded = 0) {
   if (!studentId || !lessonId || !weekId) return
   const { error } = await supabase.from('student_progress').upsert(
     {
@@ -35,6 +37,7 @@ export async function markLessonComplete(studentId, weekId, lessonId) {
       lesson_id: lessonId,
       completed: true,
       completed_at: new Date().toISOString(),
+      xp_awarded: xpAwarded,
     },
     { onConflict: 'student_id,lesson_id' },
   )
@@ -43,7 +46,15 @@ export async function markLessonComplete(studentId, weekId, lessonId) {
 
 // Insert-only: every submission is preserved. Best-score is computed
 // client-side from the attempt history.
-export async function saveQuizAttempt({ studentId, weekId, lessonId, score, maxScore }) {
+export async function saveQuizAttempt({
+  studentId,
+  weekId,
+  lessonId,
+  score,
+  maxScore,
+  xpAwarded = 0,
+  pendingGradeCount = 0,
+}) {
   if (!studentId || !lessonId || !weekId) return null
   const { data, error } = await supabase
     .from('quiz_attempts')
@@ -53,11 +64,23 @@ export async function saveQuizAttempt({ studentId, weekId, lessonId, score, maxS
       lesson_id: lessonId,
       score,
       max_score: maxScore,
+      xp_awarded: xpAwarded,
+      pending_grade_count: pendingGradeCount,
     })
-    .select('lesson_id, week_id, score, max_score, submitted_at')
+    .select('lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
     .single()
   if (error) throw error
   return data
+}
+
+// Total XP a student has accrued — sum across completed lessons + every
+// quiz attempt. Quiz XP is per-attempt (so retries genuinely earn more if
+// the student improves their score).
+export function totalXpEarned(completedRows, attempts) {
+  let xp = 0
+  for (const row of completedRows ?? []) xp += row.xp_awarded ?? 0
+  for (const a of attempts ?? []) xp += a.xp_awarded ?? 0
+  return xp
 }
 
 // Best (highest) score per lesson from an attempt list — used to render

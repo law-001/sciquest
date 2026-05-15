@@ -30,7 +30,9 @@ create table if not exists public.staff (
 
 -- 3. STUDENT PROGRESS TABLE
 --    One row per (student, lesson). `completed` flips to true when the student
---    finishes the lesson. Week-level completion is derived client-side.
+--    finishes the lesson. `xp_awarded` is the lesson-completion XP captured at
+--    completion time (insulates totals from later config changes). Week-level
+--    completion is derived client-side.
 create table if not exists public.student_progress (
   id           uuid default gen_random_uuid() primary key,
   student_id   uuid references public.students(id) on delete cascade not null,
@@ -38,21 +40,25 @@ create table if not exists public.student_progress (
   week_id      text not null,
   completed    boolean default false,
   completed_at timestamptz,
+  xp_awarded   integer default 0 not null,
   created_at   timestamptz default now(),
   unique(student_id, lesson_id)
 );
 
 -- 3b. QUIZ ATTEMPTS TABLE
 --     Insert-only: one row per submission so retries are preserved.
---     "Best score" is computed client-side via max(score) per lesson.
+--     `pending_grade_count` is the number of essay/short-answer questions in
+--     the submission that still need teacher review.
 create table if not exists public.quiz_attempts (
-  id           uuid default gen_random_uuid() primary key,
-  student_id   uuid references public.students(id) on delete cascade not null,
-  lesson_id    text not null,
-  week_id      text not null,
-  score        integer not null,
-  max_score    integer not null,
-  submitted_at timestamptz default now()
+  id                  uuid default gen_random_uuid() primary key,
+  student_id          uuid references public.students(id) on delete cascade not null,
+  lesson_id           text not null,
+  week_id             text not null,
+  score               integer not null,
+  max_score           integer not null,
+  xp_awarded          integer default 0 not null,
+  pending_grade_count integer default 0 not null,
+  submitted_at        timestamptz default now()
 );
 create index if not exists quiz_attempts_student_lesson_idx
   on public.quiz_attempts(student_id, lesson_id);
@@ -155,6 +161,46 @@ create policy "auth_read_attempts"
   on public.quiz_attempts for select
   to authenticated
   using (true);
+
+-- ============================================================
+-- 7. READABLE VIEWS
+--    Browse in the Table Editor without joining. `security_invoker = on`
+--    keeps RLS on the underlying tables in effect.
+-- ============================================================
+create or replace view public.student_progress_view
+  with (security_invoker = on) as
+  select
+    sp.id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    sp.student_id,
+    sp.week_id,
+    sp.lesson_id,
+    sp.completed,
+    sp.completed_at,
+    sp.xp_awarded,
+    sp.created_at
+  from public.student_progress sp
+  join public.students s on s.id = sp.student_id;
+
+create or replace view public.quiz_attempts_view
+  with (security_invoker = on) as
+  select
+    qa.id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    qa.student_id,
+    qa.week_id,
+    qa.lesson_id,
+    qa.score,
+    qa.max_score,
+    qa.xp_awarded,
+    qa.pending_grade_count,
+    qa.submitted_at
+  from public.quiz_attempts qa
+  join public.students s on s.id = qa.student_id;
 
 -- ============================================================
 -- 6. SEED ADMIN & TEACHER ACCOUNTS
