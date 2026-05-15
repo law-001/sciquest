@@ -39,3 +39,67 @@ React 19 + Vite 8 + Tailwind CSS 4. No React Router — navigation is view-strin
 - Don't add React Router — the view-string pattern is intentional.
 - Don't modify generated files (`*.gen.ts`, `*.generated.*`).
 - Don't hardcode colors — use Tailwind tokens or CSS variables.
+
+---
+
+## Games Platform
+
+### Folder rules
+
+- `src/pages/` — route-level React views
+- `src/components/games/` — React UI shared across all games
+- `src/games/_shared/` — game-engine infrastructure (event bus, base scene, hooks)
+- `src/games/<game-slug>/` — one game's full code (Phaser scenes + React HUD)
+- `src/lib/games/` — game registry + Supabase progress queries
+
+### Game stack
+
+Phaser 3.80+ with built-in Matter.js physics. No separate physics install.
+Phaser renders to a `<canvas>`. React wraps it with HUD overlays.
+
+### GameComponent contract
+
+Every game's `index.jsx` default export must accept:
+```
+{ user, profile, onExit, onProgressUpdate, initialChallengeId, reducedMotion, deviceTier }
+```
+- `user`: Supabase user object
+- `profile`: SciQuest profile (role, displayName, etc.)
+- `onExit`: `() => void` — navigate back to games hub
+- `onProgressUpdate`: `(payload) => void` — called when a challenge completes
+- `reducedMotion`: boolean — disable all animations if true
+- `deviceTier`: `'low' | 'mid' | 'high'`
+
+### React ↔ Phaser communication
+
+ONLY via event bus (EventEmitter). Never pass React state or refs into Phaser scenes.
+- React → Phaser: emit events (e.g. `setTemperature`, `setSubstance`, `reset`)
+- Phaser → React: emit events (e.g. `stateChanged`, `transitionStart`, `transitionComplete`)
+
+### Games rules
+
+- `Phaser.Game` is created exactly once per mount using a `useRef` guard (StrictMode safe)
+- A file enters `_shared/` only when 2+ games need it — build inline first
+- No `console.log` in committed code
+- All Supabase queries go through `src/lib/games/progress.js` — no game writes DB directly
+
+---
+
+## Visual Design Spec
+
+SciQuest uses a **warm cream background** (`#FAF7F2`) with **orange, teal, and yellow** accents. All new screens must match this palette.
+
+**State colors** (game canvas and badges only — not general UI):
+- Solid: cool blue/white — `#A8C8F0` to `#DDEEFF`
+- Liquid: teal/blue — `#3BAFA9` to `#7BC9CF`
+- Gas: light grey/white, semi-transparent — `rgba(200,220,255,0.4)`
+
+**Typography:** match the existing SciQuest font. No new fonts.
+
+**Rounded corners:** 12–16px on cards, panels, buttons.
+
+**Component rules:**
+- Every state must be shown by BOTH color and text label — never color alone
+- All buttons are real `<button>` elements with visible labels
+- Tap targets ≥ 44px height on mobile
+- Sliders must respond to keyboard arrow keys

@@ -12,6 +12,9 @@ import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { GamesHubPage } from "./pages/GamesHubPage";
+import { GamePlayPage } from "./pages/GamePlayPage";
+import { supabase } from "./lib/supabase";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 
 function AppContent() {
@@ -23,6 +26,7 @@ function AppContent() {
   const [activeWeekId, setActiveWeekId] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [activeGameId, setActiveGameId] = useState(null);
 
   const isLoggedIn = !!user;
 
@@ -37,7 +41,10 @@ function AppContent() {
     else setCurrentView('lessons');
   }, [loading]);
 
-  const handleNavigate = (view) => {
+  const handleNavigate = (view, payload) => {
+    if (view === 'game-play' && payload?.gameId) {
+      setActiveGameId(payload.gameId);
+    }
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -111,7 +118,8 @@ function AppContent() {
 
   const isPortalView =
     currentView === "admin" ||
-    currentView === "teacher-portal";
+    currentView === "teacher-portal" ||
+    currentView === "game-play";
 
   const renderView = () => {
     switch (currentView) {
@@ -174,6 +182,20 @@ function AppContent() {
 
       case "profile":
         return <ProfilePage onNavigate={handleNavigate} />;
+
+      case "games":
+        return <GamesHubPage onNavigate={handleNavigate} />;
+
+      case "game-play":
+        return (
+          <GamePlayPage
+            activeGameId={activeGameId}
+            user={user}
+            profile={profile}
+            supabase={supabase}
+            onNavigate={handleNavigate}
+          />
+        );
 
       default:
         return (
