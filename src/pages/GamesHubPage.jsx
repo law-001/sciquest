@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Play,
   Clock,
@@ -11,6 +11,8 @@ import {
   FlaskConical,
   Telescope,
   Star,
+  Search,
+  X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -18,6 +20,7 @@ import { listGames } from "../lib/games/registry";
 import { useGameProgress } from "../games/_shared/progress/useGameProgress";
 import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
+import simulationImg from "../assets/statesofmatter.png";
 
 const CATEGORY_STYLES = {
   Chemistry: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
@@ -94,83 +97,13 @@ function CategoryBadge({ category }) {
   );
 }
 
-// CSS-only animated thumbnail showing the three states of matter
-function MatterStateThumbnail({ large = false }) {
+function MatterStateThumbnail() {
   return (
-    <div
-      className="w-full h-full relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(135deg, #0c1e35 0%, #163354 55%, #0a1929 100%)",
-      }}
-    >
-      <div className="absolute inset-0 flex">
-        {/* Solid — tight grid */}
-        <div className="flex-1 relative border-r border-white/10">
-          <div className="absolute inset-0 flex flex-wrap content-center justify-center gap-1.5 p-3">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-[7px] h-[7px] rounded-sm bg-[#A8C8F0]/70 flex-shrink-0"
-              />
-            ))}
-          </div>
-          <span className="absolute bottom-3 inset-x-0 text-center text-[9px] font-bold tracking-widest uppercase text-[#A8C8F0]/60">
-            Solid
-          </span>
-        </div>
-
-        {/* Liquid — close-packed circles */}
-        <div className="flex-1 relative border-r border-white/10">
-          <div className="absolute inset-0 flex flex-wrap content-start justify-center gap-2 p-3 pt-4">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-[8px] h-[8px] rounded-full bg-[#3BAFA9]/70 flex-shrink-0"
-              />
-            ))}
-          </div>
-          <span className="absolute bottom-3 inset-x-0 text-center text-[9px] font-bold tracking-widest uppercase text-[#3BAFA9]/60">
-            Liquid
-          </span>
-        </div>
-
-        {/* Gas — scattered dots */}
-        <div className="flex-1 relative">
-          {[
-            { top: "16%", left: "22%" },
-            { top: "32%", left: "68%" },
-            { top: "58%", left: "38%" },
-            { top: "14%", left: "74%" },
-            { top: "70%", left: "16%" },
-            { top: "46%", left: "78%" },
-          ].map((pos, i) => (
-            <div
-              key={i}
-              className="absolute w-[6px] h-[6px] rounded-full bg-white/30"
-              style={pos}
-            />
-          ))}
-          <span className="absolute bottom-3 inset-x-0 text-center text-[9px] font-bold tracking-widest uppercase text-white/30">
-            Gas
-          </span>
-        </div>
-      </div>
-
-      <Atom
-        className="absolute top-3 right-3 text-white/15"
-        size={large ? 48 : 34}
-        strokeWidth={1}
-      />
-      {large && (
-        <div className="absolute top-4 left-4 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-          <span className="text-[11px] font-semibold text-orange-300/70">
-            Interactive simulation
-          </span>
-        </div>
-      )}
-    </div>
+    <img
+      src={simulationImg}
+      alt="States of Matter simulation"
+      className="w-full h-full object-cover"
+    />
   );
 }
 
@@ -202,7 +135,7 @@ function LockedThumbnail({ gameId }) {
 
   return (
     <div
-      className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${grad}`}
+      className={`w-full h-full flex items-center justify-center bg-linear-to-br ${grad}`}
     >
       <Icon
         size={42}
@@ -240,59 +173,59 @@ function ProgressRow({ completed, total }) {
   );
 }
 
-// Featured hero card — wide horizontal layout
-function FeaturedCard({ game, userId, onPlay }) {
-  const { progress } = useGameProgress(supabase, game.id, userId);
-  const completedLevels = progress.filter((r) => r.completed).length;
-  const totalLevels = game.totalLevels ?? 3;
+// // Featured hero card — wide horizontal layout
+// function FeaturedCard({ game, userId, onPlay }) {
+//   const { progress } = useGameProgress(supabase, game.id, userId);
+//   const completedLevels = progress.filter((r) => r.completed).length;
+//   const totalLevels = game.totalLevels ?? 3;
 
-  return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 shadow-lg flex flex-col md:flex-row">
-      {/* Thumbnail */}
-      <div className="md:w-[56%] aspect-video md:aspect-auto min-h-[240px] flex-shrink-0">
-        <GameThumbnail game={game} large />
-      </div>
+//   return (
+//     <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 shadow-lg flex flex-col md:flex-row">
+//       {/* Thumbnail */}
+//       <div className="md:w-[56%] aspect-video md:aspect-auto min-h-60 shrink-0">
+//         <GameThumbnail game={game} large />
+//       </div>
 
-      {/* Info panel */}
-      <div className="flex flex-col justify-between p-7 bg-white dark:bg-stone-800 flex-1 gap-6">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-bold text-orange-500 uppercase tracking-widest">
-              Featured
-            </span>
-            {game.category && <CategoryBadge category={game.category} />}
-          </div>
-          <h2 className="text-2xl font-black text-stone-800 dark:text-stone-100 leading-tight">
-            {game.title}
-          </h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-            {game.tagline}
-          </p>
-        </div>
+//       {/* Info panel */}
+//       <div className="flex flex-col justify-between p-7 bg-white dark:bg-stone-800 flex-1 gap-6">
+//         <div className="space-y-3">
+//           <div className="flex items-center gap-2 flex-wrap">
+//             <span className="text-[11px] font-bold text-orange-500 uppercase tracking-widest">
+//               Featured
+//             </span>
+//             {game.category && <CategoryBadge category={game.category} />}
+//           </div>
+//           <h2 className="text-2xl font-black text-stone-800 dark:text-stone-100 leading-tight">
+//             {game.title}
+//           </h2>
+//           <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
+//             {game.tagline}
+//           </p>
+//         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-5 text-sm">
-            <DifficultyDots level={game.difficulty ?? 1} />
-            <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500">
-              <Clock size={14} />
-              <span className="text-xs">~{game.estimatedMinutes} min</span>
-            </div>
-          </div>
+//         <div className="space-y-4">
+//           <div className="flex items-center gap-5 text-sm">
+//             <DifficultyDots level={game.difficulty ?? 1} />
+//             <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500">
+//               <Clock size={14} />
+//               <span className="text-xs">~{game.estimatedMinutes} min</span>
+//             </div>
+//           </div>
 
-          <ProgressRow completed={completedLevels} total={totalLevels} />
+//           <ProgressRow completed={completedLevels} total={totalLevels} />
 
-          <button
-            onClick={onPlay}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-sm transition-colors"
-          >
-            <Play size={16} fill="white" />
-            Play Now
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+//           <button
+//             onClick={onPlay}
+//             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-sm transition-colors"
+//           >
+//             <Play size={16} fill="white" />
+//             Play Now
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 // Unlocked game card
 function UnlockedCard({ game, userId, onPlay }) {
@@ -301,9 +234,11 @@ function UnlockedCard({ game, userId, onPlay }) {
   const totalLevels = game.totalLevels ?? 3;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-sm hover:shadow-lg transition-shadow flex flex-col">
-      <div className="aspect-[4/3] relative overflow-hidden">
-        <GameThumbnail game={game} />
+    <div className="group rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 hover:border-orange-300 dark:hover:border-orange-500/50 transition-all duration-300 ease-out flex flex-col">
+      <div className="aspect-25/9 relative overflow-hidden">
+        <div className="w-full h-full transition-transform duration-500 ease-out group-hover:scale-105">
+          <GameThumbnail game={game} />
+        </div>
         {game.category && (
           <span className="absolute top-3 left-3">
             <CategoryBadge category={game.category} />
@@ -313,7 +248,7 @@ function UnlockedCard({ game, userId, onPlay }) {
 
       <div className="p-5 flex flex-col gap-4 flex-1">
         <div>
-          <h3 className="font-bold text-stone-800 dark:text-stone-100 text-base leading-snug">
+          <h3 className="font-bold text-stone-800 dark:text-stone-100 text-base leading-snug transition-colors duration-200 group-hover:text-orange-500 dark:group-hover:text-orange-400">
             {game.title}
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 line-clamp-2">
@@ -333,9 +268,13 @@ function UnlockedCard({ game, userId, onPlay }) {
 
         <button
           onClick={onPlay}
-          className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold text-sm transition-colors"
+          className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 active:scale-95 text-white font-semibold text-sm transition-all duration-200 group-hover:shadow-md group-hover:shadow-orange-200 dark:group-hover:shadow-orange-900/40"
         >
-          <Play size={15} fill="white" />
+          <Play
+            size={15}
+            fill="white"
+            className="transition-transform duration-200 group-hover:translate-x-0.5"
+          />
           Play
         </button>
       </div>
@@ -347,7 +286,7 @@ function UnlockedCard({ game, userId, onPlay }) {
 function LockedCard({ game }) {
   return (
     <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 opacity-70 select-none flex flex-col">
-      <div className="aspect-[4/3] relative">
+      <div className="aspect-video relative">
         <GameThumbnail game={game} />
         <div className="absolute inset-0 flex items-center justify-center bg-stone-900/10 dark:bg-black/20">
           <div className="flex flex-col items-center gap-2">
@@ -398,6 +337,8 @@ export function GamesHubPage({ onNavigate }) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -415,17 +356,26 @@ export function GamesHubPage({ onNavigate }) {
   const unlocked = games.filter((g) => !g.locked);
   const featured = unlocked[0] ?? null;
 
+  const displayedGames = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const withoutFeatured = games.filter((g) => g.id !== featured?.id);
+    if (!q) return withoutFeatured;
+    return withoutFeatured.filter(
+      (g) =>
+        g.title?.toLowerCase().includes(q) ||
+        g.tagline?.toLowerCase().includes(q) ||
+        g.category?.toLowerCase().includes(q),
+    );
+  }, [games, searchQuery, featured]);
+
   const handlePlay = (game) => onNavigate("game-play", { gameId: game.id });
 
   return (
-    <div
-      className="min-h-screen relative overflow-hidden"
-      style={{ background: "#fdf6e3" }}
-    >
+    <div className="min-h-screen relative overflow-hidden bg-amber-50/60 dark:bg-stone-900">
       {/* ── Decorative blur orbs ── */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-0 w-80 h-80 bg-teal-200/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-0 w-72 h-72 bg-violet-200/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-200/30 dark:bg-orange-900/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 right-0 w-80 h-80 bg-teal-200/20 dark:bg-teal-900/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-0 w-72 h-72 bg-violet-200/20 dark:bg-violet-900/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page header */}
@@ -441,7 +391,7 @@ export function GamesHubPage({ onNavigate }) {
             <p className="text-lg text-stone-500 dark:text-stone-400">
               Level up your knowledge through interactive play.
             </p>
-            <div className="flex flex-wrap gap-2 mt-5">
+            <div className="flex flex-wrap gap-2 mt-5 dark:bgst">
               {[
                 `${games.length} Games`,
                 "Interactive Simulations",
@@ -449,7 +399,7 @@ export function GamesHubPage({ onNavigate }) {
               ].map((chip) => (
                 <span
                   key={chip}
-                  className="text-xs font-semibold px-3.5 py-1.5 rounded-full bg-white text-stone-500 border border-stone-200 shadow-sm"
+                  className="text-xs font-semibold px-3.5 py-1.5 rounded-full bg-white text-stone-500 border border-stone-200 shadow-sm dark:bg-stone-900 dark:border-stone-800"
                 >
                   {chip}
                 </span>
@@ -463,8 +413,12 @@ export function GamesHubPage({ onNavigate }) {
                 <Star className="w-6 h-6 text-accent-500 fill-accent-500" />
               </div>
               <div>
-                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">Current Level</p>
-                <p className="text-xl font-black text-stone-900 dark:text-white">Level 5</p>
+                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
+                  Current Level
+                </p>
+                <p className="text-xl font-black text-stone-900 dark:text-white">
+                  Level 5
+                </p>
               </div>
             </div>
             <div className="w-px h-12 bg-orange-200 shrink-0" />
@@ -489,26 +443,105 @@ export function GamesHubPage({ onNavigate }) {
             <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">
               Featured
             </p>
-            <FeaturedCard
-              game={featured}
-              userId={user?.id}
-              onPlay={() => handlePlay(featured)}
-            />
+            <div className="max-w-sm">
+              <UnlockedCard
+                game={featured}
+                userId={user?.id}
+                onPlay={() => handlePlay(featured)}
+              />
+            </div>
           </section>
         )}
 
         {/* All games grid */}
-        {games.length > 0 && (
-          <section className="mt-10">
-            <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-5">
-              All Games
+        {displayedGames.length === 0 && searchQuery && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Search className="w-10 h-10 text-stone-300 dark:text-stone-600 mb-4" />
+            <p className="text-stone-500 dark:text-stone-400 font-bold">
+              No games match &ldquo;{searchQuery}&rdquo;
             </p>
-            <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {games.map((game, index) => (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="mt-3 text-sm text-orange-500 hover:underline font-bold"
+            >
+              Clear search
+            </button>
+          </div>
+        )}
+        {(displayedGames.length > 0 || searchQuery) && (
+          <section className="mt-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest shrink-0">
+                All Games
+              </p>
+
+              {/* Mobile: icon toggles inline input */}
+              <div className="flex items-center gap-2 sm:hidden">
+                {searchOpen ? (
+                  <div className="flex items-center gap-2 bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 rounded-full px-3 py-2 focus-within:border-orange-400 dark:focus-within:border-orange-500 transition-colors">
+                    <Search className="w-4 h-4 text-stone-400 shrink-0" />
+                    <input
+                      autoFocus
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search..."
+                      className="w-32 text-sm font-medium bg-transparent text-stone-700 dark:text-stone-200 placeholder-stone-400 outline-none"
+                    />
+                    <button
+                      onClick={() => {
+                        setSearchOpen(false);
+                        setSearchQuery("");
+                      }}
+                      className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                      aria-label="Close search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-500 dark:text-stone-300 transition-colors"
+                    aria-label="Search games"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Desktop: always-visible search bar */}
+              <div className="hidden sm:flex items-center gap-2 bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 rounded-full px-4 py-2 w-56 focus-within:border-orange-400 dark:focus-within:border-orange-500 transition-colors">
+                <Search className="w-4 h-4 text-stone-400 shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search games..."
+                  className="bg-transparent text-sm font-medium text-stone-700 dark:text-stone-200 placeholder-stone-400 outline-none w-full"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div
+              ref={cardsRef}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+            >
+              {displayedGames.map((game, index) => (
                 <div
                   key={game.id}
                   className={`transition-all duration-700 ease-out ${
-                    cardsTriggered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                    cardsTriggered
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-10"
                   }`}
                   style={{ transitionDelay: `${index * 80}ms` }}
                 >
