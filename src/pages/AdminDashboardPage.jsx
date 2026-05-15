@@ -28,7 +28,14 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import { cn } from "../lib/utils";
-import { fetchUsers, fetchRecentUsers, fetchTeachers, fetchDashboardCounts, fetchSectionCounts, deleteUser } from "../lib/users";
+import {
+  fetchUsers,
+  fetchRecentUsers,
+  fetchTeachers,
+  fetchDashboardCounts,
+  fetchSectionCounts,
+  deleteUser,
+} from "../lib/users";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
@@ -71,13 +78,22 @@ function DonutChart({ data, size = 160, label }) {
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ display: "block" }}>
         {slices.map((s, i) => (
-          <path key={i} d={s.path} fill={s.color} className="transition-opacity hover:opacity-80" />
+          <path
+            key={i}
+            d={s.path}
+            fill={s.color}
+            className="transition-opacity hover:opacity-80"
+          />
         ))}
       </svg>
       {label && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-xl font-black text-stone-900 dark:text-white leading-none">{label.value}</span>
-          <span className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">{label.sub}</span>
+          <span className="text-xl font-black text-stone-900 dark:text-white leading-none">
+            {label.value}
+          </span>
+          <span className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">
+            {label.sub}
+          </span>
         </div>
       )}
     </div>
@@ -112,17 +128,29 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
           <UserX className="w-5 h-5 text-red-600 dark:text-red-400" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-stone-900 dark:text-white">Remove User</h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">This action cannot be undone</p>
+          <h2 className="text-lg font-black text-stone-900 dark:text-white">
+            Remove User
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            This action cannot be undone
+          </p>
         </div>
       </div>
       <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
         Are you sure you want to remove{" "}
         <strong className="text-stone-900 dark:text-white">{user.name}</strong>{" "}
-        ({user.email})? Their account, progress, and all associated records will be permanently deleted.
+        ({user.email})? Their account, progress, and all associated records will
+        be permanently deleted.
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>Cancel</Button>
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={onClose}
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
         <button
           onClick={() => onConfirm(user)}
           disabled={isLoading}
@@ -131,7 +159,9 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
           {isLoading ? "Removing…" : "Remove User"}
         </button>
       </div>
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && (
+        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
     </Modal>
   );
 }
@@ -159,19 +189,30 @@ function InviteTeacherModal({ onClose }) {
           <Mail className="w-5 h-5 text-teal-600 dark:text-teal-400" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-stone-900 dark:text-white">Invite Teacher</h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">Send a setup link via email</p>
+          <h2 className="text-lg font-black text-stone-900 dark:text-white">
+            Invite Teacher
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Send a setup link via email
+          </p>
         </div>
       </div>
       {sent ? (
         <div className="flex flex-col items-center py-4 gap-3">
           <CheckCircle2 className="w-12 h-12 text-secondary-500" />
-          <p className="text-base font-bold text-stone-900 dark:text-white">Invite sent!</p>
-          <p className="text-sm text-stone-600 dark:text-stone-300 font-medium">{email}</p>
-          <p className="text-xs text-stone-500 dark:text-stone-400 text-center mt-1">
-            They will receive an email with a link to set up their teacher account and password.
+          <p className="text-base font-bold text-stone-900 dark:text-white">
+            Invite sent!
           </p>
-          <Button className="mt-3 w-full" onClick={onClose}>Done</Button>
+          <p className="text-sm text-stone-600 dark:text-stone-300 font-medium">
+            {email}
+          </p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 text-center mt-1">
+            They will receive an email with a link to set up their teacher
+            account and password.
+          </p>
+          <Button className="mt-3 w-full" onClick={onClose}>
+            Done
+          </Button>
         </div>
       ) : (
         <>
@@ -188,11 +229,14 @@ function InviteTeacherModal({ onClose }) {
               className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm"
             />
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">
-              The teacher will receive a link to create their account and set their password.
+              The teacher will receive a link to create their account and set
+              their password.
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" className="flex-1" onClick={onClose}>
+              Cancel
+            </Button>
             <Button
               className="flex-1"
               leftIcon={<Send className="w-4 h-4" />}
@@ -219,11 +263,43 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
-      gsap.from(".stat-card", { y: 28, opacity: 0, duration: 0.5, stagger: 0.08, ease: "power2.out", delay: 0.1 });
-      gsap.from(".users-table", { y: 22, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.22 });
-      gsap.from(".users-table tbody tr", { x: -16, opacity: 0, duration: 0.38, stagger: 0.05, ease: "power2.out", delay: 0.38 });
-      gsap.from(".analytics-card", { x: 24, opacity: 0, duration: 0.55, stagger: 0.12, ease: "power2.out", delay: 0.18 });
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      gsap.from(".stat-card", {
+        y: 28,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "power2.out",
+        delay: 0.1,
+      });
+      gsap.from(".users-table", {
+        y: 22,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 0.22,
+      });
+      gsap.from(".users-table tbody tr", {
+        x: -16,
+        opacity: 0,
+        duration: 0.38,
+        stagger: 0.05,
+        ease: "power2.out",
+        delay: 0.38,
+      });
+      gsap.from(".analytics-card", {
+        x: 24,
+        opacity: 0,
+        duration: 0.55,
+        stagger: 0.12,
+        ease: "power2.out",
+        delay: 0.18,
+      });
     }, containerRef);
     return () => ctx.revert();
   }, []);
@@ -234,15 +310,19 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
   }));
   const totalSectionStudents = sectionSlices.reduce((s, d) => s + d.value, 0);
   const activityData = [
-    { label: "Active",   value: 987, color: ACTIVITY_COLORS[0] },
+    { label: "Active", value: 987, color: ACTIVITY_COLORS[0] },
     { label: "Inactive", value: 261, color: ACTIVITY_COLORS[1] },
   ];
 
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">Dashboard</h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">Overview and system management</p>
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Dashboard
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Overview and system management
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -250,12 +330,22 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
         {stats.map((stat, i) => (
           <Card key={i} className="stat-card p-6">
             <div className="flex items-center gap-4">
-              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", stat.bgLight, stat.bgDark)}>
+              <div
+                className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center",
+                  stat.bgLight,
+                  stat.bgDark,
+                )}
+              >
                 {stat.icon}
               </div>
               <div>
-                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">{stat.label}</p>
-                <p className="text-2xl font-black text-stone-900 dark:text-white">{stat.value}</p>
+                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
+                  {stat.label}
+                </p>
+                <p className="text-2xl font-black text-stone-900 dark:text-white">
+                  {stat.value}
+                </p>
               </div>
             </div>
           </Card>
@@ -266,49 +356,91 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
         {/* Recent Users Table */}
         <Card className="users-table lg:col-span-2 overflow-hidden">
           <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">Recent Users</h2>
+            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+              Recent Users
+            </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Joined</th>
+                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                    Joined
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
                 {recentUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+                    <td
+                      colSpan={4}
+                      className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                    >
                       No recent users
                     </td>
                   </tr>
                 ) : (
                   recentUsers.map((user) => (
-                    <tr key={user.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                    <tr
+                      key={user.id}
+                      className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                             {user.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
-                            <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                            <p className="text-sm font-bold text-stone-900 dark:text-white">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-stone-500 dark:text-stone-400">
+                              {user.email}
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge variant={user.role === "Teacher" ? "secondary" : "primary"}>{user.role}</Badge>
+                        <Badge
+                          variant={
+                            user.role === "Teacher" ? "secondary" : "primary"
+                          }
+                        >
+                          {user.role}
+                        </Badge>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", user.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
-                          <span className={cn("w-2 h-2 rounded-full", user.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1.5 text-xs font-bold",
+                            user.status === "Active"
+                              ? "text-secondary-600 dark:text-secondary-400"
+                              : "text-stone-400 dark:text-stone-500",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "w-2 h-2 rounded-full",
+                              user.status === "Active"
+                                ? "bg-secondary-500"
+                                : "bg-stone-300 dark:bg-stone-600",
+                            )}
+                          />
                           {user.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.joined}</td>
+                      <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                        {user.joined}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -320,26 +452,43 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
         {/* Analytics Charts */}
         <div className="space-y-4">
           <Card className="analytics-card p-5">
-            <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">Student Sections</h3>
+            <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">
+              Student Sections
+            </h3>
             {totalSectionStudents === 0 ? (
-              <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-8">No students yet</p>
+              <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-8">
+                No students yet
+              </p>
             ) : (
               <>
                 <div className="flex justify-center mb-4">
                   <DonutChart
                     data={sectionSlices}
                     size={160}
-                    label={{ value: totalSectionStudents.toLocaleString(), sub: "students" }}
+                    label={{
+                      value: totalSectionStudents.toLocaleString(),
+                      sub: "students",
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
                   {sectionSlices.map((d) => (
-                    <div key={d.label} className="flex items-center justify-between">
+                    <div
+                      key={d.label}
+                      className="flex items-center justify-between"
+                    >
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
-                        <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">{d.label}</span>
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ background: d.color }}
+                        />
+                        <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">
+                          {d.label}
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-stone-900 dark:text-white">{d.value}</span>
+                      <span className="text-xs font-bold text-stone-900 dark:text-white">
+                        {d.value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -348,18 +497,34 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
           </Card>
 
           <Card className="analytics-card p-5">
-            <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">Weekly Activity</h3>
+            <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">
+              Weekly Activity
+            </h3>
             <div className="flex justify-center mb-4">
-              <DonutChart data={activityData} size={140} label={{ value: "79%", sub: "active" }} />
+              <DonutChart
+                data={activityData}
+                size={140}
+                label={{ value: "79%", sub: "active" }}
+              />
             </div>
             <div className="space-y-2">
               {activityData.map((d) => (
-                <div key={d.label} className="flex items-center justify-between">
+                <div
+                  key={d.label}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
-                    <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">{d.label} this week</span>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ background: d.color }}
+                    />
+                    <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">
+                      {d.label} this week
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-stone-900 dark:text-white">{d.value}</span>
+                  <span className="text-xs font-bold text-stone-900 dark:text-white">
+                    {d.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -386,19 +551,44 @@ function UsersTab() {
   useEffect(() => {
     let cancelled = false;
     fetchUsers()
-      .then((rows) => { if (!cancelled) { setUsers(rows); setLoading(false); } })
-      .catch((err) => { if (!cancelled) { setLoadError(err.message ?? "Failed to load users"); setLoading(false); } });
-    return () => { cancelled = true; };
+      .then((rows) => {
+        if (!cancelled) {
+          setUsers(rows);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(err.message ?? "Failed to load users");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const removeSearchResults = removeQuery.trim()
-    ? users.filter((u) => u.name.toLowerCase().includes(removeQuery.toLowerCase()))
+    ? users.filter((u) =>
+        u.name.toLowerCase().includes(removeQuery.toLowerCase()),
+      )
     : [];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
-      gsap.from(".anim-card", { y: 22, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.15 });
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      gsap.from(".anim-card", {
+        y: 22,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 0.15,
+      });
     }, containerRef);
     return () => ctx.revert();
   }, []);
@@ -420,25 +610,34 @@ function UsersTab() {
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">Users</h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">Manage all student and teacher accounts</p>
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Users
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Manage all student and teacher accounts
+        </p>
       </div>
 
       <Card className="anim-card overflow-hidden">
         <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">All Users</h2>
+            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+              All Users
+            </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">
               {loading ? "Loading…" : `${users.length} accounts`}
             </p>
           </div>
           <button
-            onClick={() => { setShowRemoveSearch((v) => !v); setRemoveQuery(""); }}
+            onClick={() => {
+              setShowRemoveSearch((v) => !v);
+              setRemoveQuery("");
+            }}
             className={cn(
               "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors",
               showRemoveSearch
                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
             )}
           >
             <UserX className="w-4 h-4" />
@@ -459,17 +658,26 @@ function UsersTab() {
             {removeQuery.trim() && (
               <div className="mt-3 space-y-1.5">
                 {removeSearchResults.length === 0 ? (
-                  <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">No users found</p>
+                  <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
+                    No users found
+                  </p>
                 ) : (
                   removeSearchResults.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700">
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700"
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {user.email}
+                          </p>
                         </div>
                       </div>
                       <button
@@ -490,52 +698,110 @@ function UsersTab() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Section</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Joined</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Section
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Joined
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">Loading users…</td>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    Loading users…
+                  </td>
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400">{loadError}</td>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400"
+                  >
+                    {loadError}
+                  </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">No users yet</td>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    No users yet
+                  </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                  <tr
+                    key={user.id}
+                    className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-stone-900 dark:text-white">{user.name}</p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {user.email}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant={user.role === "Teacher" ? "secondary" : "primary"}>{user.role}</Badge>
+                      <Badge
+                        variant={
+                          user.role === "Teacher" ? "secondary" : "primary"
+                        }
+                      >
+                        {user.role}
+                      </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.section}</td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {user.section}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", user.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
-                        <span className={cn("w-2 h-2 rounded-full", user.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 text-xs font-bold",
+                          user.status === "Active"
+                            ? "text-secondary-600 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "w-2 h-2 rounded-full",
+                            user.status === "Active"
+                              ? "bg-secondary-500"
+                              : "bg-stone-300 dark:bg-stone-600",
+                          )}
+                        />
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{user.joined}</td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {user.joined}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => setUserToRemove(user)}
@@ -557,7 +823,12 @@ function UsersTab() {
         <RemoveUserModal
           user={userToRemove}
           onConfirm={handleConfirmRemove}
-          onClose={() => { if (!removing) { setUserToRemove(null); setRemoveError(null); } }}
+          onClose={() => {
+            if (!removing) {
+              setUserToRemove(null);
+              setRemoveError(null);
+            }
+          }}
           isLoading={removing}
           error={removeError}
         />
@@ -578,16 +849,45 @@ function TeachersTab() {
   useEffect(() => {
     let cancelled = false;
     fetchTeachers()
-      .then((rows) => { if (!cancelled) { setTeachers(rows); setLoading(false); } })
-      .catch((err) => { if (!cancelled) { setLoadError(err.message ?? "Failed to load teachers"); setLoading(false); } });
-    return () => { cancelled = true; };
+      .then((rows) => {
+        if (!cancelled) {
+          setTeachers(rows);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(err.message ?? "Failed to load teachers");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
-      gsap.from(".anim-invite-btn", { x: 20, opacity: 0, duration: 0.45, ease: "power2.out", delay: 0.05 });
-      gsap.from(".anim-card", { y: 22, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.15 });
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      gsap.from(".anim-invite-btn", {
+        x: 20,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+        delay: 0.05,
+      });
+      gsap.from(".anim-card", {
+        y: 22,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 0.15,
+      });
     }, containerRef);
     return () => ctx.revert();
   }, []);
@@ -596,19 +896,28 @@ function TeachersTab() {
     <div className="space-y-6" ref={containerRef}>
       <div className="flex items-center justify-between">
         <div className="anim-heading">
-          <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">Teachers</h1>
-          <p className="text-stone-500 dark:text-stone-400 font-medium">Manage teacher accounts and send invites</p>
+          <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+            Teachers
+          </h1>
+          <p className="text-stone-500 dark:text-stone-400 font-medium">
+            Manage teacher accounts and send invites
+          </p>
         </div>
         <div className="anim-invite-btn">
-        <Button leftIcon={<Mail className="w-4 h-4" />} onClick={() => setShowInvite(true)}>
-          Invite Teacher
-        </Button>
+          <Button
+            leftIcon={<Mail className="w-4 h-4" />}
+            onClick={() => setShowInvite(true)}
+          >
+            Invite Teacher
+          </Button>
         </div>
       </div>
 
       <Card className="anim-card overflow-hidden">
         <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-          <h2 className="text-lg font-bold text-stone-900 dark:text-white">All Teachers</h2>
+          <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+            All Teachers
+          </h2>
           <p className="text-sm text-stone-500 dark:text-stone-400">
             {loading ? "Loading…" : `${teachers.length} teachers`}
           </p>
@@ -617,49 +926,101 @@ function TeachersTab() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Teacher</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Classes</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Students</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Joined</th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Teacher
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Classes
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Students
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Joined
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">Loading teachers…</td>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    Loading teachers…
+                  </td>
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400">{loadError}</td>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400"
+                  >
+                    {loadError}
+                  </td>
                 </tr>
               ) : teachers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">No teachers yet</td>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    No teachers yet
+                  </td>
                 </tr>
               ) : (
                 teachers.map((teacher) => (
-                  <tr key={teacher.id} className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                  <tr
+                    key={teacher.id}
+                    className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {teacher.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-stone-900 dark:text-white">{teacher.name}</p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">{teacher.email}</p>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {teacher.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {teacher.email}
+                          </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">{teacher.classes}</td>
-                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">{teacher.students}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">
+                      {teacher.classes}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">
+                      {teacher.students}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold", teacher.status === "Active" ? "text-secondary-600 dark:text-secondary-400" : "text-stone-400 dark:text-stone-500")}>
-                        <span className={cn("w-2 h-2 rounded-full", teacher.status === "Active" ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600")} />
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 text-xs font-bold",
+                          teacher.status === "Active"
+                            ? "text-secondary-600 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "w-2 h-2 rounded-full",
+                            teacher.status === "Active"
+                              ? "bg-secondary-500"
+                              : "bg-stone-300 dark:bg-stone-600",
+                          )}
+                        />
                         {teacher.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">{teacher.joined}</td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {teacher.joined}
+                    </td>
                   </tr>
                 ))
               )}
@@ -668,7 +1029,9 @@ function TeachersTab() {
         </div>
       </Card>
 
-      {showInvite && <InviteTeacherModal onClose={() => setShowInvite(false)} />}
+      {showInvite && (
+        <InviteTeacherModal onClose={() => setShowInvite(false)} />
+      )}
     </div>
   );
 }
@@ -680,10 +1043,22 @@ function LessonsTab() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
       ScrollTrigger.batch(".week-card", {
         onEnter: (batch) =>
-          gsap.from(batch, { y: 32, opacity: 0, duration: 0.5, stagger: 0.1, ease: "power2.out", clearProps: "all" }),
+          gsap.from(batch, {
+            y: 32,
+            opacity: 0,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power2.out",
+            clearProps: "all",
+          }),
         start: "top 90%",
       });
     }, containerRef);
@@ -693,8 +1068,12 @@ function LessonsTab() {
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">Lessons</h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">Browse lesson content by week</p>
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Lessons
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Browse lesson content by week
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {WEEKS_DATA.map((week) => (
@@ -708,12 +1087,16 @@ function LessonsTab() {
                   <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                     Week {week.weekNumber}
                   </p>
-                  <h3 className="text-base font-black text-stone-900 dark:text-white">{week.title}</h3>
+                  <h3 className="text-base font-black text-stone-900 dark:text-white">
+                    {week.title}
+                  </h3>
                 </div>
               </div>
               <Badge variant="primary">{week.category}</Badge>
             </div>
-            <p className="text-sm text-stone-600 dark:text-stone-300 mb-4 line-clamp-2">{week.description}</p>
+            <p className="text-sm text-stone-600 dark:text-stone-300 mb-4 line-clamp-2">
+              {week.description}
+            </p>
             <div className="flex items-center gap-4 text-xs font-bold text-stone-500 dark:text-stone-400">
               <span className="flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5" />
@@ -741,10 +1124,22 @@ function QuizzesTab() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
       ScrollTrigger.batch(".week-card", {
         onEnter: (batch) =>
-          gsap.from(batch, { y: 32, opacity: 0, duration: 0.5, stagger: 0.1, ease: "power2.out", clearProps: "all" }),
+          gsap.from(batch, {
+            y: 32,
+            opacity: 0,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power2.out",
+            clearProps: "all",
+          }),
         start: "top 90%",
       });
     }, containerRef);
@@ -754,19 +1149,29 @@ function QuizzesTab() {
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">Quizzes</h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">Browse quiz content by week</p>
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Quizzes
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Browse quiz content by week
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {WEEKS_DATA.map((week) => {
-          const weekQuizzes = week.lessons.map((l) => QUIZZES_DATA[l.id]).filter(Boolean);
-          const totalQuestions = weekQuizzes.reduce((s, q) => s + q.questions.length, 0);
+          const weekQuizzes = week.lessons
+            .map((l) => QUIZZES_DATA[l.id])
+            .filter(Boolean);
+          const totalQuestions = weekQuizzes.reduce(
+            (s, q) => s + q.questions.length,
+            0,
+          );
           const totalPoints = weekQuizzes.reduce(
-            (s, q) => s + q.questions.reduce((ps, qu) => ps + (qu.points ?? 0), 0),
-            0
+            (s, q) =>
+              s + q.questions.reduce((ps, qu) => ps + (qu.points ?? 0), 0),
+            0,
           );
           const totalMinutes = Math.round(
-            weekQuizzes.reduce((s, q) => s + (q.timeLimit ?? 0), 0) / 60
+            weekQuizzes.reduce((s, q) => s + (q.timeLimit ?? 0), 0) / 60,
           );
 
           return (
@@ -780,7 +1185,9 @@ function QuizzesTab() {
                     <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                       Week {week.weekNumber}
                     </p>
-                    <h3 className="text-base font-black text-stone-900 dark:text-white">{week.title}</h3>
+                    <h3 className="text-base font-black text-stone-900 dark:text-white">
+                      {week.title}
+                    </h3>
                   </div>
                 </div>
                 <Badge variant="secondary">{weekQuizzes.length} quizzes</Badge>
@@ -817,10 +1224,15 @@ function Toggle({ defaultChecked = false }) {
       aria-pressed={on}
       className={cn(
         "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400",
-        on ? "bg-primary-600" : "bg-stone-300 dark:bg-stone-600"
+        on ? "bg-primary-600" : "bg-stone-300 dark:bg-stone-600",
       )}
     >
-      <span className={cn("inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform", on ? "translate-x-6" : "translate-x-1")} />
+      <span
+        className={cn(
+          "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+          on ? "translate-x-6" : "translate-x-1",
+        )}
+      />
     </button>
   );
 }
@@ -839,8 +1251,14 @@ function SettingRow({ label, hint, children }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-3.5 border-b border-orange-100 dark:border-stone-700 last:border-0 last:pb-0">
       <div className="flex-1">
-        <p className="text-sm font-bold text-stone-800 dark:text-stone-200">{label}</p>
-        {hint && <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">{hint}</p>}
+        <p className="text-sm font-bold text-stone-800 dark:text-stone-200">
+          {label}
+        </p>
+        {hint && (
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+            {hint}
+          </p>
+        )}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -856,7 +1274,9 @@ function SettingsSection({ icon, title, description, children }) {
         </div>
         <div>
           <h3 className="font-black text-stone-900 dark:text-white">{title}</h3>
-          <p className="text-sm text-stone-500 dark:text-stone-400">{description}</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            {description}
+          </p>
         </div>
       </div>
       <div className="pl-14">{children}</div>
@@ -869,10 +1289,22 @@ function SettingsTab() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" });
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
       ScrollTrigger.batch(".settings-section", {
         onEnter: (batch) =>
-          gsap.from(batch, { y: 28, opacity: 0, duration: 0.5, stagger: 0.1, ease: "power2.out", clearProps: "all" }),
+          gsap.from(batch, {
+            y: 28,
+            opacity: 0,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power2.out",
+            clearProps: "all",
+          }),
         start: "top 90%",
       });
     }, containerRef);
@@ -882,8 +1314,12 @@ function SettingsTab() {
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">Settings</h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">Configure your SciQuest platform</p>
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Settings
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Configure your SciQuest platform
+        </p>
       </div>
 
       <SettingsSection
@@ -891,13 +1327,22 @@ function SettingsTab() {
         title="School Profile"
         description="Basic information about your institution"
       >
-        <SettingRow label="School Name" hint="Displayed in the app and outgoing emails">
+        <SettingRow
+          label="School Name"
+          hint="Displayed in the app and outgoing emails"
+        >
           <SettingsInput defaultValue="SciQuest Academy" />
         </SettingRow>
-        <SettingRow label="School Email" hint="Used for system notifications and replies">
+        <SettingRow
+          label="School Email"
+          hint="Used for system notifications and replies"
+        >
           <SettingsInput placeholder="admin@school.edu" />
         </SettingRow>
-        <SettingRow label="School Address" hint="For reports and official documents">
+        <SettingRow
+          label="School Address"
+          hint="For reports and official documents"
+        >
           <SettingsInput placeholder="123 Education Lane" />
         </SettingRow>
       </SettingsSection>
@@ -910,10 +1355,16 @@ function SettingsTab() {
         <SettingRow label="App Name" hint="Shown in the browser tab and emails">
           <SettingsInput defaultValue="SciQuest" />
         </SettingRow>
-        <SettingRow label="Dark Mode Default" hint="Default theme applied to new user accounts">
+        <SettingRow
+          label="Dark Mode Default"
+          hint="Default theme applied to new user accounts"
+        >
           <Toggle defaultChecked={false} />
         </SettingRow>
-        <SettingRow label="Show School Logo" hint="Display school logo on public-facing pages">
+        <SettingRow
+          label="Show School Logo"
+          hint="Display school logo on public-facing pages"
+        >
           <Toggle defaultChecked={true} />
         </SettingRow>
       </SettingsSection>
@@ -923,16 +1374,28 @@ function SettingsTab() {
         title="Notifications"
         description="Control automated email and in-app alerts"
       >
-        <SettingRow label="New Student Signup" hint="Notify admin when a new student registers">
+        <SettingRow
+          label="New Student Signup"
+          hint="Notify admin when a new student registers"
+        >
           <Toggle defaultChecked={true} />
         </SettingRow>
-        <SettingRow label="Teacher Invite Accepted" hint="Alert when a teacher completes their account setup">
+        <SettingRow
+          label="Teacher Invite Accepted"
+          hint="Alert when a teacher completes their account setup"
+        >
           <Toggle defaultChecked={true} />
         </SettingRow>
-        <SettingRow label="Weekly Quiz Summary" hint="Digest of quiz attempts and scores every Monday">
+        <SettingRow
+          label="Weekly Quiz Summary"
+          hint="Digest of quiz attempts and scores every Monday"
+        >
           <Toggle defaultChecked={false} />
         </SettingRow>
-        <SettingRow label="Inactivity Alert" hint="Flag students inactive for 7 or more days">
+        <SettingRow
+          label="Inactivity Alert"
+          hint="Flag students inactive for 7 or more days"
+        >
           <Toggle defaultChecked={true} />
         </SettingRow>
       </SettingsSection>
@@ -942,17 +1405,26 @@ function SettingsTab() {
         title="Integrations"
         description="Connect external tools and platforms"
       >
-        <SettingRow label="Google Classroom" hint="Sync class rosters automatically">
+        <SettingRow
+          label="Google Classroom"
+          hint="Sync class rosters automatically"
+        >
           <span className="text-xs font-bold text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-700 px-3 py-1.5 rounded-lg">
             Coming Soon
           </span>
         </SettingRow>
-        <SettingRow label="Microsoft Teams" hint="Send lesson notifications via Teams channels">
+        <SettingRow
+          label="Microsoft Teams"
+          hint="Send lesson notifications via Teams channels"
+        >
           <span className="text-xs font-bold text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-700 px-3 py-1.5 rounded-lg">
             Coming Soon
           </span>
         </SettingRow>
-        <SettingRow label="LMS Export" hint="Export grades to an external Learning Management System">
+        <SettingRow
+          label="LMS Export"
+          hint="Export grades to an external Learning Management System"
+        >
           <span className="text-xs font-bold text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-700 px-3 py-1.5 rounded-lg">
             Coming Soon
           </span>
@@ -966,22 +1438,22 @@ function SettingsTab() {
 
 const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
-  { id: "users",     label: "Users",     Icon: Users },
-  { id: "teachers",  label: "Teachers",  Icon: GraduationCap },
-  { id: "lessons",   label: "Lessons",   Icon: BookOpen },
-  { id: "quizzes",   label: "Quizzes",   Icon: HelpCircle },
-  { id: "settings",  label: "Settings",  Icon: Settings },
+  { id: "users", label: "Users", Icon: Users },
+  { id: "teachers", label: "Teachers", Icon: GraduationCap },
+  { id: "lessons", label: "Lessons", Icon: BookOpen },
+  { id: "quizzes", label: "Quizzes", Icon: HelpCircle },
+  { id: "settings", label: "Settings", Icon: Settings },
 ];
 
 // ─── Admin content slot map ───────────────────────────────────────────────────
 
 const ADMIN_TAB_MAP = {
   dashboard: DashboardTab,
-  users:     UsersTab,
-  teachers:  TeachersTab,
-  lessons:   LessonsTab,
-  quizzes:   QuizzesTab,
-  settings:  SettingsTab,
+  users: UsersTab,
+  teachers: TeachersTab,
+  lessons: LessonsTab,
+  quizzes: QuizzesTab,
+  settings: SettingsTab,
 };
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -1008,48 +1480,59 @@ export function AdminDashboardPage({ onNavigate }) {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchRecentUsers(5), fetchDashboardCounts(), fetchSectionCounts()])
+    Promise.all([
+      fetchRecentUsers(5),
+      fetchDashboardCounts(),
+      fetchSectionCounts(),
+    ])
       .then(([rows, dashboardCounts, sections]) => {
         if (cancelled) return;
         setRecentUsers(rows);
         setCounts(dashboardCounts);
         setSectionData(sections);
       })
-      .catch(() => { /* dashboard falls back to placeholders on failure */ });
-    return () => { cancelled = true; };
+      .catch(() => {
+        /* dashboard falls back to placeholders on failure */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const totalLessons = WEEKS_DATA.reduce((sum, week) => sum + week.lessons.length, 0);
+  const totalLessons = WEEKS_DATA.reduce(
+    (sum, week) => sum + week.lessons.length,
+    0,
+  );
   const showCount = (n) => (n == null ? "…" : n.toLocaleString());
 
   const stats = [
     {
-      label:   "Total Students",
-      value:   showCount(counts?.students),
-      icon:    <Users className="w-6 h-6 text-primary-500" />,
+      label: "Total Students",
+      value: showCount(counts?.students),
+      icon: <Users className="w-6 h-6 text-primary-500" />,
       bgLight: "bg-primary-50",
-      bgDark:  "dark:bg-primary-900/20",
+      bgDark: "dark:bg-primary-900/20",
     },
     {
-      label:   "Total Teachers",
-      value:   showCount(counts?.teachers),
-      icon:    <GraduationCap className="w-6 h-6 text-secondary-500" />,
+      label: "Total Teachers",
+      value: showCount(counts?.teachers),
+      icon: <GraduationCap className="w-6 h-6 text-secondary-500" />,
       bgLight: "bg-secondary-50",
-      bgDark:  "dark:bg-secondary-900/20",
+      bgDark: "dark:bg-secondary-900/20",
     },
     {
-      label:   "Active Lessons",
-      value:   totalLessons.toLocaleString(),
-      icon:    <BookOpen className="w-6 h-6 text-accent-500" />,
+      label: "Active Lessons",
+      value: totalLessons.toLocaleString(),
+      icon: <BookOpen className="w-6 h-6 text-accent-500" />,
       bgLight: "bg-accent-50",
-      bgDark:  "dark:bg-accent-900/20",
+      bgDark: "dark:bg-accent-900/20",
     },
     {
-      label:   "Lessons Completed",
-      value:   showCount(counts?.completedLessons),
-      icon:    <HelpCircle className="w-6 h-6 text-blue-500" />,
+      label: "Lessons Completed",
+      value: showCount(counts?.completedLessons),
+      icon: <HelpCircle className="w-6 h-6 text-blue-500" />,
       bgLight: "bg-blue-50",
-      bgDark:  "dark:bg-blue-900/20",
+      bgDark: "dark:bg-blue-900/20",
     },
   ];
 
@@ -1076,10 +1559,16 @@ export function AdminDashboardPage({ onNavigate }) {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggle}
-                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={
+                  isDark ? "Switch to light mode" : "Switch to dark mode"
+                }
                 className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
               >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {isDark ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
               </button>
 
               {/* Profile dropdown */}
@@ -1097,7 +1586,7 @@ export function AdminDashboardPage({ onNavigate }) {
                   <ChevronDown
                     className={cn(
                       "w-4 h-4 text-stone-500 transition-transform duration-200",
-                      profileOpen && "rotate-180"
+                      profileOpen && "rotate-180",
                     )}
                   />
                 </button>
@@ -1105,16 +1594,23 @@ export function AdminDashboardPage({ onNavigate }) {
                 {profileOpen && (
                   <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-stone-800 rounded-xl shadow-xl border border-orange-100 dark:border-stone-700 overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-orange-100 dark:border-stone-700">
-                      <p className="text-sm font-black text-stone-900 dark:text-white">{adminName}</p>
+                      <p className="text-sm font-black text-stone-900 dark:text-white">
+                        {adminName}
+                      </p>
                       {profile?.email && (
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">{profile.email}</p>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">
+                          {profile.email}
+                        </p>
                       )}
                       <span className="inline-block mt-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded-md">
                         Admin
                       </span>
                     </div>
                     <button
-                      onClick={() => { signOut(); onNavigate("home"); }}
+                      onClick={() => {
+                        signOut();
+                        onNavigate("home");
+                      }}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
@@ -1142,7 +1638,7 @@ export function AdminDashboardPage({ onNavigate }) {
                       "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors text-left",
                       activeTab === id
                         ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
-                        : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-primary-600 dark:hover:text-primary-400"
+                        : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-primary-600 dark:hover:text-primary-400",
                     )}
                   >
                     <Icon className="w-5 h-5 shrink-0" />
@@ -1155,7 +1651,11 @@ export function AdminDashboardPage({ onNavigate }) {
 
           {/* Main content — rendered via ADMIN_TAB_MAP slot map */}
           <main className="flex-1 min-w-0">
-            <TabContent stats={stats} recentUsers={recentUsers} sectionData={sectionData} />
+            <TabContent
+              stats={stats}
+              recentUsers={recentUsers}
+              sectionData={sectionData}
+            />
           </main>
         </div>
       </div>
