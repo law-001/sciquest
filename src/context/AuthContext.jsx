@@ -8,14 +8,28 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Users live in either `staff` (teachers + admins) or `students`. Look in
+  // staff first — its presence is the discriminator for non-student roles.
+  // Returns a flat profile shape; for students, role is synthesized.
   const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
+    const { data: staffRow } = await supabase
+      .from('staff')
+      .select('id, role, first_name, last_name, email, created_at')
       .eq('id', userId)
-      .single()
-    if (!error && data) setProfile(data)
-    return data ?? null
+      .maybeSingle()
+    if (staffRow) {
+      setProfile(staffRow)
+      return staffRow
+    }
+    const { data: studentRow, error } = await supabase
+      .from('students')
+      .select('id, first_name, last_name, email, student_number, section, created_at')
+      .eq('id', userId)
+      .maybeSingle()
+    if (error || !studentRow) return null
+    const profileData = { ...studentRow, role: 'student' }
+    setProfile(profileData)
+    return profileData
   }
 
   useEffect(() => {
@@ -60,7 +74,7 @@ export function AuthProvider({ children }) {
 
   const signUp = async ({ email, password, firstName, lastName, studentNumber, section }) => {
     const { data: existing } = await supabase
-      .from('profiles')
+      .from('students')
       .select('id')
       .eq('student_number', studentNumber)
       .maybeSingle()

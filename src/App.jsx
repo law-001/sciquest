@@ -13,6 +13,11 @@ import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
+import {
+  fetchProgress,
+  markLessonComplete,
+  saveQuizAttempt,
+} from "./lib/progress";
 
 function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
@@ -23,8 +28,33 @@ function AppContent() {
   const [activeWeekId, setActiveWeekId] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [quizAttempts, setQuizAttempts] = useState([]);
 
   const isLoggedIn = !!user;
+  const isStudent = profile?.role === "student";
+
+  // Hydrate progress + quiz attempts from Supabase whenever a student logs in.
+  // Staff don't have student_progress rows, so we skip the fetch for them.
+  useEffect(() => {
+    if (!user || !isStudent) {
+      setCompletedLessons([]);
+      setQuizAttempts([]);
+      return;
+    }
+    let cancelled = false;
+    fetchProgress(user.id)
+      .then(({ completedLessons: done, attempts }) => {
+        if (cancelled) return;
+        setCompletedLessons(done);
+        setQuizAttempts(attempts);
+        // Anything completed is also "reached" — keeps the lesson tab nav consistent.
+        setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
+      })
+      .catch((err) => {
+        console.error("Failed to load student progress:", err);
+      });
+    return () => { cancelled = true };
+  }, [user?.id, isStudent]);
 
   // On refresh, once the restored session + profile are ready, redirect by role
   useEffect(() => {
@@ -81,19 +111,52 @@ function AppContent() {
     handleNavigate("quiz");
   };
 
-  const handleQuizComplete = () => {
+  // Called by QuizContainer's onComplete with { score, maxScore } (or undefined
+  // if the user bailed before submitting). Persists the attempt + lesson
+  // completion to Supabase for students; optimistically updates local state.
+  const handleQuizComplete = (result) => {
     const week = WEEKS_DATA.find((w) => w.id === activeWeekId);
     if (!week) {
       handleNavigate("lessons");
       return;
     }
 
-    const updated = completedLessons.includes(activeLessonId)
+    const lessonId = activeLessonId;
+    const weekId = week.id;
+    const studentId = user?.id;
+
+    // Optimistic local update — UI doesn't wait on the network.
+    const updated = completedLessons.includes(lessonId)
       ? completedLessons
-      : [...completedLessons, activeLessonId];
+      : [...completedLessons, lessonId];
     setCompletedLessons(updated);
 
-    const currentIndex = week.lessons.findIndex((l) => l.id === activeLessonId);
+    if (result && Number.isFinite(result.score) && Number.isFinite(result.maxScore)) {
+      setQuizAttempts((prev) => [
+        { lesson_id: lessonId, week_id: weekId, score: result.score, max_score: result.maxScore, submitted_at: new Date().toISOString() },
+        ...prev,
+      ]);
+    }
+
+    // Persist for logged-in students. Staff/anonymous: skip writes silently.
+    if (studentId && isStudent) {
+      markLessonComplete(studentId, weekId, lessonId).catch((err) => {
+        console.error("Failed to mark lesson complete:", err);
+      });
+      if (result && Number.isFinite(result.score) && Number.isFinite(result.maxScore)) {
+        saveQuizAttempt({
+          studentId,
+          weekId,
+          lessonId,
+          score: result.score,
+          maxScore: result.maxScore,
+        }).catch((err) => {
+          console.error("Failed to save quiz attempt:", err);
+        });
+      }
+    }
+
+    const currentIndex = week.lessons.findIndex((l) => l.id === lessonId);
     const nextLesson = week.lessons[currentIndex + 1];
 
     if (nextLesson) {
@@ -130,6 +193,7 @@ function AppContent() {
           <LessonsPage
             onStartWeek={handleStartWeek}
             completedLessons={completedLessons}
+            quizAttempts={quizAttempts}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsAuthModalOpen(true)}
           />
@@ -173,7 +237,13 @@ function AppContent() {
         return <TeacherPortalPage onBack={() => handleNavigate("home")} />;
 
       case "profile":
-        return <ProfilePage onNavigate={handleNavigate} />;
+        return (
+          <ProfilePage
+            onNavigate={handleNavigate}
+            completedLessons={completedLessons}
+            quizAttempts={quizAttempts}
+          />
+        );
 
       default:
         return (
