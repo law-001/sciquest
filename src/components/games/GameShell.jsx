@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Pause, Play, RotateCcw, Camera } from 'lucide-react';
 
-export function GameShell({ title, levelName, onExit, onPause, onReset, onScreenshot, children }) {
+export function GameShell({ title, levelName, onExit, onPause, onResume, onReset, onScreenshot, children }) {
   const [paused, setPaused] = useState(false);
 
   function handlePause() {
@@ -11,6 +11,7 @@ export function GameShell({ title, levelName, onExit, onPause, onReset, onScreen
 
   function handleResume() {
     setPaused(false);
+    onResume?.();
   }
 
   return (

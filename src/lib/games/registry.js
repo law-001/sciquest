@@ -1,4 +1,17 @@
 export const GAMES = {
+  'matter-state-sandbox': {
+    id: 'matter-state-sandbox',
+    title: 'Matter State Sandbox',
+    tagline: 'Heat and cool matter to watch it change state',
+    subject: 'Science',
+    relatedLessonIds: ['week-03-matter', 'week-04-phase-change'],
+    difficulty: 2,
+    estimatedMinutes: 15,
+    thumbnail: null,
+    engine: 'phaser',
+    loader: () => import('../../games/matter-state-sandbox/index.jsx'),
+    minRole: 'student',
+  },
   'states-of-matter': {
     id: 'states-of-matter',
     title: 'Matter State Sandbox',

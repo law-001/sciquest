@@ -1,0 +1,47 @@
+export const LEVELS = [
+  {
+    id: 'l1',
+    number: 1,
+    name: 'Observe',
+    description: 'Watch water change between its three states of matter using temperature presets.',
+    features: {
+      presets: true,
+      tempSlider: false,
+      pressureSlider: false,
+      substanceSelector: false,
+    },
+    availableSubstances: ['water'],
+    challengeIds: ['ch_01', 'ch_02'],
+    unlocksAfter: null,
+  },
+  {
+    id: 'l2',
+    number: 2,
+    name: 'Transition',
+    description: 'Control temperature yourself to explore how water and CO₂ shift between states.',
+    features: {
+      presets: false,
+      tempSlider: true,
+      pressureSlider: false,
+      substanceSelector: true,
+    },
+    availableSubstances: ['water', 'co2'],
+    challengeIds: ['ch_03', 'ch_04', 'ch_05'],
+    unlocksAfter: 'ch_01',
+  },
+  {
+    id: 'l3',
+    number: 3,
+    name: 'Kinetic Energy',
+    description: 'Unlock pressure controls and discover how extreme conditions change the rules.',
+    features: {
+      presets: false,
+      tempSlider: true,
+      pressureSlider: true,
+      substanceSelector: true,
+    },
+    availableSubstances: ['water', 'co2'],
+    challengeIds: ['ch_06', 'ch_07', 'ch_08'],
+    unlocksAfter: 'ch_04',
+  },
+];

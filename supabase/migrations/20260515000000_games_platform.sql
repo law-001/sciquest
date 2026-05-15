@@ -1,7 +1,7 @@
 -- game_progress: one row per student per challenge
 create table game_progress (
   id            uuid primary key default gen_random_uuid(),
-  student_id    uuid references profiles(id) on delete cascade,
+  student_id    uuid references public.students(id) on delete cascade,
   game_id       text not null,
   challenge_id  text not null,
   completed     boolean default false,
@@ -21,7 +21,7 @@ create index on game_progress (game_id);
 -- game_saves: arbitrary save slots per student per game
 create table game_saves (
   id          uuid primary key default gen_random_uuid(),
-  student_id  uuid references profiles(id) on delete cascade,
+  student_id  uuid references public.students(id) on delete cascade,
   game_id     text not null,
   save_type   text not null,
   payload     jsonb not null,
@@ -34,7 +34,7 @@ create index on game_saves (student_id, game_id);
 -- game_sessions: session telemetry
 create table game_sessions (
   id               uuid primary key default gen_random_uuid(),
-  student_id       uuid references profiles(id) on delete cascade,
+  student_id       uuid references public.students(id) on delete cascade,
   game_id          text not null,
   started_at       timestamptz default now(),
   ended_at         timestamptz,

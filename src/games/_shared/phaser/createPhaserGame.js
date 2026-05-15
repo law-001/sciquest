@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 export function createPhaserGame({ containerId, scenes, bus, deviceTier }) {
   const fps = deviceTier === 'low' ? 30 : 60;
 
-  return new Phaser.Game({
+  const game = new Phaser.Game({
     type: Phaser.WEBGL,
     parent: containerId,
     backgroundColor: 'transparent',
@@ -20,10 +20,10 @@ export function createPhaserGame({ containerId, scenes, bus, deviceTier }) {
       width: 800,
       height: 600,
     },
-    callbacks: {
-      postBoot: (game) => {
-        game.bus = bus;
-      },
-    },
   });
+
+  // Set bus synchronously so BaseGameScene.init() always finds it, regardless of
+  // when Phaser fires internal boot callbacks relative to the scene lifecycle.
+  game.bus = bus;
+  return game;
 }
