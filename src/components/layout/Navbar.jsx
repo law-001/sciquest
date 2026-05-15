@@ -45,6 +45,7 @@ export function Navbar({
   const navItems = [
     { label: "Home", view: "home" },
     { label: "Lessons", view: "lessons" },
+    { label: "Games", view: "games" },
     { label: "About", view: "about" },
     { label: "Contact", view: "contact" },
   ];
