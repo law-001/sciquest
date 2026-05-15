@@ -8,6 +8,7 @@ import {
   Target,
 } from 'lucide-react';
 import Card from '../components/Card';   // Default import
+import miguelPhoto from '../assets/MIGUELPORCIUNCULA.jpg';
 
 function useScrollTrigger(threshold = 0.15) {
   const [el, setEl] = useState(null);
@@ -67,6 +68,7 @@ export function AboutPage() {
       role: 'Backend Developer',
       initials: 'MP',
       color: 'bg-primary-100 text-primary-700',
+      image: miguelPhoto,
     },
     {
       name: 'Francesca Ricafort',
@@ -192,9 +194,17 @@ export function AboutPage() {
                   style={{ transitionDelay: `${200 + index * 100}ms` }}
                 >
                   <div
-                    className={`w-24 h-24 rounded-full ${member.color} flex items-center justify-center text-2xl font-black mb-4 border-4 border-stone-700 shadow-lg`}
+                    className={`w-24 h-24 rounded-full ${member.color} flex items-center justify-center text-2xl font-black mb-4 border-4 border-stone-700 shadow-lg overflow-hidden`}
                   >
-                    {member.initials}
+                    {member.image ? (
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      member.initials
+                    )}
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">
                     {member.name}
