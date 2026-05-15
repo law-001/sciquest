@@ -9,6 +9,7 @@ import Card from "./Card";
 import Badge from "./Badge";
 import ProgressBar from "./ProgressBar";
 import { cn } from "../lib/utils";
+import { calcQuizXp, MANUAL_GRADE_TYPES } from "../lib/xp-config";
 import {
   MultipleChoiceQuestion,
   TrueFalseQuestion,
@@ -50,6 +51,12 @@ const TYPE_LABELS = {
 };
 
 // ── Scoring helpers ───────────────────────────────────────────────────────────
+// Essay / short-answer return 0 here — they need a teacher to grade them.
+// `isManualGrade(q)` exposes the rule so other code can branch on it.
+function isManualGrade(q) {
+  return MANUAL_GRADE_TYPES.has(q.type);
+}
+
 function scoreQuestion(q, answer) {
   if (answer === undefined || answer === null) return 0;
   const pts = q.points ?? 0;
@@ -91,8 +98,8 @@ function scoreQuestion(q, answer) {
 
     case "short-answer":
     case "essay":
-      // Award full points if answered — teacher reviews manually
-      return typeof answer === "string" && answer.trim().length > 0 ? pts : 0;
+      // Awaiting teacher grading — 0 until reviewed.
+      return 0;
 
     case "case-study":
       return (q.subQuestions ?? []).reduce(
@@ -111,6 +118,30 @@ function totalPoints(questions) {
       return sum + totalPoints(q.subQuestions ?? []);
     }
     return sum + (q.points ?? 0);
+  }, 0);
+}
+
+// Sum of points for questions that can be auto-graded — the denominator
+// for XP scaling. Essays/short-answer are excluded.
+function autoGradablePoints(questions) {
+  return questions.reduce((sum, q) => {
+    if (q.type === "case-study") {
+      return sum + autoGradablePoints(q.subQuestions ?? []);
+    }
+    if (isManualGrade(q)) return sum;
+    return sum + (q.points ?? 0);
+  }, 0);
+}
+
+// Number of manual-grade questions answered by the student. Used to show
+// "N essay(s) awaiting grading" and to persist on the attempt row.
+function pendingGradeCount(questions, answers) {
+  return questions.reduce((count, q) => {
+    if (q.type === "case-study") {
+      return count + pendingGradeCount(q.subQuestions ?? [], answers);
+    }
+    if (!isManualGrade(q)) return count;
+    return isAnswered(q, answers[q.id]) ? count + 1 : count;
   }, 0);
 }
 
@@ -141,6 +172,7 @@ function isAnswered(q, answer) {
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
+// onComplete receives { score, maxScore } so the caller can persist the attempt.
 export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
   const { questions } = quiz;
   const storageKey = `quiz-answers-${quiz.lessonId}`;
@@ -155,6 +187,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [submittedResult, setSubmittedResult] = useState(null);
 
   // Auto-save answers on every change
   useEffect(() => {
@@ -176,10 +209,25 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
       0,
     );
     const max = totalPoints(questions);
-    if (earned > max / 2) setShowConfetti(true);
+    const autoMax = autoGradablePoints(questions);
+    const pending = pendingGradeCount(questions, answers);
+    const xpEarned = calcQuizXp(earned, autoMax);
+
+    if (autoMax > 0 && earned > autoMax / 2) setShowConfetti(true);
     setIsSubmitted(true);
+    setSubmittedResult({
+      score: earned,
+      maxScore: max,
+      autoMaxScore: autoMax,
+      xpEarned,
+      pendingGradeCount: pending,
+    });
     localStorage.removeItem(storageKey);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDone = () => {
+    onComplete?.(submittedResult);
   };
 
   const handleRetry = () => {
@@ -195,9 +243,12 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
       (sum, q) => sum + scoreQuestion(q, answers[q.id]),
       0,
     );
-    const max = totalPoints(questions);
-    const passed = earned > max / 2;
-    const pct = max > 0 ? Math.round((earned / max) * 100) : 0;
+    const autoMax = autoGradablePoints(questions);
+    const pending = pendingGradeCount(questions, answers);
+    const xpEarned = submittedResult?.xpEarned ?? calcQuizXp(earned, autoMax);
+    // Pass/percent are based on auto-gradable portion only; essays are TBD.
+    const passed = autoMax > 0 && earned > autoMax / 2;
+    const pct = autoMax > 0 ? Math.round((earned / autoMax) * 100) : 0;
 
     return (
       <div className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-hidden bg-[#fdf6e3] dark:bg-stone-900">
@@ -251,7 +302,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
             </div>
             <div className="text-5xl font-black text-primary-600 mb-1">
               {earned}
-              <span className="text-2xl text-stone-300"> / {max}</span>
+              <span className="text-2xl text-stone-300"> / {autoMax}</span>
             </div>
             <div className="text-sm font-bold text-stone-400 mb-4">{pct}%</div>
             <ProgressBar
@@ -261,12 +312,17 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
             />
             <div className="flex items-center justify-center gap-2 text-accent-600 font-bold mt-4">
               <Star className="w-4 h-4 fill-current" />
-              <span>+{earned} XP Earned</span>
+              <span>+{xpEarned} XP Earned</span>
             </div>
+            {pending > 0 && (
+              <p className="text-xs font-bold text-amber-600 mt-3">
+                {pending} {pending === 1 ? "essay" : "essays"} awaiting teacher grading
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
-            <Button variant="primary" onClick={onComplete} size="lg">
+            <Button variant="primary" onClick={handleDone} size="lg">
               Back to Lessons
             </Button>
             <Button
@@ -292,6 +348,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
               q.type === "case-study"
                 ? totalPoints(q.subQuestions ?? [])
                 : (q.points ?? 0);
+            const manualGrade = isManualGrade(q) && isAnswered(q, answers[q.id]);
 
             return (
               <Card key={q.id} className="p-6">
@@ -307,18 +364,24 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
                     </div>
                     <p className="font-bold text-stone-800">{q.question}</p>
                   </div>
-                  <span
-                    className={cn(
-                      "shrink-0 text-sm font-black px-3 py-1 rounded-full",
-                      earned === pts
-                        ? "bg-secondary-100 text-secondary-700"
-                        : earned > 0
-                          ? "bg-accent-100 text-accent-700"
-                          : "bg-red-100 text-red-600",
-                    )}
-                  >
-                    {earned}/{pts} pts
-                  </span>
+                  {manualGrade ? (
+                    <span className="shrink-0 text-xs font-black px-3 py-1 rounded-full bg-amber-100 text-amber-700">
+                      Not yet graded
+                    </span>
+                  ) : (
+                    <span
+                      className={cn(
+                        "shrink-0 text-sm font-black px-3 py-1 rounded-full",
+                        earned === pts
+                          ? "bg-secondary-100 text-secondary-700"
+                          : earned > 0
+                            ? "bg-accent-100 text-accent-700"
+                            : "bg-red-100 text-red-600",
+                      )}
+                    >
+                      {earned}/{pts} pts
+                    </span>
+                  )}
                 </div>
                 <Component
                   question={q}

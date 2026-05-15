@@ -16,9 +16,7 @@ function useScrollTrigger(threshold = 0.15) {
   useEffect(() => {
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) { setTriggered(true); obs.disconnect(); }
-      },
+      ([entry]) => setTriggered(entry.isIntersecting),
       { threshold }
     );
     obs.observe(el);

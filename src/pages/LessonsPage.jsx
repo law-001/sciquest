@@ -47,6 +47,7 @@ import Badge from "../components/Badge";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
+import { xpToNextLevel, levelFromXp } from "../lib/xp-config";
 
 const ICON_MAP = {
   Shapes, // 1. Scientific Models
@@ -95,9 +96,12 @@ function useScrollTrigger(threshold = 0.1) {
 export function LessonsPage({
   onStartWeek,
   completedLessons = [],
+  totalXp = 0,
   isLoggedIn,
   onLoginClick,
 }) {
+  const level = levelFromXp(totalXp);
+  const levelProgress = xpToNextLevel(totalXp);
   const { user, profile } = useAuth();
   const firstName =
     profile?.first_name || user?.user_metadata?.first_name || "";
@@ -202,7 +206,7 @@ export function LessonsPage({
                   Current Level
                 </p>
                 <p className="text-xl font-black text-stone-900 dark:text-white">
-                  Level 5
+                  Level {level}
                 </p>
               </div>
             </div>
@@ -210,9 +214,21 @@ export function LessonsPage({
             <div className="w-48">
               <div className="flex justify-between text-sm font-bold mb-1">
                 <span className="text-stone-600">XP</span>
-                <span className="text-primary-600">1,250 / 2,000</span>
+                <span className="text-primary-600">
+                  {levelProgress
+                    ? `${totalXp.toLocaleString()} / ${levelProgress.nextLevelXp.toLocaleString()}`
+                    : `${totalXp.toLocaleString()} XP`}
+                </span>
               </div>
-              <ProgressBar progress={62.5} color="primary" size="sm" />
+              <ProgressBar
+                progress={
+                  levelProgress
+                    ? Math.round((levelProgress.progressXp / levelProgress.neededXp) * 100)
+                    : 100
+                }
+                color="primary"
+                size="sm"
+              />
             </div>
           </Card>
         </div>

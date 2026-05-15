@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 
-const PROFILE_COLUMNS = 'id, role, first_name, last_name, email, section, created_at'
+const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, created_at'
+const STAFF_COLUMNS = 'id, role, first_name, last_name, email, created_at'
 const ROLE_LABELS = { admin: 'Admin', teacher: 'Teacher', student: 'Student' }
 
 function relativeTime(timestamp) {
@@ -19,49 +20,64 @@ function relativeTime(timestamp) {
   return years === 1 ? '1 year ago' : `${years} years ago`
 }
 
-function fullName(profile) {
-  const name = `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim()
-  return name || profile.email || 'Unknown'
+function fullName(row) {
+  const name = `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim()
+  return name || row.email || 'Unknown'
 }
 
-// profiles row → shape consumed by the admin Users / Recent Users tables.
-// `status` is hardcoded "Active": the profiles table has no activity column yet.
-function toUserRow(profile) {
+// students/staff row → shape consumed by the admin Users / Recent Users tables.
+// `status` is hardcoded "Active": neither table has an activity column yet.
+function toUserRow(row, role) {
   return {
-    id: profile.id,
-    name: fullName(profile),
-    role: ROLE_LABELS[profile.role] ?? 'Student',
-    email: profile.email ?? '—',
+    id: row.id,
+    name: fullName(row),
+    role: ROLE_LABELS[role] ?? 'Student',
+    email: row.email ?? '—',
     status: 'Active',
-    joined: relativeTime(profile.created_at),
-    section: profile.section || '—',
+    joined: relativeTime(row.created_at),
+    section: row.section || '—',
   }
 }
 
+// All non-admin users (students + teachers) for the admin Users table.
 export async function fetchUsers() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select(PROFILE_COLUMNS)
-    .neq('role', 'admin')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(toUserRow)
+  const [studentsRes, teachersRes] = await Promise.all([
+    supabase.from('students').select(STUDENT_COLUMNS).order('created_at', { ascending: false }),
+    supabase.from('staff').select(STAFF_COLUMNS).eq('role', 'teacher').order('created_at', { ascending: false }),
+  ])
+  if (studentsRes.error) throw studentsRes.error
+  if (teachersRes.error) throw teachersRes.error
+  const tagged = [
+    ...(studentsRes.data ?? []).map((r) => ({ row: r, role: 'student' })),
+    ...(teachersRes.data ?? []).map((r) => ({ row: r, role: 'teacher' })),
+  ]
+  return tagged
+    .sort((a, b) => new Date(b.row.created_at).getTime() - new Date(a.row.created_at).getTime())
+    .map(({ row, role }) => toUserRow(row, role))
 }
 
+// Most-recently-joined users across both tables (admins included).
 export async function fetchRecentUsers(limit = 5) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select(PROFILE_COLUMNS)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  if (error) throw error
-  return (data ?? []).map(toUserRow)
+  const [studentsRes, staffRes] = await Promise.all([
+    supabase.from('students').select(STUDENT_COLUMNS).order('created_at', { ascending: false }).limit(limit),
+    supabase.from('staff').select(STAFF_COLUMNS).order('created_at', { ascending: false }).limit(limit),
+  ])
+  if (studentsRes.error) throw studentsRes.error
+  if (staffRes.error) throw staffRes.error
+  const tagged = [
+    ...(studentsRes.data ?? []).map((r) => ({ row: r, role: 'student', ts: r.created_at })),
+    ...(staffRes.data ?? []).map((r) => ({ row: r, role: r.role, ts: r.created_at })),
+  ]
+  return tagged
+    .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+    .slice(0, limit)
+    .map(({ row, role }) => toUserRow(row, role))
 }
 
 export async function fetchTeachers() {
   const { data, error } = await supabase
-    .from('profiles')
-    .select(PROFILE_COLUMNS)
+    .from('staff')
+    .select(STAFF_COLUMNS)
     .eq('role', 'teacher')
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -80,11 +96,9 @@ export async function fetchTeachers() {
 // Counts for the admin dashboard stat cards. `completedLessons` comes from
 // student_progress — there is no quiz-attempts table yet.
 export async function fetchDashboardCounts() {
-  const countProfiles = (role) =>
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', role)
   const [students, teachers, completed] = await Promise.all([
-    countProfiles('student'),
-    countProfiles('teacher'),
+    supabase.from('students').select('id', { count: 'exact', head: true }),
+    supabase.from('staff').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
     supabase.from('student_progress').select('id', { count: 'exact', head: true }).eq('completed', true),
   ])
   for (const result of [students, teachers, completed]) {
@@ -100,10 +114,7 @@ export async function fetchDashboardCounts() {
 // Student head-count per section, sorted largest first. Supabase has no GROUP BY
 // over the JS client, so we tally the `section` column client-side.
 export async function fetchSectionCounts() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('section')
-    .eq('role', 'student')
+  const { data, error } = await supabase.from('students').select('section')
   if (error) throw error
   const counts = new Map()
   for (const { section } of data ?? []) {
@@ -115,7 +126,7 @@ export async function fetchSectionCounts() {
     .sort((a, b) => b.value - a.value)
 }
 
-// Deletes an auth user (cascades to profiles + student_progress) via the
+// Deletes an auth user (cascades to students/staff + student_progress) via the
 // admin-delete-user Edge Function — the anon key cannot touch auth.users directly.
 export async function deleteUser(userId) {
   const { data, error } = await supabase.functions.invoke('admin-delete-user', {
