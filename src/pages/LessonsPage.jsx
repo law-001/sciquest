@@ -225,7 +225,7 @@ export function LessonsPage({
           style={{ transitionDelay: "150ms" }}
         >
           {/* ── Mobile top bar: Filters toggle + Search icon ── */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={() => setFiltersOpen((p) => !p)}
               className={cn(
@@ -279,7 +279,7 @@ export function LessonsPage({
 
           {/* ── Mobile collapsible filter pills ── */}
           <div
-            className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+            className={`lg:hidden overflow-hidden transition-all duration-300 ease-out ${
               filtersOpen ? "max-h-40 opacity-100 mt-3" : "max-h-0 opacity-0 pointer-events-none"
             }`}
           >
@@ -318,7 +318,7 @@ export function LessonsPage({
           </div>
 
           {/* ── Desktop: pills + search bar inline ── */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             <div className="flex items-center gap-3 flex-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {categories.map((cat) => {
                 const isComingSoon =
