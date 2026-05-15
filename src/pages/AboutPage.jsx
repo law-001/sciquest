@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import Card from '../components/Card';   // Default import
 import miguelPhoto from '../assets/MIGUELPORCIUNCULA.jpg';
+import aezenPhoto from '../assets/AEZEN.png';
+import cheskaPhoto from '../assets/CHESKA.jpg';
+import markPhoto from '../assets/MARK.jpg';
 
 function useScrollTrigger(threshold = 0.15) {
   const [el, setEl] = useState(null);
@@ -62,6 +65,7 @@ export function AboutPage() {
       role: 'UI/UX Designer',
       initials: 'MD',
       color: 'bg-secondary-100 text-secondary-700',
+      image: markPhoto,
     },
     {
       name: 'Miguel Porciuncula',
@@ -75,12 +79,14 @@ export function AboutPage() {
       role: 'Fashionista',
       initials: 'FR',
       color: 'bg-accent-100 text-accent-700',
+      image: cheskaPhoto,
     },
     {
       name: 'Aezen Alcantara',
       role: 'Motorista',
       initials: 'AC',
       color: 'bg-accent-100 text-accent-700',
+      image: aezenPhoto,
     },
   ];
 
