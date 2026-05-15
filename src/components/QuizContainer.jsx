@@ -141,6 +141,7 @@ function isAnswered(q, answer) {
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
+// onComplete receives { score, maxScore } so the caller can persist the attempt.
 export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
   const { questions } = quiz;
   const storageKey = `quiz-answers-${quiz.lessonId}`;
@@ -155,6 +156,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [submittedScore, setSubmittedScore] = useState(null);
 
   // Auto-save answers on every change
   useEffect(() => {
@@ -178,8 +180,13 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
     const max = totalPoints(questions);
     if (earned > max / 2) setShowConfetti(true);
     setIsSubmitted(true);
+    setSubmittedScore({ score: earned, maxScore: max });
     localStorage.removeItem(storageKey);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDone = () => {
+    onComplete?.(submittedScore);
   };
 
   const handleRetry = () => {
@@ -266,7 +273,7 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Button variant="primary" onClick={onComplete} size="lg">
+            <Button variant="primary" onClick={handleDone} size="lg">
               Back to Lessons
             </Button>
             <Button

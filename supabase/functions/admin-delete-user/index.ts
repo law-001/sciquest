@@ -1,8 +1,8 @@
 // Supabase Edge Function: admin-delete-user
 //
-// Deletes an auth user — which, via the ON DELETE CASCADE on public.profiles and
-// public.student_progress, also removes their profile and progress rows.
-// Only callers whose profile.role = 'admin' are permitted.
+// Deletes an auth user — which, via the ON DELETE CASCADE on public.students,
+// public.staff, and public.student_progress, also removes any related rows.
+// Only callers present in public.staff with role = 'admin' are permitted.
 //
 // Deploy:
 //   supabase functions deploy admin-delete-user
@@ -42,13 +42,13 @@ Deno.serve(async (req) => {
   const { data: { user }, error: userErr } = await caller.auth.getUser()
   if (userErr || !user) return json({ error: 'Invalid or expired token' }, 401)
 
-  // 2. Confirm the caller is an admin.
-  const { data: profile, error: profileErr } = await caller
-    .from('profiles')
+  // 2. Confirm the caller is an admin (admins live in public.staff).
+  const { data: staffRow, error: staffErr } = await caller
+    .from('staff')
     .select('role')
     .eq('id', user.id)
-    .single()
-  if (profileErr || profile?.role !== 'admin') return json({ error: 'Forbidden: admin only' }, 403)
+    .maybeSingle()
+  if (staffErr || staffRow?.role !== 'admin') return json({ error: 'Forbidden: admin only' }, 403)
 
   // 3. Validate input.
   let body: { userId?: string }

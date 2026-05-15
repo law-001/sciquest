@@ -46,22 +46,27 @@ Supabase auth with three roles: **student**, **teacher**, **admin**.
 
 ## Database Schema (Supabase)
 
-**`profiles`**
-- `id` (uuid, FK → auth.users), `role`, `first_name`, `last_name`, `email`, `student_number`, `section`, `created_at`
+Users are split across two tables. `students` holds learners; `staff` holds teachers and admins (distinguished by a `role` column). The `handle_new_user` trigger routes the row based on `user_metadata.role`.
+
+**`students`**
+- `id` (uuid, FK → auth.users), `first_name`, `last_name`, `email`, `student_number` (unique), `section`, `created_at`
+
+**`staff`**
+- `id` (uuid, FK → auth.users), `role` (`'teacher' | 'admin'`), `first_name`, `last_name`, `email`, `created_at`
 
 **`student_progress`**
-- `id`, `student_id` (FK → profiles), `lesson_id`, `week_id`, `completed`, `completed_at`
+- `id`, `student_id` (FK → students), `lesson_id`, `week_id`, `completed`, `completed_at`
 - Unique on `(student_id, lesson_id)`
 
-RLS is enabled on both tables. Students manage their own progress rows; all authenticated users can read.
+RLS is enabled on all three tables. Students manage their own progress rows; staff/students can update their own profile row (staff cannot self-promote). All authenticated users can read.
 
 ---
 
 ## Lesson System
 
-Lesson data lives in `src/data/lessonsweek-*.js` as a `WEEKS_DATA` array. Each lesson declares a `layout[]` array of slot type strings. `LessonTemplate.jsx` maps those strings to components via a `SLOT_MAP`.
+Lesson data lives in `src/data/lessonsweek-01.js` through `lessonsweek-20.js` as `WEEKS_DATA` arrays — full 20-week curriculum. Each lesson declares a `layout[]` array of slot type strings. [LessonTemplate.jsx](src/components/LessonTemplate.jsx) maps those strings to components via a `SLOT_MAP`.
 
-**10 slot types** in `src/components/lesson-slots/`:
+**10 slot types** in [src/components/lesson-slots/](src/components/lesson-slots/) (plus a `Sectionheading` helper):
 
 | Slot | Purpose |
 |---|---|
@@ -82,9 +87,9 @@ To add a new content type: create the component, add it to the slot map, and use
 
 ## Quiz System
 
-Quiz data lives in `src/data/quizzesweek-*.js`, keyed by `lessonId`. `QuizTemplate.jsx` handles the timer, progress, and submit logic.
+Quiz data lives in `src/data/quizzesweek-01.js` through `quizzesweek-20.js`, keyed by `lessonId`. [Quiztemplate.jsx](src/components/Quiztemplate.jsx) handles the timer, progress, and submit logic.
 
-**10 question types** in `src/components/quiz-slots/`:
+**10 question types** in [src/components/quiz-slots/](src/components/quiz-slots/):
 
 `MultipleChoice` · `TrueFalse` · `FillInTheBlanks` · `ShortAnswer` · `Essay` · `Matching` · `Identification` · `Ordering` · `PictureBased` · `CaseStudy`
 
@@ -138,17 +143,19 @@ src/
 │   ├── users.js                    # Admin/teacher DB queries
 │   └── utils.js                    # cn() classname helper
 ├── data/
-│   ├── lessonsweek-01.js           # Week 1 lesson content
-│   └── quizzesweek-01.js          # Week 1 quiz questions
+│   ├── lessonsweek-01.js .. -20.js # 20 weeks of lesson content
+│   └── quizzesweek-01.js .. -20.js # 20 weeks of quiz questions
 ├── components/
-│   ├── lesson-slots/               # 10 lesson slot components
+│   ├── lesson-slots/               # 10 lesson slot components + Sectionheading
 │   ├── quiz-slots/                 # 10 quiz question components
 │   ├── layout/Navbar.jsx
 │   ├── modals/AuthModal.jsx
 │   ├── LessonTemplate.jsx
 │   └── Quiztemplate.jsx
-└── pages/                         # One file per view
-supabase/                          # DB schema, seed SQL, triggers
+└── pages/                         # One file per view (+ template.jsx scaffolds)
+supabase/
+├── schema.sql                     # Tables, RLS, triggers
+└── functions/                     # Edge functions
 ```
 
 ---
@@ -172,7 +179,7 @@ The Supabase client throws at init if either is missing.
 npm run dev       # Vite dev server
 npm run build     # Production build → dist/
 npm run lint      # ESLint check
-npm run lint:fix  # ESLint auto-fix
+npm run preview   # Preview production build
 ```
 
 No test suite. No TypeScript. No typecheck script.
