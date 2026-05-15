@@ -8,10 +8,11 @@ import {
   Target,
 } from 'lucide-react';
 import Card from '../components/Card';   // Default import
-import miguelPhoto from '../assets/MIGUELPORCIUNCULA.jpg';
+import miguelPhoto from '../assets/MIGUEL.png';
 import aezenPhoto from '../assets/AEZEN.png';
 import cheskaPhoto from '../assets/CHESKA.jpg';
 import markPhoto from '../assets/MARK.jpg';
+import ariesPhoto from '../assets/ARIES.jpg';
 
 function useScrollTrigger(threshold = 0.15) {
   const [el, setEl] = useState(null);
@@ -87,6 +88,13 @@ export function AboutPage() {
       initials: 'AC',
       color: 'bg-accent-100 text-accent-700',
       image: aezenPhoto,
+    },
+    {
+      name: 'Aries Walao',
+      role: 'Fashionista Ex',
+      initials: 'AW',
+      color: 'bg-accent-100 text-accent-700',
+      image: ariesPhoto,
     },
   ];
 
