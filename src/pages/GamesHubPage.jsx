@@ -20,7 +20,6 @@ import { listGames } from "../lib/games/registry";
 import { useGameProgress } from "../games/_shared/progress/useGameProgress";
 import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
-import simulationImg from "../assets/statesofmatter.png";
 
 const CATEGORY_STYLES = {
   Chemistry: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
@@ -97,16 +96,6 @@ function CategoryBadge({ category }) {
   );
 }
 
-function MatterStateThumbnail() {
-  return (
-    <img
-      src={simulationImg}
-      alt="States of Matter simulation"
-      className="w-full h-full object-cover"
-    />
-  );
-}
-
 // Icon map for locked thumbnails
 const LOCKED_ICONS = {
   "cell-explorer": Activity,
@@ -146,9 +135,15 @@ function LockedThumbnail({ gameId }) {
   );
 }
 
-function GameThumbnail({ game, large = false }) {
-  if (game.id === "states-of-matter")
-    return <MatterStateThumbnail large={large} />;
+function GameThumbnail({ game }) {
+  if (game.thumbnail)
+    return (
+      <img
+        src={game.thumbnail}
+        alt={game.title}
+        className="w-full h-full object-cover"
+      />
+    );
   return <LockedThumbnail gameId={game.id} />;
 }
 
@@ -172,60 +167,6 @@ function ProgressRow({ completed, total }) {
     </div>
   );
 }
-
-// // Featured hero card — wide horizontal layout
-// function FeaturedCard({ game, userId, onPlay }) {
-//   const { progress } = useGameProgress(supabase, game.id, userId);
-//   const completedLevels = progress.filter((r) => r.completed).length;
-//   const totalLevels = game.totalLevels ?? 3;
-
-//   return (
-//     <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 shadow-lg flex flex-col md:flex-row">
-//       {/* Thumbnail */}
-//       <div className="md:w-[56%] aspect-video md:aspect-auto min-h-60 shrink-0">
-//         <GameThumbnail game={game} large />
-//       </div>
-
-//       {/* Info panel */}
-//       <div className="flex flex-col justify-between p-7 bg-white dark:bg-stone-800 flex-1 gap-6">
-//         <div className="space-y-3">
-//           <div className="flex items-center gap-2 flex-wrap">
-//             <span className="text-[11px] font-bold text-orange-500 uppercase tracking-widest">
-//               Featured
-//             </span>
-//             {game.category && <CategoryBadge category={game.category} />}
-//           </div>
-//           <h2 className="text-2xl font-black text-stone-800 dark:text-stone-100 leading-tight">
-//             {game.title}
-//           </h2>
-//           <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-//             {game.tagline}
-//           </p>
-//         </div>
-
-//         <div className="space-y-4">
-//           <div className="flex items-center gap-5 text-sm">
-//             <DifficultyDots level={game.difficulty ?? 1} />
-//             <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500">
-//               <Clock size={14} />
-//               <span className="text-xs">~{game.estimatedMinutes} min</span>
-//             </div>
-//           </div>
-
-//           <ProgressRow completed={completedLevels} total={totalLevels} />
-
-//           <button
-//             onClick={onPlay}
-//             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-sm transition-colors"
-//           >
-//             <Play size={16} fill="white" />
-//             Play Now
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 // Unlocked game card
 function UnlockedCard({ game, userId, onPlay }) {
@@ -353,20 +294,16 @@ export function GamesHubPage({ onNavigate }) {
     ...EXTRA_LOCKED_GAMES.filter((g) => !existingIds.has(g.id)),
   ];
 
-  const unlocked = games.filter((g) => !g.locked);
-  const featured = unlocked[0] ?? null;
-
   const displayedGames = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    const withoutFeatured = games.filter((g) => g.id !== featured?.id);
-    if (!q) return withoutFeatured;
-    return withoutFeatured.filter(
+    if (!q) return games;
+    return games.filter(
       (g) =>
         g.title?.toLowerCase().includes(q) ||
         g.tagline?.toLowerCase().includes(q) ||
         g.category?.toLowerCase().includes(q),
     );
-  }, [games, searchQuery, featured]);
+  }, [games, searchQuery]);
 
   const handlePlay = (game) => onNavigate("game-play", { gameId: game.id });
 
@@ -431,27 +368,6 @@ export function GamesHubPage({ onNavigate }) {
             </div>
           </Card>
         </div>
-
-        {/* Featured card */}
-        {featured && (
-          <section
-            className={`mt-10 transition-all duration-700 ease-out ${
-              mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
-            style={{ transitionDelay: "150ms" }}
-          >
-            <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">
-              Featured
-            </p>
-            <div className="max-w-sm">
-              <UnlockedCard
-                game={featured}
-                userId={user?.id}
-                onPlay={() => handlePlay(featured)}
-              />
-            </div>
-          </section>
-        )}
 
         {/* All games grid */}
         {displayedGames.length === 0 && searchQuery && (
