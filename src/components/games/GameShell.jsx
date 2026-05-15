@@ -1,7 +1,16 @@
-import { useState } from 'react';
-import { ArrowLeft, Pause, Play, RotateCcw, Camera } from 'lucide-react';
+import { useState } from "react";
+import { ArrowLeft, Pause, Play, RotateCcw, Camera } from "lucide-react";
 
-export function GameShell({ title, levelName, onExit, onPause, onResume, onReset, onScreenshot, children }) {
+export function GameShell({
+  title,
+  levelName,
+  onExit,
+  onPause,
+  onResume,
+  onReset,
+  onScreenshot,
+  children,
+}) {
   const [paused, setPaused] = useState(false);
 
   function handlePause() {
@@ -17,24 +26,32 @@ export function GameShell({ title, levelName, onExit, onPause, onResume, onReset
   return (
     <div className="flex flex-col h-screen bg-[#FAF7F2]">
       {/* Top bar */}
-      <div className="h-[60px] shrink-0 flex items-center justify-between px-4 bg-white border-b border-stone-200 z-10">
+      <div className="h-15 shrink-0 flex items-center justify-between px-4 bg-white border-b border-stone-200 z-10">
         <button
           onClick={onExit}
-          className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors min-h-[44px] px-2"
+          className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors min-h-11 px-2"
         >
           <ArrowLeft size={16} />
           Exit
         </button>
 
         <div className="text-center">
-          <p className="font-semibold text-stone-800 text-sm leading-tight">{title}</p>
+          <p className="font-semibold text-stone-800 text-sm leading-tight">
+            {title}
+          </p>
           {levelName && <p className="text-xs text-stone-500">{levelName}</p>}
         </div>
 
         <div className="flex items-center gap-1">
-          <IconBtn onClick={handlePause} label="Pause"><Pause size={16} /></IconBtn>
-          <IconBtn onClick={onReset} label="Reset"><RotateCcw size={16} /></IconBtn>
-          <IconBtn onClick={onScreenshot} label="Screenshot"><Camera size={16} /></IconBtn>
+          <IconBtn onClick={handlePause} label="Pause">
+            <Pause size={16} />
+          </IconBtn>
+          <IconBtn onClick={onReset} label="Reset">
+            <RotateCcw size={16} />
+          </IconBtn>
+          <IconBtn onClick={onScreenshot} label="Screenshot">
+            <Camera size={16} />
+          </IconBtn>
         </div>
       </div>
 

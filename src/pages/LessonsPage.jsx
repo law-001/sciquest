@@ -223,7 +223,10 @@ export function LessonsPage({
               <ProgressBar
                 progress={
                   levelProgress
-                    ? Math.round((levelProgress.progressXp / levelProgress.neededXp) * 100)
+                    ? Math.round(
+                        (levelProgress.progressXp / levelProgress.neededXp) *
+                          100,
+                      )
                     : 100
                 }
                 color="primary"
@@ -274,7 +277,10 @@ export function LessonsPage({
                     className="w-36 text-sm font-medium bg-transparent text-stone-700 dark:text-stone-200 placeholder-stone-400 outline-none"
                   />
                   <button
-                    onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setSearchQuery("");
+                    }}
                     className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
                     aria-label="Close search"
                   >
@@ -296,7 +302,9 @@ export function LessonsPage({
           {/* ── Mobile collapsible filter pills ── */}
           <div
             className={`lg:hidden overflow-hidden transition-all duration-300 ease-out ${
-              filtersOpen ? "max-h-40 opacity-100 mt-3" : "max-h-0 opacity-0 pointer-events-none"
+              filtersOpen
+                ? "max-h-40 opacity-100 mt-3"
+                : "max-h-0 opacity-0 pointer-events-none"
             }`}
           >
             <div className="flex flex-wrap gap-2">
@@ -335,7 +343,7 @@ export function LessonsPage({
 
           {/* ── Desktop: pills + search bar inline ── */}
           <div className="hidden lg:flex items-center gap-3">
-            <div className="flex items-center gap-3 flex-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex items-center gap-3 flex-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
               {categories.map((cat) => {
                 const isComingSoon =
                   cat === "3rd Quarter" || cat === "4th Quarter";
@@ -374,7 +382,11 @@ export function LessonsPage({
                 className="bg-transparent text-sm font-medium text-stone-700 dark:text-stone-200 placeholder-stone-400 outline-none w-full"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200" aria-label="Clear search">
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="shrink-0 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                  aria-label="Clear search"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -386,8 +398,13 @@ export function LessonsPage({
         {displayedWeeks.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Search className="w-10 h-10 text-stone-300 dark:text-stone-600 mb-4" />
-            <p className="text-stone-500 dark:text-stone-400 font-bold">No lessons match "{searchQuery}"</p>
-            <button onClick={() => setSearchQuery("")} className="mt-3 text-sm text-primary-500 hover:underline font-bold">
+            <p className="text-stone-500 dark:text-stone-400 font-bold">
+              No lessons match "{searchQuery}"
+            </p>
+            <button
+              onClick={() => setSearchQuery("")}
+              className="mt-3 text-sm text-primary-500 hover:underline font-bold"
+            >
               Clear search
             </button>
           </div>
