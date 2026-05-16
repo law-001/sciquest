@@ -45,6 +45,12 @@ function AppContent() {
   const totalXp = totalXpEarned(completedRows, quizAttempts);
   const currentLevel = levelFromXp(totalXp);
 
+  // Submissions already made for the active lesson's quiz — drives the
+  // 3-attempt cap and the per-attempt XP scaling.
+  const quizPriorAttempts = quizAttempts.filter(
+    (a) => a.lesson_id === activeLessonId,
+  ).length;
+
   // Hydrate progress + quiz attempts from Supabase whenever a student logs in.
   // Staff don't have student_progress rows, so we skip the fetch for them.
   useEffect(() => {
@@ -135,38 +141,61 @@ function AppContent() {
     handleNavigate("quiz");
   };
 
-  // Called by QuizContainer's onComplete with { score, maxScore, xpEarned,
-  // pendingGradeCount } (or undefined if the user bailed). Persists the
-  // attempt + lesson completion to Supabase for students; optimistically
-  // updates local state and fires XP / level-up toasts.
+  // Fired by LessonTemplate the moment the reader scrolls a lesson to 100%.
+  // Lesson XP is awarded once per lesson (guarded by completedLessons) and the
+  // lesson is marked complete + persisted for students.
+  const handleLessonComplete = (lessonId) => {
+    const week = WEEKS_DATA.find((w) =>
+      w.lessons.some((l) => l.id === lessonId),
+    );
+    if (!week) return;
+    if (completedLessons.includes(lessonId)) return;
+
+    const lesson = week.lessons.find((l) => l.id === lessonId);
+    const weekId = week.id;
+    const studentId = user?.id;
+    const lessonXp = lesson?.xp ?? 0;
+
+    // Optimistic local update — UI doesn't wait on the network.
+    setCompletedLessons((prev) => [...prev, lessonId]);
+    setCompletedRows((prev) => [
+      ...prev,
+      { lesson_id: lessonId, week_id: weekId, completed: true, completed_at: new Date().toISOString(), xp_awarded: lessonXp },
+    ]);
+
+    if (lessonXp > 0) {
+      pushNotification({ kind: "xp", amount: lessonXp, detail: lesson?.title });
+    }
+    const newLevel = levelFromXp(totalXp + lessonXp);
+    if (newLevel > currentLevel) {
+      pushNotification({ kind: "level-up", level: newLevel });
+    }
+
+    if (studentId && isStudent) {
+      markLessonComplete(studentId, weekId, lessonId, lessonXp).catch((err) => {
+        console.error("Failed to mark lesson complete:", err);
+      });
+    }
+  };
+
+  // Called by QuizContainer's onComplete on submit with { score, maxScore,
+  // xpEarned, pendingGradeCount }. Quiz XP only — lesson completion/XP is
+  // handled separately by handleLessonComplete. Fires every attempt.
   const handleQuizComplete = (result) => {
     const week = WEEKS_DATA.find((w) => w.id === activeWeekId);
-    if (!week) {
-      handleNavigate("lessons");
-      return;
-    }
+    if (!week) return;
 
     const lesson = week.lessons.find((l) => l.id === activeLessonId);
     const lessonId = activeLessonId;
     const weekId = week.id;
     const studentId = user?.id;
-    const alreadyComplete = completedLessons.includes(lessonId);
 
-    // Lesson XP is awarded once. Quiz XP fires every attempt.
-    const lessonXp = alreadyComplete ? 0 : (lesson?.xp ?? 0);
     const quizXp = result && Number.isFinite(result.xpEarned) ? result.xpEarned : 0;
-    const xpDelta = lessonXp + quizXp;
+    const hasScore =
+      result && Number.isFinite(result.score) && Number.isFinite(result.maxScore);
 
     // Optimistic local update — UI doesn't wait on the network.
-    if (!alreadyComplete) {
-      setCompletedLessons((prev) => [...prev, lessonId]);
-      setCompletedRows((prev) => [
-        ...prev,
-        { lesson_id: lessonId, week_id: weekId, completed: true, completed_at: new Date().toISOString(), xp_awarded: lessonXp },
-      ]);
-    }
-
-    if (result && Number.isFinite(result.score) && Number.isFinite(result.maxScore)) {
+    if (hasScore) {
       setQuizAttempts((prev) => [
         {
           lesson_id: lessonId,
@@ -182,34 +211,41 @@ function AppContent() {
     }
 
     // Toast(s). XP earned first; level-up next if it crossed a threshold.
-    if (xpDelta > 0) {
-      pushNotification({ kind: "xp", amount: xpDelta, detail: lesson?.title });
+    if (quizXp > 0) {
+      pushNotification({ kind: "xp", amount: quizXp, detail: lesson?.title });
     }
-    const newLevel = levelFromXp(totalXp + xpDelta);
+    const newLevel = levelFromXp(totalXp + quizXp);
     if (newLevel > currentLevel) {
       pushNotification({ kind: "level-up", level: newLevel });
     }
 
     // Persist for logged-in students. Staff/anonymous: skip writes silently.
-    if (studentId && isStudent) {
-      markLessonComplete(studentId, weekId, lessonId, lessonXp).catch((err) => {
-        console.error("Failed to mark lesson complete:", err);
+    if (studentId && isStudent && hasScore) {
+      saveQuizAttempt({
+        studentId,
+        weekId,
+        lessonId,
+        score: result.score,
+        maxScore: result.maxScore,
+        xpAwarded: quizXp,
+        pendingGradeCount: result.pendingGradeCount ?? 0,
+      }).catch((err) => {
+        console.error("Failed to save quiz attempt:", err);
       });
-      if (result && Number.isFinite(result.score) && Number.isFinite(result.maxScore)) {
-        saveQuizAttempt({
-          studentId,
-          weekId,
-          lessonId,
-          score: result.score,
-          maxScore: result.maxScore,
-          xpAwarded: quizXp,
-          pendingGradeCount: result.pendingGradeCount ?? 0,
-        }).catch((err) => {
-          console.error("Failed to save quiz attempt:", err);
-        });
-      }
+    }
+  };
+
+  // Called by the "Back to Lessons" button on the results screen. XP/persistence
+  // already happened on submit; this only advances to the next lesson (or the
+  // lessons list if this was the last one in the week).
+  const handleQuizFinish = () => {
+    const week = WEEKS_DATA.find((w) => w.id === activeWeekId);
+    if (!week) {
+      handleNavigate("lessons");
+      return;
     }
 
+    const lessonId = activeLessonId;
     const currentIndex = week.lessons.findIndex((l) => l.id === lessonId);
     const nextLesson = week.lessons[currentIndex + 1];
 
@@ -264,6 +300,7 @@ function AppContent() {
             reachedLessons={reachedLessons}
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}
+            onLessonComplete={handleLessonComplete}
             onLessonSelect={(lessonId) => {
               setActiveLessonId(lessonId);
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -275,8 +312,10 @@ function AppContent() {
         return (
           <QuizPage
             activeLessonId={activeLessonId}
+            priorAttempts={quizPriorAttempts}
             onBack={() => handleNavigate("lessons")}
             onComplete={handleQuizComplete}
+            onFinish={handleQuizFinish}
           />
         );
 

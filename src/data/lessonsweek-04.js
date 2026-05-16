@@ -34,7 +34,7 @@ export const week04 = {
       subtitle:
         "Discover the structured steps scientists use to investigate questions and find reliable, evidence-based answers.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt: "Flowchart showing the steps of a scientific investigation",
 
@@ -214,7 +214,7 @@ export const week04 = {
       subtitle:
         "Learn to identify the independent variable, dependent variable, controlled variables, and control group in any experiment.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt: "Laboratory setup showing controlled experiment",
 
@@ -341,7 +341,7 @@ export const week04 = {
       subtitle:
         "Master the skills of collecting, organizing, and presenting scientific data accurately and honestly.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt: "Data table and graphs on a laboratory worksheet",
 

@@ -30,7 +30,7 @@ export const week17 = {
       badge: "Lesson 1",
       subtitle: "How sperm and egg unite to form a new organism",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt:
         "Microscopic image of a sperm cell approaching an egg cell during fertilization",
@@ -187,7 +187,7 @@ export const week17 = {
       subtitle:
         "How two parents combine to produce genetically unique offspring",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: globe,
       heroImageAlt:
         "Globe showing diverse living organisms that use sexual reproduction",
@@ -323,7 +323,7 @@ export const week17 = {
       badge: "Lesson 3",
       subtitle: "How organisms reproduce using only one parent",
       readTime: "~13 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Simulation diagram showing different types of asexual reproduction",

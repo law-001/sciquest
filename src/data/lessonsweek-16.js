@@ -30,7 +30,7 @@ export const week16 = {
       badge: "Lesson 1",
       subtitle: "What meiosis is and why it matters for reproduction",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Microscopic view of dividing cells undergoing meiosis",
       sections: [
@@ -145,7 +145,7 @@ export const week16 = {
       badge: "Lesson 2",
       subtitle: "Walking through each phase of Meiosis I and Meiosis II",
       readTime: "~14 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Simulation diagram of chromosomes during the stages of meiosis",
@@ -326,7 +326,7 @@ export const week16 = {
       badge: "Lesson 3",
       subtitle: "Key differences and similarities between mitosis and meiosis",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt: "Lab diagram comparing mitosis and meiosis side by side",
       sections: [

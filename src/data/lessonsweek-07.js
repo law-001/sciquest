@@ -34,7 +34,7 @@ export const week07 = {
       subtitle:
         "Learn what concentration means, how it is expressed, and how concentrated and dilute solutions differ.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt:
         "Two beakers side by side showing concentrated and dilute solutions",
@@ -155,7 +155,7 @@ export const week07 = {
       subtitle:
         "Practice calculating concentration using the percent by mass formula and learn to read concentration labels on everyday products.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt: "Concentration formula written on a whiteboard",
 
@@ -311,7 +311,7 @@ export const week07 = {
       subtitle:
         "Understand how dilution reduces concentration and explore the fascinating behavior of supersaturated solutions.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt:
         "Diagram showing dilution process from concentrated to dilute solution",

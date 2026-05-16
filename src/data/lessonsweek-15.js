@@ -34,7 +34,7 @@ export const week15 = {
       subtitle:
         "Understand the ordered phases of a cell's life and what happens at each stage before and during division.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt:
         "Circular diagram of the cell cycle showing interphase and mitotic phase",
@@ -207,7 +207,7 @@ export const week15 = {
       subtitle:
         "Walk through each stage of mitosis and understand exactly what happens to the chromosomes at each step.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt:
         "Microscope images showing four stages of mitosis in dividing cells",
@@ -368,7 +368,7 @@ export const week15 = {
       subtitle:
         "Understand why mitosis is essential for life and how its breakdown leads to cancer.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt:
         "Lab setting with researchers studying cell division patterns",

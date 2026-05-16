@@ -34,7 +34,7 @@ export const week10 = {
       subtitle:
         "Understand the essential safety rules every student must follow in the laboratory and why each rule exists.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: modernclassroom,
       heroImageAlt:
         "Students in a science lab wearing safety goggles and lab gowns",
@@ -200,7 +200,7 @@ export const week10 = {
       subtitle:
         "Learn to recognize and interpret GHS hazard symbols so you can handle chemicals safely and choose the correct protective equipment.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt: "GHS hazard symbols displayed on chemical containers",
 
@@ -342,7 +342,7 @@ export const week10 = {
       subtitle:
         "Learn the step-by-step procedures for responding to common laboratory emergencies, including chemical spills, fires, cuts, and eye injuries.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt:
         "Emergency response flowchart showing steps for lab accidents",
