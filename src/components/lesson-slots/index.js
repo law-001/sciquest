@@ -8,4 +8,4 @@ export { default as TimelineSection } from "./Timelinesection";
 export { default as ComparisonSection } from "./Comparisonsection";
 export { default as ScenarioSection } from "./Scenariosection";
 export { default as DiagramSection } from "./Diagramsection";
-export { default as SectionHeading } from "./Sectionheading";
+export { default as SectionHeading } from "./SectionHeading";
