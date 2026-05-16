@@ -1,18 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import {
-  BookOpen,
-  Trophy,
-  Users,
-  Sparkles,
-  Brain,
-  Target,
-} from 'lucide-react';
-import Card from '../components/Card';   // Default import
-import miguelPhoto from '../assets/MIGUEL.png';
-import aezenPhoto from '../assets/AEZEN.png';
-import cheskaPhoto from '../assets/CHESKA.jpg';
-import markPhoto from '../assets/MARK.jpg';
-import ariesPhoto from '../assets/ARIES.jpg';
+import React, { useEffect, useState, useCallback } from "react";
+import { BookOpen, Trophy, Users, Sparkles, Brain, Target } from "lucide-react";
+import Card from "../components/Card"; // Default import
+import miguelPhoto from "../assets/MIGUEL.png";
+import aezenPhoto from "../assets/AEZEN.png";
+import cheskaPhoto from "../assets/CHESKA.jpg";
+import markPhoto from "../assets/MARK.jpg";
+import ariesPhoto from "../assets/ARIES.jpg";
 
 function useScrollTrigger(threshold = 0.15) {
   const [el, setEl] = useState(null);
@@ -22,7 +15,7 @@ function useScrollTrigger(threshold = 0.15) {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([entry]) => setTriggered(entry.isIntersecting),
-      { threshold }
+      { threshold },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -39,61 +32,61 @@ export function AboutPage() {
   const benefits = [
     {
       icon: <Brain className="w-8 h-8 text-primary-500" />,
-      title: 'Enhanced Retention',
+      title: "Enhanced Retention",
       description:
-        'Interactive elements and immediate feedback help solidify complex scientific concepts in memory.',
-      color: 'bg-primary-50',
+        "Interactive elements and immediate feedback help solidify complex scientific concepts in memory.",
+      color: "bg-primary-50",
     },
     {
       icon: <Trophy className="w-8 h-8 text-accent-500" />,
-      title: 'Increased Motivation',
+      title: "Increased Motivation",
       description:
-        'Gamification mechanics like points, badges, and levels keep students engaged and eager to learn more.',
-      color: 'bg-accent-50',
+        "Gamification mechanics like points, badges, and levels keep students engaged and eager to learn more.",
+      color: "bg-accent-50",
     },
     {
       icon: <Target className="w-8 h-8 text-secondary-500" />,
-      title: 'Self-Paced Learning',
+      title: "Self-Paced Learning",
       description:
-        'Students can progress through modules at their own speed, ensuring mastery before moving forward.',
-      color: 'bg-secondary-50',
+        "Students can progress through modules at their own speed, ensuring mastery before moving forward.",
+      color: "bg-secondary-50",
     },
   ];
 
   const team = [
     {
-      name: 'Mark Dumayag',
-      role: 'UI/UX Designer',
-      initials: 'MD',
-      color: 'bg-secondary-100 text-secondary-700',
+      name: "Mark Dumayag",
+      role: "UI/UX Designer",
+      initials: "MD",
+      color: "bg-secondary-100 text-secondary-700",
       image: markPhoto,
     },
     {
-      name: 'Miguel Porciuncula',
-      role: 'Backend Developer',
-      initials: 'MP',
-      color: 'bg-primary-100 text-primary-700',
+      name: "Miguel Porciuncula",
+      role: "Backend Developer",
+      initials: "MP",
+      color: "bg-primary-100 text-primary-700",
       image: miguelPhoto,
     },
     {
-      name: 'Francesca Ricafort',
-      role: 'Fashionista',
-      initials: 'FR',
-      color: 'bg-accent-100 text-accent-700',
+      name: "Francesca Ricafort",
+      role: "Fashionista",
+      initials: "FR",
+      color: "bg-accent-100 text-accent-700",
       image: cheskaPhoto,
     },
     {
-      name: 'Aezen Alcantara',
-      role: 'Motorista',
-      initials: 'AC',
-      color: 'bg-accent-100 text-accent-700',
+      name: "Aezen Alcantara",
+      role: "Motorista",
+      initials: "AC",
+      color: "bg-accent-100 text-accent-700",
       image: aezenPhoto,
     },
     {
-      name: 'Aries Walao',
-      role: 'Fashionista Ex',
-      initials: 'AW',
-      color: 'bg-accent-100 text-accent-700',
+      name: "Aries Walao",
+      role: "Fashionista Ex",
+      initials: "AW",
+      color: "bg-accent-100 text-accent-700",
       image: ariesPhoto,
     },
   ];
@@ -108,19 +101,19 @@ export function AboutPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float" />
         <div
           className="absolute bottom-0 left-0 w-64 h-64 bg-accent-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float"
-          style={{ animationDelay: '2s' }}
+          style={{ animationDelay: "2s" }}
         />
 
         <div
           className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center transition-all duration-700 ease-out ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary-100 text-primary-600 mb-8 shadow-warm animate-bounce-in">
             <BookOpen className="w-10 h-10" />
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-stone-900 dark:text-white mb-6 tracking-tight">
-            About{' '}
+            About{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-500 to-secondary-500">
               SciQuest
             </span>
@@ -135,10 +128,15 @@ export function AboutPage() {
       </div>
 
       {/* Gamification Benefits */}
-      <div ref={benefitsRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div
+        ref={benefitsRef}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+      >
         <div
           className={`text-center mb-16 transition-all duration-700 ease-out ${
-            benefitsTriggered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            benefitsTriggered
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-8"
           }`}
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 font-bold text-sm mb-4">
@@ -155,7 +153,9 @@ export function AboutPage() {
             <div
               key={index}
               className={`transition-all duration-700 ease-out ${
-                benefitsTriggered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                benefitsTriggered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-10"
               }`}
               style={{ transitionDelay: `${150 + index * 120}ms` }}
             >
@@ -181,7 +181,9 @@ export function AboutPage() {
       <div ref={teamRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           className={`bg-stone-800 rounded-3xl p-12 md:p-20 text-center relative overflow-hidden shadow-xl transition-all duration-700 ease-out ${
-            teamTriggered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            teamTriggered
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-10"
           }`}
         >
           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
@@ -198,12 +200,14 @@ export function AboutPage() {
               passionate about transforming science education.
             </p>
 
-            <div className="grid md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-5 gap-8 max-w-4xl mx-auto">
               {team.map((member, index) => (
                 <div
                   key={index}
                   className={`flex flex-col items-center transition-all duration-700 ease-out ${
-                    teamTriggered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                    teamTriggered
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-8"
                   }`}
                   style={{ transitionDelay: `${200 + index * 100}ms` }}
                 >
