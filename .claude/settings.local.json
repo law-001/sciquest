@@ -12,7 +12,11 @@
       "Bash(npx eslint *)",
       "Bash(npx supabase *)",
       "Bash(grep -A2 -E \"\\(App\\\\.jsx|QuizContainer\\\\.jsx|progress\\\\.js\\)$\")",
-      "Bash(grep -E \"\\(App\\\\.jsx|QuizContainer\\\\.jsx|progress\\\\.js\\)$\" -A 1)"
+      "Bash(grep -E \"\\(App\\\\.jsx|QuizContainer\\\\.jsx|progress\\\\.js\\)$\" -A 1)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\")",
+      "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_01.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_01.png\")",
+      "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_05.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_05.png\")",
+      "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_09.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_09.png\")"
     ]
   },
   "enabledPlugins": {

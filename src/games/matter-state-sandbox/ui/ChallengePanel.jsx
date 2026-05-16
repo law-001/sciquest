@@ -1,89 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export function ChallengePanel({ challenges, activeChallenge, completedChallengeIds, onSelectChallenge }) {
-  const [open, setOpen] = useState(false);
+export function ChallengePanel({ challenges, activeChallenge, completedIds, holdProgress, reducedMotion, onSelect }) {
+  const completed = new Set(completedIds ?? []);
+  const [slippingId, setSlippingId] = useState(null);
+  const prevIdRef = useRef(activeChallenge?.id ?? null);
 
-  const completed = new Set(completedChallengeIds ?? []);
+  useEffect(() => {
+    const prev = prevIdRef.current;
+    const curr = activeChallenge?.id ?? null;
+    prevIdRef.current = curr;
+    if (prev && prev !== curr && completed.has(prev) && !reducedMotion) {
+      setSlippingId(prev);
+      const t = setTimeout(() => setSlippingId(null), 700);
+      return () => clearTimeout(t);
+    }
+  }, [activeChallenge?.id]); // eslint-disable-line
+
+  const pending = challenges.filter(ch => !completed.has(ch.id) && ch.id !== activeChallenge?.id);
+  const done = challenges.filter(ch => completed.has(ch.id) && ch.id !== activeChallenge?.id);
 
   return (
-    <>
-      {/* Slide-in drawer */}
-      <div
-        className={`absolute left-0 top-0 bottom-[100px] w-72 bg-white shadow-2xl border-r border-stone-200 z-30 flex flex-col transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-[260px]' : '-translate-x-full'
-        }`}
-        aria-hidden={!open}
-      >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100 shrink-0">
-          <h2 className="font-bold text-stone-800 text-sm">Challenges</h2>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-stone-400 hover:text-stone-700 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center text-lg"
-            aria-label="Close challenges panel"
-          >
-            ×
-          </button>
+    <div className="sq-cstack">
+      {/* Active challenge — full card */}
+      {activeChallenge ? (
+        <div className="sq-ccard sq-ccard--active">
+          <div className="sq-ccard__eyebrow">Active challenge</div>
+          <div className="sq-ccard__title">{activeChallenge.title}</div>
+          <div className="sq-ccard__desc">{activeChallenge.description}</div>
+          {holdProgress > 0 && (
+            <div className="sq-challenge-card__progress">
+              <div className="sq-progress-bar">
+                <div
+                  className="sq-progress-bar__fill"
+                  style={{ width: `${holdProgress * 100}%` }}
+                  role="progressbar"
+                  aria-valuenow={Math.round(holdProgress * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Hold progress"
+                />
+              </div>
+              <span>{Math.round(holdProgress * 100)}%</span>
+            </div>
+          )}
         </div>
-
-        <ul className="flex-1 overflow-y-auto divide-y divide-stone-100">
-          {challenges.map(ch => {
-            const isDone = completed.has(ch.id);
-            const isActive = activeChallenge?.id === ch.id;
-
-            return (
-              <li key={ch.id}>
-                <button
-                  onClick={() => {
-                    if (!isDone) onSelectChallenge(ch);
-                    setOpen(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors min-h-[56px] ${
-                    isActive
-                      ? 'bg-orange-50'
-                      : isDone
-                        ? 'opacity-60 cursor-default'
-                        : 'hover:bg-stone-50'
-                  }`}
-                  aria-disabled={isDone}
-                  aria-current={isActive ? 'true' : undefined}
-                >
-                  <span className="shrink-0 mt-0.5 text-base" aria-hidden="true">
-                    {isDone ? '✅' : isActive ? '▶' : '○'}
-                  </span>
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className={`text-sm font-semibold truncate ${isDone ? 'text-stone-400' : 'text-stone-800'}`}>
-                      {ch.title}
-                    </span>
-                    <span className="text-xs text-stone-500 leading-snug line-clamp-2">
-                      {ch.description}
-                    </span>
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {/* Backdrop */}
-      {open && (
-        <div
-          className="absolute inset-0 z-20"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
+      ) : (
+        <div className="sq-ccard sq-ccard--empty">
+          <div className="sq-ccard__desc">Explore freely — use the controls below.</div>
+        </div>
       )}
 
-      {/* Toggle tab — sits at the right edge of the drawer gap, vertically centered */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        aria-expanded={open}
-        aria-label="Toggle challenges panel"
-        className="absolute left-[260px] top-1/2 -translate-y-1/2 z-40 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors shadow-md rounded-r-xl flex items-center justify-center min-w-[44px]"
-        style={{ writingMode: 'vertical-rl', transform: 'translateY(-50%) rotate(180deg)', padding: '12px 6px' }}
-      >
-        📋 Challenges
-      </button>
-    </>
+      {/* Pending challenges — title only, clickable */}
+      {pending.map(ch => (
+        <button
+          key={ch.id}
+          className="sq-ccard sq-ccard--pending sq-ccard--clickable"
+          onClick={() => onSelect?.(ch)}
+          aria-label={`Switch to challenge: ${ch.title}`}
+        >
+          <span className="sq-ccard__dot" aria-hidden="true" />
+          <span className="sq-ccard__compact-title">{ch.title}</span>
+        </button>
+      ))}
+
+      {/* Completed challenges — title + check, slip animation on newest, clickable for review */}
+      {done.map(ch => (
+        <button
+          key={ch.id}
+          className={`sq-ccard sq-ccard--done sq-ccard--clickable${slippingId === ch.id ? ' sq-ccard--slip' : ''}`}
+          onClick={() => onSelect?.(ch)}
+          aria-label={`Review challenge: ${ch.title}`}
+        >
+          <svg
+            width="10" height="10" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"
+            className="sq-ccard__check" aria-hidden="true"
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="sq-ccard__compact-title">{ch.title}</span>
+        </button>
+      ))}
+    </div>
   );
 }
