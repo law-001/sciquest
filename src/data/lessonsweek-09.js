@@ -34,7 +34,7 @@ export const week09 = {
       subtitle:
         "Identify the purpose of common laboratory equipment and learn the rules for their proper care and storage.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt:
         "Array of common laboratory glassware and equipment on a bench",
@@ -176,7 +176,7 @@ export const week09 = {
       subtitle:
         "Learn the parts of a compound microscope, how to calculate magnification, and the correct procedure for making observations.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Close-up of a compound microscope with labeled parts",
 
@@ -345,7 +345,7 @@ export const week09 = {
       subtitle:
         "Learn the correct procedures for safely handling chemicals, glassware, heat sources, and biological specimens in the laboratory.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: modernclassroom,
       heroImageAlt:
         "Students properly handling lab materials while wearing safety equipment",

@@ -34,7 +34,7 @@ export const week14 = {
       subtitle:
         "Identify what plant and animal cells share and what makes each unique.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Side-by-side comparison diagram of plant and animal cells",
 
@@ -195,7 +195,7 @@ export const week14 = {
       subtitle:
         "Explore the cell wall, chloroplasts, central vacuole, and plastids — structures found only in plant cells.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: globe,
       heroImageAlt:
         "Microscopic image of plant cells showing green chloroplasts",
@@ -324,7 +324,7 @@ export const week14 = {
       subtitle:
         "Learn about centrioles, lysosomes, cilia, and flagella — structures that give animal cells their distinctive capabilities.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Microscope image of animal cells with visible centrioles and cilia",

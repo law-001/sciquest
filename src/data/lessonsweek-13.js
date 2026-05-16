@@ -34,7 +34,7 @@ export const week13 = {
       subtitle:
         "Understand the structure and function of the cell membrane and cell wall, and how they differ.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Microscopic cross-section showing cell membrane structure",
 
@@ -178,7 +178,7 @@ export const week13 = {
       subtitle:
         "Explore the nucleus and key organelles that power, build, and maintain the cell.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Colorized electron microscope image of cell organelles",
 
@@ -336,7 +336,7 @@ export const week13 = {
       subtitle:
         "Understand the role of cytoplasm as the cell's internal environment and the cytoskeleton as its structural framework.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Microscope image showing cytoskeleton network inside a cell",

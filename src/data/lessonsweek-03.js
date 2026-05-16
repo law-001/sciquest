@@ -34,7 +34,7 @@ export const week03 = {
       subtitle:
         "Discover how heat energy causes solids to melt into liquids and how removing heat causes liquids to freeze into solids.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt: "Ice melting in a laboratory setting",
 
@@ -198,7 +198,7 @@ export const week03 = {
       subtitle:
         "Understand how liquids turn into gases through evaporation and boiling, and how gases turn back into liquids through condensation.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt: "Water evaporating and forming steam",
 
@@ -345,7 +345,7 @@ export const week03 = {
       subtitle:
         "Explore the fascinating state changes where solids become gases and gases become solids — skipping the liquid phase entirely.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt: "Diagram showing sublimation and deposition processes",
 

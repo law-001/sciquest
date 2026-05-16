@@ -31,7 +31,7 @@ export const week18 = {
       subtitle:
         "Comparing the two fundamental strategies for producing offspring",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt:
         "Lab comparison diagram of sexual and asexual reproduction strategies",
@@ -173,7 +173,7 @@ export const week18 = {
       badge: "Lesson 2",
       subtitle: "Weighing the trade-offs of sexual and asexual reproduction",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt:
         "Equation-style diagram showing the pros and cons of different reproduction types",
@@ -290,7 +290,7 @@ export const week18 = {
       subtitle:
         "Real organisms that illustrate sexual and asexual reproduction",
       readTime: "~13 min read",
-      xp: 75,
+      xp: 50,
       heroImage: web,
       heroImageAlt:
         "Web diagram connecting diverse organisms that use different types of reproduction",

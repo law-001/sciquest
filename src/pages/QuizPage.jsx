@@ -5,7 +5,7 @@ import { QuizContainer } from "../components/QuizContainer";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { getQuizByLesson } from "../data/quizzesweek-01";
 
-export function QuizPage({ activeLessonId, onBack, onComplete }) {
+export function QuizPage({ activeLessonId, priorAttempts = 0, onBack, onComplete, onFinish }) {
   const allLessons = WEEKS_DATA.flatMap((w) => w.lessons);
   const lesson = allLessons.find((l) => l.id === activeLessonId);
   const quiz = getQuizByLesson(activeLessonId);
@@ -40,8 +40,10 @@ export function QuizPage({ activeLessonId, onBack, onComplete }) {
     <QuizContainer
       quiz={quiz}
       lesson={lesson}
+      priorAttempts={priorAttempts}
       onExit={onBack}
       onComplete={onComplete}
+      onFinish={onFinish}
     />
   );
 }

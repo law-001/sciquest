@@ -9,7 +9,12 @@ import Card from "./Card";
 import Badge from "./Badge";
 import ProgressBar from "./ProgressBar";
 import { cn } from "../lib/utils";
-import { calcQuizXp, MANUAL_GRADE_TYPES } from "../lib/xp-config";
+import {
+  calcQuizXp,
+  MANUAL_GRADE_TYPES,
+  MAX_QUIZ_ATTEMPTS,
+  attemptXpFactor,
+} from "../lib/xp-config";
 import {
   MultipleChoiceQuestion,
   TrueFalseQuestion,
@@ -173,9 +178,22 @@ function isAnswered(q, answer) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 // onComplete receives { score, maxScore } so the caller can persist the attempt.
-export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
+export function QuizContainer({
+  quiz,
+  lesson,
+  priorAttempts = 0,
+  onExit,
+  onComplete,
+  onFinish,
+}) {
   const { questions } = quiz;
   const storageKey = `quiz-answers-${quiz.lessonId}`;
+
+  // 1-indexed number of the attempt being taken now. Once priorAttempts hits
+  // the cap, no further submissions are allowed.
+  const attemptNumber = priorAttempts + 1;
+  const attemptsExhausted = priorAttempts >= MAX_QUIZ_ATTEMPTS;
+  const attemptsLeft = Math.max(0, MAX_QUIZ_ATTEMPTS - priorAttempts);
 
   const [answers, setAnswers] = useState(() => {
     try {
@@ -204,6 +222,8 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
   };
 
   const handleSubmit = () => {
+    if (attemptsExhausted) return;
+
     const earned = questions.reduce(
       (sum, q) => sum + scoreQuestion(q, answers[q.id]),
       0,
@@ -211,31 +231,63 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
     const max = totalPoints(questions);
     const autoMax = autoGradablePoints(questions);
     const pending = pendingGradeCount(questions, answers);
-    const xpEarned = calcQuizXp(earned, autoMax);
+    // Retries are capped: attempt 2 earns ≤50%, attempt 3 ≤25% of the first.
+    const xpEarned = Math.round(
+      calcQuizXp(earned, autoMax) * attemptXpFactor(attemptNumber),
+    );
 
-    if (autoMax > 0 && earned > autoMax / 2) setShowConfetti(true);
-    setIsSubmitted(true);
-    setSubmittedResult({
+    const result = {
       score: earned,
       maxScore: max,
       autoMaxScore: autoMax,
       xpEarned,
       pendingGradeCount: pending,
-    });
+    };
+
+    if (autoMax > 0 && earned > autoMax / 2) setShowConfetti(true);
+    setIsSubmitted(true);
+    setSubmittedResult(result);
     localStorage.removeItem(storageKey);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    // XP / persistence fires here on submit — not when leaving the results screen.
+    onComplete?.(result);
   };
 
   const handleDone = () => {
-    onComplete?.(submittedResult);
+    onFinish?.();
   };
 
   const handleRetry = () => {
+    if (attemptsExhausted) return;
     setAnswers({});
     setIsSubmitted(false);
     setShowConfetti(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // No attempts left and not currently viewing a fresh result — lock the quiz.
+  if (attemptsExhausted && !isSubmitted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-4 bg-[#fdf6e3] dark:bg-stone-900">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-5 bg-stone-100 dark:bg-stone-700">
+            <Trophy className="w-10 h-10 text-stone-400" />
+          </div>
+          <h2 className="text-2xl font-black text-stone-900 dark:text-stone-100 mb-2">
+            No attempts remaining
+          </h2>
+          <p className="text-stone-500 dark:text-stone-400 font-bold mb-6">
+            You've used all {MAX_QUIZ_ATTEMPTS} attempts for
+            {lesson ? ` "${lesson.title}"` : " this quiz"}. Your best score has
+            been saved.
+          </p>
+          <Button variant="primary" size="lg" onClick={onFinish ?? onExit}>
+            Back to Lessons
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   // ── Results screen ──────────────────────────────────────────────────────────
   if (isSubmitted) {
@@ -314,6 +366,13 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
               <Star className="w-4 h-4 fill-current" />
               <span>+{xpEarned} XP Earned</span>
             </div>
+            <p className="text-xs font-bold text-stone-400 mt-2">
+              Attempt {Math.min(priorAttempts, MAX_QUIZ_ATTEMPTS)} of{" "}
+              {MAX_QUIZ_ATTEMPTS}
+              {attemptsExhausted
+                ? " — no attempts left"
+                : ` — ${attemptsLeft} left (reduced XP)`}
+            </p>
             {pending > 0 && (
               <p className="text-xs font-bold text-amber-600 mt-3">
                 {pending} {pending === 1 ? "essay" : "essays"} awaiting teacher grading
@@ -325,13 +384,15 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
             <Button variant="primary" onClick={handleDone} size="lg">
               Back to Lessons
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleRetry}
-              leftIcon={<RotateCcw className="w-4 h-4" />}
-            >
-              Retry Quiz
-            </Button>
+            {!attemptsExhausted && (
+              <Button
+                variant="outline"
+                onClick={handleRetry}
+                leftIcon={<RotateCcw className="w-4 h-4" />}
+              >
+                Retry Quiz ({attemptsLeft} left)
+              </Button>
+            )}
           </div>
         </Card>
 
@@ -493,18 +554,24 @@ export function QuizContainer({ quiz, lesson, onExit, onComplete }) {
       {/* Sticky Submit footer */}
       <div className="bottom-0 left-0 right-0 z-30 border-t border-orange-200/70 dark:border-stone-700 backdrop-blur-md bg-[#fdf6e3]/95 dark:bg-stone-900/95">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-          <div className="text-sm font-bold text-stone-500 hidden sm:block">
-            {answeredCount === questions.length
-              ? "All questions answered — ready to submit!"
-              : `${questions.length - answeredCount} question${
-                  questions.length - answeredCount !== 1 ? "s" : ""
-                } remaining`}
+          <div className="hidden sm:block">
+            <div className="text-sm font-bold text-stone-500">
+              {answeredCount === questions.length
+                ? "All questions answered — ready to submit!"
+                : `${questions.length - answeredCount} question${
+                    questions.length - answeredCount !== 1 ? "s" : ""
+                  } remaining`}
+            </div>
+            <div className="text-xs font-bold text-stone-400 mt-0.5">
+              Attempt {attemptNumber} of {MAX_QUIZ_ATTEMPTS}
+              {attemptNumber > 1 && " — XP reduced for retries"}
+            </div>
           </div>
           <Button
             variant="primary"
             size="lg"
             onClick={handleSubmit}
-            disabled={answeredCount === 0}
+            disabled={answeredCount === 0 || attemptsExhausted}
             rightIcon={<CheckCircle2 className="w-5 h-5" />}
             className="ml-auto px-8"
           >

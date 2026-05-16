@@ -30,7 +30,7 @@ export const week19 = {
       badge: "Lesson 1",
       subtitle: "The fundamental roles organisms play in an ecosystem",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: globe,
       heroImageAlt:
         "Globe image showing diverse ecosystems with producers, consumers, and decomposers",
@@ -189,7 +189,7 @@ export const week19 = {
       badge: "Lesson 2",
       subtitle: "How energy flows in a linear sequence through an ecosystem",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt: "Flowchart showing a linear food chain from grass to eagle",
       sections: [
@@ -322,7 +322,7 @@ export const week19 = {
       badge: "Lesson 3",
       subtitle: "How interconnected food chains create a complex web of life",
       readTime: "~13 min read",
-      xp: 75,
+      xp: 50,
       heroImage: web,
       heroImageAlt:
         "Web diagram showing the interconnected food web of an ecosystem",

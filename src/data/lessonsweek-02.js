@@ -34,7 +34,7 @@ export const week02 = {
       subtitle:
         "Understand what matter is, what it is made of, and how scientists classify different forms of matter.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt: "Particle simulation of atoms and molecules",
 
@@ -193,7 +193,7 @@ export const week02 = {
       subtitle:
         "Learn the five core statements of the particle theory and how they explain the behavior of all matter.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Microscopic view illustrating particle theory",
 
@@ -333,7 +333,7 @@ export const week02 = {
       subtitle:
         "Compare the properties of solids, liquids, gases, and the rare fourth state of matter — plasma.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt: "Diagram showing the three main states of matter",
 

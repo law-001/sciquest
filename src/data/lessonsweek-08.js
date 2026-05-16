@@ -34,7 +34,7 @@ export const week08 = {
       subtitle:
         "Learn to identify acids and bases by their physical properties and how they behave in chemical reactions.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt:
         "Litmus paper tests showing color changes in acid and base solutions",
@@ -175,7 +175,7 @@ export const week08 = {
       subtitle:
         "Understand the pH scale and use chemical indicators to classify everyday substances as acids, bases, or neutral.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "pH scale chart showing colors from red (acid) to purple (base)",
@@ -310,7 +310,7 @@ export const week08 = {
       subtitle:
         "Learn how acids and bases react to form salts and water, and explore where neutralization reactions occur in everyday life.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt:
         "Chemical equation showing acid plus base yields salt plus water",

@@ -34,7 +34,7 @@ export const week11 = {
       subtitle:
         "Discover how the microscope was invented and learn the names and functions of its main parts.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Close-up view of a compound microscope",
 
@@ -205,7 +205,7 @@ export const week11 = {
       subtitle:
         "Learn the proper techniques for carrying, focusing, and calculating magnification with a microscope.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt: "Student using a microscope in a science lab",
 
@@ -370,7 +370,7 @@ export const week11 = {
       subtitle:
         "Learn how to prepare wet and dry mount slides and use stains to observe cells more clearly.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt:
         "Prepared microscope slides and staining equipment on a lab bench",

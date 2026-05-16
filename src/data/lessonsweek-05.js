@@ -34,7 +34,7 @@ export const week05 = {
       subtitle:
         "Understand the International System of Units and how to choose the correct measurement tool for any quantity.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt: "Scientific measurement tools and unit labels",
 
@@ -198,7 +198,7 @@ export const week05 = {
       subtitle:
         "Learn the correct technique for using a ruler, triple beam balance, and graduated cylinder to take accurate measurements.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt: "Student measuring liquid in a graduated cylinder",
 
@@ -352,7 +352,7 @@ export const week05 = {
       subtitle:
         "Understand the difference between accuracy and precision, and learn how to identify and minimize measurement errors.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Target showing accuracy vs precision comparison",
 

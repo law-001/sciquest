@@ -34,7 +34,7 @@ export const week12 = {
       subtitle:
         "Trace the discoveries of key scientists that led to the three principles of modern cell theory.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt:
         "Historical microscope illustration representing cell theory development",
@@ -199,7 +199,7 @@ export const week12 = {
       subtitle:
         "Compare the two major categories of cells and understand what makes each type unique.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Diagram comparing prokaryotic and eukaryotic cell structures",
@@ -336,7 +336,7 @@ export const week12 = {
       subtitle:
         "Explore how cells become specialized for specific functions and why cell diversity is essential for life.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt:
         "Collage of different specialized cell types under microscope",

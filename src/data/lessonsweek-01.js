@@ -51,7 +51,7 @@ const week01 = {
       subtitle:
         "Explore the world of scientific models and discover how scientists use them to understand things that cannot be easily seen or observed.",
       readTime: "~15 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope,
       heroImageAlt: "Microscopic view of cells",
 
@@ -297,7 +297,7 @@ const week01 = {
       subtitle:
         "Discover how scientists think, investigate, and solve problems — and how YOU already use these skills every single day.",
       readTime: "~20 min read",
-      xp: 75,
+      xp: 50,
       heroImage: microscope, // reuse existing import from week-01.js
       heroImageAlt: "Students conducting a scientific investigation in class",
 
@@ -765,7 +765,7 @@ const week01 = {
       subtitle:
         "Discover how scientific models are used every day by doctors, engineers, and scientists to solve real-world problems.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt: "Computer simulation model",
 

@@ -49,6 +49,7 @@ export function LessonTemplate({
   reachedLessons = [],
   onBack,
   onComplete,
+  onLessonComplete,
   onLessonSelect,
 }) {
   const [activeSection, setActiveSection] = useState(0);
@@ -57,11 +58,18 @@ export function LessonTemplate({
   const heroRef = useRef(null);
   const [heroVisible, setHeroVisible] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  // Once the bar hits 100% it stays there — scrolling back up can't lower it,
+  // so XP can't be farmed by scrubbing. Resets when the lesson changes.
+  const lessonCompletedRef = useRef(false);
+  // Latest onLessonComplete without re-subscribing the scroll listener.
+  const onLessonCompleteRef = useRef(onLessonComplete);
+  onLessonCompleteRef.current = onLessonComplete;
 
   // Reset section position when switching lessons (render-phase reset)
   if (lesson?.id !== prevLessonId) {
     setPrevLessonId(lesson?.id);
     setActiveSection(0);
+    lessonCompletedRef.current = false;
   }
 
   useEffect(() => {
@@ -90,18 +98,25 @@ export function LessonTemplate({
       const startEl = document.getElementById("section-0");
       const endEl = document.getElementById("lesson-cta");
       if (!startEl || !endEl) {
-        setScrollProgress(0);
+        setScrollProgress(lessonCompletedRef.current ? 100 : 0);
         return;
       }
       const headerOffset = 72;
       const startY = getOffsetTop(startEl) - headerOffset;
       const endY = getOffsetTop(endEl) - window.innerHeight;
       const range = endY - startY;
-      if (range <= 0) {
+      if (lessonCompletedRef.current) {
+        setScrollProgress(100);
+      } else if (range <= 0) {
         setScrollProgress(0);
       } else {
         const pct = ((window.scrollY - startY) / range) * 100;
-        setScrollProgress(Math.max(0, Math.min(100, Math.round(pct))));
+        const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+        setScrollProgress(clamped);
+        if (clamped >= 100) {
+          lessonCompletedRef.current = true;
+          onLessonCompleteRef.current?.(lesson?.id);
+        }
       }
 
       // Sync active section with scroll position

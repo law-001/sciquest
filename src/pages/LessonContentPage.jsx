@@ -9,6 +9,7 @@ export function LessonContentPage({
   reachedLessons = [],
   onBack,
   onGoToQuiz,
+  onLessonComplete,
   onLessonSelect,
 }) {
   const week =
@@ -26,6 +27,7 @@ export function LessonContentPage({
       reachedLessons={reachedLessons}
       onBack={onBack}
       onComplete={onGoToQuiz}
+      onLessonComplete={onLessonComplete}
       onLessonSelect={onLessonSelect}
     />
   );

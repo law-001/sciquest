@@ -34,7 +34,7 @@ export const week06 = {
       subtitle:
         "Understand the difference between pure substances and mixtures, and learn how solutions are formed.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: lab,
       heroImageAlt: "Laboratory glassware with colorful solutions",
 
@@ -190,7 +190,7 @@ export const week06 = {
       subtitle:
         "Explore what solubility means, what affects it, and how we classify solutions by how much solute they contain.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: equation,
       heroImageAlt: "Graph showing solubility curves for different substances",
 
@@ -321,7 +321,7 @@ export const week06 = {
       subtitle:
         "Discover how stirring, temperature, and particle size control how quickly a substance dissolves.",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Student stirring a solution in a beaker during a lab activity",

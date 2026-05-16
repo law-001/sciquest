@@ -31,7 +31,7 @@ export const week20 = {
       subtitle:
         "Understanding how energy decreases at each level of a food chain",
       readTime: "~12 min read",
-      xp: 75,
+      xp: 50,
       heroImage: simulation,
       heroImageAlt:
         "Simulation diagram of an ecological energy pyramid showing trophic levels",
@@ -173,7 +173,7 @@ export const week20 = {
       subtitle:
         "From a single cell to the entire biosphere — life organized at every scale",
       readTime: "~14 min read",
-      xp: 75,
+      xp: 50,
       heroImage: flowchart,
       heroImageAlt:
         "Flowchart showing the levels of biological organization from cell to biosphere",
@@ -367,7 +367,7 @@ export const week20 = {
       badge: "Lesson 3",
       subtitle: "How species interact with each other in ecosystems",
       readTime: "~13 min read",
-      xp: 75,
+      xp: 50,
       heroImage: web,
       heroImageAlt:
         "Web diagram showing different types of species interactions in ecosystems",

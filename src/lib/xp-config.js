@@ -34,6 +34,20 @@ export const LEVEL_THRESHOLDS = [
   11000, // L15
 ];
 
+// A student gets at most this many submissions per quiz. The 4th is blocked.
+export const MAX_QUIZ_ATTEMPTS = 3;
+
+// XP ceiling per attempt, as a fraction of what the same performance would
+// earn on the first try. Index = attempt number − 1.
+//   attempt 1 → full, attempt 2 → 50% max, attempt 3 → 25% max.
+export const ATTEMPT_XP_FACTORS = [1, 0.5, 0.25];
+
+// Multiplier applied to a quiz's earned XP based on which attempt this is
+// (1-indexed). Beyond the configured attempts the factor is 0.
+export function attemptXpFactor(attemptNumber) {
+  return ATTEMPT_XP_FACTORS[attemptNumber - 1] ?? 0;
+}
+
 // Quiz question types that need a human to grade them. Their `points` are
 // excluded from XP math; teachers can award them later via the portal.
 export const MANUAL_GRADE_TYPES = new Set(["essay", "short-answer"]);
