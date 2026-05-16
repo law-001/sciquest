@@ -11,6 +11,7 @@ import { ControlBar } from './ui/ControlBar';
 import { ParticleView } from './ui/ParticleView';
 import { ObjectView } from './ui/ObjectView';
 import { SuccessModal } from './ui/SuccessModal';
+import { GameMusic } from './audio/GameMusic';
 import BootScene from './scenes/BootScene';
 import SandboxScene from './scenes/SandboxScene';
 import { LEVELS } from './data/levels';
@@ -49,7 +50,21 @@ export default function MatterStateSandbox({
   const burgerRef = useRef(null);
   const [viewMode, setViewMode] = useState('object');
   const [particleSnapshot, setParticleSnapshot] = useState({ temp: 20, pressure: 1 });
+  const [muted, setMuted] = useState(false);
+  const musicRef = useRef(null);
   const lastSimStateRef = useRef({ temp: 20, pressure: 1 });
+
+  // Background music — starts on mount, resumes after first user interaction
+  useEffect(() => {
+    const music = new GameMusic();
+    musicRef.current = music;
+    music.start();
+    return () => { music.destroy(); musicRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    musicRef.current?.setMuted(muted);
+  }, [muted]);
 
   // Portrait lock on touch devices
   const [isPortrait, setIsPortrait] = useState(false);
@@ -340,6 +355,17 @@ export default function MatterStateSandbox({
                   <path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>
                 </svg>
               </button>
+              <button className="sq-icon-btn" aria-label={muted ? 'Unmute music' : 'Mute music'} onClick={() => setMuted(m => !m)}>
+                {muted ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  </svg>
+                )}
+              </button>
             </div>
 
             {/* Mobile burger */}
@@ -407,6 +433,22 @@ export default function MatterStateSandbox({
                       <path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>
                     </svg>
                     <span className="sq-burger-label">Screenshot</span>
+                  </button>
+                  <button
+                    className="sq-icon-btn sq-burger-item"
+                    aria-label={muted ? 'Unmute music' : 'Mute music'}
+                    onClick={() => { setMuted(m => !m); setBurgerOpen(false); }}
+                  >
+                    {muted ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+                      </svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                      </svg>
+                    )}
+                    <span className="sq-burger-label">{muted ? 'Unmute' : 'Mute'}</span>
                   </button>
                 </div>
               )}
