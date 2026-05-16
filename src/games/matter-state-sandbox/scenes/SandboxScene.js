@@ -3,11 +3,6 @@ import SubstanceDisplay from '../objects/SubstanceDisplay';
 import { determineState } from '../physics/stateRules';
 import { SUBSTANCES } from '../data/substances';
 
-const BEAKER_STROKE = 4;
-const BEAKER_FILL = 0xfaf7f2;
-const BEAKER_BORDER = 0xc8b89a;
-const BEAKER_RADIUS = 12;
-
 export default class SandboxScene extends BaseGameScene {
   constructor() {
     super({ key: 'SandboxScene' });
@@ -22,28 +17,6 @@ export default class SandboxScene extends BaseGameScene {
   }
 
   create() {
-    const W = this.scale.width;
-    const H = this.scale.height;
-
-    const bw = W * 0.6;
-    const bh = H * 0.7;
-    const bx = (W - bw) / 2;
-    const by = (H - bh) / 2;
-
-    const beaker = this.add.graphics();
-    beaker.fillStyle(BEAKER_FILL, 1);
-    beaker.fillRoundedRect(bx, by, bw, bh, BEAKER_RADIUS);
-    beaker.lineStyle(BEAKER_STROKE, BEAKER_BORDER, 1);
-    beaker.strokeRoundedRect(bx, by, bw, bh, BEAKER_RADIUS);
-
-    const inset = BEAKER_STROKE + 2;
-    this.containerBounds = {
-      x: bx + inset,
-      y: by + inset,
-      width: bw - inset * 2,
-      height: bh - inset * 2,
-    };
-
     this.currentTemp = -10;
     this.currentPressure = 1;
     this.currentState = null;
@@ -55,25 +28,15 @@ export default class SandboxScene extends BaseGameScene {
     this._setupBusListeners();
   }
 
-  update(time) {
-    if (this.currentState === 'liquid' && !this.isTransitioning) {
-      this.substanceDisplay?.updateLiquidSurface(time);
-    }
-  }
+  update() {}
 
   // ── Private helpers ───────────────────────────────────────────
 
   _initSubstance(substanceId, emitOnly = false) {
     if (!emitOnly) {
       this.substanceDisplay?.destroy();
-      const substance = SUBSTANCES[substanceId];
       const initialState = determineState(substanceId, this.currentTemp, this.currentPressure);
-      this.substanceDisplay = new SubstanceDisplay(
-        this,
-        substance,
-        this.containerBounds,
-        this.reducedMotion,
-      );
+      this.substanceDisplay = new SubstanceDisplay(this);
       this.substanceDisplay.show(initialState);
       this.currentState = initialState;
     }

@@ -9,6 +9,7 @@ import { LevelSelect } from './ui/LevelSelect';
 import { SandboxHUD } from './ui/SandboxHUD';
 import { ControlBar } from './ui/ControlBar';
 import { ParticleView } from './ui/ParticleView';
+import { ObjectView } from './ui/ObjectView';
 import { SuccessModal } from './ui/SuccessModal';
 import BootScene from './scenes/BootScene';
 import SandboxScene from './scenes/SandboxScene';
@@ -481,6 +482,16 @@ export default function MatterStateSandbox({
                 {viewMode === 'particle' ? 'Object View' : 'Particle View'}
               </button>
 
+              {/* Object view overlay — always shown by default */}
+              {viewMode === 'object' && (
+                <ObjectView
+                  bus={liveBus}
+                  substanceId={selectedLevel.availableSubstances[0]}
+                  initialTemp={particleSnapshot.temp}
+                  initialPressure={particleSnapshot.pressure}
+                />
+              )}
+
               {/* Particle view overlay */}
               {viewMode === 'particle' && (
                 <ParticleView
@@ -507,11 +518,13 @@ export default function MatterStateSandbox({
       {/* Pause overlay */}
       {paused && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(43,36,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}
+          className="sq-modal-backdrop"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(43,36,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, animation: 'sq-modal-backdrop-in 0.2s ease both' }}
           onClick={handleResume}
         >
           <div
-            style={{ background: 'var(--sq-surface)', borderRadius: 'var(--sq-radius-lg)', padding: '32px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.25)', minWidth: 220 }}
+            className="sq-modal-card"
+            style={{ background: 'var(--sq-surface)', borderRadius: 'var(--sq-radius-lg)', padding: '32px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.25)', minWidth: 220, animation: 'sq-modal-card-in 0.3s cubic-bezier(0.34,1.4,0.64,1) both' }}
             onClick={e => e.stopPropagation()}
           >
             <p style={{ fontFamily: 'var(--sq-font-display)', fontSize: 24, fontWeight: 700, color: 'var(--sq-ink-1)', margin: 0 }}>Paused</p>

@@ -1,6 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
-export function ChallengePanel({ challenges, activeChallenge, completedIds, holdProgress, reducedMotion, onSelect }) {
+export function ChallengePanel({
+  challenges,
+  activeChallenge,
+  completedIds,
+  holdProgress,
+  reducedMotion,
+  onSelect,
+}) {
   const completed = new Set(completedIds ?? []);
   const [slippingId, setSlippingId] = useState(null);
   const prevIdRef = useRef(activeChallenge?.id ?? null);
@@ -16,8 +23,12 @@ export function ChallengePanel({ challenges, activeChallenge, completedIds, hold
     }
   }, [activeChallenge?.id]); // eslint-disable-line
 
-  const pending = challenges.filter(ch => !completed.has(ch.id) && ch.id !== activeChallenge?.id);
-  const done = challenges.filter(ch => completed.has(ch.id) && ch.id !== activeChallenge?.id);
+  const pending = challenges.filter(
+    (ch) => !completed.has(ch.id) && ch.id !== activeChallenge?.id,
+  );
+  const done = challenges.filter(
+    (ch) => completed.has(ch.id) && ch.id !== activeChallenge?.id,
+  );
 
   return (
     <div className="sq-cstack">
@@ -46,12 +57,14 @@ export function ChallengePanel({ challenges, activeChallenge, completedIds, hold
         </div>
       ) : (
         <div className="sq-ccard sq-ccard--empty">
-          <div className="sq-ccard__desc">Explore freely — use the controls below.</div>
+          <div className="sq-ccard__desc">
+            Explore freely — use the controls below.
+          </div>
         </div>
       )}
 
       {/* Pending challenges — title only, clickable */}
-      {pending.map(ch => (
+      {pending.map((ch) => (
         <button
           key={ch.id}
           className="sq-ccard sq-ccard--pending sq-ccard--clickable"
@@ -64,17 +77,24 @@ export function ChallengePanel({ challenges, activeChallenge, completedIds, hold
       ))}
 
       {/* Completed challenges — title + check, slip animation on newest, clickable for review */}
-      {done.map(ch => (
+      {done.map((ch) => (
         <button
           key={ch.id}
-          className={`sq-ccard sq-ccard--done sq-ccard--clickable${slippingId === ch.id ? ' sq-ccard--slip' : ''}`}
+          className={`sq-ccard sq-ccard--done sq-ccard--clickable${slippingId === ch.id ? " sq-ccard--slip" : ""}`}
           onClick={() => onSelect?.(ch)}
           aria-label={`Review challenge: ${ch.title}`}
         >
           <svg
-            width="10" height="10" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"
-            className="sq-ccard__check" aria-hidden="true"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="sq-ccard__check"
+            aria-hidden="true"
           >
             <path d="M5 13l4 4L19 7" />
           </svg>
