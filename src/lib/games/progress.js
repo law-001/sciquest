@@ -8,6 +8,16 @@ export async function getProgress(supabase, { studentId, gameId }) {
   return data;
 }
 
+export async function getCompletedCount(supabase, { studentId }) {
+  const { count, error } = await supabase
+    .from('game_progress')
+    .select('*', { count: 'exact', head: true })
+    .eq('student_id', studentId)
+    .eq('completed', true);
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function recordCompletion(supabase, { studentId, gameId, challengeId, score, scoreUnit, metadata = {} }) {
   const { data: existing } = await supabase
     .from('game_progress')

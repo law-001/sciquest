@@ -1,11 +1,21 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { BookOpen, Trophy, Users, Sparkles, Brain, Target } from "lucide-react";
 import Card from "../components/Card"; // Default import
+import { useTheme } from "../context/ThemeContext";
 import miguelPhoto from "../assets/MIGUEL.png";
 import aezenPhoto from "../assets/AEZEN.png";
 import cheskaPhoto from "../assets/CHESKA.jpg";
 import markPhoto from "../assets/MARK.jpg";
 import ariesPhoto from "../assets/ARIES.jpg";
+import miguelPhotoDark from "../assets/MIGUELDARKMODE.jpg";
+import aezenPhotoDark from "../assets/AEZENDARKMODE.jpg";
+import cheskaPhotoDark from "../assets/CHESKADARKMODE.jpg";
+import markPhotoDark from "../assets/MARKDARKMODE.jpg";
+import ariesPhotoDark from "../assets/ARIESDARKMODE.jpg";
+
+// Toggle the light/dark portrait cross-fade. When false, portraits stay in
+// light mode regardless of theme (light mode is the default).
+const enableDarkmodeTransition = true;
 
 function useScrollTrigger(threshold = 0.15) {
   const [el, setEl] = useState(null);
@@ -24,6 +34,8 @@ function useScrollTrigger(threshold = 0.15) {
 }
 
 export function AboutPage() {
+  const { isDark } = useTheme();
+  const showDarkPortrait = enableDarkmodeTransition && isDark;
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -60,6 +72,7 @@ export function AboutPage() {
       initials: "MD",
       color: "bg-secondary-100 text-secondary-700",
       image: markPhoto,
+      imageDark: markPhotoDark,
     },
     {
       name: "Miguel Porciuncula",
@@ -67,6 +80,7 @@ export function AboutPage() {
       initials: "MP",
       color: "bg-primary-100 text-primary-700",
       image: miguelPhoto,
+      imageDark: miguelPhotoDark,
     },
     {
       name: "Francesca Ricafort",
@@ -74,6 +88,7 @@ export function AboutPage() {
       initials: "FR",
       color: "bg-accent-100 text-accent-700",
       image: cheskaPhoto,
+      imageDark: cheskaPhotoDark,
     },
     {
       name: "Aezen Alcantara",
@@ -81,6 +96,7 @@ export function AboutPage() {
       initials: "AC",
       color: "bg-accent-100 text-accent-700",
       image: aezenPhoto,
+      imageDark: aezenPhotoDark,
     },
     {
       name: "Aries Walao",
@@ -88,6 +104,7 @@ export function AboutPage() {
       initials: "AW",
       color: "bg-accent-100 text-accent-700",
       image: ariesPhoto,
+      imageDark: ariesPhotoDark,
     },
   ];
 
@@ -212,14 +229,26 @@ export function AboutPage() {
                   style={{ transitionDelay: `${200 + index * 100}ms` }}
                 >
                   <div
-                    className={`w-24 h-24 rounded-full ${member.color} flex items-center justify-center text-2xl font-black mb-4 border-4 border-stone-700 shadow-lg overflow-hidden`}
+                    className={`relative w-24 h-24 rounded-full ${member.color} flex items-center justify-center text-2xl font-black mb-4 border-4 border-stone-700 shadow-lg overflow-hidden`}
                   >
                     {member.image ? (
-                      <img
-                        src={member.image}
-                        alt={member.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+                            showDarkPortrait ? "opacity-0" : "opacity-100"
+                          }`}
+                        />
+                        <img
+                          src={member.imageDark}
+                          alt={member.name}
+                          aria-hidden="true"
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+                            showDarkPortrait ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                      </>
                     ) : (
                       member.initials
                     )}

@@ -11,6 +11,8 @@ import ProgressBar from "./ProgressBar";
 import { cn } from "../lib/utils";
 import {
   calcQuizXp,
+  questionUnits,
+  QUIZ_XP_PER_CORRECT,
   MANUAL_GRADE_TYPES,
   MAX_QUIZ_ATTEMPTS,
   attemptXpFactor,
@@ -62,17 +64,19 @@ function isManualGrade(q) {
   return MANUAL_GRADE_TYPES.has(q.type);
 }
 
+// Returns the number of correct *units*: 1 per normal question (all-or-
+// nothing), one per correctly matched pair, and the recursive sum for a
+// case study. This is the score — 1 point per correct unit.
 function scoreQuestion(q, answer) {
   if (answer === undefined || answer === null) return 0;
-  const pts = q.points ?? 0;
 
   switch (q.type) {
     case "multiple-choice":
     case "picture-based":
-      return answer === q.correctAnswer ? pts : 0;
+      return answer === q.correctAnswer ? 1 : 0;
 
     case "true-false":
-      return answer === q.correctAnswer ? pts : 0;
+      return answer === q.correctAnswer ? 1 : 0;
 
     case "fill-blanks": {
       if (!Array.isArray(answer)) return 0;
@@ -80,25 +84,23 @@ function scoreQuestion(q, answer) {
         (b, i) =>
           b.toLowerCase().trim() === (answer[i] ?? "").toLowerCase().trim(),
       );
-      return allCorrect ? pts : 0;
+      return allCorrect ? 1 : 0;
     }
 
     case "identification": {
       const accepted = q.acceptedAnswers ?? [q.correctAnswer];
       const norm = (s) => s?.toLowerCase().trim() ?? "";
-      return accepted.some((a) => norm(a) === norm(answer)) ? pts : 0;
+      return accepted.some((a) => norm(a) === norm(answer)) ? 1 : 0;
     }
 
     case "ordering":
       if (!Array.isArray(answer) || answer.length !== q.items.length) return 0;
-      return answer.every((item, i) => item === q.items[i]) ? pts : 0;
+      return answer.every((item, i) => item === q.items[i]) ? 1 : 0;
 
     case "matching": {
       if (!answer || typeof answer !== "object") return 0;
-      const allMatch = q.leftItems.every(
-        (l) => answer[l] === q.correctPairs[l],
-      );
-      return allMatch ? pts : 0;
+      // Partial credit: one point per correctly matched pair.
+      return q.leftItems.filter((l) => answer[l] === q.correctPairs[l]).length;
     }
 
     case "short-answer":
@@ -117,24 +119,19 @@ function scoreQuestion(q, answer) {
   }
 }
 
-function totalPoints(questions) {
-  return questions.reduce((sum, q) => {
-    if (q.type === "case-study") {
-      return sum + totalPoints(q.subQuestions ?? []);
-    }
-    return sum + (q.points ?? 0);
-  }, 0);
+function totalUnits(questions) {
+  return questions.reduce((sum, q) => sum + questionUnits(q), 0);
 }
 
-// Sum of points for questions that can be auto-graded — the denominator
-// for XP scaling. Essays/short-answer are excluded.
-function autoGradablePoints(questions) {
+// Total units for questions that can be auto-graded — the max score.
+// Essays/short-answer are excluded until a teacher grades them.
+function autoGradableUnits(questions) {
   return questions.reduce((sum, q) => {
     if (q.type === "case-study") {
-      return sum + autoGradablePoints(q.subQuestions ?? []);
+      return sum + autoGradableUnits(q.subQuestions ?? []);
     }
     if (isManualGrade(q)) return sum;
-    return sum + (q.points ?? 0);
+    return sum + questionUnits(q);
   }, 0);
 }
 
@@ -236,12 +233,12 @@ export function QuizContainer({
       (sum, q) => sum + scoreQuestion(q, answers[q.id]),
       0,
     );
-    const max = totalPoints(questions);
-    const autoMax = autoGradablePoints(questions);
+    const max = totalUnits(questions);
+    const autoMax = autoGradableUnits(questions);
     const pending = pendingGradeCount(questions, answers);
     // Retries are capped: attempt 2 earns ≤50%, attempt 3 ≤25% of the first.
     const xpEarned = Math.round(
-      calcQuizXp(earned, autoMax) * attemptXpFactor(attemptNumber),
+      calcQuizXp(earned) * attemptXpFactor(attemptNumber),
     );
 
     const result = {
@@ -303,9 +300,9 @@ export function QuizContainer({
       (sum, q) => sum + scoreQuestion(q, answers[q.id]),
       0,
     );
-    const autoMax = autoGradablePoints(questions);
+    const autoMax = autoGradableUnits(questions);
     const pending = pendingGradeCount(questions, answers);
-    const xpEarned = submittedResult?.xpEarned ?? calcQuizXp(earned, autoMax);
+    const xpEarned = submittedResult?.xpEarned ?? calcQuizXp(earned);
     // Pass/percent are based on auto-gradable portion only; essays are TBD.
     const passed = autoMax > 0 && earned > autoMax / 2;
     const pct = autoMax > 0 ? Math.round((earned / autoMax) * 100) : 0;
@@ -406,10 +403,7 @@ export function QuizContainer({
             const Component = QUESTION_MAP[q.type];
             if (!Component) return null;
             const earned = scoreQuestion(q, answers[q.id]);
-            const pts =
-              q.type === "case-study"
-                ? totalPoints(q.subQuestions ?? [])
-                : (q.points ?? 0);
+            const pts = questionUnits(q);
             const manualGrade = isManualGrade(q) && isAnswered(q, answers[q.id]);
 
             return (
@@ -483,7 +477,7 @@ export function QuizContainer({
                 variant="accent"
                 icon={<Star className="w-3 h-3 fill-current" />}
               >
-                {totalPoints(questions)} XP possible
+                {autoGradableUnits(questions) * QUIZ_XP_PER_CORRECT} XP possible
               </Badge>
             </div>
           </div>
@@ -531,7 +525,7 @@ export function QuizContainer({
                   )}
                 </div>
                 <span className="text-xs font-bold text-stone-400 shrink-0">
-                  {q.points ?? 0} pts
+                  {questionUnits(q)} pts
                 </span>
               </div>
 

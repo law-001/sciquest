@@ -344,7 +344,7 @@ function AppContent() {
         );
 
       case "games":
-        return <GamesHubPage onNavigate={handleNavigate} />;
+        return <GamesHubPage onNavigate={handleNavigate} totalXp={totalXp} />;
 
       case "game-play":
         return (

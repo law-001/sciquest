@@ -5,12 +5,13 @@
 // src/data/lessonsweek-*.js. This file owns everything else.
 // ============================================================
 
-// Quiz XP scales linearly with the percentage the student got correct on
-// auto-gradable questions. Even a 0% submission earns QUIZ_MIN_XP for
-// trying. Manual-grade questions (essay, short-answer) are excluded from
-// the auto-gradable total until a teacher reviews them.
+// Score and XP are decoupled. Score counts correct *units* — 1 per
+// question, and 1 per pair in a matching question — so a 10-item quiz
+// scores out of 10. XP is awarded per correct unit. Even a 0-correct
+// submission earns QUIZ_MIN_XP for trying. Manual-grade questions (essay,
+// short-answer) are excluded until a teacher reviews them.
 export const QUIZ_MIN_XP = 5;
-export const QUIZ_XP_PER_POINT = 1; // 1 XP per auto-gradable point at 100%
+export const QUIZ_XP_PER_CORRECT = 5; // 5 XP per correct unit
 
 // Cumulative XP required to REACH each level. Index = level number.
 // Level 1 starts at 0 XP; the array end caps progression — once a student
@@ -54,16 +55,21 @@ export const MANUAL_GRADE_TYPES = new Set(["essay", "short-answer"]);
 
 // ---- Helpers ----
 
-// Computes how much XP a quiz submission earns. `autoEarnedPoints` is the
-// points awarded by scoreQuestion for the auto-gradable questions only;
-// `autoMaxPoints` is the max those questions could have awarded.
-//
-// Result: minimum floor + linear scaling over the auto-gradable portion.
-export function calcQuizXp(autoEarnedPoints, autoMaxPoints) {
-  if (autoMaxPoints <= 0) return QUIZ_MIN_XP;
-  const pct = Math.max(0, Math.min(1, autoEarnedPoints / autoMaxPoints));
-  const scaled = Math.round(QUIZ_MIN_XP + (autoMaxPoints * QUIZ_XP_PER_POINT - QUIZ_MIN_XP) * pct);
-  return Math.max(QUIZ_MIN_XP, scaled);
+// Max scorable units for a question: 1 per normal question, one per pair
+// in a matching question, and the recursive sum for a case study.
+export function questionUnits(q) {
+  if (q.type === "case-study") {
+    return (q.subQuestions ?? []).reduce((s, sq) => s + questionUnits(sq), 0);
+  }
+  if (q.type === "matching") return q.leftItems?.length ?? 0;
+  return 1;
+}
+
+// Computes how much XP a quiz submission earns. `correctUnits` is the
+// number of correct units (questions / matching pairs) from the
+// auto-gradable questions. A submission always earns at least QUIZ_MIN_XP.
+export function calcQuizXp(correctUnits) {
+  return Math.max(QUIZ_MIN_XP, Math.round(correctUnits * QUIZ_XP_PER_CORRECT));
 }
 
 // Returns the highest level whose cumulative-XP threshold the student has
