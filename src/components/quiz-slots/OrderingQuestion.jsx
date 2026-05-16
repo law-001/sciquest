@@ -27,6 +27,7 @@ export function OrderingQuestion({ question, value, onChange, isSubmitted }) {
 
   // When parent pushes a restored value (e.g. localStorage), sync down
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (value?.length === question.items.length) setOrder(value);
   }, [value, question.items.length]);
 

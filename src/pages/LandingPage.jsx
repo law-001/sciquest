@@ -20,7 +20,6 @@ import {
 import Button from "../components/Button";
 import { useTheme } from "../context/ThemeContext";
 import mclassroom from "../assets/modernclassroom.jpg";
-import labBg from "../assets/classroom.webp";
 
 /* ─── Hero scene colour tokens ─────────────────────────────── */
 const SCENE_CFG = {
@@ -283,15 +282,6 @@ const BADGES = [
 /* ─────────────────────────────────────────────────────────── */
 /*  Helpers                                                     */
 /* ─────────────────────────────────────────────────────────── */
-function hexToRgba(hex, alpha) {
-  const h = hex.replace("#", "");
-  const bigint = parseInt(h, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 function useScrollTrigger(threshold = 0.25) {
   const ref = useRef(null);
   const [triggered, setTriggered] = useState(false);
@@ -437,10 +427,26 @@ function CountUp({
   );
 }
 
+const HERO_STARS = Array.from({ length: 60 }, () => ({
+  l: Math.random() * 100 + "%",
+  t: Math.random() * 60 + "%",
+  delay: +(Math.random() * 3).toFixed(2),
+  dur: +(2 + Math.random() * 2).toFixed(1),
+  scale: +(0.5 + Math.random() * 1.2).toFixed(2),
+}));
+
+const PHYS_PARTICLES = Array.from({ length: 30 }, () => ({
+  l: Math.random() * 100 + "%",
+  t: Math.random() * 100 + "%",
+  delay: +(Math.random() * 8).toFixed(2),
+  dur: +(5 + Math.random() * 6).toFixed(1),
+  op: +(0.3 + Math.random() * 0.5).toFixed(2),
+}));
+
 /* ─────────────────────────────────────────────────────────── */
 /*  LandingPage                                                 */
 /* ─────────────────────────────────────────────────────────── */
-export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
+export function LandingPage({ onStartLearning }) {
   const [heroScrollY, setHeroScrollY] = useState(0);
   const [activeSubjectIdx, setActiveSubjectIdx] = useState(0);
   const [hoveredSubjectIdx, setHoveredSubjectIdx] = useState(null);
@@ -450,7 +456,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [cardFlipped, setCardFlipped] = useState(false);
   const [teaserAnswer, setTeaserAnswer] = useState(null);
-  const [teaserKey, setTeaserKey] = useState(0);
+  const [, setTeaserKey] = useState(0);
   const [xpWidth, setXpWidth] = useState(0);
   const [heroReady, setHeroReady] = useState(false);
   const [heroAnimDone, setHeroAnimDone] = useState(false);
@@ -480,34 +486,12 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
     isDark ? "dark" : "light"
   ];
 
-  const heroStars = useMemo(
-    () =>
-      Array.from({ length: 60 }, () => ({
-        l: Math.random() * 100 + "%",
-        t: Math.random() * 60 + "%",
-        delay: +(Math.random() * 3).toFixed(2),
-        dur: +(2 + Math.random() * 2).toFixed(1),
-        scale: +(0.5 + Math.random() * 1.2).toFixed(2),
-      })),
-    [],
-  );
-
-  const physParticles = useMemo(
-    () =>
-      Array.from({ length: 30 }, () => ({
-        l: Math.random() * 100 + "%",
-        t: Math.random() * 100 + "%",
-        delay: +(Math.random() * 8).toFixed(2),
-        dur: +(5 + Math.random() * 6).toFixed(1),
-        op: +(0.3 + Math.random() * 0.5).toFixed(2),
-      })),
-    [],
-  );
 
   /* XP bar animation */
   useEffect(() => {
     if (!gamifTriggered) return;
     if (prefersReducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setXpWidth(73);
       return;
     }
@@ -612,7 +596,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
 
   const handleOrbEnter = useCallback((idx) => setHoveredSubjectIdx(idx), []);
   const handleOrbLeave = useCallback(() => setHoveredSubjectIdx(null), []);
-  const handleOrbClick = useCallback(
+  const _handleOrbClick = useCallback(
     (idx) => {
       onStartLearning?.(SUBJECTS[idx].key);
     },
@@ -621,11 +605,11 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
 
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const rm = prefersReducedMotion;
-  const imgParallax = rm ? 0 : Math.min(heroScrollY * 0.3, vh * 0.35);
-  const imgOpacity = rm ? 1 : Math.max(0.15, 1 - (heroScrollY / vh) * 0.85);
+  const _imgParallax = rm ? 0 : Math.min(heroScrollY * 0.3, vh * 0.35);
+  const _imgOpacity = rm ? 1 : Math.max(0.15, 1 - (heroScrollY / vh) * 0.85);
   const textParallax = rm ? 0 : Math.min(heroScrollY * 0.55, vh * 0.55);
   const textOpacity = rm ? 1 : Math.max(0, 1 - (heroScrollY / vh) * 1.3);
-  const heroOnScreen = heroScrollY < vh;
+  const _heroOnScreen = heroScrollY < vh;
 
   const togglePanel = (id) =>
     setActivePanel((prev) => (prev === id ? null : id));
@@ -635,11 +619,11 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
     setQuizAnswer(answer === "true" ? "correct" : "wrong");
   };
   const resetQuiz = () => setQuizAnswer(null);
-  const handleTeaserAnswer = (answer) => {
+  const _handleTeaserAnswer = (answer) => {
     if (teaserAnswer !== null) return;
     setTeaserAnswer(answer === "true" ? "correct" : "wrong");
   };
-  const resetTeaser = () => {
+  const _resetTeaser = () => {
     setTeaserAnswer(null);
     setTeaserKey((k) => k + 1);
   };
@@ -667,7 +651,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
           style={{ opacity: isDark ? 1 : 0, transition: "opacity 1s ease" }}
           aria-hidden="true"
         >
-          {heroStars.map((s, i) => (
+          {HERO_STARS.map((s, i) => (
             <span
               key={i}
               className="absolute rounded-full bg-white"
@@ -1082,7 +1066,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
               transition: "opacity 1s ease",
             }}
           >
-            {physParticles.map((p, i) => (
+            {PHYS_PARTICLES.map((p, i) => (
               <span
                 key={i}
                 className="absolute rounded-full"
@@ -1634,7 +1618,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                 Achievements
               </p>
               <div className="grid grid-cols-4 gap-3">
-                {BADGES.map(({ Icon, label, bg, color }) => (
+                {BADGES.map(({ Icon: BadgeIcon, label, bg, color }) => (
                   <div
                     key={label}
                     className="flex flex-col items-center gap-1.5"
@@ -1642,7 +1626,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                     <div
                       className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center`}
                     >
-                      <Icon className={`w-6 h-6 ${color}`} />
+                      <BadgeIcon className={`w-6 h-6 ${color}`} />
                     </div>
                     <span className="text-[10px] text-stone-500 text-center font-medium leading-tight">
                       {label}
@@ -1806,7 +1790,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                     color: "text-teal-500",
                     bg: "bg-teal-50",
                   },
-                ].map(({ Icon, text, color, bg }, i) => (
+                ].map(({ Icon: FeatureIcon, text, color, bg }, i) => (
                   <li
                     key={i}
                     className="group/item flex items-center gap-4 cursor-default"
@@ -1814,7 +1798,7 @@ export function LandingPage({ onStartLearning, onAdminPortal, onNavigate }) {
                     <div
                       className={`shrink-0 w-10 h-10 rounded-xl ${bg} flex items-center justify-center transition-transform duration-300 group-hover/item:scale-110`}
                     >
-                      <Icon className={`w-5 h-5 ${color}`} />
+                      <FeatureIcon className={`w-5 h-5 ${color}`} />
                     </div>
                     <span className="text-base text-stone-700 font-medium transition-transform duration-300 group-hover/item:translate-x-1 dark:text-white">
                       {text}

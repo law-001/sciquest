@@ -1,4 +1,11 @@
+import { lazy } from 'react';
 import simulationImg from "../../assets/statesofmatter.png";
+
+const _lazyCache = new Map();
+function _lazyLoader(loader) {
+  if (!_lazyCache.has(loader)) _lazyCache.set(loader, lazy(loader));
+  return _lazyCache.get(loader);
+}
 
 export const GAMES = {
   "matter-state-sandbox": {
@@ -41,3 +48,8 @@ export const GAMES = {
 
 export const getGame = (id) => GAMES[id] ?? null;
 export const listGames = () => Object.values(GAMES);
+export function getGameComponent(id) {
+  const game = GAMES[id];
+  if (!game?.loader) return null;
+  return _lazyLoader(game.loader);
+}

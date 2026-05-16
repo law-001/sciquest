@@ -18,6 +18,7 @@ export function XpToast({ notifications = [], onDismiss }) {
 
   useEffect(() => {
     if (!head) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(true);
     const hide = setTimeout(() => setVisible(false), DISMISS_MS);
     // Give the exit transition (700ms) time to play before unmounting.

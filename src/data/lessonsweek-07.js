@@ -1,13 +1,9 @@
 // Week 7: Concentration of Solutions — Grade 7 Science
 
-import microscope from "../assets/Microscopic.jpg";
-import globe from "../assets/globe.jpg";
 import web from "../assets/web.jpg";
 import equation from "../assets/equation.jpg";
 import simulation from "../assets/simulation.jpg";
 import lab from "../assets/lab.jpg";
-import classroom from "../assets/classroom.webp";
-import modernclassroom from "../assets/modernclassroom.jpg";
 import flowchart from "../assets/flowchart.jpg";
 
 export const week07 = {

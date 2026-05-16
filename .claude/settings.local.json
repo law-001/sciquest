@@ -16,7 +16,8 @@
       "Bash(mkdir -p \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\")",
       "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_01.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_01.png\")",
       "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_05.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_05.png\")",
-      "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_09.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_09.png\")"
+      "Bash(cp \"C:\\\\Users\\\\markd\\\\Downloads\\\\matter-sandbox-handoff\\\\matter-state-sandbox\\\\project\\\\assets\\\\smoke_09.png\" \"C:\\\\Users\\\\markd\\\\sciquest\\\\public\\\\matter-sandbox\\\\smoke_09.png\")",
+      "PowerShell(npm run *)"
     ]
   },
   "enabledPlugins": {

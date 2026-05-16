@@ -14,7 +14,6 @@ import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { GamesHubPage } from "./pages/GamesHubPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
-import { supabase } from "./lib/supabase";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 import {
   fetchProgress,
@@ -42,24 +41,25 @@ function AppContent() {
   const isLoggedIn = !!user;
   const isStudent = profile?.role === "student";
 
-  const totalXp = totalXpEarned(completedRows, quizAttempts);
+  // When the user is not a logged-in student, treat progress as empty so stale
+  // state from a previous session never leaks into non-student views.
+  const effectiveCompletedLessons = (user && isStudent) ? completedLessons : [];
+  const effectiveCompletedRows    = (user && isStudent) ? completedRows    : [];
+  const effectiveQuizAttempts     = (user && isStudent) ? quizAttempts     : [];
+
+  const totalXp = totalXpEarned(effectiveCompletedRows, effectiveQuizAttempts);
   const currentLevel = levelFromXp(totalXp);
 
   // Submissions already made for the active lesson's quiz — drives the
   // 3-attempt cap and the per-attempt XP scaling.
-  const quizPriorAttempts = quizAttempts.filter(
+  const quizPriorAttempts = effectiveQuizAttempts.filter(
     (a) => a.lesson_id === activeLessonId,
   ).length;
 
   // Hydrate progress + quiz attempts from Supabase whenever a student logs in.
   // Staff don't have student_progress rows, so we skip the fetch for them.
   useEffect(() => {
-    if (!user || !isStudent) {
-      setCompletedLessons([]);
-      setCompletedRows([]);
-      setQuizAttempts([]);
-      return;
-    }
+    if (!user?.id || !isStudent) return;
     let cancelled = false;
     fetchProgress(user.id)
       .then(({ completedLessons: done, completedRows: rows, attempts }) => {
@@ -83,16 +83,19 @@ function AppContent() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  // On refresh, once the restored session + profile are ready, redirect by role
+  // On refresh, once the restored session + profile are ready, redirect by role.
+  // The ref guard ensures this runs at most once even as deps re-fire.
   useEffect(() => {
     if (loading || initialRedirectDone.current) return;
     initialRedirectDone.current = true;
     if (!user) return;
     const role = profile?.role ?? 'student';
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (role === 'admin') setCurrentView('admin');
     else if (role === 'teacher') setCurrentView('teacher-portal');
     else setCurrentView('lessons');
-  }, [loading]);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [loading, user, profile?.role]);
 
   const handleNavigate = (view, payload) => {
     if (view === 'game-play' && payload?.gameId) {
@@ -126,7 +129,7 @@ function AppContent() {
     const week = WEEKS_DATA.find((w) => w.id === weekId);
     if (!week) return;
     const firstIncomplete = week.lessons.find(
-      (l) => !completedLessons.includes(l.id),
+      (l) => !effectiveCompletedLessons.includes(l.id),
     );
     const target = firstIncomplete ?? week.lessons[0];
     setActiveWeekId(weekId);
@@ -149,7 +152,7 @@ function AppContent() {
       w.lessons.some((l) => l.id === lessonId),
     );
     if (!week) return;
-    if (completedLessons.includes(lessonId)) return;
+    if (effectiveCompletedLessons.includes(lessonId)) return;
 
     const lesson = week.lessons.find((l) => l.id === lessonId);
     const weekId = week.id;
@@ -283,8 +286,8 @@ function AppContent() {
         return (
           <LessonsPage
             onStartWeek={handleStartWeek}
-            completedLessons={completedLessons}
-            quizAttempts={quizAttempts}
+            completedLessons={effectiveCompletedLessons}
+            quizAttempts={effectiveQuizAttempts}
             totalXp={totalXp}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsAuthModalOpen(true)}
@@ -296,7 +299,7 @@ function AppContent() {
           <LessonContentPage
             weekId={activeWeekId}
             activeLessonId={activeLessonId}
-            completedLessons={completedLessons}
+            completedLessons={effectiveCompletedLessons}
             reachedLessons={reachedLessons}
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}
@@ -335,8 +338,8 @@ function AppContent() {
         return (
           <ProfilePage
             onNavigate={handleNavigate}
-            completedLessons={completedLessons}
-            quizAttempts={quizAttempts}
+            completedLessons={effectiveCompletedLessons}
+            quizAttempts={effectiveQuizAttempts}
           />
         );
 
@@ -349,7 +352,6 @@ function AppContent() {
             activeGameId={activeGameId}
             user={user}
             profile={profile}
-            supabase={supabase}
             onNavigate={handleNavigate}
           />
         );

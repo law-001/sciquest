@@ -15,7 +15,7 @@ function badgeVariant(state, isTransitioning, fromState, toState) {
   return state;
 }
 
-export function StateBadge({ state, substance, isTransitioning, fromState, toState, reducedMotion }) {
+export function StateBadge({ state, substance, isTransitioning, fromState, toState, reducedMotion: _reducedMotion }) {
   const variant = badgeVariant(state, isTransitioning, fromState, toState);
 
   const label = isTransitioning

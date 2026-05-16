@@ -1,5 +1,6 @@
-import React, { lazy, Suspense } from 'react';
-import { getGame } from '../lib/games/registry';
+/* eslint-disable react-hooks/static-components */
+import React, { Suspense } from 'react';
+import { getGame, getGameComponent } from '../lib/games/registry';
 import { GameAuthGate } from '../components/games/GameAuthGate';
 import { GameLoadingScreen } from '../components/games/GameLoadingScreen';
 import { useReducedMotion } from '../games/_shared/hooks/useReducedMotion';
@@ -11,9 +12,11 @@ function detectDeviceTier() {
   return 'low';
 }
 
-export function GamePlayPage({ activeGameId, user, profile, supabase, onNavigate }) {
+export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   const reducedMotion = useReducedMotion();
   const game = getGame(activeGameId);
+  const GameComponent = getGameComponent(activeGameId);
+  const deviceTier = detectDeviceTier();
 
   if (!game || !game.loader) {
     return (
@@ -30,9 +33,6 @@ export function GamePlayPage({ activeGameId, user, profile, supabase, onNavigate
       </div>
     );
   }
-
-  const GameComponent = lazy(game.loader);
-  const deviceTier = detectDeviceTier();
 
   return (
     <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
