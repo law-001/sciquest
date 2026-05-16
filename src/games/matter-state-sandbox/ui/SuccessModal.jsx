@@ -33,7 +33,7 @@ export function SuccessModal({ challenge, onClose, onNextChallenge, nextChalleng
     >
       <div
         ref={dialogRef}
-        style={{ background: 'white', borderRadius: 'var(--sq-radius-lg)', padding: 28, maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.22)', display: 'flex', flexDirection: 'column', gap: 16 }}
+        style={{ background: 'var(--sq-surface)', borderRadius: 'var(--sq-radius-lg)', padding: 28, maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.22)', display: 'flex', flexDirection: 'column', gap: 16 }}
         onClick={e => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
@@ -53,9 +53,9 @@ export function SuccessModal({ challenge, onClose, onNextChallenge, nextChalleng
         <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
           <button
             onClick={onClose}
-            style={{ flex: 1, padding: '10px 0', borderRadius: 999, border: 'var(--sq-border-strong)', background: 'white', color: 'var(--sq-ink-2)', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44, transition: 'background 0.15s' }}
+            style={{ flex: 1, padding: '10px 0', borderRadius: 999, border: 'var(--sq-border-strong)', background: 'var(--sq-surface)', color: 'var(--sq-ink-2)', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44, transition: 'background 0.15s' }}
             onMouseOver={e => { e.currentTarget.style.background = 'var(--sq-cream-1)'; }}
-            onMouseOut={e => { e.currentTarget.style.background = 'white'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'var(--sq-surface)'; }}
           >
             Keep Exploring
           </button>

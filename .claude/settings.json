@@ -24,7 +24,8 @@
       "Bash(Get-ChildItem \"c:\\\\Users\\\\markd\\\\sciquest\\\\src\\\\data\\\\*week-1[1-5]*\")",
       "Bash(Select-Object Name, Length)",
       "Bash(Sort-Object Name)",
-      "Bash(Select-String \"week-1[6-9]|week-20\")"
+      "Bash(Select-String \"week-1[6-9]|week-20\")",
+      "Bash(python3 \"C:\\\\Users\\\\markd\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"educational game challenge tracker compact panel\" --design-system -p \"SciQuest Matter Sandbox\")"
     ],
     "deny": [
       "Read(**/.env)",
