@@ -28,15 +28,22 @@ export function SandboxHUD({
       setInfo(data);
       setIsTransitioning(false);
     }
+    // Live slider value — refresh the numbers without disturbing the state
+    // badge or the in-flight transition animation.
+    function onReadout({ temp, pressure }) {
+      setInfo((prev) => ({ ...prev, temp, pressure }));
+    }
     function onTransitionStart({ fromState: f, toState: t }) {
       setIsTransitioning(true);
       setFromState(f);
       setToState(t);
     }
     bus.on("stateChanged", onStateChanged);
+    bus.on("readout", onReadout);
     bus.on("transitionStart", onTransitionStart);
     return () => {
       bus.off("stateChanged", onStateChanged);
+      bus.off("readout", onReadout);
       bus.off("transitionStart", onTransitionStart);
     };
   }, [bus]);

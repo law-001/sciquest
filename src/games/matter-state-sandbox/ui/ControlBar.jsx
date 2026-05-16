@@ -25,6 +25,13 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
     onChange(Math.max(min, Math.min(max, v)));
   }
 
+  // Window drag listeners are attached once, but onChange/min/max/step change
+  // across renders (notably onChange's bus goes NULL_BUS → real bus after the
+  // Phaser game mounts). Route moves through a ref so drag always hits the
+  // latest handler instead of the one captured at mount.
+  const setFromClientXRef = useRef(setFromClientX);
+  useEffect(() => { setFromClientXRef.current = setFromClientX; });
+
   function onDown(e) {
     if (locked) return;
     draggingRef.current = true;
@@ -35,7 +42,7 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
   useEffect(() => {
     function onMove(e) {
       if (!draggingRef.current) return;
-      setFromClientX(e.clientX ?? e.touches?.[0]?.clientX);
+      setFromClientXRef.current(e.clientX ?? e.touches?.[0]?.clientX);
     }
     function onUp() { draggingRef.current = false; }
     window.addEventListener('mousemove', onMove);
@@ -48,7 +55,7 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
       window.removeEventListener('touchmove', onMove);
       window.removeEventListener('touchend', onUp);
     };
-  }, [locked, min, max, step]);
+  }, []);
 
   function onKey(e) {
     if (locked) return;

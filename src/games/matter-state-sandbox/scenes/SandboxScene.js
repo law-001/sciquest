@@ -49,6 +49,15 @@ export default class SandboxScene extends BaseGameScene {
     });
   }
 
+  // Push the slider's value to the HUD immediately on every input, so the
+  // readout never waits for a phase transition (or the rAF loop) to refresh.
+  _emitReadout() {
+    this.bus.emit('readout', {
+      temp: this.currentTemp,
+      pressure: this.currentPressure,
+    });
+  }
+
   _handleStateChange(newState) {
     if (newState === this.currentState) return;
     const fromState = this.currentState;
@@ -64,15 +73,19 @@ export default class SandboxScene extends BaseGameScene {
 
   _setupBusListeners() {
     this.bus.on('setTemperature', (value) => {
-      if (this.isTransitioning) return;
+      // Keep tracking the slider even mid-transition; transitionComplete
+      // re-evaluates against the latest value so the sim catches up.
       this.currentTemp = value;
+      this._emitReadout();
+      if (this.isTransitioning) return;
       const newState = determineState(this.substanceId, this.currentTemp, this.currentPressure);
       this._handleStateChange(newState);
     });
 
     this.bus.on('setPressure', (value) => {
-      if (this.isTransitioning) return;
       this.currentPressure = value;
+      this._emitReadout();
+      if (this.isTransitioning) return;
       const newState = determineState(this.substanceId, this.currentTemp, this.currentPressure);
       this._handleStateChange(newState);
     });
@@ -113,6 +126,15 @@ export default class SandboxScene extends BaseGameScene {
         this._pendingState = null;
       }
       this.isTransitioning = false;
+
+      // The slider may have moved past more phase boundaries while this
+      // animation was running — settle to wherever it actually is now.
+      const settledState = determineState(this.substanceId, this.currentTemp, this.currentPressure);
+      if (settledState !== this.currentState) {
+        this._handleStateChange(settledState);
+        return;
+      }
+
       this.bus.emit('stateChanged', {
         state: this.currentState,
         substance: SUBSTANCES[this.substanceId],
