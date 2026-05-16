@@ -50,7 +50,10 @@ export default function ProgressBar({
         )}
       >
         <div
-          className={cn('progress-bar-fill', colors[color])}
+          className={cn(
+            'h-full rounded-full transition-[width] duration-500 ease-out',
+            colors[color]
+          )}
           style={{
             width: `${clampedProgress}%`,
           }}

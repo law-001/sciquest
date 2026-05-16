@@ -43,6 +43,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { QUIZZES_DATA } from "../data/quizzesweek-01";
+import { questionUnits } from "../lib/xp-config";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -1452,7 +1453,7 @@ function QuizzesTab() {
           );
           const totalPoints = weekQuizzes.reduce(
             (s, q) =>
-              s + q.questions.reduce((ps, qu) => ps + (qu.points ?? 0), 0),
+              s + q.questions.reduce((ps, qu) => ps + questionUnits(qu), 0),
             0,
           );
           const totalMinutes = Math.round(

@@ -18,6 +18,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { listGames } from "../lib/games/registry";
 import { useGameProgress } from "../games/_shared/progress/useGameProgress";
+import { levelFromXp, xpToNextLevel } from "../lib/xp-config";
 import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
 
@@ -274,7 +275,7 @@ function useScrollTrigger(threshold = 0.1) {
   return [ref, triggered];
 }
 
-export function GamesHubPage({ onNavigate }) {
+export function GamesHubPage({ onNavigate, totalXp = 0 }) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
@@ -285,6 +286,9 @@ export function GamesHubPage({ onNavigate }) {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  const level = levelFromXp(totalXp);
+  const levelProgress = xpToNextLevel(totalXp);
 
   const registryGames = listGames();
   // Merge registry games with extra locked ones, avoiding duplicates by id
@@ -354,7 +358,7 @@ export function GamesHubPage({ onNavigate }) {
                   Current Level
                 </p>
                 <p className="text-xl font-black text-stone-900 dark:text-white">
-                  Level 5
+                  Level {level}
                 </p>
               </div>
             </div>
@@ -362,9 +366,24 @@ export function GamesHubPage({ onNavigate }) {
             <div className="w-48">
               <div className="flex justify-between text-sm font-bold mb-1">
                 <span className="text-stone-600">XP</span>
-                <span className="text-primary-600">1,250 / 2,000</span>
+                <span className="text-primary-600">
+                  {levelProgress
+                    ? `${totalXp.toLocaleString()} / ${levelProgress.nextLevelXp.toLocaleString()}`
+                    : `${totalXp.toLocaleString()} XP`}
+                </span>
               </div>
-              <ProgressBar progress={62.5} color="primary" size="sm" />
+              <ProgressBar
+                progress={
+                  levelProgress
+                    ? Math.round(
+                        (levelProgress.progressXp / levelProgress.neededXp) *
+                          100,
+                      )
+                    : 100
+                }
+                color="primary"
+                size="sm"
+              />
             </div>
           </Card>
         </div>
