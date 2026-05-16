@@ -56,7 +56,7 @@ export function AboutPage() {
   const team = [
     {
       name: "Mark Dumayag",
-      role: "UI/UX Designer",
+      role: "Full Stack Developer",
       initials: "MD",
       color: "bg-secondary-100 text-secondary-700",
       image: markPhoto,
