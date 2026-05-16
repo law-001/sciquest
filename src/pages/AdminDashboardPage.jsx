@@ -23,6 +23,8 @@ import {
   CheckCircle2,
   UserX,
   Award,
+  Eraser,
+  RotateCcw,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -35,6 +37,7 @@ import {
   fetchDashboardCounts,
   fetchSectionCounts,
   deleteUser,
+  wipeUserData,
 } from "../lib/users";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -157,6 +160,55 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
           className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold text-sm transition-colors active:scale-95"
         >
           {isLoading ? "Removing…" : "Remove User"}
+        </button>
+      </div>
+      {error && (
+        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
+    </Modal>
+  );
+}
+
+// ─── Wipe User Data Modal ─────────────────────────────────────────────────────
+
+function WipeDataModal({ user, onConfirm, onClose, isLoading, error }) {
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+          <Eraser className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-black text-stone-900 dark:text-white">
+            Reset User Data
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            The account is kept — only progress is wiped
+          </p>
+        </div>
+      </div>
+      <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+        Wipe all learning and game data for{" "}
+        <strong className="text-stone-900 dark:text-white">{user.name}</strong>{" "}
+        ({user.email})? Lesson progress, quiz attempts, and game records will be
+        permanently deleted, but their account stays active so they can be
+        re-tested from a clean slate.
+      </p>
+      <div className="flex gap-3">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={onClose}
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
+        <button
+          onClick={() => onConfirm(user)}
+          disabled={isLoading}
+          className="flex-1 px-4 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-semibold text-sm transition-colors active:scale-95"
+        >
+          {isLoading ? "Wiping…" : "Wipe Data"}
         </button>
       </div>
       {error && (
@@ -837,6 +889,238 @@ function UsersTab() {
   );
 }
 
+// ─── Reset Data Tab ────────────────────────────────────────────────────────────
+
+function ResetDataTab() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [query, setQuery] = useState("");
+  const [userToWipe, setUserToWipe] = useState(null);
+  const [wiping, setWiping] = useState(false);
+  const [wipeError, setWipeError] = useState(null);
+  const [wipedName, setWipedName] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchUsers()
+      .then((rows) => {
+        if (!cancelled) {
+          setUsers(rows);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(err.message ?? "Failed to load users");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      gsap.from(".anim-card", {
+        y: 22,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 0.15,
+      });
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
+
+  const results = query.trim()
+    ? users.filter(
+        (u) =>
+          u.name.toLowerCase().includes(query.toLowerCase()) ||
+          u.email.toLowerCase().includes(query.toLowerCase()),
+      )
+    : users;
+
+  const handleConfirmWipe = async (user) => {
+    setWiping(true);
+    setWipeError(null);
+    try {
+      await wipeUserData(user.id);
+      setUserToWipe(null);
+      setWipedName(user.name);
+    } catch (err) {
+      setWipeError(err.message ?? "Failed to wipe user data");
+    } finally {
+      setWiping(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6" ref={containerRef}>
+      <div className="anim-heading">
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Reset Data
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Wipe a user's progress for testing — their account stays intact
+        </p>
+      </div>
+
+      {wipedName && (
+        <div
+          role="status"
+          className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 dark:border-secondary-800 text-sm font-bold text-secondary-700 dark:text-secondary-300"
+        >
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          Data for {wipedName} was wiped. Their account is still active.
+        </div>
+      )}
+
+      <Card className="anim-card overflow-hidden">
+        <div className="p-6 border-b border-orange-100 dark:border-stone-700">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+            Select a User
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            {loading ? "Loading…" : `${users.length} accounts`}
+          </p>
+        </div>
+
+        <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-amber-50/40 dark:bg-amber-900/10">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or email..."
+            className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+          />
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Section
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    Loading users…
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400"
+                  >
+                    {loadError}
+                  </td>
+                </tr>
+              ) : results.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                results.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge
+                        variant={
+                          user.role === "Teacher" ? "secondary" : "primary"
+                        }
+                      >
+                        {user.role}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {user.section}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => {
+                          setUserToWipe(user);
+                          setWipedName(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Reset Data
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {userToWipe && (
+        <WipeDataModal
+          user={userToWipe}
+          onConfirm={handleConfirmWipe}
+          onClose={() => {
+            if (!wiping) {
+              setUserToWipe(null);
+              setWipeError(null);
+            }
+          }}
+          isLoading={wiping}
+          error={wipeError}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── Teachers Tab ──────────────────────────────────────────────────────────────
 
 function TeachersTab() {
@@ -1439,6 +1723,7 @@ function SettingsTab() {
 const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { id: "users", label: "Users", Icon: Users },
+  { id: "reset-data", label: "Reset Data", Icon: Eraser },
   { id: "teachers", label: "Teachers", Icon: GraduationCap },
   { id: "lessons", label: "Lessons", Icon: BookOpen },
   { id: "quizzes", label: "Quizzes", Icon: HelpCircle },
@@ -1450,6 +1735,7 @@ const SIDEBAR_ITEMS = [
 const ADMIN_TAB_MAP = {
   dashboard: DashboardTab,
   users: UsersTab,
+  "reset-data": ResetDataTab,
   teachers: TeachersTab,
   lessons: LessonsTab,
   quizzes: QuizzesTab,
