@@ -1,47 +1,46 @@
 import { useEffect, useRef } from 'react';
-import { ParticleSim } from '../ParticleSim';
+import { ObjectRenderer } from '../objects/ObjectRenderer';
 import { useTheme } from '../../../context/ThemeContext';
 
-export function ParticleView({ bus, substanceId, initialTemp, initialPressure }) {
+export function ObjectView({ bus, substanceId, initialTemp, initialPressure }) {
   const canvasRef = useRef(null);
-  const wrapRef = useRef(null);
-  const simRef = useRef(null);
+  const wrapRef   = useRef(null);
+  const rendRef   = useRef(null);
   const { isDark } = useTheme();
 
   useEffect(() => {
     let canceled = false;
-    const sim = new ParticleSim(canvasRef.current, {
+    const rend = new ObjectRenderer(canvasRef.current, {
       onStateChange: () => {},
-      onStats: () => {},
     });
-    simRef.current = sim;
+    rendRef.current = rend;
 
-    sim.init();
+    rend.init();
     if (!canceled) {
-      if (substanceId) sim.setSubstance(substanceId);
-      if (initialTemp  != null) sim.setTemperature(initialTemp);
-      if (initialPressure != null) sim.setPressure(initialPressure);
+      if (substanceId)          rend.setSubstance(substanceId);
+      if (initialTemp   != null) rend.setTemperature(initialTemp);
+      if (initialPressure != null) rend.setPressure(initialPressure);
     }
 
-    const ro = new ResizeObserver(() => simRef.current?.resize());
+    const ro = new ResizeObserver(() => rendRef.current?.resize());
     if (wrapRef.current) ro.observe(wrapRef.current);
 
     return () => {
       canceled = true;
       ro.disconnect();
-      sim.destroy();
-      simRef.current = null;
+      rend.destroy();
+      rendRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only init
 
   useEffect(() => {
     if (!bus) return;
-    const onTemp      = (v)  => simRef.current?.setTemperature(v);
-    const onPressure  = (v)  => simRef.current?.setPressure(v);
-    const onSubstance = (id) => simRef.current?.setSubstance(id);
-    const onReset     = ()   => simRef.current?.reset();
-    const onPause     = ()   => simRef.current?.setRunning(false);
-    const onResume    = ()   => simRef.current?.setRunning(true);
+    const onTemp      = (v)  => rendRef.current?.setTemperature(v);
+    const onPressure  = (v)  => rendRef.current?.setPressure(v);
+    const onSubstance = (id) => rendRef.current?.setSubstance(id);
+    const onReset     = ()   => rendRef.current?.reset();
+    const onPause     = ()   => rendRef.current?.setRunning(false);
+    const onResume    = ()   => rendRef.current?.setRunning(true);
 
     bus.on('setTemperature', onTemp);
     bus.on('setPressure',    onPressure);
@@ -76,7 +75,7 @@ export function ParticleView({ bus, substanceId, initialTemp, initialPressure })
         borderRadius: 'inherit',
         overflow: 'hidden',
       }}
-      aria-label="Particle view"
+      aria-label="Object view"
     >
       <canvas ref={canvasRef} style={{ display: 'block' }} />
     </div>

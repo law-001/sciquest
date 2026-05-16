@@ -25,7 +25,8 @@ export function SuccessModal({ challenge, onClose, onNextChallenge, nextChalleng
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(43,36,23,0.4)', zIndex: 100, display: 'grid', placeItems: 'center', padding: 24, backdropFilter: 'blur(2px)' }}
+      className="sq-modal-backdrop"
+      style={{ position: 'fixed', inset: 0, background: 'rgba(43,36,23,0.4)', zIndex: 100, display: 'grid', placeItems: 'center', padding: 24, backdropFilter: 'blur(2px)', animation: 'sq-modal-backdrop-in 0.2s ease both' }}
       onClick={onClose}
       aria-modal="true"
       role="dialog"
@@ -33,7 +34,8 @@ export function SuccessModal({ challenge, onClose, onNextChallenge, nextChalleng
     >
       <div
         ref={dialogRef}
-        style={{ background: 'var(--sq-surface)', borderRadius: 'var(--sq-radius-lg)', padding: 28, maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.22)', display: 'flex', flexDirection: 'column', gap: 16 }}
+        className="sq-modal-card"
+        style={{ background: 'var(--sq-surface)', borderRadius: 'var(--sq-radius-lg)', padding: 28, maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.22)', display: 'flex', flexDirection: 'column', gap: 16, animation: 'sq-modal-card-in 0.3s cubic-bezier(0.34,1.4,0.64,1) both' }}
         onClick={e => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >

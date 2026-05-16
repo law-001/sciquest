@@ -11,28 +11,20 @@ const PALETTES = {
   water: {
     solidA: '#cfe9ff', solidB: '#79bbef', solidEdge: 'rgba(50,100,160,0.45)',
     liquidA: '#dff1ff', liquidB: '#3b8cd9', liquidEdge: 'rgba(30,80,140,0.4)',
-    gasTint: '#fdfaf3',
+    gasTint: '#90b8d8',
   },
   co2: {
     solidA: '#e4ecf8', solidB: '#9ab0d0', solidEdge: 'rgba(60,80,140,0.4)',
     liquidA: '#eef4ff', liquidB: '#7aa0cc', liquidEdge: 'rgba(50,80,140,0.35)',
-    gasTint: '#f8faff',
+    gasTint: '#a0aac0',
   },
   iron: {
     solidA: '#7a8290', solidB: '#3d4350', solidEdge: 'rgba(20,25,35,0.5)',
     liquidA: '#ffe9b0', liquidB: '#ff7a3a', liquidEdge: 'rgba(120,30,10,0.5)',
-    gasTint: '#f4dcc3',
+    gasTint: '#c89060',
   },
 };
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -109,14 +101,28 @@ function makeWaterSprite(palette, size = 64) {
   return c;
 }
 
-function tintSmoke(img, color, size = 128) {
+function makeSmokeSprite(color, size = 128, variant = 0) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const ctx = c.getContext('2d');
-  ctx.drawImage(img, 0, 0, size, size);
-  ctx.globalCompositeOperation = 'source-in';
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, size, size);
+  const offsets = [
+    [0, 0, 0.42],
+    [-0.12, -0.08, 0.36],
+    [0.1, 0.1, 0.38],
+  ];
+  const [ox, oy, rf] = offsets[variant % offsets.length];
+  const cx = size * (0.5 + ox);
+  const cy = size * (0.5 + oy);
+  const r = size * rf;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g.addColorStop(0,    color + 'ee');
+  g.addColorStop(0.45, color + '99');
+  g.addColorStop(0.75, color + '44');
+  g.addColorStop(1,    color + '00');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
   return c;
 }
 
@@ -134,7 +140,6 @@ export class ParticleSim {
     this.running = true;
 
     this.sprites = {};
-    this.smokeImgs = [];
 
     this._state = 'liquid';
     this.onStateChange = opts.onStateChange || (() => {});
@@ -147,12 +152,7 @@ export class ParticleSim {
     this._destroyed = false;
   }
 
-  async init() {
-    this.smokeImgs = await Promise.all([
-      loadImage('/matter-sandbox/smoke_01.png'),
-      loadImage('/matter-sandbox/smoke_05.png'),
-      loadImage('/matter-sandbox/smoke_09.png'),
-    ]);
+  init() {
     this._buildSprites();
     this.resize();
     this._seedParticles();
@@ -165,7 +165,7 @@ export class ParticleSim {
       this.sprites[sid] = {
         ice: makeIceSprite(pal, 80),
         drop: makeWaterSprite(pal, 80),
-        steam: this.smokeImgs.map(im => tintSmoke(im, pal.gasTint, 128)),
+        steam: [0, 1, 2].map(v => makeSmokeSprite(pal.gasTint, 128, v)),
       };
     }
   }
@@ -192,10 +192,10 @@ export class ParticleSim {
     this.particles = [];
     const cols = Math.ceil(Math.sqrt(this.particleCount * (w / h)));
     const rows = Math.ceil(this.particleCount / cols);
-    const dx = (w - 80) / cols;
-    const dy = (h - 80) / rows;
-    const x0 = 40 + dx / 2;
-    const y0 = h - 40 - (rows - 0.5) * dy;
+    const dx = w / cols;
+    const dy = h / rows;
+    const x0 = dx / 2;
+    const y0 = h - (rows - 0.5) * dy;
     let i = 0;
     for (let row = 0; row < rows && i < this.particleCount; row++) {
       for (let col = 0; col < cols && i < this.particleCount; col++) {
@@ -225,10 +225,10 @@ export class ParticleSim {
     const h = this._cssH;
     const cols = Math.ceil(Math.sqrt(this.particles.length * (w / h)));
     const rows = Math.ceil(this.particles.length / cols);
-    const dx = (w - 80) / cols;
-    const dy = (h - 80) / rows;
-    const x0 = 40 + dx / 2;
-    const y0 = h - 40 - (rows - 0.5) * dy;
+    const dx = w / cols;
+    const dy = h / rows;
+    const x0 = dx / 2;
+    const y0 = h - (rows - 0.5) * dy;
     let i = 0;
     for (let row = 0; row < rows && i < this.particles.length; row++) {
       for (let col = 0; col < cols && i < this.particles.length; col++) {
@@ -338,8 +338,8 @@ export class ParticleSim {
       : 0;
     const w = this._cssW;
     const h = this._cssH;
-    const padX = 8 + pressSqueeze;
-    const padY = 8;
+    const padX = pressSqueeze;
+    const padY = 0;
 
     const t = performance.now() * 0.001;
 
@@ -382,16 +382,25 @@ export class ParticleSim {
           p.vy *= 0.985;
           vibrate = 1.6;
           const mix = this._phaseMix();
-          if (p.phaseSeed < mix.steam) p.vy -= 0.18;
+          if (p.phaseSeed < mix.steam) p.vy -= 0.42;
           break;
         }
         case 'gas': {
-          p.vx *= 0.995;
-          p.vy *= 0.995;
-          p.vy -= 0.02;
-          vibrate = 1.2 + energy * 1.4 + this.pressure * 0.18;
-          p.vx += Math.sin(t * 0.7 + p.seed) * 0.02;
+          p.vx *= 0.992;
+          p.vy *= 0.992;
+          p.vy -= 0.55 + energy * 0.25;
+          vibrate = 0.6 + energy * 0.6 + this.pressure * 0.12;
+          p.vx += Math.sin(t * 0.9 + p.seed * 1.7) * 0.08;
           p.vy += Math.cos(t * 0.6 + p.seed * 1.3) * 0.02;
+          // respawn at bottom when particle rises past the top — creates continuous column
+          if (p.y < padY + 6) {
+            p.x = padX + 12 + Math.random() * (w - padX * 2 - 24);
+            p.y = h - padY - 8 - Math.random() * 18;
+            p.vx = (Math.random() - 0.5) * 0.6;
+            p.vy = -0.4 - Math.random() * 0.6;
+            p.rot = Math.random() * Math.PI * 2;
+            p.steamVariant = (Math.random() * 3) | 0;
+          }
           break;
         }
       }
@@ -447,9 +456,11 @@ export class ParticleSim {
       const s = p.size * 0.95;
       ctx.drawImage(sprites.drop, p.x - s / 2, p.y - s / 2, s, s);
     } else {
-      const s = p.size * 2.4;
+      const h = this._cssH || 1;
+      const life = Math.max(0, Math.min(1, 1 - (p.y / h)));
+      const s = p.size * (2.0 + life * 2.2);
       ctx.save();
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.72 * (1 - life * 0.85);
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
       ctx.drawImage(sprites.steam[p.steamVariant], -s / 2, -s / 2, s, s);
