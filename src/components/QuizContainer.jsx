@@ -176,6 +176,14 @@ function isAnswered(q, answer) {
   }
 }
 
+// Confetti positions computed at module load — not during render — so Math.random is safe here.
+const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
+  left: `${Math.random() * 100}%`,
+  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][Math.floor(Math.random() * 4)],
+  animationDelay: `${Math.random() * 2}s`,
+  animationDuration: `${2 + Math.random() * 2}s`,
+}));
+
 // ── Component ─────────────────────────────────────────────────────────────────
 // onComplete receives { score, maxScore } so the caller can persist the attempt.
 export function QuizContainer({
@@ -307,18 +315,11 @@ export function QuizContainer({
         {/* Confetti */}
         {showConfetti && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(50)].map((_, i) => (
+            {CONFETTI_ITEMS.map((style, i) => (
               <div
                 key={i}
                 className="absolute w-3 h-3 rounded-sm animate-confetti-fall"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][
-                    Math.floor(Math.random() * 4)
-                  ],
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`,
-                }}
+                style={style}
               />
             ))}
           </div>

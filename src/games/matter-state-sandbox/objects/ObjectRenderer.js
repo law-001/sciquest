@@ -302,7 +302,7 @@ export class ObjectRenderer {
 
   // ── Layout ────────────────────────────────────────────────────────────────
 
-  _updateLayout(phases, sub) {
+  _updateLayout(phases, _sub) {
     const w = this._cssW, h = this._cssH;
     const padX = 0, padTop = 0, padBot = 0;
     const floorY = h - padBot;
@@ -323,7 +323,7 @@ export class ObjectRenderer {
 
   // ── Particle system updates ───────────────────────────────────────────────
 
-  _updateVapor(dt, phases, sub, palette) {
+  _updateVapor(dt, phases, sub, _palette) {
     const L = this._layout;
     if (!L) return;
     const target = phases.gas > 0 ? Math.floor(lerp(40, 160, phases.gas)) : 0;

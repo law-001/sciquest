@@ -16,9 +16,11 @@ export function useChallengeTracker(challenge, bus, isGamePaused) {
 
   // Reset everything when the challenge changes
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setHoldProgress(0);
     setElapsed(0);
     setIsComplete(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
     stateMatchStart.current = null;
     challengeStart.current = challenge ? Date.now() : null;
     pausedAt.current = null;

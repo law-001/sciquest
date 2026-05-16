@@ -63,6 +63,7 @@ function DonutChart({ data, size = 160, label }) {
   const slices = data.map((d) => {
     const start = angle;
     const sweep = (d.value / total) * 360;
+    // eslint-disable-next-line react-hooks/immutability
     angle += sweep;
     const s = polarToCartesian(cx, cy, ro, start);
     const e = polarToCartesian(cx, cy, ro, start + sweep);
@@ -1630,7 +1631,7 @@ export function AdminDashboardPage({ onNavigate }) {
           <aside className="w-full md:w-52 shrink-0">
             <Card className="p-3 sticky top-24">
               <nav className="space-y-1" aria-label="Admin navigation">
-                {SIDEBAR_ITEMS.map(({ id, label, Icon }) => (
+                {SIDEBAR_ITEMS.map(({ id, label, Icon: ItemIcon }) => (
                   <button
                     key={id}
                     onClick={() => setActiveTab(id)}
@@ -1641,7 +1642,7 @@ export function AdminDashboardPage({ onNavigate }) {
                         : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-primary-600 dark:hover:text-primary-400",
                     )}
                   >
-                    <Icon className="w-5 h-5 shrink-0" />
+                    <ItemIcon className="w-5 h-5 shrink-0" />
                     {label}
                   </button>
                 ))}

@@ -93,7 +93,7 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
   );
 }
 
-export function ControlBar({ bus, level, substances, currentSubstanceId, reducedMotion }) {
+export function ControlBar({ bus, level, substances, currentSubstanceId }) {
   const [currentTemp, setCurrentTemp] = useState(() => level.number === 2 ? -2 : level.number === 3 ? 110 : 20);
   const [currentPressure, setCurrentPressure] = useState(level.number === 3 ? 1.6 : 1);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -117,8 +117,10 @@ export function ControlBar({ bus, level, substances, currentSubstanceId, reduced
   useEffect(() => {
     const initialTemp = level.number === 2 ? -2 : level.number === 3 ? 110 : 20;
     const initialPressure = level.number === 3 ? 1.6 : 1;
+    /* eslint-disable react-hooks/set-state-in-effect */
     setCurrentTemp(initialTemp);
     setCurrentPressure(initialPressure);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [level.number]);
 
   function emitTemp(t) {

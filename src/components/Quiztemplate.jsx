@@ -18,6 +18,14 @@ import Badge from "./Badge";
 import ProgressBar from "./ProgressBar";
 import { cn } from "../lib/utils";
 
+// Computed once at module load — not during render — so Math.random is safe here.
+const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
+  left: `${Math.random() * 100}%`,
+  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][Math.floor(Math.random() * 4)],
+  animationDelay: `${Math.random() * 2}s`,
+  animationDuration: `${2 + Math.random() * 2}s`,
+}));
+
 /**
  * QuizTemplate
  *
@@ -41,26 +49,21 @@ export function QuizTemplate({ quiz, lesson, onComplete, onExit }) {
   const isLastQuestion = currentIndex === questions.length - 1;
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  // ── Timer ──────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (isSubmitted) return;
-    if (timeLeft === 0) {
-      handleSubmit();
-      return;
-    }
-    const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [timeLeft, isSubmitted]);
-
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleSelect = (answer) => {
-    if (isSubmitted) return;
-    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: answer }));
-  };
+  const calcScore = () =>
+    questions.reduce(
+      (acc, q) => (answers[q.id] === q.correctAnswer ? acc + 1 : acc),
+      0,
+    );
 
   const handleSubmit = () => {
     setIsSubmitted(true);
     if (calcScore() > questions.length / 2) setShowConfetti(true);
+  };
+
+  const handleSelect = (answer) => {
+    if (isSubmitted) return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: answer }));
   };
 
   const handleRetry = () => {
@@ -71,11 +74,17 @@ export function QuizTemplate({ quiz, lesson, onComplete, onExit }) {
     setShowConfetti(false);
   };
 
-  const calcScore = () =>
-    questions.reduce(
-      (acc, q) => (answers[q.id] === q.correctAnswer ? acc + 1 : acc),
-      0,
-    );
+  // ── Timer ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isSubmitted) return;
+    if (timeLeft === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      handleSubmit();
+      return;
+    }
+    const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [timeLeft, isSubmitted]);
 
   // ── Results Screen ─────────────────────────────────────────────────────────
   if (isSubmitted) {
@@ -91,18 +100,11 @@ export function QuizTemplate({ quiz, lesson, onComplete, onExit }) {
         {/* Confetti */}
         {showConfetti && (
           <div className="absolute inset-0 pointer-events-none">
-            {[...Array(50)].map((_, i) => (
+            {CONFETTI_ITEMS.map((style, i) => (
               <div
                 key={i}
                 className="absolute w-3 h-3 rounded-sm animate-confetti-fall"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][
-                    Math.floor(Math.random() * 4)
-                  ],
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`,
-                }}
+                style={style}
               />
             ))}
           </div>

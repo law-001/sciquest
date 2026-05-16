@@ -463,7 +463,7 @@ function EditProfileModal({ isOpen, onClose }) {
 /* ─────────────────────────────────────────────────────────── */
 /*  ProfilePage                                                 */
 /* ─────────────────────────────────────────────────────────── */
-export function ProfilePage({ onNavigate }) {
+export function ProfilePage() {
   const [xpWidth, setXpWidth] = useState(0);
   const [activePeriod, setActivePeriod] = useState("This Week");
   const [editOpen, setEditOpen] = useState(false);
@@ -483,6 +483,7 @@ export function ProfilePage({ onNavigate }) {
   useEffect(() => {
     if (!headerTriggered) return;
     if (prefersReducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setXpWidth(73);
       return;
     }
