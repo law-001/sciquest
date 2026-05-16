@@ -145,3 +145,24 @@ export async function deleteUser(userId) {
   if (data?.error) throw new Error(data.error)
   return data
 }
+
+// Wipes a user's learning/game data (progress, quiz attempts, game records)
+// while keeping their auth account + students/staff row, via the
+// admin-wipe-user-data Edge Function. Used to reset a test account.
+export async function wipeUserData(userId) {
+  const { data, error } = await supabase.functions.invoke('admin-wipe-user-data', {
+    body: { userId },
+  })
+  if (error) {
+    let message = error.message
+    try {
+      const body = await error.context?.json()
+      if (body?.error) message = body.error
+    } catch {
+      // fall back to the generic message
+    }
+    throw new Error(message)
+  }
+  if (data?.error) throw new Error(data.error)
+  return data
+}
