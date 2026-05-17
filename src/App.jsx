@@ -344,7 +344,14 @@ function AppContent() {
         );
 
       case "games":
-        return <GamesHubPage onNavigate={handleNavigate} totalXp={totalXp} />;
+        return (
+          <GamesHubPage
+            onNavigate={handleNavigate}
+            totalXp={totalXp}
+            isLoggedIn={isLoggedIn}
+            onLoginClick={() => setIsAuthModalOpen(true)}
+          />
+        );
 
       case "game-play":
         return (

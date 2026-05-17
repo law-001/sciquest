@@ -13,6 +13,7 @@ import {
   Star,
   Search,
   X,
+  LogIn,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -20,6 +21,7 @@ import { listGames } from "../lib/games/registry";
 import { useGameProgress } from "../games/_shared/progress/useGameProgress";
 import { levelFromXp, xpToNextLevel } from "../lib/xp-config";
 import Card from "../components/Card";
+import Button from "../components/Button";
 import ProgressBar from "../components/ProgressBar";
 
 const CATEGORY_STYLES = {
@@ -275,7 +277,7 @@ function useScrollTrigger(threshold = 0.1) {
   return [ref, triggered];
 }
 
-export function GamesHubPage({ onNavigate, totalXp = 0 }) {
+export function GamesHubPage({ onNavigate, totalXp = 0, isLoggedIn, onLoginClick }) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
@@ -310,6 +312,29 @@ export function GamesHubPage({ onNavigate, totalXp = 0 }) {
   }, [games, searchQuery]);
 
   const handlePlay = (game) => onNavigate("game-play", { gameId: game.id });
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-amber-50/60 dark:bg-stone-900 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-6">
+            <LogIn className="w-10 h-10 text-primary-500" />
+          </div>
+          <h2 className="text-3xl font-black text-stone-900 dark:text-white mb-3">
+            Sign in to play games
+          </h2>
+          <p className="text-stone-500 dark:text-stone-400 mb-8">
+            Create a free account or log in to access the games hub and track your progress.
+          </p>
+          <div className="flex justify-center">
+            <Button size="lg" onClick={onLoginClick}>
+              Login / Sign Up
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-amber-50/60 dark:bg-stone-900">
@@ -348,9 +373,9 @@ export function GamesHubPage({ onNavigate, totalXp = 0 }) {
             </div>
           </div>
 
-          <Card className="p-4 flex items-center gap-6 border-2 border-primary-100 dark:border-stone-700 shrink-0">
+          <Card className="p-4 flex items-center gap-6 bg-white dark:bg-stone-800 border-2 border-primary-100 dark:border-stone-700">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center">
                 <Star className="w-6 h-6 text-accent-500 fill-accent-500" />
               </div>
               <div>
@@ -362,7 +387,7 @@ export function GamesHubPage({ onNavigate, totalXp = 0 }) {
                 </p>
               </div>
             </div>
-            <div className="w-px h-12 bg-orange-200 shrink-0" />
+            <div className="w-px h-12 bg-orange-200" />
             <div className="w-48">
               <div className="flex justify-between text-sm font-bold mb-1">
                 <span className="text-stone-600">XP</span>
