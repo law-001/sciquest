@@ -12,9 +12,9 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
   const ref = useRef(null);
   const draggingRef = useRef(false);
 
-  const pct = (v) => Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100));
-  const thumbLeft = `calc(10px + ${pct(value)}% * (100% - 20px) / 100%)`;
-  const fillWidth = `calc(${pct(value)}% * (100% - 20px) / 100%)`;
+  const pct = (v) => Math.max(0, Math.min(1, (v - min) / (max - min)));
+  const thumbLeft = `calc(10px + ${pct(value)} * (100% - 20px))`;
+  const fillWidth = `calc(${pct(value)} * (100% - 20px))`;
 
   function setFromClientX(clientX) {
     if (locked || !ref.current) return;
@@ -106,9 +106,9 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
       <div className="sq-slider__fill" style={{ width: fillWidth }} />
       {ticks.map((t, i) => (
         <span key={i}>
-          <div className="sq-slider__tick" style={{ left: `calc(10px + ${pct(t.value)}% * (100% - 20px) / 100%)`, background: t.color || undefined }} />
+          <div className="sq-slider__tick" style={{ left: `calc(10px + ${pct(t.value)} * (100% - 20px))`, background: t.color || undefined }} />
           {t.label && (
-            <div className="sq-slider__tick-lbl" style={{ left: `calc(10px + ${pct(t.value)}% * (100% - 20px) / 100%)`, color: t.color || undefined }}>
+            <div className="sq-slider__tick-lbl" style={{ left: `calc(10px + ${pct(t.value)} * (100% - 20px))`, color: t.color || undefined }}>
               {t.label}
             </div>
           )}
