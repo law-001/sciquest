@@ -15,7 +15,6 @@ export const week10 = {
     "Learn essential safety rules, hazard symbols, and emergency procedures to keep yourself and others safe in the laboratory.",
   icon: "ShieldAlert",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

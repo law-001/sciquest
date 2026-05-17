@@ -14,7 +14,6 @@ export const week05 = {
     "Master the International System of Units (SI) and learn how to measure length, mass, volume, and temperature accurately.",
   icon: "Ruler",
   color: "secondary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

@@ -14,7 +14,6 @@ export const week06 = {
     "Learn about mixtures, solutions, and the factors that affect how substances dissolve.",
   icon: "Droplets",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

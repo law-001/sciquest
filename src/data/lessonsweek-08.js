@@ -13,7 +13,6 @@ export const week08 = {
     "Explore the properties of acids and bases, understand the pH scale, and learn about neutralization reactions.",
   icon: "FlaskRound",
   color: "secondary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

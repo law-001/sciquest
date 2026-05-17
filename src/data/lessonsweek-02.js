@@ -14,7 +14,6 @@ export const week02 = {
     "Discover what matter is made of and how the particle model explains the behavior of solids, liquids, and gases.",
   icon: "Atom",
   color: "secondary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

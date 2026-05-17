@@ -15,7 +15,6 @@ export const week15 = {
     "Understand the cell cycle and the stages of mitosis — the process by which cells divide to support growth and repair.",
   icon: "Copy",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

@@ -36,7 +36,6 @@ const week01 = {
     "Explore how scientists use models to understand the world around us.",
   icon: "Shapes",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

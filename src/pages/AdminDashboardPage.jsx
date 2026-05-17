@@ -44,6 +44,7 @@ import { useTheme } from "../context/ThemeContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { QUIZZES_DATA } from "../data/quizzesweek-01";
 import { questionUnits } from "../lib/xp-config";
+import { weekMaxXp } from "../lib/week-xp";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -1390,7 +1391,7 @@ function LessonsTab() {
               </span>
               <span className="flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5" />
-                {week.xpReward} XP
+                {weekMaxXp(week)} XP
               </span>
               {week.isLocked && (
                 <span className="text-rose-500 dark:text-rose-400">Locked</span>

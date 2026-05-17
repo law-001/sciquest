@@ -14,7 +14,6 @@ export const week20 = {
     "Learn how energy flows through ecosystems using energy pyramids, and understand how life is organized from cells to the biosphere.",
   icon: "Zap",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     {
