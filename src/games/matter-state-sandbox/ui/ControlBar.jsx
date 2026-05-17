@@ -25,12 +25,15 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
     onChange(Math.max(min, Math.min(max, v)));
   }
 
-  // Window drag listeners are attached once, but onChange/min/max/step change
-  // across renders (notably onChange's bus goes NULL_BUS → real bus after the
-  // Phaser game mounts). Route moves through a ref so drag always hits the
-  // latest handler instead of the one captured at mount.
+  // Route all drag moves through a ref so the window listener always hits the
+  // latest setFromClientX even when onChange/min/max/step change across renders.
   const setFromClientXRef = useRef(setFromClientX);
   useEffect(() => { setFromClientXRef.current = setFromClientX; });
+
+  // Keep locked state accessible inside the native touchstart listener without
+  // re-registering it on every render.
+  const lockedRef = useRef(locked);
+  useEffect(() => { lockedRef.current = locked; }, [locked]);
 
   function onDown(e) {
     if (locked) return;
@@ -57,6 +60,23 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
     };
   }, []);
 
+  // React's onTouchStart is passive — the browser can still hijack the gesture
+  // as a scroll and cancel touchmove events before the slider responds. A native
+  // non-passive listener lets us call preventDefault() to stop that.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    function handleTouchStart(e) {
+      if (lockedRef.current) return;
+      e.preventDefault();
+      draggingRef.current = true;
+      setFromClientXRef.current(e.touches[0].clientX);
+      el.focus();
+    }
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    return () => el.removeEventListener('touchstart', handleTouchStart);
+  }, []);
+
   function onKey(e) {
     if (locked) return;
     const big = Math.ceil((max - min) / 20);
@@ -80,7 +100,6 @@ function SandboxSlider({ value, min, max, step = 1, ticks = [], onChange, locked
       aria-disabled={locked || undefined}
       className={`sq-slider${locked ? ' sq-slider--locked' : ''}`}
       onMouseDown={onDown}
-      onTouchStart={onDown}
       onKeyDown={onKey}
     >
       <div className="sq-slider__rail" />
