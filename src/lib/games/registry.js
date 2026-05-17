@@ -1,5 +1,5 @@
-import { lazy } from 'react';
-import simulationImg from "../../assets/statesofmatter.png";
+import { lazy } from "react";
+import simulationImg from "../../assets/game1logo.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
