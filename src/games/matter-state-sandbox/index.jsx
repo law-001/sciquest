@@ -66,19 +66,6 @@ export default function MatterStateSandbox({
     musicRef.current?.setMuted(muted);
   }, [muted]);
 
-  // Portrait lock on touch devices
-  const [isPortrait, setIsPortrait] = useState(false);
-  useEffect(() => {
-    const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
-    const check = () => setIsPortrait(isTouchDevice() && window.innerHeight > window.innerWidth);
-    check();
-    window.addEventListener('resize', check);
-    window.addEventListener('orientationchange', check);
-    return () => {
-      window.removeEventListener('resize', check);
-      window.removeEventListener('orientationchange', check);
-    };
-  }, []);
 
   useEffect(() => {
     if (!burgerOpen) return;
@@ -277,13 +264,6 @@ export default function MatterStateSandbox({
 
   return (
     <>
-      {isPortrait && (
-        <div style={{ position: 'fixed', inset: 0, background: '#1c1a17', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: 'white', padding: 32, textAlign: 'center' }}>
-          <div style={{ fontSize: 64 }} aria-hidden="true">↻</div>
-          <p style={{ fontSize: 18, fontWeight: 600 }}>Rotate your device for the best experience</p>
-        </div>
-      )}
-
       <div className="sq-sandbox-shell">
         {/* — Top bar — */}
         <div className="sq-sandbox-top">

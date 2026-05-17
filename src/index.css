@@ -1249,3 +1249,40 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
     height: 30px;
   }
 }
+
+/* ── Responsive: xs screens (≤ 390 px) ── */
+@media (max-width: 390px) {
+  /* Let the bottom bar size itself so nothing is clipped */
+  .sq-sandbox-shell {
+    grid-template-rows: 56px 1fr auto;
+  }
+
+  .sq-sandbox-bottom {
+    max-height: 210px;
+    overflow-y: auto;
+    gap: 4px;
+    padding: 6px 12px;
+  }
+
+  .sq-ctrl {
+    gap: 3px;
+  }
+
+  .sq-slider {
+    height: 26px;
+  }
+
+  .sq-ctrl__value {
+    font-size: 11px;
+  }
+
+  /* Shrink the HUD compact row so the stage keeps more room */
+  .sq-hud {
+    padding: 5px 10px;
+    gap: 4px;
+  }
+
+  .sq-ccard--active {
+    padding: 6px 8px;
+  }
+}
