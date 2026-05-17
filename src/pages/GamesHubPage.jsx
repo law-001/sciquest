@@ -277,7 +277,12 @@ function useScrollTrigger(threshold = 0.1) {
   return [ref, triggered];
 }
 
-export function GamesHubPage({ onNavigate, totalXp = 0, isLoggedIn, onLoginClick }) {
+export function GamesHubPage({
+  onNavigate,
+  totalXp = 0,
+  isLoggedIn,
+  onLoginClick,
+}) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
@@ -324,7 +329,8 @@ export function GamesHubPage({ onNavigate, totalXp = 0, isLoggedIn, onLoginClick
             Sign in to play games
           </h2>
           <p className="text-stone-500 dark:text-stone-400 mb-8">
-            Create a free account or log in to access the games hub and track your progress.
+            Create a free account or log in to access the games hub and track
+            your progress.
           </p>
           <div className="flex justify-center">
             <Button size="lg" onClick={onLoginClick}>
@@ -360,7 +366,7 @@ export function GamesHubPage({ onNavigate, totalXp = 0, isLoggedIn, onLoginClick
             <div className="flex flex-wrap gap-2 mt-5 dark:bgst">
               {[
                 `${games.length} Games`,
-                "Interactive Simulations",
+                "Interactive Simulation",
                 "Free to Play",
               ].map((chip) => (
                 <span
