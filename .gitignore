@@ -23,3 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 CLAUDE.local.md
+
+# Env files
+.env
+.env.*
+
+# Local Claude Code settings (contains machine-specific paths)
+.claude/settings.local.json
