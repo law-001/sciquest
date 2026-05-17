@@ -14,7 +14,6 @@ export const week13 = {
     "Discover the organelles inside cells and understand what each structure does to keep the cell alive.",
   icon: "CircleDot",
   color: "secondary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

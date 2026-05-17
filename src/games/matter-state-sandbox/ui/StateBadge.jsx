@@ -1,18 +1,28 @@
 const VARIANT_LABEL = {
   solid: 'SOLID',
-  melting: 'MELTING',
   liquid: 'LIQUID',
-  evaporating: 'EVAPORATING',
   gas: 'GAS',
+  melting: 'MELTING',
+  freezing: 'FREEZING',
+  evaporating: 'EVAPORATING',
+  condensing: 'CONDENSING',
+  sublimating: 'SUBLIMATING',
+  depositing: 'DEPOSITING',
 };
 
+// The slider runs both ways, so the transition label depends on direction:
+// heating up melts/evaporates; cooling down freezes/condenses.
 function badgeVariant(state, isTransitioning, fromState, toState) {
   if (!isTransitioning) return state;
-  const pair = `${fromState}-${toState}`;
-  if (pair === 'solid-liquid' || pair === 'liquid-solid') return 'melting';
-  if (pair === 'liquid-gas' || pair === 'gas-liquid') return 'evaporating';
-  if (pair === 'solid-gas' || pair === 'gas-solid') return 'evaporating';
-  return state;
+  switch (`${fromState}-${toState}`) {
+    case 'solid-liquid': return 'melting';
+    case 'liquid-solid': return 'freezing';
+    case 'liquid-gas':   return 'evaporating';
+    case 'gas-liquid':   return 'condensing';
+    case 'solid-gas':    return 'sublimating';
+    case 'gas-solid':    return 'depositing';
+    default:             return state;
+  }
 }
 
 export function StateBadge({ state, substance, isTransitioning, fromState, toState, reducedMotion: _reducedMotion }) {

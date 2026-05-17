@@ -14,7 +14,6 @@ export const week17 = {
     "Learn about fertilization and explore the two main types of reproduction — sexual and asexual.",
   icon: "Heart",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     {

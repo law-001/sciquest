@@ -132,13 +132,6 @@ export class ObjectRenderer {
     this._mouse = { x: -9999, y: -9999, inside: false };
     this._iceHover = false;
 
-    // Transition blending
-    this._transFrom = null;
-    this._transTo = null;
-    this._transProgress = 1;
-    this._transStart = 0;
-    this._transDuration = 1200;
-
     this.onStateChange = opts.onStateChange || (() => {});
     this._currentState = null;
 
@@ -170,7 +163,7 @@ export class ObjectRenderer {
     if (!SUBSTANCES[id]) return;
     this.substanceId = id;
     this._vapor = []; this._drips = []; this._evapHints = []; this._bubbles = []; this._ripples = [];
-    this._syncState(true);
+    this._syncState();
   }
 
   setTemperature(t) { this.temperature = t; this._syncState(); }
@@ -179,7 +172,7 @@ export class ObjectRenderer {
 
   reset() {
     this._vapor = []; this._drips = []; this._evapHints = []; this._bubbles = []; this._ripples = [];
-    this._syncState(true);
+    this._syncState();
   }
 
   destroy() {
@@ -189,18 +182,12 @@ export class ObjectRenderer {
 
   // ── Internals ─────────────────────────────────────────────────────────────
 
-  _syncState(instant = false) {
+  _syncState() {
     const sub = SUBSTANCES[this.substanceId] || SUBSTANCES.water;
     const phases = this._computePhases(sub, this.temperature, this.pressure);
     const state = phases.ice > 0.5 ? 'solid' : phases.water > 0.5 ? 'liquid' : 'gas';
     if (state !== this._currentState) {
       const prev = this._currentState;
-      if (prev !== null && !instant) {
-        this._transFrom = prev;
-        this._transTo = state;
-        this._transProgress = 0;
-        this._transStart = performance.now();
-      }
       this._currentState = state;
       this.onStateChange(state, prev);
     }
@@ -216,28 +203,13 @@ export class ObjectRenderer {
     if (this.running && this._cssW > 4 && this._cssH > 4) {
       this._time += dt;
 
-      if (this._transFrom !== null) {
-        this._transProgress = Math.min(1, (now - this._transStart) / this._transDuration);
-        if (this._transProgress >= 1) { this._transFrom = null; this._transTo = null; }
-      }
-
       const sub = SUBSTANCES[this.substanceId] || SUBSTANCES.water;
-      const phases = this._computePhases(sub, this.temperature, this.pressure);
+      // Render the continuous phase mix directly. _computePhases already
+      // eases ice→water→gas across the melt/boil spans, so the surface
+      // recedes (and returns) smoothly in step with the slider — no
+      // scripted snap-back when the temperature re-crosses a threshold.
+      const renderPhases = this._computePhases(sub, this.temperature, this.pressure);
       const palette = OBJ_PALETTES[this.substanceId] || OBJ_PALETTES.water;
-
-      let renderPhases = phases;
-      if (this._transFrom !== null) {
-        const fp = this._stateToPhases(this._transFrom);
-        const tp = this._stateToPhases(this._transTo);
-        const t = smoothstep(this._transProgress);
-        renderPhases = {
-          ice:   lerp(fp.ice,   tp.ice,   t),
-          water: lerp(fp.water, tp.water, t),
-          gas:   lerp(fp.gas,   tp.gas,   t),
-          melt: phases.melt,
-          boil: phases.boil,
-        };
-      }
 
       const shiver = this._computeShiver(sub, this.temperature, renderPhases);
       this._updateLayout(renderPhases, sub);
@@ -284,12 +256,6 @@ export class ObjectRenderer {
       return { ice: 0, water: 1 - f, gas: f, melt, boil };
     }
     return { ice: 0, water: 0, gas: 1, melt, boil };
-  }
-
-  _stateToPhases(state) {
-    if (state === 'solid')  return { ice: 1, water: 0, gas: 0 };
-    if (state === 'liquid') return { ice: 0, water: 1, gas: 0 };
-    return { ice: 0, water: 0, gas: 1 };
   }
 
   _computeShiver(sub, temperature, phases) {
