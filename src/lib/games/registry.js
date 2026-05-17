@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import simulationImg from "../../assets/game1logo.png";
+import celldiv from "../../assets/celldiv.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -11,7 +12,8 @@ export const GAMES = {
   "matter-state-sandbox": {
     id: "matter-state-sandbox",
     title: "Matter State Sandbox",
-    tagline: "Heat and cool matter to watch it change state",
+    tagline:
+      "Heat and cool matter to observe its fascinating transformation between physical states.",
     subject: "Science",
     relatedLessonIds: ["week-03-matter", "week-04-phase-change"],
     difficulty: 2,
@@ -20,6 +22,20 @@ export const GAMES = {
     engine: "phaser",
     category: "Chemistry",
     loader: () => import("../../games/matter-state-sandbox/index.jsx"),
+    minRole: "student",
+  },
+  "cell-division-defense": {
+    id: "cell-division-defense",
+    title: "Cell Division: Divide & Defend",
+    tagline: "Defend the nucleus and guide your cell through mitosis",
+    subject: "Science",
+    relatedLessonIds: ["week-07-cell-division", "week-08-meiosis"],
+    difficulty: 2,
+    estimatedMinutes: 12,
+    thumbnail: celldiv,
+    engine: "phaser",
+    category: "Biology",
+    loader: () => import("../../games/cell-division-defense/index.jsx"),
     minRole: "student",
   },
   "cell-explorer": {
