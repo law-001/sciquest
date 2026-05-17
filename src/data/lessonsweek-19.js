@@ -14,7 +14,6 @@ export const week19 = {
     "Explore how energy flows through ecosystems via food chains and food webs, and understand the roles of producers, consumers, and decomposers.",
   icon: "Network",
   color: "secondary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     {

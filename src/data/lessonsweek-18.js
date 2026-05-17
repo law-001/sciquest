@@ -15,7 +15,6 @@ export const week18 = {
     "Compare sexual and asexual reproduction and explore real-world examples from plants and animals.",
   icon: "GitCompare",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     {

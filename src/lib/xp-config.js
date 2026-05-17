@@ -72,6 +72,26 @@ export function calcQuizXp(correctUnits) {
   return Math.max(QUIZ_MIN_XP, Math.round(correctUnits * QUIZ_XP_PER_CORRECT));
 }
 
+// Auto-gradable units in a quiz — recurses into case studies and skips
+// essay/short-answer, which a teacher must grade by hand.
+export function autoGradableUnits(questions = []) {
+  return questions.reduce((sum, q) => {
+    if (q.type === "case-study") {
+      return sum + autoGradableUnits(q.subQuestions ?? []);
+    }
+    if (MANUAL_GRADE_TYPES.has(q.type)) return sum;
+    return sum + questionUnits(q);
+  }, 0);
+}
+
+// Most XP a quiz can yield on a first attempt: every auto-gradable unit
+// correct, floored at QUIZ_MIN_XP. A quiz that is entirely essay/short-answer
+// still earns the minimum for submitting. No quiz → 0 (nothing to submit).
+export function maxQuizXp(quiz) {
+  if (!quiz?.questions?.length) return 0;
+  return calcQuizXp(autoGradableUnits(quiz.questions));
+}
+
 // Returns the highest level whose cumulative-XP threshold the student has
 // reached. Always at least 1.
 export function levelFromXp(totalXp) {

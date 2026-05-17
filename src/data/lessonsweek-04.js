@@ -13,7 +13,6 @@ export const week04 = {
     "Learn how to design and conduct a proper scientific investigation by identifying variables, collecting data, and drawing conclusions.",
   icon: "FlaskConical",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

@@ -14,7 +14,6 @@ export const week16 = {
     "Understand meiosis — the process that produces sex cells — and how it differs from mitosis.",
   icon: "Shuffle",
   color: "secondary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     {

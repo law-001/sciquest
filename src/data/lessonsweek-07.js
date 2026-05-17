@@ -15,7 +15,6 @@ export const week07 = {
     "Understand how to describe and calculate the concentration of solutions, and learn about dilution.",
   icon: "TestTube",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

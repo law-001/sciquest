@@ -13,7 +13,6 @@ export const week11 = {
     "Learn the history and parts of the microscope and how to prepare and observe slides correctly.",
   icon: "ScanSearch",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

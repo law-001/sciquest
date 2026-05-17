@@ -13,7 +13,6 @@ export const week14 = {
     "Compare plant and animal cells and understand the unique structures that make each type specialized for its role.",
   icon: "Leaf",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

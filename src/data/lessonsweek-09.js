@@ -15,7 +15,6 @@ export const week09 = {
     "Identify and learn how to properly use common laboratory equipment found in a science laboratory.",
   icon: "ShieldCheck",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

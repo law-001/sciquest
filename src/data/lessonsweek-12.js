@@ -13,7 +13,6 @@ export const week12 = {
     "Explore the development of cell theory and discover the diversity of cells in living organisms.",
   icon: "BookOpen",
   color: "primary",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

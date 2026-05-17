@@ -13,7 +13,6 @@ export const week03 = {
     "Explore how matter changes from one state to another when heat is added or removed.",
   icon: "Thermometer",
   color: "accent",
-  xpReward: 225,
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════

@@ -40,6 +40,7 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
+import { weekMaxXp } from "../lib/week-xp";
 import { useAuth } from "../context/AuthContext";
 import { xpToNextLevel, levelFromXp } from "../lib/xp-config";
 
@@ -454,8 +455,9 @@ export function LessonsPage({
                       <Badge
                         variant={week.isLocked ? "outline" : "accent"}
                         icon={<Star className="w-3 h-3 fill-current" />}
+                        title="The most XP you can earn here — finish every lesson and ace its quiz!"
                       >
-                        +{week.xpReward} XP
+                        +{weekMaxXp(week)} XP
                       </Badge>
                     </div>
 

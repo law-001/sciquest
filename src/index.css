@@ -624,6 +624,38 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
 .sq-state-badge--gas .swatch {
   background: linear-gradient(135deg, var(--sq-gas-1), var(--sq-gas-2));
 }
+.sq-state-badge--freezing {
+  background: linear-gradient(90deg, var(--sq-liquid-bg), var(--sq-solid-bg));
+  color: var(--sq-solid-ink);
+  border-color: rgba(91, 124, 250, 0.3);
+}
+.sq-state-badge--freezing .swatch {
+  background: linear-gradient(135deg, var(--sq-liquid-2), var(--sq-solid-1));
+}
+.sq-state-badge--condensing {
+  background: linear-gradient(90deg, var(--sq-gas-bg), var(--sq-liquid-bg));
+  color: var(--sq-liquid-ink);
+  border-color: rgba(59, 175, 169, 0.3);
+}
+.sq-state-badge--condensing .swatch {
+  background: linear-gradient(135deg, var(--sq-gas-2), var(--sq-liquid-1));
+}
+.sq-state-badge--sublimating {
+  background: linear-gradient(90deg, var(--sq-solid-bg), var(--sq-gas-bg));
+  color: var(--sq-gas-ink);
+  border-color: rgba(232, 93, 93, 0.3);
+}
+.sq-state-badge--sublimating .swatch {
+  background: linear-gradient(135deg, var(--sq-solid-1), var(--sq-gas-2));
+}
+.sq-state-badge--depositing {
+  background: linear-gradient(90deg, var(--sq-gas-bg), var(--sq-solid-bg));
+  color: var(--sq-solid-ink);
+  border-color: rgba(91, 124, 250, 0.3);
+}
+.sq-state-badge--depositing .swatch {
+  background: linear-gradient(135deg, var(--sq-gas-2), var(--sq-solid-1));
+}
 
 /* — Stats panel — */
 .sq-stats {
