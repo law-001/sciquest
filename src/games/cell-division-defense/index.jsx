@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { createEventBus } from '../_shared/eventBus';
 import BootScene from './scenes/BootScene';
@@ -7,9 +7,17 @@ import { CellDefenseHUD } from './ui/CellDefenseHUD';
 import { TowerPanel } from './ui/TowerPanel';
 import { MenuScreen } from './ui/MenuScreen';
 import { MinigameOverlay } from './ui/MinigameOverlay';
+import { WaveQueue } from './ui/WaveQueue';
+import { MutationLog } from './ui/MutationLog';
+import { MutationAlert } from './ui/MutationAlert';
+import { ResultsScreen } from './ui/ResultsScreen';
+import { SlotActionMenu } from './ui/SlotActionMenu';
+import { CellMusic } from './audio/CellMusic';
 import { TOWERS } from './data/towers';
+import { LEVELS } from './data/levels';
 
 const MONO = '"Courier New", Courier, monospace';
+const WAVE_COUNTDOWN_MAX = 30;
 
 function RotatePrompt() {
   return (
@@ -32,21 +40,17 @@ function RotatePrompt() {
         }
       `}</style>
 
-      {/* Phone + rotation arc SVG */}
       <svg
         width="72" height="72" viewBox="0 0 72 72"
         fill="none" aria-hidden="true"
         style={{ animation: 'cdd-rotate-phone 2.4s ease-in-out infinite' }}
       >
-        {/* Rotation arc */}
         <path
           d="M20 56 A28 28 0 0 1 56 20"
           stroke="#3BAFA9" strokeWidth="2.5" strokeLinecap="round"
           strokeDasharray="6 4"
         />
-        {/* Arrow head */}
         <polyline points="54,12 56,20 48,22" stroke="#3BAFA9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        {/* Phone body */}
         <rect x="26" y="18" width="20" height="34" rx="3" stroke="white" strokeWidth="2" opacity="0.7" />
         <circle cx="36" cy="47" r="2" fill="white" opacity="0.5" />
       </svg>
@@ -85,22 +89,34 @@ export default function CellDivisionDefense({
   deviceTier,
 }) {
   const containerRef = useRef(null);
-  const gameRef = useRef(null);
-  const busRef = useRef(null);
-
-  const [gameStarted, setGameStarted] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(() => window.innerHeight > window.innerWidth);
-  const [hp, setHp] = useState(100);
-  const [atp, setAtp] = useState(300);
-  const [phase, setPhase] = useState('interphase');
-  const [mutations, setMutations] = useState([]);
-  const [wave, setWave] = useState(0);
-  const [selectedTower, setSelectedTower] = useState(null);
+  const gameRef      = useRef(null);
+  const busRef       = useRef(null);
+  const musicRef     = useRef(null);
   const selectedTowerRef = useRef(null);
-  const [paused, setPaused] = useState(false);
+  const waveTimerRef = useRef(null);
+
+  const [gameStarted,  setGameStarted]  = useState(false);
+  const [isPortrait,   setIsPortrait]   = useState(() => window.innerHeight > window.innerWidth);
+  const [hp,           setHp]           = useState(100);
+  const [atp,          setAtp]          = useState(300);
+  const [phase,        setPhase]        = useState('interphase');
+  const [mutations,    setMutations]    = useState([]);
+  const [wave,         setWave]         = useState(0);
+  const [selectedTower, setSelectedTower] = useState(null);
+  const [paused,       setPaused]       = useState(false);
   const [minigamePhase, setMinigamePhase] = useState(null);
 
-  // Portrait-mode detection
+  // Step 12 state
+  const [nextWaveEnemies,      setNextWaveEnemies]      = useState([]);
+  const [waveCountdown,        setWaveCountdown]        = useState(0);
+  const [currentMutationAlert, setCurrentMutationAlert] = useState(null);
+  const [showResults,          setShowResults]          = useState(false);
+  const [resultsData,          setResultsData]          = useState(null);
+
+  // Step 14 state — occupied-slot action menu
+  const [slotAction, setSlotAction] = useState(null); // { slotIndex, def, canvasX, canvasY }
+
+  // ── Portrait detection ────────────────────────────────────────────────────
   useEffect(() => {
     const check = () => setIsPortrait(window.innerHeight > window.innerWidth);
     window.addEventListener('resize', check);
@@ -111,8 +127,8 @@ export default function CellDivisionDefense({
     };
   }, []);
 
+  // ── Phaser init ───────────────────────────────────────────────────────────
   useEffect(() => {
-    // Only initialise Phaser after the player clicks Start
     if (!gameStarted) return;
     if (gameRef.current) return;
 
@@ -151,22 +167,59 @@ export default function CellDivisionDefense({
       setWave(w ?? 0);
     }
 
-    function handleRunComplete(payload) {
-      onProgressUpdate?.(payload);
+    function onWaveStarted({ enemies }) {
+      // enemies = [{ type, count, interval }]
+      const summary = enemies.map(e => ({ type: e.type, count: e.count }));
+      setNextWaveEnemies(summary);
+      setWaveCountdown(WAVE_COUNTDOWN_MAX);
+      clearInterval(waveTimerRef.current);
+      waveTimerRef.current = setInterval(() => {
+        setWaveCountdown(c => {
+          if (c <= 1) {
+            clearInterval(waveTimerRef.current);
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
     }
 
-    function onSlotClicked({ slotIndex, isEmpty }) {
-      const towerId = selectedTowerRef.current;
-      if (isEmpty && towerId) {
-        bus.emit('placeTower', { towerId, slotIndex });
+    function onWaveCleared() {
+      clearInterval(waveTimerRef.current);
+      setNextWaveEnemies([]);
+      setWaveCountdown(0);
+    }
+
+    function onMutationAdded({ mutation }) {
+      setCurrentMutationAlert(mutation);
+    }
+
+    function onRunComplete(payload) {
+      clearInterval(waveTimerRef.current);
+      setNextWaveEnemies([]);
+      setShowResults(true);
+      setResultsData(payload);
+      onProgressUpdate?.({
+        ...payload,
+        gameId: 'cell-division-defense',
+        completedAt: new Date().toISOString(),
+      });
+    }
+
+    function onSlotClicked({ slotIndex, isEmpty, towerId, canvasX, canvasY }) {
+      const tower = selectedTowerRef.current;
+      if (isEmpty && tower) {
+        bus.emit('placeTower', { towerId: tower, slotIndex });
         selectedTowerRef.current = null;
         setSelectedTower(null);
+        bus.emit('towerSelected', { towerId: null });
+        setSlotAction(null);
       } else if (!isEmpty) {
-        bus.emit('sellTower', { slotIndex });
+        const def = towerId ? TOWERS[towerId] : null;
+        setSlotAction({ slotIndex, def, canvasX, canvasY });
       }
     }
 
-    // fromPhase === toPhase is the PhaseSystem signal to open the minigame overlay
     function onPhaseTransition({ fromPhase, toPhase }) {
       if (fromPhase === toPhase) {
         bus.emit('pause');
@@ -174,14 +227,21 @@ export default function CellDivisionDefense({
       }
     }
 
-    bus.on('stateChanged', onStateChanged);
-    bus.on('runComplete', handleRunComplete);
+    bus.on('stateChanged',    onStateChanged);
+    bus.on('waveStarted',     onWaveStarted);
+    bus.on('waveCleared',     onWaveCleared);
+    bus.on('mutationAdded',   onMutationAdded);
+    bus.on('runComplete',     onRunComplete);
     bus.on('towerSlotClicked', onSlotClicked);
     bus.on('phaseTransition', onPhaseTransition);
 
     return () => {
-      bus.off('stateChanged', onStateChanged);
-      bus.off('runComplete', handleRunComplete);
+      clearInterval(waveTimerRef.current);
+      bus.off('stateChanged',    onStateChanged);
+      bus.off('waveStarted',     onWaveStarted);
+      bus.off('waveCleared',     onWaveCleared);
+      bus.off('mutationAdded',   onMutationAdded);
+      bus.off('runComplete',     onRunComplete);
       bus.off('towerSlotClicked', onSlotClicked);
       bus.off('phaseTransition', onPhaseTransition);
       gameRef.current?.destroy(true);
@@ -191,12 +251,40 @@ export default function CellDivisionDefense({
     };
   }, [gameStarted]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Music (separate effect — runs after the bus is created) ──────────────
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const music = new CellMusic();
+    musicRef.current = music;
+    music.start();
+
+    const bus = busRef.current;
+    if (!bus) return () => music.destroy();
+
+    const onPhase = ({ fromPhase, toPhase }) => {
+      if (fromPhase === toPhase) music.setMinigameMode(true);
+    };
+    const onResume = () => music.setMinigameMode(false);
+
+    bus.on('phaseTransition', onPhase);
+    bus.on('resume',          onResume);
+
+    return () => {
+      bus.off('phaseTransition', onPhase);
+      bus.off('resume',          onResume);
+      music.destroy();
+      musicRef.current = null;
+    };
+  }, [gameStarted]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
 
   function handleSelectTower(towerId) {
     const next = selectedTower === towerId ? null : towerId;
     selectedTowerRef.current = next;
     setSelectedTower(next);
+    setSlotAction(null);
     busRef.current?.emit('towerSelected', { towerId: next });
   }
 
@@ -211,10 +299,44 @@ export default function CellDivisionDefense({
   }
 
   function handleMinigameComplete({ stars }) {
-    const phase = minigamePhase;
+    const p = minigamePhase;
     setMinigamePhase(null);
     busRef.current?.emit('resume');
-    busRef.current?.emit('minigameResult', { stars, phase });
+    busRef.current?.emit('minigameResult', { stars, phase: p });
+  }
+
+  const handleDismissAlert = useCallback(() => setCurrentMutationAlert(null), []);
+
+  function handleSlotSell() {
+    if (!slotAction) return;
+    busRef.current?.emit('sellTower', { slotIndex: slotAction.slotIndex });
+    setSlotAction(null);
+  }
+
+  function handleSlotUpgrade() {
+    if (!slotAction) return;
+    busRef.current?.emit('upgradeTower', { slotIndex: slotAction.slotIndex });
+    setSlotAction(null);
+  }
+
+  function handleReplay() {
+    setShowResults(false);
+    setResultsData(null);
+    setMutations([]);
+    setHp(100);
+    setAtp(LEVELS[0]?.startAtp ?? 300);
+    setPhase('interphase');
+    setWave(0);
+    setNextWaveEnemies([]);
+    setWaveCountdown(0);
+    // Restart the Phaser game by destroying + re-creating via state toggle
+    gameRef.current?.destroy(true);
+    gameRef.current = null;
+    busRef.current?.removeAll();
+    busRef.current = null;
+    // Trigger game re-init by momentarily leaving and re-entering started state
+    setGameStarted(false);
+    setTimeout(() => setGameStarted(true), 50);
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -231,7 +353,7 @@ export default function CellDivisionDefense({
         fontFamily: MONO,
       }}
     >
-      {/* HUD — only visible once game is running */}
+      {/* HUD */}
       {gameStarted && (
         <CellDefenseHUD
           hp={hp}
@@ -246,7 +368,7 @@ export default function CellDivisionDefense({
         />
       )}
 
-      {/* Main body — tower panel + canvas */}
+      {/* Main body: tower panel + canvas */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -262,14 +384,61 @@ export default function CellDivisionDefense({
           />
         )}
 
-        {/* Phaser mounts here — always in the DOM so the ref is ready */}
+        {/* Phaser canvas mount point */}
         <div
           ref={containerRef}
           style={{ flex: 1, minWidth: 0, minHeight: 0 }}
         />
       </div>
 
-      {/* Menu overlay — shown before game starts */}
+      {/* Right-side overlay: wave queue + mutation log */}
+      {gameStarted && !showResults && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 64,
+            right: 8,
+            width: 138,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            zIndex: 10,
+            pointerEvents: 'none',
+          }}
+        >
+          <WaveQueue
+            nextWaveEnemies={nextWaveEnemies}
+            waveCountdown={waveCountdown}
+            waveCountdownMax={WAVE_COUNTDOWN_MAX}
+            currentWave={wave}
+            totalWaves={5}
+          />
+          <MutationLog mutations={mutations} />
+        </div>
+      )}
+
+      {/* Mutation toast alert */}
+      {gameStarted && currentMutationAlert && (
+        <MutationAlert
+          mutation={currentMutationAlert}
+          onDismiss={handleDismissAlert}
+        />
+      )}
+
+      {/* Occupied-slot action menu */}
+      {gameStarted && slotAction && !showResults && (
+        <SlotActionMenu
+          canvasX={slotAction.canvasX}
+          canvasY={slotAction.canvasY}
+          slotDef={slotAction.def}
+          atp={atp}
+          onSell={handleSlotSell}
+          onUpgrade={handleSlotUpgrade}
+          onCancel={() => setSlotAction(null)}
+        />
+      )}
+
+      {/* Menu overlay — before game starts */}
       {!gameStarted && (
         <MenuScreen
           onStart={() => setGameStarted(true)}
@@ -277,10 +446,10 @@ export default function CellDivisionDefense({
         />
       )}
 
-      {/* Landscape prompt — shown when game is running in portrait */}
+      {/* Landscape prompt */}
       {gameStarted && isPortrait && <RotatePrompt />}
 
-      {/* Minigame overlay — shown after each wave clears */}
+      {/* Minigame overlay */}
       {gameStarted && minigamePhase && (
         <MinigameOverlay
           phase={minigamePhase}
@@ -288,8 +457,21 @@ export default function CellDivisionDefense({
         />
       )}
 
+      {/* Results screen */}
+      {showResults && resultsData && (
+        <ResultsScreen
+          stars={resultsData.stars}
+          mutations={resultsData.mutations}
+          hpLeft={resultsData.hpLeft}
+          xpEarned={resultsData.xpEarned}
+          levelTitle={LEVELS[0]?.displayName}
+          onReplay={handleReplay}
+          onExit={onExit}
+        />
+      )}
+
       {/* Pause overlay */}
-      {paused && (
+      {paused && !minigamePhase && (
         <div
           role="dialog"
           aria-modal="true"

@@ -8,10 +8,18 @@ import PhaseSystem from '../systems/PhaseSystem';
 import MutationSystem from '../systems/MutationSystem';
 import { TOWERS } from '../data/towers';
 import { LEVELS } from '../data/levels';
+import { drawCell, getPhase, cellShapeForPhase } from './CellPhaseDraw';
+import {
+  drawLysosome,
+  drawProteinKinase,
+  drawRepairEnzyme,
+  drawViralHijacker,
+  drawToxinDroplet,
+  drawRadiationPulse,
+} from '../systems/EntityDraw';
 
 const HEX_SIZE = 36;
 const SLOT_COUNT = 12;
-const ORGANELLE_COUNT = 6;
 
 export default class CellDefenseScene extends BaseGameScene {
   constructor() {
@@ -48,9 +56,28 @@ export default class CellDefenseScene extends BaseGameScene {
     this.mutationSystem = null;
 
     // Graphics layers
-    this.hexGrid       = null;
-    this.cellGraphics  = null;
-    this.slotGraphics  = null;
+    this.hexGrid          = null;
+    this.cellGraphics     = null;
+    this.slotGraphics     = null;
+    this._selectionGraphics = null;
+    this._selectedTowerId   = null;
+
+    // Animated canvas texture state
+    this._cellCanvas   = null;
+    this._cellImage    = null;
+    this._phaseProgress = 0;
+    this._animTime     = 0;
+    this._entityCanvases = null;
+    this._enemyWalkPhase  = 0;
+    this._toxinBouncePhase = 0;
+
+    // Mitosis visual cycle (real-time seconds, independent of game logic phase)
+    this._mitosisT     = 0;
+    this._currentPhase = { idx: 0, t: 0 };
+    this._currentShape = { mode: 'circle', r: 0 };
+
+    // Bus listener registry for clean destroy()
+    this._busListeners = {};
   }
 
   init(data) {
@@ -74,8 +101,15 @@ export default class CellDefenseScene extends BaseGameScene {
     this.hp    = levelData?.nucleusHp ?? 100;
     this.maxHp = levelData?.nucleusHp ?? 100;
 
+    this._entityCanvases = this.game.registry.get('entityCanvases') ?? null;
+
+    // Start visual cycle at prophase so action is visible immediately (matches reference)
+    this._mitosisT     = 4.0;
+    this._currentPhase = getPhase(this._mitosisT);
+    this._currentShape = cellShapeForPhase(this._currentPhase, this.cellR);
+
     this._drawHexGrid();
-    this._drawCell();
+    this._initAnimatedCell();
     this._buildTowerSlots();
 
     this.animationSystem = new AnimationSystem(this);
@@ -135,6 +169,25 @@ export default class CellDefenseScene extends BaseGameScene {
     this.projectileSystem?.update(delta);
 
     this._frameCount++;
+    this._animTime++;
+    this._enemyWalkPhase  += 0.045;
+    this._toxinBouncePhase += 0.04;
+
+    // Advance visual mitosis cycle (real seconds, loops every 24s)
+    this._mitosisT    += delta / 1000;
+    this._currentPhase = getPhase(this._mitosisT);
+    this._currentShape = cellShapeForPhase(this._currentPhase, this.cellR);
+
+    // Legacy phase progress for any remaining consumers
+    if (this._waveActive) {
+      this._phaseProgress = Math.min(1, this._phaseProgress + delta / 20000);
+    }
+
+    // Animate canvas textures every 2 frames (30fps animation)
+    if (!this.reducedMotion && this._frameCount % 2 === 0) {
+      this._updateEntityTextures();
+      this._updateCellTexture();
+    }
 
     // Check if wave is cleared (check every 30 frames to reduce overhead)
     if (this._waveActive && this._frameCount % 30 === 0) {
@@ -160,6 +213,69 @@ export default class CellDefenseScene extends BaseGameScene {
   }
 
   // ── Drawing ───────────────────────────────────────────────────────────────
+
+  _initAnimatedCell() {
+    const diameter = Math.ceil(this.cellR * 2.6);
+
+    // Create offscreen canvas sized to the cell area
+    const c = document.createElement('canvas');
+    c.width  = diameter;
+    c.height = diameter;
+    this._cellCanvas = c;
+
+    // Draw initial frame
+    this._drawCellToCanvas();
+
+    // Register as Phaser texture (key must be unique per scene)
+    if (this.textures.exists('cellPhase')) {
+      this.textures.remove('cellPhase');
+    }
+    this.textures.addCanvas('cellPhase', c);
+
+    // Place as centered image object
+    this._cellImage = this.add.image(this.cellCX, this.cellCY, 'cellPhase');
+    this._cellImage.setDepth(1);
+  }
+
+  _drawCellToCanvas() {
+    if (!this._cellCanvas) return;
+    const ctx = this._cellCanvas.getContext('2d');
+    const hw  = this._cellCanvas.width  / 2;
+    const hh  = this._cellCanvas.height / 2;
+    ctx.clearRect(0, 0, this._cellCanvas.width, this._cellCanvas.height);
+    drawCell(ctx, hw, hh, this.cellR, this._currentPhase, this._currentShape, this._animTime);
+  }
+
+  _updateCellTexture() {
+    if (!this._cellCanvas) return;
+    this._drawCellToCanvas();
+    const src = this.textures.get('cellPhase')?.source?.[0];
+    if (src) src.update();
+  }
+
+  _updateEntityTextures() {
+    if (!this._entityCanvases) return;
+    const t = this._animTime;
+
+    const drawFns = {
+      lysosome:      (ctx, cx, cy, r) => drawLysosome(ctx, cx, cy, r, t, 0),
+      proteinKinase: (ctx, cx, cy, r) => drawProteinKinase(ctx, cx, cy, r, t, 0),
+      repairEnzyme:  (ctx, cx, cy, r) => drawRepairEnzyme(ctx, cx, cy, r, t, 0),
+      viralHijacker: (ctx, cx, cy, r) => drawViralHijacker(ctx, cx, cy, r, t, this._enemyWalkPhase),
+      toxinDroplet:  (ctx, cx, cy, r) => drawToxinDroplet(ctx, cx, cy, r, t, this._toxinBouncePhase),
+      radiationPulse:(ctx, cx, cy, r) => drawRadiationPulse(ctx, cx, cy, r, t),
+    };
+
+    for (const [key, entry] of Object.entries(this._entityCanvases)) {
+      const fn = drawFns[key];
+      if (!fn) continue;
+      const ctx = entry.canvas.getContext('2d');
+      ctx.clearRect(0, 0, entry.canvas.width, entry.canvas.height);
+      fn(ctx, entry.cx, entry.cy, entry.r);
+      const src = this.textures.get(key)?.source?.[0];
+      if (src) src.update();
+    }
+  }
 
   _drawHexGrid() {
     const { width, height } = this.scale;
@@ -203,168 +319,6 @@ export default class CellDefenseScene extends BaseGameScene {
     this.hexGrid = g;
   }
 
-  _drawCell() {
-    const cx  = this.cellCX;
-    const cy  = this.cellCY;
-    const r   = this.cellR;
-    const nr  = this.nucleusR;
-
-    // ── Outer atmosphere (soft teal aura) ───────────────────────────────────
-    const aura = this.add.graphics();
-    aura.x = cx;
-    aura.y = cy;
-    // Approximate radial gradient aura: stacked concentric circles
-    for (let i = 12; i >= 1; i--) {
-      const ratio = i / 12;
-      const rad   = r * (0.6 + ratio * 0.75);
-      const alpha = 0.10 * (1 - ratio);
-      aura.fillStyle(0x3BAFA9, alpha);
-      aura.fillCircle(0, 0, rad);
-    }
-
-    // ── Inner watery fill (matches game.js radial gradient fill) ────────────
-    const fill = this.add.graphics();
-    // We simulate the bumpy membrane using a custom polygon drawn from
-    // sinusoidal perturbations, matching game.js's N=64 loop.
-    const N     = 64;
-    const pts   = [];
-    for (let i = 0; i <= N; i++) {
-      const a    = (i / N) * Math.PI * 2;
-      // time=0 on first draw; harmonic bumps from game.js
-      const bump = Math.sin(a * 7) * (r * 0.012) + Math.sin(a * 13) * (r * 0.008);
-      const rr   = r + bump;
-      pts.push(new Phaser.Math.Vector2(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr));
-    }
-
-    // Inner fill — teal gradient approximated with concentric rings
-    // rgba(80,200,200,0.20) center → rgba(59,175,169,0.16) mid → rgba(15,60,70,0.45) edge
-    for (let step = 10; step >= 0; step--) {
-      const t   = step / 10;
-      // Center color: rgb(80,200,200) → Edge: rgb(15,60,70)
-      const rC  = Math.round(80  + (15  - 80)  * (1 - t));
-      const gC  = Math.round(200 + (60  - 200) * (1 - t));
-      const bC  = Math.round(200 + (70  - 200) * (1 - t));
-      const col = (rC << 16) | (gC << 8) | bC;
-      const alp = t < 0.5 ? 0.20 * (t / 0.5) : 0.16 + (0.45 - 0.16) * ((t - 0.5) / 0.5);
-      fill.fillStyle(col, alp);
-      fill.fillCircle(cx, cy, r * t);
-    }
-
-    // Draw bumpy membrane path as polygon fill
-    fill.fillStyle(0x3BAFA9, 0.08);
-    fill.fillPoints(pts, true, true);
-
-    // ── Membrane stroke — teal glow ──────────────────────────────────────────
-    const membrane = this.add.graphics();
-    membrane.lineStyle(4, 0x3BAFA9, 1.0);
-    membrane.strokePoints(pts, true);
-
-    // Inner ring (rgba(160,230,225,0.18))
-    membrane.lineStyle(1.2, 0xA0E6E1, 0.18);
-    membrane.strokeCircle(cx, cy, r - 6);
-
-    // ── Phospholipid dots around membrane ────────────────────────────────────
-    const phospho = this.add.graphics();
-    phospho.fillStyle(0x78DCD2, 0.5);
-    for (let i = 0; i < 48; i++) {
-      const a  = (i / 48) * Math.PI * 2;
-      const px = cx + Math.cos(a) * (r + 3);
-      const py = cy + Math.sin(a) * (r + 3);
-      phospho.fillCircle(px, py, 1.4);
-    }
-
-    // ── Floating organelles (mitochondria ellipses) ────────────────────────
-    const organelles = this.add.graphics();
-    for (let i = 0; i < ORGANELLE_COUNT; i++) {
-      const a  = (i / ORGANELLE_COUNT) * Math.PI * 2;
-      const rr = r * 0.55;
-      const ox = cx + Math.cos(a) * rr;
-      const oy = cy + Math.sin(a) * rr;
-      organelles.fillStyle(0xB4965A, 0.22);
-      organelles.fillEllipse(ox, oy, 18, 10);
-      organelles.lineStyle(1, 0xFFD28C, 0.28);
-      organelles.strokeEllipse(ox, oy, 18, 10);
-    }
-
-    // ── Nucleus ──────────────────────────────────────────────────────────────
-    const nucleus = this.add.graphics();
-    nucleus.x = cx;
-    nucleus.y = cy;
-
-    // Nucleus aura: rgba(168,200,240,0.35) → rgba(168,200,240,0) over radius nr*2.4
-    for (let i = 8; i >= 0; i--) {
-      const ratio = i / 8;
-      const rad   = nr * 2.4 * ratio;
-      const alpha = 0.35 * (1 - ratio);
-      nucleus.fillStyle(0xA8C8F0, alpha);
-      nucleus.fillCircle(0, 0, rad);
-    }
-
-    // Nucleus body gradient: centre #D6E5F8 → mid #A8C8F0 → edge #5B8FD4
-    const bodySteps = 10;
-    for (let i = bodySteps; i >= 0; i--) {
-      const t   = i / bodySteps;
-      let rC, gC, bC;
-      if (t > 0.55) {
-        // centre → mid (#D6E5F8 → #A8C8F0)
-        const p = (t - 0.55) / 0.45;
-        rC = Math.round(168 + (214 - 168) * p);
-        gC = Math.round(200 + (229 - 200) * p);
-        bC = Math.round(240 + (248 - 240) * p);
-      } else {
-        // mid → edge (#A8C8F0 → #5B8FD4)
-        const p = t / 0.55;
-        rC = Math.round(91  + (168 - 91)  * p);
-        gC = Math.round(143 + (200 - 143) * p);
-        bC = Math.round(212 + (240 - 212) * p);
-      }
-      const col = (rC << 16) | (gC << 8) | bC;
-      nucleus.fillStyle(col, 1.0);
-      nucleus.fillCircle(0, 0, nr * t);
-    }
-
-    // Highlight ellipse (rgba(255,255,255,0.45)) — top-left offset
-    nucleus.fillStyle(0xffffff, 0.45);
-    nucleus.fillEllipse(-nr * 0.35, -nr * 0.4, nr * 0.7, nr * 0.36);
-
-    // Inner nucleolus dot (rgba(91,143,212,0.55))
-    nucleus.fillStyle(0x5B8FD4, 0.55);
-    nucleus.fillCircle(nr * 0.15, nr * 0.18, nr * 0.22);
-
-    // ── Membrane pulse tween ────────────────────────────────────────────────
-    if (!this.reducedMotion) {
-      this.tweens.add({
-        targets: membrane,
-        alpha: { from: 0.85, to: 1.0 },
-        yoyo: true,
-        repeat: -1,
-        duration: 2000,
-        ease: 'Sine.easeInOut',
-      });
-
-      this.tweens.add({
-        targets: nucleus,
-        scaleX: { from: 0.96, to: 1.04 },
-        scaleY: { from: 0.96, to: 1.04 },
-        yoyo: true,
-        repeat: -1,
-        duration: 2800,
-        ease: 'Sine.easeInOut',
-      });
-
-      // Organelles drift slowly
-      this.tweens.add({
-        targets: organelles,
-        angle: { from: 0, to: 360 },
-        repeat: -1,
-        duration: 40000,
-        ease: 'Linear',
-      });
-    }
-
-    // Store refs for later manipulation
-    this.cellGraphics = membrane;
-  }
 
   _buildTowerSlots() {
     const g = this.add.graphics();
@@ -383,9 +337,15 @@ export default class CellDefenseScene extends BaseGameScene {
 
       // Invisible click zone for this slot
       const zone = this.add.zone(x, y, 44, 44).setInteractive();
-      zone.on('pointerdown', () => {
+      zone.on('pointerdown', (pointer) => {
         const slot = this.towerSlots[i];
-        this.bus?.emit('towerSlotClicked', { slotIndex: i, isEmpty: !slot.tower });
+        this.bus?.emit('towerSlotClicked', {
+          slotIndex: i,
+          isEmpty: !slot.tower,
+          towerId: slot.tower?.id ?? null,
+          canvasX: pointer.x,
+          canvasY: pointer.y,
+        });
       });
 
       this.towerSlots.push({ angle, x, y, tower: null });
@@ -396,20 +356,37 @@ export default class CellDefenseScene extends BaseGameScene {
 
   // ── Event bus ─────────────────────────────────────────────────────────────
 
+  _busOn(event, fn) {
+    this._busListeners[event] ??= [];
+    this._busListeners[event].push(fn);
+    this.bus.on(event, fn);
+  }
+
   _setupBusListeners() {
     if (!this.bus) return;
 
-    this.bus.on('pause', () => {
+    this._busOn('phaseTransition', ({ toPhase }) => {
+      if (toPhase !== this.phase) this._phaseProgress = 0;
+    });
+
+    this._busOn('pause', () => {
       this.physics.pause();
       this.paused = true;
     });
 
-    this.bus.on('resume', () => {
+    this._busOn('resume', () => {
       this.physics.resume();
       this.paused = false;
     });
 
-    this.bus.on('placeTower', ({ towerId, slotIndex }) => {
+    this._busOn('towerSelected', ({ towerId }) => {
+      this._selectedTowerId = towerId ?? null;
+      this._showSlotHighlights(this._selectedTowerId);
+      const canvas = this.sys?.game?.canvas;
+      if (canvas) canvas.style.cursor = towerId ? 'crosshair' : 'default';
+    });
+
+    this._busOn('placeTower', ({ towerId, slotIndex }) => {
       const def = TOWERS[towerId];
       if (!def || this.atp < def.cost) return;
 
@@ -420,7 +397,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this.bus.on('sellTower', ({ slotIndex }) => {
+    this._busOn('sellTower', ({ slotIndex }) => {
       const refund = this.towerSystem.sellTower(slotIndex);
       if (refund > 0) {
         this.atp += refund;
@@ -428,7 +405,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this.bus.on('upgradeTower', ({ slotIndex }) => {
+    this._busOn('upgradeTower', ({ slotIndex }) => {
       const slot = this.towerSlots[slotIndex];
       if (!slot?.tower) return;
       const upgradeCost = slot.tower.def.upgradeCost ?? 0;
@@ -438,11 +415,11 @@ export default class CellDefenseScene extends BaseGameScene {
       this._emitState();
     });
 
-    this.bus.on('waveCleared', () => {
+    this._busOn('waveCleared', () => {
       this.phaseSystem?.onWaveCleared();
     });
 
-    this.bus.on('enemyReachedNucleus', ({ mutationType }) => {
+    this._busOn('enemyReachedNucleus', ({ mutationType }) => {
       const damage = this.doubleHitActive ? 20 : 10;
       this.doubleHitActive = false;
       this.hp = Math.max(0, this.hp - damage);
@@ -458,7 +435,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this.bus.on('gameOver', ({ reason }) => {
+    this._busOn('gameOver', ({ reason }) => {
       this.physics.pause();
       this.paused = true;
       this._emitState();
@@ -472,11 +449,11 @@ export default class CellDefenseScene extends BaseGameScene {
       });
     });
 
-    this.bus.on('atpPickupSpawned', ({ x, y, amount }) => {
+    this._busOn('atpPickupSpawned', ({ x, y, amount }) => {
       this._spawnAtpPickup(x, y, amount);
     });
 
-    this.bus.on('aoeBlast', ({ x, y, radius }) => {
+    this._busOn('aoeBlast', ({ x, y, radius }) => {
       const enemies = this.enemySystem?.enemies ?? [];
       for (const enemy of enemies) {
         if (!enemy.alive) continue;
@@ -488,7 +465,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this.bus.on('towerSilence', ({ x, y }) => {
+    this._busOn('towerSilence', ({ x, y }) => {
       const slots = this.towerSystem?.slots ?? [];
       let nearestIdx = -1;
       let nearestDist = Infinity;
@@ -506,6 +483,64 @@ export default class CellDefenseScene extends BaseGameScene {
         this.towerSystem.silenceTower(nearestIdx, 4000);
       }
     });
+  }
+
+  _showSlotHighlights(towerId) {
+    if (!this._selectionGraphics) {
+      this._selectionGraphics = this.add.graphics();
+      this._selectionGraphics.setDepth(9);
+    }
+    this._selectionGraphics.clear();
+    this.tweens.killTweensOf(this._selectionGraphics);
+
+    if (!towerId) return;
+
+    const def = TOWERS[towerId];
+    const canAfford = def && this.atp >= def.cost;
+    const color = canAfford ? 0x3BAFA9 : 0xFF4444;
+
+    for (const slot of this.towerSlots) {
+      if (slot.tower) continue;
+      this._selectionGraphics.lineStyle(2, color, 0.9);
+      this._selectionGraphics.strokeCircle(slot.x, slot.y, 20);
+      this._selectionGraphics.fillStyle(color, canAfford ? 0.18 : 0.12);
+      this._selectionGraphics.fillCircle(slot.x, slot.y, 20);
+    }
+
+    if (!this.reducedMotion) {
+      this.tweens.add({
+        targets: this._selectionGraphics,
+        alpha: { from: 0.5, to: 1.0 },
+        yoyo: true,
+        repeat: -1,
+        duration: 600,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  destroy() {
+    // Remove all bus listeners registered by this scene
+    if (this.bus && this._busListeners) {
+      for (const [event, fns] of Object.entries(this._busListeners)) {
+        for (const fn of fns) {
+          this.bus.off(event, fn);
+        }
+      }
+    }
+    this._busListeners = {};
+
+    this.phaseSystem?.destroy();
+
+    // Clean up animated cell texture
+    if (this.textures.exists('cellPhase')) {
+      this.textures.remove('cellPhase');
+    }
+    this._cellCanvas = null;
+
+    // Reset cursor in case we changed it
+    const canvas = this.sys?.game?.canvas;
+    if (canvas) canvas.style.cursor = 'default';
   }
 
   _spawnAtpPickup(x, y, amount) {

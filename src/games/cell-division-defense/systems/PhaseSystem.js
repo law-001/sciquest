@@ -45,6 +45,12 @@ class PhaseSystem {
     if (waveConfig) {
       this.scene.wave++;
       this.scene._waveActive = true;
+      this.scene.bus?.emit('waveStarted', {
+        phase: toPhase,
+        enemies: waveConfig,
+        wave: this.scene.wave,
+        totalWaves: 5,
+      });
       this.scene.enemySystem?.spawnWave(waveConfig);
       this._emitState();
     } else {
