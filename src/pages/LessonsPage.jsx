@@ -1,9 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Play,
   Lock,
@@ -482,14 +477,14 @@ export function LessonsPage({
                     </p>
 
                     {/* Sub-lesson pills */}
-                    <div className="flex gap-2 mb-5 flex-wrap">
+                    <div className="flex gap-2 mb-5 flex-wrap ">
                       {week.lessons.map((lesson) => {
                         const isDone = completedLessons.includes(lesson.id);
                         return (
                           <span
                             key={lesson.id}
                             className={cn(
-                              "text-xs font-bold px-3 py-1 rounded-full border",
+                              "text-xs font-bold px-3 py-1 rounded-full border dark:text-secondary-700",
                               isDone
                                 ? "bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border-secondary-200 dark:border-secondary-800/50"
                                 : "bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 border-stone-200 dark:border-stone-600",
