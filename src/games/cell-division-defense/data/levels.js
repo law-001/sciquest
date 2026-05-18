@@ -4,7 +4,7 @@ export const LEVELS = [
     act: 1,
     level: 1,
     displayName: 'First Division',
-    startAtp: 300,
+    startAtp: 400,
     nucleusHp: 100,
     phases: ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'],
     waves: {
@@ -40,7 +40,7 @@ export const LEVELS = [
     act: 1,
     level: 2,
     displayName: 'Escalating Threat',
-    startAtp: 280,
+    startAtp: 400,
     nucleusHp: 100,
     phases: ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'],
     waves: {
@@ -76,7 +76,7 @@ export const LEVELS = [
     act: 1,
     level: 3,
     displayName: 'Under Siege',
-    startAtp: 260,
+    startAtp: 380,
     nucleusHp: 100,
     phases: ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'],
     waves: {
@@ -112,7 +112,7 @@ export const LEVELS = [
     act: 1,
     level: 4,
     displayName: 'Mutation Crisis',
-    startAtp: 250,
+    startAtp: 370,
     nucleusHp: 100,
     phases: ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'],
     waves: {
@@ -148,7 +148,7 @@ export const LEVELS = [
     act: 1,
     level: 5,
     displayName: 'Final Mitosis',
-    startAtp: 240,
+    startAtp: 360,
     nucleusHp: 100,
     phases: ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'],
     waves: {

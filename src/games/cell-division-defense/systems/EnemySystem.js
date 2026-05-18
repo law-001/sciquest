@@ -39,12 +39,12 @@ class EnemySystem {
 
     const follower = this.scene.add.follower(path, startX, startY, type);
     follower.setDepth(5);
-    follower.setScale(0.65);
+    follower.setScale(1.3);
 
     const hpBar = this.scene.add.graphics();
     hpBar.setDepth(7);
 
-    const label = this.scene.add.text(startX, startY - 26, def.displayName, {
+    const label = this.scene.add.text(startX, startY - 46, def.displayName, {
       fontSize: '8px',
       color: '#ffffff',
       stroke: '#000000',
@@ -134,19 +134,19 @@ class EnemySystem {
 
       // Redraw HP bar above sprite
       const { sprite, hpBar, label } = enemy;
-      const bx = sprite.x - 14;
-      const by = sprite.y - 22;
+      const bx = sprite.x - 28;
+      const by = sprite.y - 42;
 
       hpBar.clear();
       hpBar.fillStyle(0x000000, 0.6);
-      hpBar.fillRect(bx, by, 28, 4);
+      hpBar.fillRect(bx, by, 56, 5);
 
       const hpFrac = Math.max(0, enemy.hp / enemy.maxHp);
       const hpColor = hpFrac > 0.5 ? 0x22c55e : hpFrac > 0.25 ? 0xf59e0b : 0xef4444;
       hpBar.fillStyle(hpColor, 1);
-      hpBar.fillRect(bx, by, 28 * hpFrac, 4);
+      hpBar.fillRect(bx, by, 56 * hpFrac, 5);
 
-      label.setPosition(sprite.x, sprite.y - 25);
+      label.setPosition(sprite.x, sprite.y - 48);
     }
   }
 

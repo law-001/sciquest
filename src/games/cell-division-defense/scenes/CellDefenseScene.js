@@ -126,6 +126,8 @@ export default class CellDefenseScene extends BaseGameScene {
     this.enemySystem.towerSystem = this.towerSystem;
     this.enemySystem.animationSystem = this.animationSystem;
 
+    this._drawBreachIndicators(breachPoints);
+
     this.projectileSystem = new ProjectileSystem(this);
     this.projectileSystem.registerHitCallback((enemy, def) => {
       this.enemySystem.damageEnemy(enemy, def.damage);
@@ -173,8 +175,8 @@ export default class CellDefenseScene extends BaseGameScene {
     this._enemyWalkPhase  += 0.045;
     this._toxinBouncePhase += 0.04;
 
-    // Advance visual mitosis cycle (real seconds, loops every 24s)
-    this._mitosisT    += delta / 1000;
+    // Advance visual mitosis cycle slowly so each stage is appreciable
+    this._mitosisT    += delta / 6000;
     this._currentPhase = getPhase(this._mitosisT);
     this._currentShape = cellShapeForPhase(this._currentPhase, this.cellR);
 
@@ -277,6 +279,62 @@ export default class CellDefenseScene extends BaseGameScene {
     }
   }
 
+  _drawBreachIndicators(breachPoints) {
+    const g = this.add.graphics();
+    g.setDepth(3);
+
+    breachPoints.forEach((bp) => {
+      // Outer pulsing ring
+      g.lineStyle(2, 0xFF4040, 0.65);
+      g.strokeCircle(bp.x, bp.y, 26);
+      g.lineStyle(1, 0xFF4040, 0.25);
+      g.strokeCircle(bp.x, bp.y, 38);
+
+      // Crosshair
+      g.lineStyle(1.5, 0xFF4040, 0.6);
+      g.beginPath(); g.moveTo(bp.x - 18, bp.y); g.lineTo(bp.x + 18, bp.y); g.strokePath();
+      g.beginPath(); g.moveTo(bp.x, bp.y - 18); g.lineTo(bp.x, bp.y + 18); g.strokePath();
+
+      // Arrow pointing toward cell center
+      const dx = this.cellCX - bp.x;
+      const dy = this.cellCY - bp.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const nx = dx / dist, ny = dy / dist;
+      const arrowBase = 32, arrowTip = 56;
+      const ax = bp.x + nx * arrowBase, ay = bp.y + ny * arrowBase;
+      const tx = bp.x + nx * arrowTip,  ty = bp.y + ny * arrowTip;
+      const px = -ny * 8, py = nx * 8;
+      g.lineStyle(0, 0, 0);
+      g.fillStyle(0xFF4040, 0.75);
+      g.beginPath();
+      g.moveTo(tx, ty);
+      g.lineTo(ax + px, ay + py);
+      g.lineTo(ax - px, ay - py);
+      g.closePath();
+      g.fillPath();
+
+      // "ENTRY" label
+      this.add.text(bp.x, bp.y - 44, 'ENTRY POINT', {
+        fontSize: '9px',
+        color: '#FF8080',
+        stroke: '#000000',
+        strokeThickness: 2,
+        fontFamily: '"Courier New", Courier, monospace',
+        fontStyle: 'bold',
+      }).setOrigin(0.5, 1).setDepth(3);
+    });
+
+    // Pulse the whole indicators layer
+    this.tweens.add({
+      targets: g,
+      alpha: { from: 0.6, to: 1 },
+      yoyo: true,
+      repeat: -1,
+      duration: 900,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
   _drawHexGrid() {
     const { width, height } = this.scale;
     const g = this.add.graphics();
@@ -365,8 +423,21 @@ export default class CellDefenseScene extends BaseGameScene {
   _setupBusListeners() {
     if (!this.bus) return;
 
-    this._busOn('phaseTransition', ({ toPhase }) => {
+    this._busOn('phaseTransition', ({ fromPhase, toPhase }) => {
       if (toPhase !== this.phase) this._phaseProgress = 0;
+      // Jump visual cell to the matching mitosis stage when game phase actually changes
+      if (fromPhase !== toPhase) {
+        const phaseStartT = {
+          interphase:  0,
+          prophase:    4.0,
+          metaphase:   7.5,
+          anaphase:   11.0,
+          telophase:  14.5,
+          cytokinesis: 18.0,
+        };
+        const t = phaseStartT[toPhase];
+        if (t !== undefined) this._mitosisT = t;
+      }
     });
 
     this._busOn('pause', () => {
