@@ -22,6 +22,7 @@ import {
   BarChart3,
   Layers,
 } from "lucide-react";
+import { isHiddenAchievement } from "../lib/achievements";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  Data constants                                              */
@@ -206,6 +207,14 @@ const ALL_ACHIEVEMENTS = [
     bg: "bg-pink-500/20",
     color: "text-pink-500",
     req: "Explore the SciQuest landing page",
+  },
+  {
+    key: "blacked",
+    Icon: Star,
+    label: "BLACKED",
+    bg: "bg-stone-800/20",
+    color: "text-stone-800 dark:text-stone-200",
+    req: "Hidden — discover it for yourself",
   },
 ];
 
@@ -512,7 +521,12 @@ export function ProfilePage({ unlockedAchievements = [] }) {
   }, [headerTriggered, prefersReducedMotion]);
 
   const unlockedKeys = new Set(unlockedAchievements);
-  const unlockedCount = ALL_ACHIEVEMENTS.filter((a) =>
+  // Hidden achievements stay out of the catalog (and the X / N count)
+  // entirely until the student earns them — no teasing "???" slot.
+  const visibleAchievements = ALL_ACHIEVEMENTS.filter(
+    (a) => !isHiddenAchievement(a.key) || unlockedKeys.has(a.key),
+  );
+  const unlockedCount = visibleAchievements.filter((a) =>
     unlockedKeys.has(a.key),
   ).length;
 
@@ -1038,16 +1052,16 @@ export function ProfilePage({ unlockedAchievements = [] }) {
                 All Achievements
               </h3>
               <span className="text-xs font-bold text-stone-400 dark:text-stone-500 tabular-nums">
-                {unlockedCount} / {ALL_ACHIEVEMENTS.length} unlocked
+                {unlockedCount} / {visibleAchievements.length} unlocked
               </span>
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
-              {ALL_ACHIEVEMENTS.map(
+              {visibleAchievements.map(
                 ({ key, Icon, label, bg, color, req }, i) => {
                   const unlocked = unlockedKeys.has(key);
                   return (
                   <div
-                    key={label}
+                    key={key}
                     className={`relative flex flex-col items-center gap-2 transition-[opacity,transform] duration-500 ease-out ${
                       achievementsTriggered
                         ? "opacity-100 scale-100"
@@ -1058,7 +1072,7 @@ export function ProfilePage({ unlockedAchievements = [] }) {
                         ? `${i * 50}ms`
                         : "0ms",
                     }}
-                    onMouseEnter={() => setHoveredBadge(label)}
+                    onMouseEnter={() => setHoveredBadge(key)}
                     onMouseLeave={() => setHoveredBadge(null)}
                   >
                     <div
@@ -1089,7 +1103,7 @@ export function ProfilePage({ unlockedAchievements = [] }) {
                     </span>
 
                     {/* Hover tooltip */}
-                    {hoveredBadge === label && (
+                    {hoveredBadge === key && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 z-20 pointer-events-none">
                         <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl p-3 shadow-2xl">
                           <p className="text-xs font-bold text-stone-900 dark:text-white mb-1 text-center">
