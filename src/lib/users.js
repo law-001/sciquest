@@ -126,6 +126,17 @@ export async function fetchSectionCounts() {
     .sort((a, b) => b.value - a.value)
 }
 
+// Updates the signed-in student's own editable fields. RLS
+// (own_student_update) restricts this to their own row.
+export async function updateStudentProfile(studentId, { firstName, lastName }) {
+  if (!studentId) return
+  const { error } = await supabase
+    .from('students')
+    .update({ first_name: firstName, last_name: lastName })
+    .eq('id', studentId)
+  if (error) throw error
+}
+
 // Deletes an auth user (cascades to students/staff + student_progress) via the
 // admin-delete-user Edge Function — the anon key cannot touch auth.users directly.
 export async function deleteUser(userId) {

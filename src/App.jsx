@@ -22,6 +22,7 @@ import {
   totalXpEarned,
 } from "./lib/progress";
 import { levelFromXp } from "./lib/xp-config";
+import { addScreenSeconds } from "./lib/screentime";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
 import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { XpToast } from "./components/XpToast";
@@ -117,6 +118,35 @@ function AppContent() {
       console.error("Failed to award Curious Explorer:", err);
     });
   }, [user, isStudent, explorerUnlocked]);
+
+  // Global screen-time heartbeat: every open tab credits its active
+  // seconds to one shared counter (all users, all devices). Only time
+  // the tab is actually visible counts; the server caps each call.
+  useEffect(() => {
+    let lastTick = Date.now();
+    const credit = () => {
+      const now = Date.now();
+      const secs = Math.round((now - lastTick) / 1000);
+      lastTick = now;
+      if (secs > 0) addScreenSeconds(secs).catch(() => {});
+    };
+    const tick = () => {
+      if (document.visibilityState === "visible") credit();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") lastTick = Date.now();
+      else credit();
+    };
+    const id = setInterval(tick, 20000);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", credit);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", credit);
+      if (document.visibilityState === "visible") credit();
+    };
+  }, []);
 
   const pushNotification = (n) => {
     setNotifications((prev) => [...prev, { id: Date.now() + Math.random(), ...n }]);
@@ -472,8 +502,10 @@ function AppContent() {
           <ProfilePage
             onNavigate={handleNavigate}
             completedLessons={effectiveCompletedLessons}
+            completedRows={effectiveCompletedRows}
             quizAttempts={effectiveQuizAttempts}
             unlockedAchievements={effectiveUnlockedAchievements}
+            totalXp={totalXp}
           />
         );
 

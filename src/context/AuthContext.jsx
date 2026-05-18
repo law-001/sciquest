@@ -114,8 +114,15 @@ export function AuthProvider({ children }) {
     setProfile(null)
   }
 
+  // Re-pull the current user's profile row — call after a profile edit
+  // so cached name/section in the UI reflects the saved values.
+  const refreshProfile = async () => {
+    if (!user?.id) return null
+    return fetchProfile(user.id)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
