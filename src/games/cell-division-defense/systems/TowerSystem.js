@@ -18,7 +18,7 @@ class TowerSystem {
 
     const sprite = this.scene.add.sprite(x, y, towerId);
     sprite.setDepth(5);
-    sprite.setScale(0.65);
+    sprite.setScale(1.3);
 
     // Range indicator — hidden by default
     const rangeCircle = this.scene.add.graphics();
