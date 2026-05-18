@@ -1,4 +1,5 @@
 # SciQuest — Project Summary
+Last updated: May 17, 2026
 
 ## What It Is
 
@@ -15,6 +16,7 @@ SciQuest is an interactive **Grade 7 science learning platform** built as a sing
 | Styling | Tailwind CSS 4 (no external component kit — all custom) |
 | Backend | Supabase (auth + PostgreSQL) |
 | Animation | GSAP 3 + Lenis (smooth scroll) |
+| Games | Phaser 3.90 (built-in Matter.js physics) |
 | Icons | lucide-react |
 | Language | Plain JSX — no TypeScript |
 
@@ -27,9 +29,10 @@ No React Router. `App.jsx` holds a `currentView` string and passes `onNavigate(v
 ```
 home | lessons | lesson-content | quiz | about | contact
 admin | teachers | teacher-portal | profile
+games | game-play
 ```
 
-Portal views (`admin`, `teacher-portal`) hide the Navbar via an `isPortalView` flag.
+Portal views (`admin`, `teacher-portal`, `game-play`) hide the Navbar via an `isPortalView` flag.
 
 ---
 
@@ -95,6 +98,36 @@ Quiz data lives in `src/data/quizzesweek-01.js` through `quizzesweek-20.js`, key
 
 ---
 
+## Games Platform
+
+A Phaser-based mini-game system layered onto the React app. Phaser renders to a `<canvas>`; React wraps it with HUD overlays. React ↔ Phaser communication is **only** via an event bus — never pass React state/refs into scenes.
+
+**Registry** — [src/lib/games/registry.js](src/lib/games/registry.js) defines a `GAMES` map. Each entry carries metadata (title, difficulty, category, related lesson IDs) and a lazy `loader`. Games without a loader render as **locked** cards.
+
+| Game ID | Status | Category |
+|---|---|---|
+| `matter-state-sandbox` | Playable (Phaser) | Chemistry |
+| `cell-explorer` | Locked (coming soon) | Biology |
+| `circuit-lab` | Locked (coming soon) | Physics |
+
+**Folder layout:**
+
+```
+src/games/_shared/          # Engine infra: eventBus, BaseGameScene,
+                            #   createPhaserGame, useGameProgress, hooks
+src/games/<game-slug>/      # One game: Phaser scenes + React HUD
+src/components/games/       # Shared game UI: GameShell, GameCard,
+                            #   GameAuthGate, GameLoadingScreen
+src/lib/games/              # registry.js + progress.js (all DB writes)
+```
+
+**GameComponent contract** — every game's `index.jsx` default export accepts:
+`{ user, profile, onExit, onProgressUpdate, initialChallengeId, reducedMotion, deviceTier }`
+
+**Rules:** `Phaser.Game` created exactly once per mount via a `useRef` guard (StrictMode-safe). A file enters `_shared/` only when 2+ games need it. All Supabase writes go through `src/lib/games/progress.js`.
+
+---
+
 ## Pages
 
 | Page | View Key | Notes |
@@ -108,6 +141,8 @@ Quiz data lives in `src/data/quizzesweek-01.js` through `quizzesweek-20.js`, key
 | `AdminDashboardPage` | `admin` | Stats, user management |
 | `TeacherPortalPage` | `teacher-portal` | Teacher view |
 | `ProfilePage` | `profile` | User profile |
+| `GamesHubPage` | `games` | Game catalog (cards from registry) |
+| `GamePlayPage` | `game-play` | Lazy-loads + mounts the active game |
 
 ---
 
@@ -215,6 +250,11 @@ src/
 ├── lib/
 │   ├── supabase.js                 # Supabase client init
 │   ├── users.js                    # Admin/teacher DB queries
+│   ├── utils.js                    # cn() classname helper
+│   └── games/                      # registry.js + progress.js
+├── games/
+│   ├── _shared/                    # Engine infra (eventBus, scenes, hooks)
+│   └── matter-state-sandbox/       # Playable Phaser game
 │   ├── xp-config.js               # XP/level economy constants + helpers
 │   ├── progress.js                 # Lesson progress queries
 │   └── games/
@@ -226,6 +266,7 @@ src/
 ├── components/
 │   ├── lesson-slots/               # 10 lesson slot components + Sectionheading
 │   ├── quiz-slots/                 # 10 quiz question components
+│   ├── games/                      # Shared game UI (GameShell, GameCard…)
 │   ├── layout/Navbar.jsx
 │   ├── modals/AuthModal.jsx
 │   ├── LessonTemplate.jsx

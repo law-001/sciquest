@@ -22,6 +22,8 @@ import {
   totalXpEarned,
 } from "./lib/progress";
 import { levelFromXp } from "./lib/xp-config";
+import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
+import { CURIOUS_EXPLORER_KEY, CURIOUS_EXPLORER_STORAGE_KEY } from "./lib/achievements";
 import { XpToast } from "./components/XpToast";
 
 function AppContent() {
@@ -36,6 +38,7 @@ function AppContent() {
   const [activeGameId, setActiveGameId] = useState(null);
   const [completedRows, setCompletedRows] = useState([]);
   const [quizAttempts, setQuizAttempts] = useState([]);
+  const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
   const isLoggedIn = !!user;
@@ -46,6 +49,7 @@ function AppContent() {
   const effectiveCompletedLessons = (user && isStudent) ? completedLessons : [];
   const effectiveCompletedRows    = (user && isStudent) ? completedRows    : [];
   const effectiveQuizAttempts     = (user && isStudent) ? quizAttempts     : [];
+  const effectiveUnlockedAchievements = (user && isStudent) ? unlockedAchievements : [];
 
   const totalXp = totalXpEarned(effectiveCompletedRows, effectiveQuizAttempts);
   const currentLevel = levelFromXp(totalXp);
@@ -61,14 +65,36 @@ function AppContent() {
   useEffect(() => {
     if (!user?.id || !isStudent) return;
     let cancelled = false;
-    fetchProgress(user.id)
-      .then(({ completedLessons: done, completedRows: rows, attempts }) => {
+    Promise.all([fetchProgress(user.id), fetchAchievements(user.id)])
+      .then(async ([{ completedLessons: done, completedRows: rows, attempts }, unlocked]) => {
         if (cancelled) return;
         setCompletedLessons(done);
         setCompletedRows(rows);
         setQuizAttempts(attempts);
         // Anything completed is also "reached" — keeps the lesson tab nav consistent.
         setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
+
+        // Auto-award everything the current progress now qualifies for,
+        // plus the Curious Explorer flag the (unauthenticated) landing
+        // page stashed in localStorage before this student logged in.
+        const ctx = {
+          completedLessons: done,
+          completedRows: rows,
+          attempts,
+          totalXp: totalXpEarned(rows, attempts),
+        };
+        let { unlocked: nextUnlocked } = await syncAchievements(
+          user.id,
+          ctx,
+          unlocked,
+        );
+        const sawLanding =
+          window.localStorage.getItem(CURIOUS_EXPLORER_STORAGE_KEY) === "1";
+        if (sawLanding && !nextUnlocked.includes(CURIOUS_EXPLORER_KEY)) {
+          await awardAchievements(user.id, [CURIOUS_EXPLORER_KEY]);
+          nextUnlocked = [...nextUnlocked, CURIOUS_EXPLORER_KEY];
+        }
+        if (!cancelled) setUnlockedAchievements(nextUnlocked);
       })
       .catch((err) => {
         console.error("Failed to load student progress:", err);
@@ -340,6 +366,7 @@ function AppContent() {
             onNavigate={handleNavigate}
             completedLessons={effectiveCompletedLessons}
             quizAttempts={effectiveQuizAttempts}
+            unlockedAchievements={effectiveUnlockedAchievements}
           />
         );
 

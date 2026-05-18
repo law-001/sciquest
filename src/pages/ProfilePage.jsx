@@ -99,102 +99,113 @@ const BADGES = [
   },
 ];
 
+// Visual catalog. `key` matches src/lib/achievements.js — unlock
+// state comes from the DB (the unlockedAchievements prop), never
+// hardcoded here.
 const ALL_ACHIEVEMENTS = [
   {
+    key: "first-quiz",
     Icon: Trophy,
     label: "First Quiz",
     bg: "bg-amber-500/20",
     color: "text-amber-500",
-    unlocked: true,
     req: "Complete your first quiz",
   },
   {
+    key: "seven-day-streak",
     Icon: Flame,
     label: "7-Day Streak",
     bg: "bg-orange-500/20",
     color: "text-orange-500",
-    unlocked: true,
     req: "Maintain a 7-day learning streak",
   },
   {
+    key: "science-nerd",
     Icon: Shield,
     label: "Science Nerd",
     bg: "bg-teal-500/20",
     color: "text-teal-500",
-    unlocked: true,
     req: "Complete 10 lessons",
   },
   {
+    key: "speed-learner",
     Icon: Zap,
     label: "Speed Learner",
     bg: "bg-yellow-400/20",
     color: "text-yellow-500",
-    unlocked: true,
     req: "Finish a quiz in under 2 minutes",
   },
   {
+    key: "perfect-score",
     Icon: Star,
     label: "Perfect Score",
     bg: "bg-purple-500/20",
     color: "text-purple-500",
-    unlocked: false,
     req: "Score 100% on any quiz",
   },
   {
+    key: "bookworm",
     Icon: BookOpen,
     label: "Bookworm",
     bg: "bg-blue-500/20",
     color: "text-blue-500",
-    unlocked: false,
     req: "Complete 25 lessons",
   },
   {
+    key: "sharpshooter",
     Icon: Target,
     label: "Sharpshooter",
     bg: "bg-rose-500/20",
     color: "text-rose-500",
-    unlocked: false,
     req: "Achieve 90%+ accuracy 5 times",
   },
   {
+    key: "leaderboard-king",
     Icon: Crown,
     label: "Leaderboard King",
     bg: "bg-amber-400/20",
     color: "text-amber-500",
-    unlocked: false,
     req: "Reach #1 on the weekly leaderboard",
   },
   {
+    key: "bio-master",
     Icon: Dna,
     label: "Bio Master",
     bg: "bg-green-500/20",
     color: "text-green-500",
-    unlocked: false,
     req: "Complete all Biology lessons",
   },
   {
+    key: "physics-wizard",
     Icon: Atom,
     label: "Physics Wizard",
     bg: "bg-sky-500/20",
     color: "text-sky-500",
-    unlocked: false,
     req: "Complete all Physics lessons",
   },
   {
+    key: "earth-explorer",
     Icon: Globe2,
     label: "Earth Explorer",
     bg: "bg-yellow-500/20",
     color: "text-yellow-500",
-    unlocked: false,
     req: "Complete all Earth Science lessons",
   },
   {
+    key: "on-the-rise",
     Icon: TrendingUp,
     label: "On The Rise",
     bg: "bg-indigo-500/20",
     color: "text-indigo-500",
-    unlocked: false,
     req: "Gain 100 XP in a single day",
+  },
+  {
+    key: "curious-explorer",
+    Icon: Award,
+    label: "Curious Explorer",
+    bg: "bg-pink-500/20",
+    color: "text-pink-500",
+    req: "Explore the SciQuest landing page",
   },
 ];
 
@@ -463,7 +474,7 @@ function EditProfileModal({ isOpen, onClose }) {
 /* ─────────────────────────────────────────────────────────── */
 /*  ProfilePage                                                 */
 /* ─────────────────────────────────────────────────────────── */
-export function ProfilePage() {
+export function ProfilePage({ unlockedAchievements = [] }) {
   const [xpWidth, setXpWidth] = useState(0);
   const [activePeriod, setActivePeriod] = useState("This Week");
   const [editOpen, setEditOpen] = useState(false);
@@ -500,7 +511,10 @@ export function ProfilePage() {
     return () => clearTimeout(id);
   }, [headerTriggered, prefersReducedMotion]);
 
-  const unlockedCount = ALL_ACHIEVEMENTS.filter((a) => a.unlocked).length;
+  const unlockedKeys = new Set(unlockedAchievements);
+  const unlockedCount = ALL_ACHIEVEMENTS.filter((a) =>
+    unlockedKeys.has(a.key),
+  ).length;
 
   return (
     <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-950">
@@ -1029,7 +1043,9 @@ export function ProfilePage() {
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
               {ALL_ACHIEVEMENTS.map(
-                ({ Icon, label, bg, color, unlocked, req }, i) => (
+                ({ key, Icon, label, bg, color, req }, i) => {
+                  const unlocked = unlockedKeys.has(key);
+                  return (
                   <div
                     key={label}
                     className={`relative flex flex-col items-center gap-2 transition-[opacity,transform] duration-500 ease-out ${
@@ -1105,7 +1121,8 @@ export function ProfilePage() {
                       </div>
                     )}
                   </div>
-                ),
+                  );
+                },
               )}
             </div>
           </div>
