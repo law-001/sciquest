@@ -20,6 +20,7 @@ import {
 import Button from "../components/Button";
 import { useTheme } from "../context/ThemeContext";
 import mclassroom from "../assets/modernclassroom.jpg";
+import { CURIOUS_EXPLORER_STORAGE_KEY } from "../lib/achievements";
 
 /* ─── Hero scene colour tokens ─────────────────────────────── */
 const SCENE_CFG = {
@@ -357,6 +358,34 @@ function TypewriterText({ text, speed = 38, className = "" }) {
 /* ─────────────────────────────────────────────────────────── */
 /*  AchievementToast                                            */
 /* ─────────────────────────────────────────────────────────── */
+
+// Modest one-time explore bonus. Kept well below a quiz reward
+// (QUIZ_MIN_XP is 5, a perfect 10-item quiz is ~50) since scrolling
+// the landing page shouldn't rival actually answering questions.
+const EXPLORER_XP = 10;
+
+// Persisted so the toast only ever fires once per browser, not on
+// every visit or every scroll past the threshold. The same flag is
+// bridged into the achievements DB on next login.
+const ACHIEVEMENT_SEEN_KEY = CURIOUS_EXPLORER_STORAGE_KEY;
+
+function hasSeenAchievement() {
+  try {
+    return window.localStorage.getItem(ACHIEVEMENT_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markAchievementSeen() {
+  try {
+    window.localStorage.setItem(ACHIEVEMENT_SEEN_KEY, "1");
+  } catch {
+    // localStorage unavailable (private mode / blocked) — degrade to
+    // showing once per session rather than crashing.
+  }
+}
+
 function AchievementToast({ show }) {
   return (
     <div
@@ -382,7 +411,9 @@ function AchievementToast({ show }) {
           <p className="text-sm font-bold text-white leading-tight">
             Curious Explorer
           </p>
-          <p className="text-xs text-stone-300 font-medium">+50 XP earned</p>
+          <p className="text-xs text-stone-300 font-medium">
+            +{EXPLORER_XP} XP earned
+          </p>
         </div>
       </div>
     </div>
@@ -450,7 +481,7 @@ export function LandingPage({ onStartLearning }) {
   const [heroScrollY, setHeroScrollY] = useState(0);
   const [activeSubjectIdx, setActiveSubjectIdx] = useState(0);
   const [hoveredSubjectIdx, setHoveredSubjectIdx] = useState(null);
-  const [achievementShown, setAchievementShown] = useState(false);
+  const [achievementShown, setAchievementShown] = useState(hasSeenAchievement);
   const [achievementVisible, setAchievementVisible] = useState(false);
   const [activePanel, setActivePanel] = useState("quiz");
   const [quizAnswer, setQuizAnswer] = useState(null);
@@ -518,6 +549,7 @@ export function LandingPage({ onStartLearning }) {
         const vh = window.innerHeight;
         if (!achievementShown && y > vh * 0.85) {
           setAchievementShown(true);
+          markAchievementSeen();
           setAchievementVisible(true);
           window.setTimeout(() => setAchievementVisible(false), 4500);
         }

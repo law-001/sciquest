@@ -1,9 +1,9 @@
 // Supabase Edge Function: admin-wipe-user-data
 //
 // Wipes a user's learning/game data — student_progress, quiz_attempts,
-// game_progress, game_saves, game_sessions — WITHOUT deleting the auth
-// account or the students/staff row. Intended for resetting a test account
-// back to a clean slate without re-creating it.
+// student_achievements, game_progress, game_saves, game_sessions — WITHOUT
+// deleting the auth account or the students/staff row. Intended for
+// resetting a test account back to a clean slate without re-creating it.
 //
 // RLS only lets a user delete their own progress rows, so this runs with the
 // service-role key (like admin-delete-user). Only callers present in
@@ -26,6 +26,7 @@ const corsHeaders = {
 const DATA_TABLES = [
   'student_progress',
   'quiz_attempts',
+  'student_achievements',
   'game_progress',
   'game_saves',
   'game_sessions',

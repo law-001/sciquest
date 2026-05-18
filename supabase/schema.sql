@@ -63,6 +63,20 @@ create table if not exists public.quiz_attempts (
 create index if not exists quiz_attempts_student_lesson_idx
   on public.quiz_attempts(student_id, lesson_id);
 
+-- 3c. STUDENT ACHIEVEMENTS TABLE
+--     One row per (student, achievement). The catalog (icons, labels,
+--     unlock criteria) lives in src/lib/achievements.js — this table
+--     only records which keys a student has unlocked and when.
+create table if not exists public.student_achievements (
+  id               uuid default gen_random_uuid() primary key,
+  student_id       uuid references public.students(id) on delete cascade not null,
+  achievement_key  text not null,
+  unlocked_at      timestamptz default now() not null,
+  unique(student_id, achievement_key)
+);
+create index if not exists student_achievements_student_idx
+  on public.student_achievements(student_id);
+
 -- ============================================================
 -- 4. TRIGGER: auto-create the correct row on new auth user
 --    Reads role from user_metadata.role:
@@ -111,10 +125,11 @@ create trigger on_auth_user_created
 -- ============================================================
 -- 5. ROW LEVEL SECURITY
 -- ============================================================
-alter table public.students         enable row level security;
-alter table public.staff            enable row level security;
-alter table public.student_progress enable row level security;
-alter table public.quiz_attempts    enable row level security;
+alter table public.students             enable row level security;
+alter table public.staff                enable row level security;
+alter table public.student_progress     enable row level security;
+alter table public.quiz_attempts        enable row level security;
+alter table public.student_achievements enable row level security;
 
 -- Students: authenticated users can read all student rows.
 create policy "auth_read_students"
@@ -162,6 +177,17 @@ create policy "auth_read_attempts"
   to authenticated
   using (true);
 
+-- Achievements: students manage their own; all authenticated can read.
+create policy "own_achievements_all"
+  on public.student_achievements for all
+  using (auth.uid() = student_id)
+  with check (auth.uid() = student_id);
+
+create policy "auth_read_achievements"
+  on public.student_achievements for select
+  to authenticated
+  using (true);
+
 -- ============================================================
 -- 7. READABLE VIEWS
 --    Browse in the Table Editor without joining. `security_invoker = on`
@@ -201,6 +227,19 @@ create or replace view public.quiz_attempts_view
     qa.submitted_at
   from public.quiz_attempts qa
   join public.students s on s.id = qa.student_id;
+
+create or replace view public.student_achievements_view
+  with (security_invoker = on) as
+  select
+    sa.id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    sa.student_id,
+    sa.achievement_key,
+    sa.unlocked_at
+  from public.student_achievements sa
+  join public.students s on s.id = sa.student_id;
 
 -- ============================================================
 -- 6. SEED ADMIN & TEACHER ACCOUNTS
