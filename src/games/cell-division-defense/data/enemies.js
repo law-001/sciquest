@@ -1,0 +1,31 @@
+export const ENEMIES = {
+  viralHijacker: {
+    id: 'viralHijacker',
+    displayName: 'Viral Hijacker',
+    hp: 60,
+    speed: 80,
+    reward: 20,
+    onReachNucleus: 'mutation:pointMutation',
+    abilityLabel: 'DNA Insert!',
+  },
+  radiationPulse: {
+    id: 'radiationPulse',
+    displayName: 'Radiation Pulse',
+    hp: 40,
+    speed: 50,
+    reward: 15,
+    onReachNucleus: 'mutation:frameshiftMutation',
+    abilityLabel: 'AOE Burst!',
+    deathEffect: 'aoe',
+  },
+  toxinDroplet: {
+    id: 'toxinDroplet',
+    displayName: 'Toxin Droplet',
+    hp: 80,
+    speed: 70,
+    reward: 25,
+    onReachNucleus: 'mutation:pointMutation',
+    abilityLabel: 'Tower Silence!',
+    silenceDuration: 10000,
+  },
+};

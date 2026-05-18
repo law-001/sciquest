@@ -163,13 +163,87 @@ src/lib/games/              # registry.js + progress.js (all DB writes)
 
 ---
 
+## XP & Levelling System
+
+Config lives entirely in `src/lib/xp-config.js` — edit numbers there to retune the economy.
+
+- **Quiz XP:** `QUIZ_MIN_XP = 5` (floor for trying) + `QUIZ_XP_PER_CORRECT = 5` per correct unit
+- **Matching questions** count one unit per pair, not one unit for the whole question
+- **Attempt decay:** attempt 1 → 100%, attempt 2 → 50%, attempt 3 → 25%. Attempt 4 is blocked (`MAX_QUIZ_ATTEMPTS = 3`)
+- **Manual-grade types** (`essay`, `short-answer`) are excluded from auto XP until a teacher grades them
+- **Levels 1–15** defined by `LEVEL_THRESHOLDS` cumulative XP array; progress bars computed by `xpToNextLevel()`
+- Lesson XP is declared per-lesson in the `lessonsweek-*.js` data files (not in xp-config)
+
+---
+
+## Games Platform
+
+A second major feature area separate from the lesson/quiz system.
+
+**Registry:** `src/lib/games/registry.js` — `GAMES` object lists all games. Only `matter-state-sandbox` is live; `cell-explorer` and `circuit-lab` are locked placeholders.
+
+**Stack:** Phaser 3.80+ (WebGL canvas) wrapped by React for HUD overlays. React ↔ Phaser communication is **event-bus only** — never pass React state or refs into Phaser scenes.
+
+**Folder rules:**
+```
+src/games/_shared/          # Shared engine infrastructure (EventBus, BaseGameScene, hooks)
+src/games/<game-slug>/      # One game's full code
+  scenes/                   # Phaser scenes
+  ui/                       # React HUD components
+  data/                     # Static game data (challenges, levels, substances)
+  physics/                  # Game-specific physics rules
+  audio/                    # Audio helpers
+  index.jsx                 # GameComponent — default export
+src/lib/games/
+  registry.js               # Game manifest + lazy loaders
+  progress.js               # Supabase progress queries (all DB writes go here)
+src/pages/GamesHubPage.jsx  # Game browser/lobby
+src/pages/GamePlayPage.jsx  # Shell that mounts the active GameComponent
+```
+
+**GameComponent contract** (every `index.jsx` must accept):
+```
+{ user, profile, onExit, onProgressUpdate, initialChallengeId, reducedMotion, deviceTier }
+```
+
+**matter-state-sandbox** (the only live game):
+- 3 levels: Level 1 (preset buttons), Level 2 (temperature slider), Level 3 (temperature + pressure sliders)
+- Substances: water, ethanol, iron, CO₂ (defined in `data/substances.js`)
+- Challenges tracked via `useChallengeTracker` — hold the target state for N seconds to complete
+- Progress written to Supabase via `src/lib/games/progress.js`
+- Background music via `GameMusic.js` (Web Audio API)
+- Two canvas overlays: Object View (animated substance) and Particle View (particle simulation)
+
+**Sandbox CSS classes** (all prefixed `sq-`): defined in `src/index.css` from line ~231 onward. The shell is a 3-row grid: `60px` top bar / `1fr` main / bottom bar (fixed height on desktop, `auto` on xs).
+
+---
+
+## Responsive Breakpoints (Sandbox)
+
+| Breakpoint | Max-width | Bottom bar height | Notes |
+|---|---|---|---|
+| Desktop | — | `132px` | 3-column grid |
+| Mobile | `768px` | `190px` | Single column, stacked controls |
+| XS | `390px` | `auto` (max 210px, scrollable) | Extra-small phones |
+
+---
+
+## Known Gotchas
+
+- **CSS calc() in sliders** — use dimensionless numbers (`0.4`), not percentages (`40%`), when multiplying lengths inside `calc()`. Mobile browsers are strict; desktop Chrome silently accepts invalid expressions. Slider thumb/fill/tick positions all use `calc(10px + ${frac} * (100% - 20px))` where `frac` ∈ [0, 1].
+- **Custom slider touch events** — React's `onTouchStart` is passive (can't `preventDefault()`). The `SandboxSlider` attaches a native non-passive `touchstart` listener via `useEffect` to stop browser scroll-hijack during drag.
+- **Phaser + React layering** — Phaser canvas is WebGL; slider/HUD overlays are CPU-rendered DOM. Use `will-change: left` on the thumb and `will-change: width` on the fill to keep them on their own compositor layers alongside the canvas.
+- **Portrait mode** — the sandbox has a full responsive portrait layout; do NOT add a "rotate device" overlay. It was removed intentionally.
+
+---
+
 ## Key File Locations
 
 ```
 src/
 ├── App.jsx                        # Root — routing, global state
 ├── main.jsx                       # React 19 entry (createRoot)
-├── index.css                      # Global styles + Tailwind config
+├── index.css                      # Global styles + sq- sandbox classes (~1300 lines)
 ├── context/
 │   ├── AuthContext.jsx             # Auth state + Supabase methods
 │   └── ThemeContext.jsx            # Dark/light toggle
@@ -181,6 +255,11 @@ src/
 ├── games/
 │   ├── _shared/                    # Engine infra (eventBus, scenes, hooks)
 │   └── matter-state-sandbox/       # Playable Phaser game
+│   ├── xp-config.js               # XP/level economy constants + helpers
+│   ├── progress.js                 # Lesson progress queries
+│   └── games/
+│       ├── registry.js             # Game manifest + lazy loaders
+│       └── progress.js             # Game challenge progress (all game DB writes)
 ├── data/
 │   ├── lessonsweek-01.js .. -20.js # 20 weeks of lesson content
 │   └── quizzesweek-01.js .. -20.js # 20 weeks of quiz questions
@@ -192,10 +271,20 @@ src/
 │   ├── modals/AuthModal.jsx
 │   ├── LessonTemplate.jsx
 │   └── Quiztemplate.jsx
+├── games/
+│   ├── _shared/                    # EventBus, BaseGameScene, hooks, progress utils
+│   └── matter-state-sandbox/       # Only live game
+│       ├── index.jsx               # GameComponent root
+│       ├── scenes/                 # BootScene, SandboxScene (Phaser)
+│       ├── ui/                     # SandboxHUD, ControlBar, ParticleView, ObjectView…
+│       ├── data/                   # challenges.js, levels.js, substances.js
+│       ├── physics/stateRules.js   # State transition logic
+│       └── audio/GameMusic.js
 └── pages/                         # One file per view (+ template.jsx scaffolds)
 supabase/
 ├── schema.sql                     # Tables, RLS, triggers
-└── functions/                     # Edge functions
+├── migrations/                    # Incremental schema migrations
+└── seed_test_user.sql             # Dev-only test account (never run on prod)
 ```
 
 ---
@@ -233,3 +322,5 @@ No test suite. No TypeScript. No typecheck script.
 - **No external component library** — all UI is custom Tailwind components
 - **GSAP + Lenis scope** — animation logic stays out of business logic components
 - **No hardcoded colors** — always use Tailwind tokens or CSS variables
+- **Event bus only** for React ↔ Phaser — never pass React state/refs into Phaser scenes
+- **One `Phaser.Game` per mount** — guarded with `useRef` to be StrictMode safe

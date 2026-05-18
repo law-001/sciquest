@@ -67,6 +67,17 @@ export async function startSession(supabase, { studentId, gameId }) {
   return data.id;
 }
 
+export async function writeGameProgress(supabase, { userId, gameId, levelId, stars, xpEarned, completedAt, metadata = {} }) {
+  return recordCompletion(supabase, {
+    studentId: userId,
+    gameId,
+    challengeId: levelId ?? gameId,
+    score: stars,
+    scoreUnit: 'stars',
+    metadata: { xpEarned, completedAt, ...metadata },
+  });
+}
+
 export async function endSession(supabase, { sessionId, startedAt }) {
   const endedAt = new Date();
   const duration = Math.round((endedAt - new Date(startedAt)) / 1000);

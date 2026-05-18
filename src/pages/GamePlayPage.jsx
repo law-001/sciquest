@@ -35,18 +35,20 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   }
 
   return (
-    <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
-      <Suspense fallback={<GameLoadingScreen progress={0} message="Loading game…" />}>
-        <GameComponent
-          user={user}
-          profile={profile}
-          onExit={() => onNavigate('games')}
-          onProgressUpdate={() => {}}
-          initialChallengeId={null}
-          reducedMotion={reducedMotion}
-          deviceTier={deviceTier}
-        />
-      </Suspense>
-    </GameAuthGate>
+    <div style={{ height: '100vh', overflow: 'hidden' }}>
+      <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
+        <Suspense fallback={<GameLoadingScreen progress={0} message="Loading game…" />}>
+          <GameComponent
+            user={user}
+            profile={profile}
+            onExit={() => onNavigate('games')}
+            onProgressUpdate={() => {}}
+            initialChallengeId={null}
+            reducedMotion={reducedMotion}
+            deviceTier={deviceTier}
+          />
+        </Suspense>
+      </GameAuthGate>
+    </div>
   );
 }
