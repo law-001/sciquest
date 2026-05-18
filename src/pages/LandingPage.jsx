@@ -20,7 +20,6 @@ import {
 import Button from "../components/Button";
 import { useTheme } from "../context/ThemeContext";
 import mclassroom from "../assets/modernclassroom.jpg";
-import { CURIOUS_EXPLORER_STORAGE_KEY } from "../lib/achievements";
 
 /* ─── Hero scene colour tokens ─────────────────────────────── */
 const SCENE_CFG = {
@@ -364,28 +363,6 @@ function TypewriterText({ text, speed = 38, className = "" }) {
 // the landing page shouldn't rival actually answering questions.
 const EXPLORER_XP = 10;
 
-// Persisted so the toast only ever fires once per browser, not on
-// every visit or every scroll past the threshold. The same flag is
-// bridged into the achievements DB on next login.
-const ACHIEVEMENT_SEEN_KEY = CURIOUS_EXPLORER_STORAGE_KEY;
-
-function hasSeenAchievement() {
-  try {
-    return window.localStorage.getItem(ACHIEVEMENT_SEEN_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function markAchievementSeen() {
-  try {
-    window.localStorage.setItem(ACHIEVEMENT_SEEN_KEY, "1");
-  } catch {
-    // localStorage unavailable (private mode / blocked) — degrade to
-    // showing once per session rather than crashing.
-  }
-}
-
 function AchievementToast({ show }) {
   return (
     <div
@@ -477,11 +454,11 @@ const PHYS_PARTICLES = Array.from({ length: 30 }, () => ({
 /* ─────────────────────────────────────────────────────────── */
 /*  LandingPage                                                 */
 /* ─────────────────────────────────────────────────────────── */
-export function LandingPage({ onStartLearning }) {
+export function LandingPage({ onStartLearning, canEarnExplorer, onExplore }) {
   const [heroScrollY, setHeroScrollY] = useState(0);
   const [activeSubjectIdx, setActiveSubjectIdx] = useState(0);
   const [hoveredSubjectIdx, setHoveredSubjectIdx] = useState(null);
-  const [achievementShown, setAchievementShown] = useState(hasSeenAchievement);
+  const [achievementShown, setAchievementShown] = useState(false);
   const [achievementVisible, setAchievementVisible] = useState(false);
   const [activePanel, setActivePanel] = useState("quiz");
   const [quizAnswer, setQuizAnswer] = useState(null);
@@ -547,9 +524,9 @@ export function LandingPage({ onStartLearning }) {
         const y = window.scrollY;
         setHeroScrollY(y);
         const vh = window.innerHeight;
-        if (!achievementShown && y > vh * 0.85) {
+        if (canEarnExplorer && !achievementShown && y > vh * 0.85) {
           setAchievementShown(true);
-          markAchievementSeen();
+          onExplore?.();
           setAchievementVisible(true);
           window.setTimeout(() => setAchievementVisible(false), 4500);
         }
@@ -561,7 +538,7 @@ export function LandingPage({ onStartLearning }) {
       window.removeEventListener("scroll", handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [achievementShown]);
+  }, [achievementShown, canEarnExplorer, onExplore]);
 
   /* Subject cycling */
   useEffect(() => {

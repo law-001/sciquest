@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
@@ -23,7 +23,7 @@ import {
 } from "./lib/progress";
 import { levelFromXp } from "./lib/xp-config";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
-import { CURIOUS_EXPLORER_KEY, CURIOUS_EXPLORER_STORAGE_KEY } from "./lib/achievements";
+import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { XpToast } from "./components/XpToast";
 
 function AppContent() {
@@ -51,7 +51,12 @@ function AppContent() {
   const effectiveQuizAttempts     = (user && isStudent) ? quizAttempts     : [];
   const effectiveUnlockedAchievements = (user && isStudent) ? unlockedAchievements : [];
 
-  const totalXp = totalXpEarned(effectiveCompletedRows, effectiveQuizAttempts);
+  // Total XP = lesson + quiz XP plus the bonus from every unlocked
+  // achievement, so an unlock genuinely moves the student's total and
+  // can push them up a level.
+  const totalXp =
+    totalXpEarned(effectiveCompletedRows, effectiveQuizAttempts) +
+    totalAchievementXp(effectiveUnlockedAchievements);
   const currentLevel = levelFromXp(totalXp);
 
   // Submissions already made for the active lesson's quiz — drives the
@@ -74,26 +79,18 @@ function AppContent() {
         // Anything completed is also "reached" — keeps the lesson tab nav consistent.
         setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
 
-        // Auto-award everything the current progress now qualifies for,
-        // plus the Curious Explorer flag the (unauthenticated) landing
-        // page stashed in localStorage before this student logged in.
+        // Auto-award everything the current progress now qualifies for.
         const ctx = {
           completedLessons: done,
           completedRows: rows,
           attempts,
           totalXp: totalXpEarned(rows, attempts),
         };
-        let { unlocked: nextUnlocked } = await syncAchievements(
+        const { unlocked: nextUnlocked } = await syncAchievements(
           user.id,
           ctx,
           unlocked,
         );
-        const sawLanding =
-          window.localStorage.getItem(CURIOUS_EXPLORER_STORAGE_KEY) === "1";
-        if (sawLanding && !nextUnlocked.includes(CURIOUS_EXPLORER_KEY)) {
-          await awardAchievements(user.id, [CURIOUS_EXPLORER_KEY]);
-          nextUnlocked = [...nextUnlocked, CURIOUS_EXPLORER_KEY];
-        }
         if (!cancelled) setUnlockedAchievements(nextUnlocked);
       })
       .catch((err) => {
@@ -102,12 +99,51 @@ function AppContent() {
     return () => { cancelled = true };
   }, [user?.id, isStudent]);
 
+  // Curious Explorer is the one achievement earned by a UI action
+  // (scrolling the landing page) rather than derived from progress.
+  // Only logged-in students can earn it, and it's written straight to
+  // the DB so an admin data wipe clears it like any other row.
+  const explorerUnlocked = effectiveUnlockedAchievements.includes(
+    CURIOUS_EXPLORER_KEY,
+  );
+  const handleExplorerUnlock = useCallback(() => {
+    if (!user || !isStudent || explorerUnlocked) return;
+    setUnlockedAchievements((prev) =>
+      prev.includes(CURIOUS_EXPLORER_KEY)
+        ? prev
+        : [...prev, CURIOUS_EXPLORER_KEY],
+    );
+    awardAchievements(user.id, [CURIOUS_EXPLORER_KEY]).catch((err) => {
+      console.error("Failed to award Curious Explorer:", err);
+    });
+  }, [user, isStudent, explorerUnlocked]);
+
   const pushNotification = (n) => {
     setNotifications((prev) => [...prev, { id: Date.now() + Math.random(), ...n }]);
   };
   const dismissNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
+
+  // BLACKED is the hidden achievement: earned by watching the About
+  // page portraits cross-fade light → dark. Same explicit-award path as
+  // Curious Explorer — only logged-in students, written straight to DB.
+  const blackedUnlocked = effectiveUnlockedAchievements.includes(BLACKED_KEY);
+  const handleBlackedUnlock = useCallback(() => {
+    if (!user || !isStudent || blackedUnlocked) return;
+    setUnlockedAchievements((prev) =>
+      prev.includes(BLACKED_KEY) ? prev : [...prev, BLACKED_KEY],
+    );
+    pushNotification({
+      kind: "achievement",
+      label: achievementLabel(BLACKED_KEY),
+      amount: achievementXp(BLACKED_KEY),
+      hidden: true,
+    });
+    awardAchievements(user.id, [BLACKED_KEY]).catch((err) => {
+      console.error("Failed to award BLACKED:", err);
+    });
+  }, [user, isStudent, blackedUnlocked]);
 
   // On refresh, once the restored session + profile are ready, redirect by role.
   // The ref guard ensures this runs at most once even as deps re-fire.
@@ -204,6 +240,41 @@ function AppContent() {
       markLessonComplete(studentId, weekId, lessonId, lessonXp).catch((err) => {
         console.error("Failed to mark lesson complete:", err);
       });
+
+      // Re-derive achievements against progress that now includes this
+      // lesson, so lesson-count ones (Science Nerd at 10, Bookworm at
+      // 25) unlock the moment the lesson hits 100%, not after its quiz.
+      const completedWithThis = [...completedLessons, lessonId];
+      const rowsWithThis = [
+        ...completedRows,
+        {
+          lesson_id: lessonId,
+          week_id: weekId,
+          completed: true,
+          completed_at: new Date().toISOString(),
+          xp_awarded: lessonXp,
+        },
+      ];
+      const ctx = {
+        completedLessons: completedWithThis,
+        completedRows: rowsWithThis,
+        attempts: quizAttempts,
+        totalXp: totalXpEarned(rowsWithThis, quizAttempts),
+      };
+      syncAchievements(studentId, ctx, unlockedAchievements)
+        .then(({ unlocked, newlyUnlocked }) => {
+          setUnlockedAchievements(unlocked);
+          for (const key of newlyUnlocked) {
+            pushNotification({
+              kind: "achievement",
+              label: achievementLabel(key),
+              amount: achievementXp(key),
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to sync achievements:", err);
+        });
     }
   };
 
@@ -261,6 +332,40 @@ function AppContent() {
       }).catch((err) => {
         console.error("Failed to save quiz attempt:", err);
       });
+
+      // Re-derive achievements against progress that now includes this
+      // attempt, so quiz-driven ones (First Quiz, Perfect Score, …)
+      // unlock and toast immediately instead of waiting for next login.
+      const attemptsWithThis = [
+        {
+          lesson_id: lessonId,
+          score: result.score,
+          max_score: result.maxScore,
+          xp_awarded: quizXp,
+          submitted_at: new Date().toISOString(),
+        },
+        ...quizAttempts,
+      ];
+      const ctx = {
+        completedLessons,
+        completedRows,
+        attempts: attemptsWithThis,
+        totalXp: totalXpEarned(completedRows, attemptsWithThis),
+      };
+      syncAchievements(studentId, ctx, unlockedAchievements)
+        .then(({ unlocked, newlyUnlocked }) => {
+          setUnlockedAchievements(unlocked);
+          for (const key of newlyUnlocked) {
+            pushNotification({
+              kind: "achievement",
+              label: achievementLabel(key),
+              amount: achievementXp(key),
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to sync achievements:", err);
+        });
     }
   };
 
@@ -305,6 +410,8 @@ function AppContent() {
             onTeacherPortal={() => handleNavigate("teacher-portal")}
             onAdminPortal={() => handleNavigate("admin")}
             onNavigate={handleNavigate}
+            canEarnExplorer={isLoggedIn && isStudent && !explorerUnlocked}
+            onExplore={handleExplorerUnlock}
           />
         );
 
@@ -349,7 +456,7 @@ function AppContent() {
         );
 
       case "about":
-        return <AboutPage />;
+        return <AboutPage onBlacked={handleBlackedUnlock} />;
 
       case "contact":
         return <ContactPage />;
@@ -397,6 +504,8 @@ function AppContent() {
             onTeacherPortal={() => handleNavigate("teacher-portal")}
             onAdminPortal={() => handleNavigate("admin")}
             onNavigate={handleNavigate}
+            canEarnExplorer={isLoggedIn && isStudent && !explorerUnlocked}
+            onExplore={handleExplorerUnlock}
           />
         );
     }

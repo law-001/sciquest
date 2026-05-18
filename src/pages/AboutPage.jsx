@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { BookOpen, Trophy, Users, Sparkles, Brain, Target } from "lucide-react";
 import Card from "../components/Card"; // Default import
 import { useTheme } from "../context/ThemeContext";
@@ -33,7 +33,7 @@ function useScrollTrigger(threshold = 0.15) {
   return [ref, triggered];
 }
 
-export function AboutPage() {
+export function AboutPage({ onBlacked }) {
   const { isDark } = useTheme();
   const showDarkPortrait = enableDarkmodeTransition && isDark;
   const [mounted, setMounted] = useState(false);
@@ -41,6 +41,19 @@ export function AboutPage() {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // Hidden "BLACKED" achievement: fires only when the theme actually
+  // flips light → dark while the visitor is on this page, so the
+  // portraits visibly cross-fade. The mount value seeds the ref, so
+  // arriving already in dark mode does not count.
+  const prevDarkRef = useRef(isDark);
+  useEffect(() => {
+    const wasDark = prevDarkRef.current;
+    prevDarkRef.current = isDark;
+    if (enableDarkmodeTransition && !wasDark && isDark) {
+      onBlacked?.();
+    }
+  }, [isDark, onBlacked]);
   const benefits = [
     {
       icon: <Brain className="w-8 h-8 text-primary-500" />,
