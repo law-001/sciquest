@@ -54,6 +54,7 @@ export async function saveQuizAttempt({
   maxScore,
   xpAwarded = 0,
   pendingGradeCount = 0,
+  answers = null,
 }) {
   if (!studentId || !lessonId || !weekId) return null
   const { data, error } = await supabase
@@ -66,6 +67,7 @@ export async function saveQuizAttempt({
       max_score: maxScore,
       xp_awarded: xpAwarded,
       pending_grade_count: pendingGradeCount,
+      answers,
     })
     .select('lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
     .single()

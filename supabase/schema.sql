@@ -15,6 +15,7 @@ create table if not exists public.students (
   email           text,
   student_number  text unique,
   section         text,
+  avatar          text,
   created_at      timestamptz default now()
 );
 
@@ -58,6 +59,7 @@ create table if not exists public.quiz_attempts (
   max_score           integer not null,
   xp_awarded          integer default 0 not null,
   pending_grade_count integer default 0 not null,
+  answers             jsonb,
   submitted_at        timestamptz default now()
 );
 create index if not exists quiz_attempts_student_lesson_idx
@@ -176,6 +178,14 @@ create policy "auth_read_attempts"
   on public.quiz_attempts for select
   to authenticated
   using (true);
+
+-- Quiz attempts: staff (teachers + admins) can grade — set score,
+-- xp_awarded, and clear pending_grade_count from the Teacher Portal.
+create policy "staff_grade_attempts"
+  on public.quiz_attempts for update
+  to authenticated
+  using (exists (select 1 from public.staff where id = auth.uid()))
+  with check (exists (select 1 from public.staff where id = auth.uid()));
 
 -- Achievements: students manage their own; all authenticated can read.
 create policy "own_achievements_all"

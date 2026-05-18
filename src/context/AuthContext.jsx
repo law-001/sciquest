@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     }
     const { data: studentRow, error } = await supabase
       .from('students')
-      .select('id, first_name, last_name, email, student_number, section, created_at')
+      .select('id, first_name, last_name, email, student_number, section, avatar, created_at')
       .eq('id', userId)
       .maybeSingle()
     if (error || !studentRow) return null

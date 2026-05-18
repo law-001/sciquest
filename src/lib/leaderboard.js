@@ -23,7 +23,7 @@ export async function fetchLeaderboard(period = 'all') {
     since == null || (ts != null && new Date(ts).getTime() >= since)
 
   const [studentsRes, progressRes, attemptsRes, achRes] = await Promise.all([
-    supabase.from('students').select('id, first_name, last_name'),
+    supabase.from('students').select('id, first_name, last_name, avatar'),
     supabase
       .from('student_progress')
       .select('student_id, xp_awarded, completed_at, created_at')
@@ -67,6 +67,7 @@ export async function fetchLeaderboard(period = 'all') {
         studentId: s.id,
         name:
           `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || 'Student',
+        avatar: s.avatar ?? null,
         xp: a.xp + totalAchievementXp(a.keys),
       }
     })

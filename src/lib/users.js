@@ -128,11 +128,15 @@ export async function fetchSectionCounts() {
 
 // Updates the signed-in student's own editable fields. RLS
 // (own_student_update) restricts this to their own row.
-export async function updateStudentProfile(studentId, { firstName, lastName }) {
+export async function updateStudentProfile(studentId, { firstName, lastName, avatar }) {
   if (!studentId) return
+  const patch = { first_name: firstName, last_name: lastName }
+  // Only touch the avatar column when the caller supplies one, so name-only
+  // edits don't wipe a previously chosen avatar.
+  if (avatar !== undefined) patch.avatar = avatar
   const { error } = await supabase
     .from('students')
-    .update({ first_name: firstName, last_name: lastName })
+    .update(patch)
     .eq('id', studentId)
   if (error) throw error
 }

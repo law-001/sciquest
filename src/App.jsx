@@ -359,6 +359,7 @@ function AppContent() {
         maxScore: result.maxScore,
         xpAwarded: quizXp,
         pendingGradeCount: result.pendingGradeCount ?? 0,
+        answers: result.answers ?? null,
       }).catch((err) => {
         console.error("Failed to save quiz attempt:", err);
       });

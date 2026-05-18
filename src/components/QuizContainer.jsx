@@ -247,6 +247,9 @@ export function QuizContainer({
       autoMaxScore: autoMax,
       xpEarned,
       pendingGradeCount: pending,
+      // Snapshot of what the student submitted, keyed by question id —
+      // persisted so a teacher can review it later when grading.
+      answers,
     };
 
     if (autoMax > 0 && earned > autoMax / 2) setShowConfetti(true);

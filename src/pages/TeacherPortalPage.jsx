@@ -18,6 +18,9 @@ import {
   Moon,
   ChevronDown,
   AlertCircle,
+  Loader2,
+  X,
+  Award,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -26,86 +29,31 @@ import ProgressBar from "../components/ProgressBar";
 import { cn } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-
-// --- Static data ---
-
-const SECTIONS = [
-  { id: "7a", name: "Section 7-A", subject: "Biology", students: 35, avgScore: 82 },
-  { id: "7b", name: "Section 7-B", subject: "Biology", students: 32, avgScore: 76 },
-  { id: "7c", name: "Section 7-C", subject: "Earth Science", students: 38, avgScore: 88 },
-];
-
-const LESSONS = [
-  {
-    id: 1,
-    title: "The Cell Structure",
-    category: "Biology",
-    status: "Published",
-    sections: ["7a", "7b"],
-    completion: { "7a": 72, "7b": 64 },
-  },
-  {
-    id: 2,
-    title: "Ecosystems & Biodiversity",
-    category: "Biology",
-    status: "Published",
-    sections: ["7a", "7b"],
-    completion: { "7a": 58, "7b": 51 },
-  },
-  {
-    id: 3,
-    title: "Layers of the Earth",
-    category: "Earth Science",
-    status: "Draft",
-    sections: ["7c"],
-    completion: {},
-  },
-  {
-    id: 4,
-    title: "The Water Cycle",
-    category: "Earth Science",
-    status: "Published",
-    sections: ["7c"],
-    completion: { "7c": 85 },
-  },
-];
-
-const SUBMISSIONS = [
-  { student: "Alex Johnson", section: "7a", quiz: "Cell Structure Quiz", score: 9, total: 10, time: "2h ago", status: "graded" },
-  { student: "Maria Santos", section: "7b", quiz: "Cell Structure Quiz", score: 7, total: 10, time: "3h ago", status: "graded" },
-  { student: "James Lee", section: "7c", quiz: "Forces & Motion Quiz", score: null, total: 10, time: "5h ago", status: "pending" },
-  { student: "Emily Chen", section: "7a", quiz: "Cell Structure Quiz", score: 10, total: 10, time: "6h ago", status: "graded" },
-  { student: "David Kim", section: "7c", quiz: "Layers of Earth Quiz", score: null, total: 10, time: "1 day ago", status: "pending" },
-  { student: "Sophia Reyes", section: "7b", quiz: "Ecosystems Quiz", score: null, total: 10, time: "30 min ago", status: "pending" },
-];
-
-const STUDENTS = [
-  { id: 1, name: "Alex Johnson", section: "7a", progress: 72, scores: [9, 8, 7] },
-  { id: 2, name: "Emily Chen", section: "7a", progress: 88, scores: [10, 9, 8] },
-  { id: 3, name: "Maria Santos", section: "7b", progress: 64, scores: [7, 6, 8] },
-  { id: 4, name: "Sophia Reyes", section: "7b", progress: 71, scores: [7, 8, 6] },
-  { id: 5, name: "James Lee", section: "7c", progress: 85, scores: [8, 9, 7] },
-  { id: 6, name: "David Kim", section: "7c", progress: 52, scores: [6, 5, 7] },
-];
-
-const QUIZ_NAMES = ["Cell Structure", "Ecosystems", "Layers of Earth"];
+import { fetchTeacherDashboard, gradeQuizAttempt, previewGrade } from "../lib/teacher";
+import { QuizAnswersReview } from "../components/QuizAnswersReview";
+import { getQuizByLesson } from "../data/quizzesweek-01";
 
 // --- Slot components ---
+// Every slot receives the fetched `data` bundle plus the active sectionId
+// (null = all sections).
 
-function OverviewSlot({ sectionId }) {
+function OverviewSlot({ data, sectionId, onGrade }) {
+  const { sections, lessons, submissions } = data;
   const filteredSubs = sectionId
-    ? SUBMISSIONS.filter((s) => s.section === sectionId)
-    : SUBMISSIONS;
+    ? submissions.filter((s) => s.section === sectionId)
+    : submissions;
   const pendingCount = filteredSubs.filter((s) => s.status === "pending").length;
   const totalStudents = sectionId
-    ? (SECTIONS.find((s) => s.id === sectionId)?.students ?? 0)
-    : SECTIONS.reduce((sum, s) => sum + s.students, 0);
+    ? (sections.find((s) => s.id === sectionId)?.students ?? 0)
+    : sections.reduce((sum, s) => sum + s.students, 0);
   const activeLessons = sectionId
-    ? LESSONS.filter((l) => l.sections.includes(sectionId) && l.status === "Published").length
-    : LESSONS.filter((l) => l.status === "Published").length;
+    ? lessons.filter((l) => (l.completion[sectionId] ?? 0) > 0).length
+    : lessons.length;
   const avgScore = sectionId
-    ? (SECTIONS.find((s) => s.id === sectionId)?.avgScore ?? 0)
-    : Math.round(SECTIONS.reduce((sum, s) => sum + s.avgScore, 0) / SECTIONS.length);
+    ? (sections.find((s) => s.id === sectionId)?.avgScore ?? 0)
+    : sections.length
+      ? Math.round(sections.reduce((sum, s) => sum + s.avgScore, 0) / sections.length)
+      : 0;
 
   return (
     <div className="space-y-8">
@@ -132,34 +80,38 @@ function OverviewSlot({ sectionId }) {
             <h2 className="text-lg font-bold text-stone-900 dark:text-white">Recent Submissions</h2>
           </div>
           <div className="divide-y divide-orange-100 dark:divide-stone-700">
-            {filteredSubs.slice(0, 5).map((sub, i) => (
-              <div
-                key={i}
-                className="px-6 py-4 flex items-center justify-between hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
-                    {sub.student.charAt(0)}
+            {filteredSubs.length > 0 ? (
+              filteredSubs.slice(0, 5).map((sub) => (
+                <div
+                  key={sub.id}
+                  className="px-6 py-4 flex items-center justify-between hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
+                      {sub.student.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-stone-900 dark:text-white">{sub.student}</p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400">{sub.quiz}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-stone-900 dark:text-white">{sub.student}</p>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">{sub.quiz}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {sub.status === "pending" ? (
-                    <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Pending</Badge>
-                  ) : (
-                    <span className={cn("text-sm font-black", sub.score >= 8 ? "text-secondary-600" : sub.score >= 6 ? "text-accent-600" : "text-red-600")}>
-                      {sub.score}/{sub.total}
+                  <div className="flex items-center gap-3">
+                    {sub.status === "pending" ? (
+                      <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Pending</Badge>
+                    ) : (
+                      <span className={cn("text-sm font-black", sub.score >= sub.total * 0.8 ? "text-secondary-600" : sub.score >= sub.total * 0.6 ? "text-accent-600" : "text-red-600")}>
+                        {sub.score}/{sub.total}
+                      </span>
+                    )}
+                    <span className="text-xs text-stone-400 font-medium hidden sm:flex items-center gap-1">
+                      <Clock className="w-3 h-3" />{sub.time}
                     </span>
-                  )}
-                  <span className="text-xs text-stone-400 font-medium hidden sm:flex items-center gap-1">
-                    <Clock className="w-3 h-3" />{sub.time}
-                  </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="px-6 py-8 text-sm text-stone-400 text-center">No submissions yet.</p>
+            )}
           </div>
         </Card>
 
@@ -171,9 +123,9 @@ function OverviewSlot({ sectionId }) {
             {pendingCount > 0 ? (
               filteredSubs
                 .filter((s) => s.status === "pending")
-                .map((sub, i) => (
+                .map((sub) => (
                   <div
-                    key={i}
+                    key={sub.id}
                     className="flex items-center justify-between p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30"
                   >
                     <div className="flex items-center gap-2">
@@ -183,7 +135,14 @@ function OverviewSlot({ sectionId }) {
                         <p className="text-xs text-stone-500 dark:text-stone-400">{sub.quiz}</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="text-xs">Grade</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => onGrade(sub)}
+                    >
+                      Grade
+                    </Button>
                   </div>
                 ))
             ) : (
@@ -199,9 +158,13 @@ function OverviewSlot({ sectionId }) {
   );
 }
 
-function SectionsSlot({ sectionId }) {
-  const sections = sectionId ? SECTIONS.filter((s) => s.id === sectionId) : SECTIONS;
-  const rosterStudents = sectionId ? STUDENTS.filter((s) => s.section === sectionId) : [];
+function SectionsSlot({ data, sectionId }) {
+  const sections = sectionId
+    ? data.sections.filter((s) => s.id === sectionId)
+    : data.sections;
+  const rosterStudents = sectionId
+    ? data.students.filter((s) => s.section === sectionId)
+    : [];
 
   return (
     <div className="space-y-8">
@@ -223,7 +186,6 @@ function SectionsSlot({ sectionId }) {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold text-stone-900 dark:text-white">{sections[0]?.name}</h3>
-                <Badge variant="secondary" className="mt-1">{sections[0]?.subject}</Badge>
               </div>
               <div className="flex gap-6 text-center">
                 <div>
@@ -236,7 +198,7 @@ function SectionsSlot({ sectionId }) {
                 </div>
               </div>
             </div>
-            <ProgressBar progress={sections[0]?.avgScore} color="secondary" size="sm" />
+            <ProgressBar progress={sections[0]?.avgScore ?? 0} color="secondary" size="sm" />
           </Card>
 
           <Card className="overflow-hidden">
@@ -265,18 +227,17 @@ function SectionsSlot({ sectionId }) {
                   </div>
                 ))
               ) : (
-                <p className="px-6 py-8 text-sm text-stone-400 text-center">No student data available.</p>
+                <p className="px-6 py-8 text-sm text-stone-400 text-center">No students in this section yet.</p>
               )}
             </div>
           </Card>
         </div>
-      ) : (
+      ) : sections.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sections.map((section) => (
             <Card key={section.id} className="p-6" hoverable>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-stone-900 dark:text-white">{section.name}</h3>
-                <Badge variant="secondary">{section.subject}</Badge>
               </div>
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
@@ -298,15 +259,20 @@ function SectionsSlot({ sectionId }) {
             </Card>
           ))}
         </div>
+      ) : (
+        <Card className="p-12 text-center">
+          <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+          <p className="text-stone-500 dark:text-stone-400 font-medium">No sections found. Students need a section assigned.</p>
+        </Card>
       )}
     </div>
   );
 }
 
-function LessonsSlot({ sectionId }) {
+function LessonsSlot({ data, sectionId }) {
   const lessons = sectionId
-    ? LESSONS.filter((l) => l.sections.includes(sectionId))
-    : LESSONS;
+    ? data.lessons.filter((l) => l.sections.includes(sectionId))
+    : data.lessons;
 
   return (
     <div className="space-y-8">
@@ -314,7 +280,7 @@ function LessonsSlot({ sectionId }) {
         <div>
           <h2 className="text-2xl font-black text-stone-900 dark:text-white">Lessons</h2>
           <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
-            {sectionId ? "Lessons assigned to this section" : "All lessons across sections"}
+            {sectionId ? "Lessons with activity in this section" : "Lessons with student activity"}
           </p>
         </div>
         <Button leftIcon={<Plus className="w-4 h-4" />}>Create Lesson</Button>
@@ -346,13 +312,11 @@ function LessonsSlot({ sectionId }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                  {lesson.status === "Published" && (
-                    <div className="w-28">
-                      <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1">Completion</p>
-                      <ProgressBar progress={completion} color="secondary" size="sm" />
-                      <p className="text-xs font-bold text-stone-700 dark:text-stone-300 mt-1">{completion}%</p>
-                    </div>
-                  )}
+                  <div className="w-28">
+                    <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1">Completion</p>
+                    <ProgressBar progress={completion} color="secondary" size="sm" />
+                    <p className="text-xs font-bold text-stone-700 dark:text-stone-300 mt-1">{completion}%</p>
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="sm" className="px-2">
                       <Eye className="w-4 h-4 text-stone-500" />
@@ -368,7 +332,7 @@ function LessonsSlot({ sectionId }) {
         ) : (
           <Card className="p-12 text-center">
             <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-            <p className="text-stone-500 dark:text-stone-400 font-medium">No lessons assigned to this section.</p>
+            <p className="text-stone-500 dark:text-stone-400 font-medium">No lesson activity yet.</p>
           </Card>
         )}
       </div>
@@ -376,10 +340,10 @@ function LessonsSlot({ sectionId }) {
   );
 }
 
-function QuizCheckingSlot({ sectionId }) {
+function QuizCheckingSlot({ data, sectionId, onGrade }) {
   const allSubs = sectionId
-    ? SUBMISSIONS.filter((s) => s.section === sectionId)
-    : SUBMISSIONS;
+    ? data.submissions.filter((s) => s.section === sectionId)
+    : data.submissions;
   const pending = allSubs.filter((s) => s.status === "pending");
 
   return (
@@ -396,8 +360,8 @@ function QuizCheckingSlot({ sectionId }) {
           <h3 className="text-sm font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
             Needs Grading ({pending.length})
           </h3>
-          {pending.map((sub, i) => (
-            <Card key={i} className="p-5 flex items-center justify-between gap-4">
+          {pending.map((sub) => (
+            <Card key={sub.id} className="p-5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm">
                   {sub.student.charAt(0)}
@@ -412,7 +376,7 @@ function QuizCheckingSlot({ sectionId }) {
                   <Clock className="w-3 h-3" />{sub.time}
                 </span>
                 <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Pending</Badge>
-                <Button size="sm">Grade</Button>
+                <Button size="sm" onClick={() => onGrade(sub)}>Grade</Button>
               </div>
             </Card>
           ))}
@@ -434,37 +398,45 @@ function QuizCheckingSlot({ sectionId }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-                {allSubs.map((sub, i) => (
-                  <tr key={i} className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
-                          {sub.student.charAt(0)}
+                {allSubs.length > 0 ? (
+                  allSubs.map((sub) => (
+                    <tr key={sub.id} className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
+                            {sub.student.charAt(0)}
+                          </div>
+                          <span className="text-sm font-bold text-stone-900 dark:text-white">{sub.student}</span>
                         </div>
-                        <span className="text-sm font-bold text-stone-900 dark:text-white">{sub.student}</span>
-                      </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400">{sub.quiz}</td>
+                      <td className="px-6 py-4">
+                        {sub.status === "graded" ? (
+                          <span className={cn("text-sm font-black", sub.score >= sub.total * 0.8 ? "text-secondary-600" : sub.score >= sub.total * 0.6 ? "text-accent-600" : "text-red-600")}>
+                            {sub.score}/{sub.total}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-stone-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge
+                          variant={sub.status === "graded" ? "secondary" : "outline"}
+                          className={cn("text-xs", sub.status === "pending" && "text-amber-600 border-amber-300")}
+                        >
+                          {sub.status === "graded" ? "Graded" : "Pending"}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-stone-500 dark:text-stone-400">{sub.time}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-sm text-stone-400 text-center">
+                      No submissions yet.
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400">{sub.quiz}</td>
-                    <td className="px-6 py-4">
-                      {sub.score !== null ? (
-                        <span className={cn("text-sm font-black", sub.score >= 8 ? "text-secondary-600" : sub.score >= 6 ? "text-accent-600" : "text-red-600")}>
-                          {sub.score}/{sub.total}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-stone-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge
-                        variant={sub.status === "graded" ? "secondary" : "outline"}
-                        className={cn("text-xs", sub.status === "pending" && "text-amber-600 border-amber-300")}
-                      >
-                        {sub.status === "graded" ? "Graded" : "Pending"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-stone-500 dark:text-stone-400">{sub.time}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -474,7 +446,7 @@ function QuizCheckingSlot({ sectionId }) {
   );
 }
 
-function GradebookSlot({ sectionId }) {
+function GradebookSlot({ data, sectionId }) {
   if (!sectionId) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -487,66 +459,82 @@ function GradebookSlot({ sectionId }) {
     );
   }
 
-  const students = STUDENTS.filter((s) => s.section === sectionId);
+  const students = data.students.filter((s) => s.section === sectionId);
+  const { quizColumns } = data;
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-black text-stone-900 dark:text-white">Gradebook</h2>
         <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
-          Assessment scores for selected section
+          Best quiz scores for selected section
         </p>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Student</th>
-                {QUIZ_NAMES.map((q) => (
-                  <th key={q} className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">{q}</th>
-                ))}
-                <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Average</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-              {students.map((student) => {
-                const avg = Math.round(
-                  (student.scores.reduce((a, b) => a + b, 0) / student.scores.length) * 10,
-                );
-                return (
-                  <tr key={student.id} className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
-                          {student.name.charAt(0)}
+      {students.length > 0 && quizColumns.length > 0 ? (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
+                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Student</th>
+                  {quizColumns.map((q) => (
+                    <th key={q.id} className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">{q.title}</th>
+                  ))}
+                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Average</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
+                {students.map((student) => {
+                  const cells = quizColumns.map((q) => student.best.get(q.id) ?? null);
+                  const taken = cells.filter(Boolean);
+                  const avg = taken.length
+                    ? Math.round(
+                        (taken.reduce((sum, c) => sum + (c.maxScore ? c.score / c.maxScore : 0), 0) / taken.length) * 100,
+                      )
+                    : 0;
+                  return (
+                    <tr key={student.id} className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
+                            {student.name.charAt(0)}
+                          </div>
+                          <span className="text-sm font-bold text-stone-900 dark:text-white">{student.name}</span>
                         </div>
-                        <span className="text-sm font-bold text-stone-900 dark:text-white">{student.name}</span>
-                      </div>
-                    </td>
-                    {student.scores.map((score, i) => (
-                      <td key={i} className="px-6 py-4">
-                        <span className={cn("text-sm font-black", score >= 8 ? "text-secondary-600" : score >= 6 ? "text-accent-600" : "text-red-600")}>
-                          {score}/10
-                        </span>
                       </td>
-                    ))}
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-black text-stone-900 dark:text-white">{avg}%</span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                      {cells.map((cell, i) => (
+                        <td key={i} className="px-6 py-4">
+                          {cell ? (
+                            <span className={cn("text-sm font-black", cell.score >= cell.maxScore * 0.8 ? "text-secondary-600" : cell.score >= cell.maxScore * 0.6 ? "text-accent-600" : "text-red-600")}>
+                              {cell.score}/{cell.maxScore}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-stone-400">—</span>
+                          )}
+                        </td>
+                      ))}
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-black text-stone-900 dark:text-white">{avg}%</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-12 text-center">
+          <Star className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+          <p className="text-stone-500 dark:text-stone-400 font-medium">No quiz scores recorded for this section yet.</p>
+        </Card>
+      )}
     </div>
   );
 }
 
-function ProgressSlot({ sectionId }) {
+function ProgressSlot({ data, sectionId }) {
   if (!sectionId) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -559,7 +547,7 @@ function ProgressSlot({ sectionId }) {
     );
   }
 
-  const students = STUDENTS.filter((s) => s.section === sectionId);
+  const students = data.students.filter((s) => s.section === sectionId);
 
   return (
     <div className="space-y-8">
@@ -571,40 +559,50 @@ function ProgressSlot({ sectionId }) {
       </div>
 
       <div className="space-y-4">
-        {students.map((student) => (
-          <Card key={student.id} className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold">
-                  {student.name.charAt(0)}
+        {students.length > 0 ? (
+          students.map((student) => {
+            const assessments = student.best.size;
+            return (
+              <Card key={student.id} className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold">
+                      {student.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-stone-900 dark:text-white">{student.name}</p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400">
+                        {assessments} {assessments === 1 ? "assessment" : "assessments"} completed
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={cn(
+                      "text-2xl font-black",
+                      student.progress >= 75
+                        ? "text-secondary-600"
+                        : student.progress >= 50
+                          ? "text-accent-600"
+                          : "text-red-500",
+                    )}
+                  >
+                    {student.progress}%
+                  </span>
                 </div>
-                <div>
-                  <p className="font-bold text-stone-900 dark:text-white">{student.name}</p>
-                  <p className="text-xs text-stone-500 dark:text-stone-400">
-                    {student.scores.length} assessments completed
-                  </p>
-                </div>
-              </div>
-              <span
-                className={cn(
-                  "text-2xl font-black",
-                  student.progress >= 75
-                    ? "text-secondary-600"
-                    : student.progress >= 50
-                      ? "text-accent-600"
-                      : "text-red-500",
-                )}
-              >
-                {student.progress}%
-              </span>
-            </div>
-            <ProgressBar
-              progress={student.progress}
-              color={student.progress >= 75 ? "secondary" : student.progress >= 50 ? "accent" : "primary"}
-              size="sm"
-            />
+                <ProgressBar
+                  progress={student.progress}
+                  color={student.progress >= 75 ? "secondary" : student.progress >= 50 ? "accent" : "primary"}
+                  size="sm"
+                />
+              </Card>
+            );
+          })
+        ) : (
+          <Card className="p-12 text-center">
+            <TrendingUp className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-stone-500 dark:text-stone-400 font-medium">No students in this section yet.</p>
           </Card>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -620,6 +618,158 @@ function SettingsSlot() {
       <p className="text-stone-500 dark:text-stone-400 max-w-md">
         Account settings and preferences will be available here soon.
       </p>
+    </div>
+  );
+}
+
+// --- Grade modal ---
+// Opened by any "Grade" button. The teacher enters an overall percentage;
+// it's converted to a score + XP (see previewGrade) and written to the
+// attempt, which automatically lifts the student's leaderboard / profile XP.
+
+function GradeModal({ submission, onClose, onSaved }) {
+  const maxScore = submission.total ?? 0;
+  const quiz = getQuizByLesson(submission.lessonId);
+  const initialPct =
+    submission.status === "graded" && maxScore > 0
+      ? String(Math.round((submission.score / maxScore) * 100))
+      : "";
+  const [percent, setPercent] = useState(initialPct);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const hasValue = percent !== "" && !Number.isNaN(Number(percent));
+  const { pct, score, xp } = previewGrade(percent, maxScore);
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      await gradeQuizAttempt({
+        attemptId: submission.id,
+        percent: pct,
+        maxScore,
+      });
+      onSaved();
+    } catch (err) {
+      setError(err.message ?? "Failed to save grade");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-2xl max-h-[88vh] flex flex-col bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700">
+        {/* Header */}
+        <div className="flex items-center gap-3 p-6 border-b border-orange-100 dark:border-stone-700 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center shrink-0">
+            <Award className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-stone-900 dark:text-white">Grade Submission</h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              Review what the student submitted, then enter a percentage
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="ml-auto p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Scrollable body: submission summary + answer review */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-stone-500 dark:text-stone-400 font-medium">Student</span>
+              <span className="font-bold text-stone-900 dark:text-white">{submission.student}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-stone-500 dark:text-stone-400 font-medium">Activity</span>
+              <span className="font-bold text-stone-900 dark:text-white text-right">{submission.quiz}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-stone-500 dark:text-stone-400 font-medium">Submitted</span>
+              <span className="font-bold text-stone-900 dark:text-white">{submission.time}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-stone-500 dark:text-stone-400 font-medium">Current</span>
+              <span className="font-bold text-stone-900 dark:text-white">
+                {submission.status === "graded" ? `${submission.score}/${maxScore}` : "Ungraded"}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-3">
+              Student's submission
+            </h3>
+            <QuizAnswersReview quiz={quiz} answers={submission.answers} />
+          </div>
+        </div>
+
+        {/* Footer: grade input + XP preview + actions */}
+        <div className="border-t border-orange-100 dark:border-stone-700 p-6 shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+            <div className="flex-1">
+              <label
+                htmlFor="grade-percent"
+                className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1.5"
+              >
+                Grade (%)
+              </label>
+              <div className="relative">
+                <input
+                  id="grade-percent"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={percent}
+                  autoFocus
+                  onChange={(e) => setPercent(e.target.value)}
+                  className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-900 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600"
+                  placeholder="0–100"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400 pointer-events-none">
+                  %
+                </span>
+              </div>
+            </div>
+            {hasValue && (
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-100 dark:border-secondary-800/30 px-4 py-2.5 sm:py-3">
+                <span className="text-sm font-bold text-stone-600 dark:text-stone-300">
+                  Score {score}/{maxScore}
+                </span>
+                <span className="text-sm font-black text-secondary-600 dark:text-secondary-400">
+                  +{xp} XP
+                </span>
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <p className="mt-3 text-sm font-bold text-red-600 dark:text-red-400">{error}</p>
+          )}
+
+          <div className="mt-5 flex gap-3">
+            <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>
+              Cancel
+            </Button>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={handleSave}
+              disabled={!hasValue || saving}
+              isLoading={saving}
+            >
+              Save Grade
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -654,6 +804,10 @@ export function TeacherPortalPage({ onBack }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedSectionId, setSelectedSectionId] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [gradingSub, setGradingSub] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -666,11 +820,47 @@ export function TeacherPortalPage({ onBack }) {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchTeacherDashboard()
+      .then((result) => {
+        if (!cancelled) {
+          setData(result);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(err.message ?? "Failed to load dashboard");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Silent re-fetch after a grade is saved — no spinner, the table just
+  // updates in place and the submission flips from pending to graded.
+  async function refreshDashboard() {
+    try {
+      setData(await fetchTeacherDashboard());
+    } catch (err) {
+      setLoadError(err.message ?? "Failed to load dashboard");
+    }
+  }
+
+  function handleGraded() {
+    setGradingSub(null);
+    refreshDashboard();
+  }
+
   const teacherName = profile
     ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "Teacher"
     : "Teacher";
 
   const ActiveSlot = TAB_SLOTS[activeTab] ?? OverviewSlot;
+  const sections = data?.sections ?? [];
 
   return (
     <div className="min-h-screen font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
@@ -762,33 +952,63 @@ export function TeacherPortalPage({ onBack }) {
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="mb-6 flex items-center gap-3">
-              <label
-                htmlFor="section-switcher"
-                className="text-sm font-bold text-stone-500 dark:text-stone-400 whitespace-nowrap"
-              >
-                Section:
-              </label>
-              <div className="relative">
-                <select
-                  id="section-switcher"
-                  value={selectedSectionId ?? ""}
-                  onChange={(e) => setSelectedSectionId(e.target.value || null)}
-                  className="appearance-none pl-4 pr-10 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 cursor-pointer"
+            {activeTab !== "settings" && (
+              <div className="mb-6 flex items-center gap-3">
+                <label
+                  htmlFor="section-switcher"
+                  className="text-sm font-bold text-stone-500 dark:text-stone-400 whitespace-nowrap"
                 >
-                  <option value="">All Sections</option>
-                  {SECTIONS.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                  Section:
+                </label>
+                <div className="relative">
+                  <select
+                    id="section-switcher"
+                    value={selectedSectionId ?? ""}
+                    onChange={(e) => setSelectedSectionId(e.target.value || null)}
+                    disabled={loading || !!loadError}
+                    className="appearance-none pl-4 pr-10 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">All Sections</option>
+                    {sections.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                </div>
               </div>
-            </div>
+            )}
 
-            <ActiveSlot sectionId={selectedSectionId} />
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <Loader2 className="w-10 h-10 text-secondary-500 animate-spin mb-4" />
+                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">Loading dashboard…</p>
+              </div>
+            ) : loadError ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <AlertCircle className="w-10 h-10 text-red-400 mb-4" />
+                <h2 className="text-lg font-black text-stone-700 dark:text-stone-300 mb-1">Couldn't load data</h2>
+                <p className="text-sm text-stone-500 dark:text-stone-400 max-w-xs">{loadError}</p>
+              </div>
+            ) : activeTab === "settings" ? (
+              <SettingsSlot />
+            ) : (
+              <ActiveSlot
+                data={data}
+                sectionId={selectedSectionId}
+                onGrade={setGradingSub}
+              />
+            )}
           </div>
         </div>
       </div>
+
+      {gradingSub && (
+        <GradeModal
+          submission={gradingSub}
+          onClose={() => setGradingSub(null)}
+          onSaved={handleGraded}
+        />
+      )}
     </div>
   );
 }

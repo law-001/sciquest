@@ -32,6 +32,8 @@ import { fetchLeaderboard } from "../lib/leaderboard";
 import { fetchScreenSeconds } from "../lib/screentime";
 import { updateStudentProfile } from "../lib/users";
 import { useAuth } from "../context/AuthContext";
+import { Avatar } from "../components/Avatar";
+import { AVATARS } from "../lib/avatars";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  Static catalogs (visual only — never holds user state)      */
@@ -245,6 +247,8 @@ function CountUp({ target, suffix = "", duration = 1400, triggered }) {
 function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [avatar, setAvatar] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -252,15 +256,13 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
     if (isOpen) {
       setFirstName(profile?.first_name ?? "");
       setLastName(profile?.last_name ?? "");
+      setAvatar(profile?.avatar ?? null);
+      setPickerOpen(false);
       setError("");
     }
   }, [isOpen, profile]);
 
   if (!isOpen) return null;
-
-  const initial = (firstName || profile?.first_name || "S")
-    .charAt(0)
-    .toUpperCase();
 
   const handleSave = async () => {
     if (!user?.id) return;
@@ -270,6 +272,7 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
       await updateStudentProfile(user.id, {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        avatar,
       });
       await onSaved?.();
       onClose();
@@ -301,10 +304,67 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
           </button>
         </div>
 
-        <div className="flex flex-col items-center gap-3 mb-6">
-          <div className="w-20 h-20 rounded-full bg-primary-500 flex items-center justify-center text-3xl font-black text-white font-heading">
-            {initial}
-          </div>
+        <div className="flex flex-col items-center gap-4 mb-6">
+          <Avatar
+            avatarId={avatar}
+            name={firstName || profile?.first_name}
+            size={80}
+          />
+          {pickerOpen ? (
+            <div className="w-full">
+              <p className="block text-xs font-bold text-stone-500 dark:text-stone-400 tracking-widest uppercase mb-2 text-center">
+                Choose Your Avatar
+              </p>
+              <div
+                role="radiogroup"
+                aria-label="Choose your avatar"
+                className="grid grid-cols-5 gap-2"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={avatar === null}
+                  aria-label="Initial"
+                  onClick={() => setAvatar(null)}
+                  className={`rounded-full p-0.5 transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+                    avatar === null
+                      ? "ring-2 ring-primary-500"
+                      : "ring-1 ring-stone-200 dark:ring-stone-700 hover:ring-primary-500/50"
+                  }`}
+                >
+                  <Avatar
+                    name={firstName || profile?.first_name}
+                    size={48}
+                  />
+                </button>
+                {AVATARS.map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={avatar === a.id}
+                    aria-label={a.label}
+                    onClick={() => setAvatar(a.id)}
+                    className={`rounded-full p-0.5 transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+                      avatar === a.id
+                        ? "ring-2 ring-primary-500"
+                        : "ring-1 ring-stone-200 dark:ring-stone-700 hover:ring-primary-500/50"
+                    }`}
+                  >
+                    <Avatar avatarId={a.id} size={48} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              className="text-sm font-bold text-primary-500 hover:text-primary-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg px-2 py-1"
+            >
+              Change Profile
+            </button>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -406,7 +466,6 @@ export function ProfilePage({
     `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() ||
     user?.user_metadata?.first_name ||
     "Learner";
-  const avatarInitial = displayName.charAt(0).toUpperCase();
   const level = levelFromXp(totalXp);
   const levelProgress = xpToNextLevel(totalXp);
   const xpTargetPct = levelProgress
@@ -693,9 +752,7 @@ export function ProfilePage({
         >
           {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
         </span>
-        <span className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-xs font-black text-white shrink-0">
-          {entry.name.charAt(0).toUpperCase()}
-        </span>
+        <Avatar avatarId={entry.avatar} name={entry.name} size={32} />
         <span
           className={`flex-1 text-sm font-bold truncate ${
             isUser
@@ -768,9 +825,11 @@ export function ProfilePage({
             }`}
           >
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-primary-500 flex items-center justify-center text-2xl font-black text-white font-heading shrink-0">
-                {avatarInitial}
-              </div>
+              <Avatar
+                avatarId={profile?.avatar}
+                name={displayName}
+                size={64}
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
                   <span className="text-xl font-black text-stone-900 dark:text-white font-heading">
