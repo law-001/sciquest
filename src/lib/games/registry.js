@@ -1,6 +1,6 @@
 import { lazy } from "react";
-import simulationImg from "../../assets/game1logo.png";
-import celldiv from "../../assets/celldiv.png";
+import sandbox from "../../assets/sandbox.png";
+import celldiv from "../../assets/celldivision.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -18,7 +18,7 @@ export const GAMES = {
     relatedLessonIds: ["week-03-matter", "week-04-phase-change"],
     difficulty: 2,
     estimatedMinutes: 15,
-    thumbnail: null,
+    thumbnail: sandbox,
     engine: "phaser",
     category: "Chemistry",
     loader: () => import("../../games/matter-state-sandbox/index.jsx"),
@@ -32,7 +32,7 @@ export const GAMES = {
     relatedLessonIds: ["week-07-cell-division", "week-08-meiosis"],
     difficulty: 2,
     estimatedMinutes: 12,
-    thumbnail: null,
+    thumbnail: celldiv,
     engine: "phaser",
     category: "Biology",
     loader: () => import("../../games/cell-division-defense/index.jsx"),
