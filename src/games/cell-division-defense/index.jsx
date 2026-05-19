@@ -391,6 +391,12 @@ export default function CellDivisionDefense({
     [minigamePhase],
   );
 
+  const handleTutorialComplete = useCallback(() => {
+    setTutorialDone(true);
+    busRef.current?.emit('tutorialComplete');
+    busRef.current?.emit('resume');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleCellSplitComplete() {
     showCellSplitRef.current = false;
     setShowCellSplit(false);
@@ -628,11 +634,7 @@ export default function CellDivisionDefense({
           <TutorialOverlay
             atp={atp}
             onBusEmit={handleBusEmit}
-            onComplete={() => {
-              setTutorialDone(true);
-              busRef.current?.emit("tutorialComplete");
-              busRef.current?.emit("resume");
-            }}
+            onComplete={handleTutorialComplete}
           />
         )}
 

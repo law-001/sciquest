@@ -283,17 +283,15 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
     );
   }
 
-  // Modal steps (welcome, towers, enemies, ready): full-screen centered card.
-  // On short landscape viewports (≤ ~380 px tall after browser chrome) the card
-  // is bounded to fit within the visible area and scrolls internally so the
-  // NEXT button is always reachable — preventing the game from staying paused.
+  // Modal steps — three-layer structure for reliable mobile landscape scroll:
+  //   1. outer: sizing wrapper (position absolute, inset 0, no overflow)
+  //   2. dim: sits behind scroll container so it never scrolls away
+  //   3. scroll: overflow-y auto + centering wrapper (minHeight 100%) so the
+  //      NEXT button is always reachable even on very short landscape viewports.
   return (
     <div
       style={{
         position: 'absolute', inset: 0, zIndex: 22, fontFamily: MONO,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         pointerEvents: 'all',
       }}
     >
@@ -301,98 +299,109 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
         @keyframes tut-glow { 0%,100%{opacity:.65} 50%{opacity:1} }
       `}</style>
 
-      {/* Background dim */}
+      {/* Background dim — lives OUTSIDE the scroll container so it stays put */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: 'rgba(0,0,0,0.82)',
         backdropFilter: 'blur(5px)',
       }} />
 
-      {/* Card — maxHeight caps it to the visible area; overflow-y lets the user
-          scroll to the NEXT button on compact landscape phones. */}
-      <Card style={{
-        position: 'relative', zIndex: 1, pointerEvents: 'all',
-        maxHeight: 'calc(100% - 32px)',
+      {/* Scroll container — sits on top of the dim */}
+      <div style={{
+        position: 'absolute', inset: 0,
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
       }}>
-        <ProgressBar step={step} total={STEPS.length} />
+        {/* Centering wrapper: minHeight 100% lets flex-center work when the card
+            fits; grows taller than 100% when the card overflows so the outer
+            scroll container actually scrolls. */}
+        <div style={{
+          minHeight: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px 0',
+        }}>
+          <Card style={{ pointerEvents: 'all' }}>
+            <ProgressBar step={step} total={STEPS.length} />
 
-        {/* ── WELCOME ───────────────────────────────── */}
-        {key === 'welcome' && <>
-          <div style={{
-            fontSize: 10, color: 'rgba(59,175,169,0.55)',
-            letterSpacing: '0.25em', marginBottom: 8,
-          }}>
-            SCIQUEST · TUTORIAL
-          </div>
-          <STitle>CELL DIVISION DEFENSE</STitle>
-          <div style={{ fontSize: 'clamp(11px,1.6vw,13px)', color: 'rgba(255,255,255,0.7)', lineHeight: 1.72 }}>
-            Your cell is undergoing{' '}
-            <span style={{ color: '#3BAFA9', fontWeight: 700 }}>mitosis</span>
-            {' '}— and hostile agents are targeting the nucleus.
-            <br /><br />
-            Place <span style={{ color: '#FFD700', fontWeight: 700 }}>defenders</span> on
-            the membrane ring to intercept them before they reach the center.
-            <br /><br />
-            Survive all{' '}
-            <span style={{ color: '#FF6B35', fontWeight: 700 }}>5 phases</span> of
-            mitosis to complete cell division!
-          </div>
-          <div style={{ marginTop: 18 }}>
-            <Btn onClick={next}>NEXT →</Btn>
-          </div>
-        </>}
+            {/* ── WELCOME ───────────────────────────────── */}
+            {key === 'welcome' && <>
+              <div style={{
+                fontSize: 10, color: 'rgba(59,175,169,0.55)',
+                letterSpacing: '0.25em', marginBottom: 8,
+              }}>
+                SCIQUEST · TUTORIAL
+              </div>
+              <STitle>CELL DIVISION DEFENSE</STitle>
+              <div style={{ fontSize: 'clamp(11px,1.6vw,13px)', color: 'rgba(255,255,255,0.7)', lineHeight: 1.72 }}>
+                Your cell is undergoing{' '}
+                <span style={{ color: '#3BAFA9', fontWeight: 700 }}>mitosis</span>
+                {' '}— and hostile agents are targeting the nucleus.
+                <br /><br />
+                Place <span style={{ color: '#FFD700', fontWeight: 700 }}>defenders</span> on
+                the membrane ring to intercept them before they reach the center.
+                <br /><br />
+                Survive all{' '}
+                <span style={{ color: '#FF6B35', fontWeight: 700 }}>5 phases</span> of
+                mitosis to complete cell division!
+              </div>
+              <div style={{ marginTop: 18 }}>
+                <Btn onClick={next}>NEXT →</Btn>
+              </div>
+            </>}
 
-        {/* ── TOWERS ────────────────────────────────── */}
-        {key === 'towers' && <>
-          <STitle>YOUR DEFENDERS</STitle>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {TOWERS.map(t => <EntityRow key={t.name} item={t} />)}
-          </div>
-          <div style={{ marginTop: 18 }}>
-            <Btn onClick={next}>NEXT →</Btn>
-          </div>
-        </>}
+            {/* ── TOWERS ────────────────────────────────── */}
+            {key === 'towers' && <>
+              <STitle>YOUR DEFENDERS</STitle>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {TOWERS.map(t => <EntityRow key={t.name} item={t} />)}
+              </div>
+              <div style={{ marginTop: 18 }}>
+                <Btn onClick={next}>NEXT →</Btn>
+              </div>
+            </>}
 
-        {/* ── ENEMIES ───────────────────────────────── */}
-        {key === 'enemies' && <>
-          <STitle>KNOW YOUR ENEMIES</STitle>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {ENEMIES.map(e => <EntityRow key={e.name} item={e} />)}
-          </div>
-          <div style={{ marginTop: 18 }}>
-            <Btn onClick={next}>NEXT →</Btn>
-          </div>
-        </>}
+            {/* ── ENEMIES ───────────────────────────────── */}
+            {key === 'enemies' && <>
+              <STitle>KNOW YOUR ENEMIES</STitle>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {ENEMIES.map(e => <EntityRow key={e.name} item={e} />)}
+              </div>
+              <div style={{ marginTop: 18 }}>
+                <Btn onClick={next}>NEXT →</Btn>
+              </div>
+            </>}
 
-        {/* ── READY ─────────────────────────────────── */}
-        {key === 'ready' && <>
-          <div style={{
-            fontSize: 'clamp(13px,2vw,17px)', fontWeight: 700,
-            color: '#FFD700', letterSpacing: '0.1em', marginBottom: 14,
-            textShadow: '0 0 12px rgba(255,215,0,0.5)',
-          }}>
-            YOU'RE READY!
-          </div>
-          <div style={{ fontSize: 'clamp(11px,1.6vw,13px)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.72 }}>
-            Hostile agents are approaching the nucleus.
-            <br />
-            Observe each wave — a <span style={{ color: '#3BAFA9' }}>mini-game</span> follows
-            every phase to test what you learned!
-            <br /><br />
-            <span style={{ color: 'rgba(59,175,169,0.55)', fontSize: 10 }}>
-              Good luck, scientist!
-            </span>
-          </div>
-          <div style={{
-            marginTop: 16, fontSize: 10,
-            color: 'rgba(255,255,255,0.22)', letterSpacing: '0.1em',
-          }}>
-            Starting in a moment...
-          </div>
-        </>}
-      </Card>
+            {/* ── READY ─────────────────────────────────── */}
+            {key === 'ready' && <>
+              <div style={{
+                fontSize: 'clamp(13px,2vw,17px)', fontWeight: 700,
+                color: '#FFD700', letterSpacing: '0.1em', marginBottom: 14,
+                textShadow: '0 0 12px rgba(255,215,0,0.5)',
+              }}>
+                YOU'RE READY!
+              </div>
+              <div style={{ fontSize: 'clamp(11px,1.6vw,13px)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.72 }}>
+                Hostile agents are approaching the nucleus.
+                <br />
+                Observe each wave — a <span style={{ color: '#3BAFA9' }}>mini-game</span> follows
+                every phase to test what you learned!
+                <br /><br />
+                <span style={{ color: 'rgba(59,175,169,0.55)', fontSize: 10 }}>
+                  Good luck, scientist!
+                </span>
+              </div>
+              <div style={{
+                marginTop: 16, fontSize: 10,
+                color: 'rgba(255,255,255,0.22)', letterSpacing: '0.1em',
+              }}>
+                Starting in a moment...
+              </div>
+            </>}
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
