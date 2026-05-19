@@ -89,11 +89,25 @@ export default class CellDefenseScene extends BaseGameScene {
   create() {
     const { width, height } = this.scale;
 
-    // Cell geometry — shifted right to leave room for the React tower panel
-    this.cellCX   = width  * 0.55;
-    this.cellCY   = height * 0.5 + 8;
-    this.cellR    = Math.min(width, height) * 0.30;
-    this.nucleusR = this.cellR * 0.16;   // matches handoff: nr = r * 0.16
+    // Cell geometry — centered in the game area (right of shop panel, below HUD)
+    const hudH  = 56;
+    const shopW = Math.max(200, Math.round(width * 0.18));
+    const gameW = width  - shopW;
+    const gameH = height - hudH;
+
+    this.cellCX = shopW + gameW * 0.5;
+    this.cellCY = hudH  + gameH * 0.5;
+
+    // Cap radius so all entry points (1.5R below, 1.2R above, 1.7R sides) fit
+    // within the visible game area, with a 5 % safety margin.
+    const maxR = Math.min(
+      gameH / 3,                        // bottom entry at 1.5R
+      gameH / 2.4,                      // top entry at 1.2R vs HUD
+      gameW / 3.4,                      // side entries at 1.7R
+      Math.min(width, height) * 0.30,   // aesthetic cap
+    );
+    this.cellR    = Math.round(maxR * 0.95);
+    this.nucleusR = this.cellR * 0.16;
 
     // Sync level-specific starting values
     const levelData = LEVELS[this.currentLevel];
