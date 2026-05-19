@@ -40,8 +40,6 @@ export function UICanvas({
   hp, maxHp, atp, phase, wave, totalWaves,
   mutations, nextWaveEnemies, waveCountdown, waveCountdownMax,
   selectedTower, paused, waveActive,
-  onTowerSelect, onPause, onExit: _onExit,
-  phaserCanvasRef,
 }) {
   const canvasRef = useRef(null);
   const stRef     = useRef({});
@@ -533,74 +531,16 @@ export function UICanvas({
       rafRef.current = requestAnimationFrame(frame);
     }
 
-    // ── Input ──────────────────────────────────────────────
-    function onClick(e) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = W / rect.width, scaleY = H / rect.height;
-      const mx = (e.clientX - rect.left) * scaleX;
-      const my = (e.clientY - rect.top)  * scaleY;
-      const L  = layoutRef.current;
-
-      // Shop cards
-      for (const card of (L.shopCards ?? [])) {
-        if (mx >= card.x && mx <= card.x + card.w && my >= card.y && my <= card.y + card.h) {
-          onTowerSelect?.(card.id);
-          return;
-        }
-      }
-      // Pause button
-      const pb = L.pauseBtn;
-      if (pb && mx >= pb.x && mx <= pb.x + pb.w && my >= pb.y && my <= pb.y + pb.h) {
-        onPause?.();
-        return;
-      }
-      // Click was in the game arena — forward to Phaser canvas
-      const phaserCanvas = phaserCanvasRef?.current;
-      if (phaserCanvas && mx >= L.shopW && my >= L.hudH) {
-        const pType = e._isTouch ? 'touch' : 'mouse';
-        const pid   = e.pointerId ?? 1;
-        phaserCanvas.dispatchEvent(new PointerEvent('pointerdown', {
-          bubbles: true, cancelable: true,
-          clientX: e.clientX, clientY: e.clientY,
-          pointerId: pid, pointerType: pType, isPrimary: true,
-          button: 0, buttons: 1,
-        }));
-        phaserCanvas.dispatchEvent(new PointerEvent('pointerup', {
-          bubbles: true, cancelable: true,
-          clientX: e.clientX, clientY: e.clientY,
-          pointerId: pid, pointerType: pType, isPrimary: true,
-          button: 0, buttons: 0,
-        }));
-      }
-    }
-
-    function onTouchStart(e) {
-      if (e.cancelable) e.preventDefault();
-    }
-
-    function onTouchEnd(e) {
-      if (e.cancelable) e.preventDefault();
-      const touch = e.changedTouches?.[0];
-      if (!touch) return;
-      onClick({ clientX: touch.clientX, clientY: touch.clientY, pointerId: touch.identifier ?? 1, _isTouch: true });
-    }
-
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
-    canvas.addEventListener('click', onClick);
-    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
     rafRef.current = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
-      canvas.removeEventListener('click', onClick);
-      canvas.removeEventListener('touchstart', onTouchStart);
-      canvas.removeEventListener('touchend', onTouchEnd);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <canvas
@@ -612,7 +552,7 @@ export function UICanvas({
         width: '100%',
         height: '100%',
         zIndex: 5,
-        cursor: 'crosshair',
+        pointerEvents: 'none',
         fontFamily: MONO,
       }}
       aria-hidden="true"
