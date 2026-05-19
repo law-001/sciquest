@@ -62,6 +62,7 @@ export default function CellDivisionDefense({
 
   const [gameStarted,   setGameStarted]   = useState(false);
   const [isPortrait,    setIsPortrait]    = useState(() => window.innerHeight > window.innerWidth);
+  const [isTouchDevice] = useState(() => navigator.maxTouchPoints > 0);
   const [hp,            setHp]            = useState(100);
   const [atp,           setAtp]           = useState(400);
   const [phase,         setPhase]         = useState('interphase');
@@ -413,6 +414,45 @@ export default function CellDivisionDefense({
             aria-label={paused ? 'Resume' : 'Pause'}
           />
         </>
+      )}
+
+      {/* Zoom controls — touch devices only, visible during active gameplay */}
+      {gameStarted && isTouchDevice && !showResults && !showCellSplit && !minigamePhase && (
+        <div style={{
+          position: 'absolute',
+          right: 10,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          zIndex: 7,
+        }}>
+          {[
+            { label: '+', event: 'cameraZoomIn',  title: 'Zoom in'    },
+            { label: '⊙', event: 'cameraReset',   title: 'Reset view' },
+            { label: '−', event: 'cameraZoomOut', title: 'Zoom out'   },
+          ].map(({ label, event, title }) => (
+            <button
+              key={event}
+              title={title}
+              aria-label={title}
+              onClick={() => busRef.current?.emit(event)}
+              style={{
+                width: 44, height: 44, borderRadius: '50%',
+                background: 'rgba(13,27,42,0.75)',
+                border: '1.5px solid rgba(59,175,169,0.55)',
+                color: '#3BAFA9', fontSize: label === '⊙' ? 16 : 22,
+                fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: MONO,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       )}
 
       {/* "Set up your defense" banner — shown after tutorial until first wave */}
