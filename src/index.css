@@ -232,7 +232,7 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
 .sq-sandbox-shell {
   display: grid;
   grid-template-rows: 60px 1fr 132px;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   background: var(--sq-cream-0);
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
