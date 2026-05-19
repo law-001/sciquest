@@ -76,6 +76,14 @@ export default class CellDefenseScene extends BaseGameScene {
     this._currentPhase = { idx: 0, t: 0 };
     this._currentShape = { mode: 'circle', r: 0 };
 
+    // Camera pan / zoom controls
+    this._shopW               = 0;
+    this._cameraControlsEnabled = false;
+    this._camDragStart        = null;
+    this._camDragScrollStart  = null;
+    this._camIsDragging       = false;
+    this._camPinchDist        = null;
+
     // Bus listener registry for clean destroy()
     this._busListeners = {};
   }
@@ -109,6 +117,7 @@ export default class CellDefenseScene extends BaseGameScene {
     );
     this.cellR    = Math.round(maxR);
     this.nucleusR = this.cellR * 0.16;
+    this._shopW   = shopW;
 
     this.cellCX = shopW + gameW * 0.5;
     // Center the full 2.7R breach span in the available band, then offset by the
@@ -168,12 +177,90 @@ export default class CellDefenseScene extends BaseGameScene {
     this.phaseSystem = new PhaseSystem(this, levelData, this.mutationSystem);
 
     this._setupBusListeners();
+    this._setupCameraControls();
     this._emitState();
     this.phaseSystem.start();
   }
 
+  // ── Camera controls ───────────────────────────────────────────────────────
+
+  _setupCameraControls() {
+    const cam = this.cameras.main;
+    const { width, height } = this.scale;
+
+    // Generous pan bounds — 3× the world in each direction to prevent infinite drift
+    cam.setBounds(-width, -height, width * 3, height * 3);
+
+    // Desktop: mouse-wheel zoom
+    this.input.on('wheel', (_p, _o, _dx, dy) => {
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom - dy * 0.001, 0.4, 3.0));
+    });
+
+    // Drag to pan — left-click drag on desktop, single-finger drag on touch
+    this._cameraControlsEnabled = true;
+
+    this.input.on('pointerdown', (pointer) => {
+      // Clear drag flag from previous interaction so slots can check it fresh
+      this._camIsDragging = false;
+      // Ignore inputs that start inside the shop panel
+      if (pointer.x < this._shopW) return;
+      // Ignore if a second finger is already down (pinch starting)
+      if (this.input.pointer2?.isDown) return;
+      this._camDragStart       = { x: pointer.x, y: pointer.y };
+      this._camDragScrollStart = { x: cam.scrollX, y: cam.scrollY };
+    });
+
+    this.input.on('pointermove', (pointer) => {
+      if (!this._camDragStart || !pointer.isDown) return;
+      // Two fingers active → hand off to pinch, cancel pan
+      if (this.input.pointer2?.isDown) {
+        this._camDragStart = null;
+        return;
+      }
+      const dx = pointer.x - this._camDragStart.x;
+      const dy = pointer.y - this._camDragStart.y;
+      if (!this._camIsDragging && Math.sqrt(dx * dx + dy * dy) > 8) {
+        this._camIsDragging = true;
+      }
+      if (this._camIsDragging) {
+        cam.scrollX = this._camDragScrollStart.x - dx / cam.zoom;
+        cam.scrollY = this._camDragScrollStart.y - dy / cam.zoom;
+      }
+    });
+
+    this.input.on('pointerup', () => {
+      this._camDragStart       = null;
+      this._camDragScrollStart = null;
+      // _camIsDragging is intentionally NOT cleared here — slot zones check it
+      // in their own pointerup handlers, which fire before this scene event.
+      // It gets reset on the next pointerdown.
+    });
+  }
+
+  _updatePinchZoom() {
+    const p1 = this.input.pointer1;
+    const p2 = this.input.pointer2;
+    if (p1.isDown && p2.isDown) {
+      const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+      if (this._camPinchDist !== null) {
+        const delta = dist - this._camPinchDist;
+        const cam   = this.cameras.main;
+        cam.setZoom(Phaser.Math.Clamp(cam.zoom + delta * 0.005, 0.4, 3.0));
+      }
+      this._camPinchDist = dist;
+      // Cancel any ongoing single-finger pan while two fingers are active
+      this._camDragStart = null;
+    } else {
+      this._camPinchDist = null;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   update(_time, delta) {
     if (this.paused) return;
+
+    if (this._cameraControlsEnabled) this._updatePinchZoom();
 
     const activeEnemies = this.enemySystem?.enemies ?? [];
 
@@ -416,9 +503,12 @@ export default class CellDefenseScene extends BaseGameScene {
       g.fillStyle(0x3BAFA9, 0.20);
       g.fillCircle(x, y, 4);
 
-      // Invisible click zone for this slot
+      // Invisible tap zone — uses pointerup so a drag that starts on the slot
+      // doesn't accidentally trigger a tower placement.
       const zone = this.add.zone(x, y, 44, 44).setInteractive();
-      zone.on('pointerdown', (pointer) => {
+      zone.on('pointerup', (pointer) => {
+        // Ignore if this touch was part of a camera drag
+        if (this._camIsDragging) return;
         const slot = this.towerSlots[i];
         this.bus?.emit('towerSlotClicked', {
           slotIndex: i,
@@ -445,6 +535,20 @@ export default class CellDefenseScene extends BaseGameScene {
 
   _setupBusListeners() {
     if (!this.bus) return;
+
+    this._busOn('cameraZoomIn', () => {
+      const cam = this.cameras.main;
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom * 1.3, 0.4, 3.0));
+    });
+    this._busOn('cameraZoomOut', () => {
+      const cam = this.cameras.main;
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom / 1.3, 0.4, 3.0));
+    });
+    this._busOn('cameraReset', () => {
+      const cam = this.cameras.main;
+      cam.setZoom(1);
+      cam.setScroll(0, 0);
+    });
 
     this._busOn('phaseTransition', ({ fromPhase, toPhase }) => {
       if (toPhase !== this.phase) this._phaseProgress = 0;
