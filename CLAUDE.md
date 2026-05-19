@@ -40,6 +40,16 @@ React 19 + Vite 8 + Tailwind CSS 4. No React Router — navigation is view-strin
 - Don't modify generated files (`*.gen.ts`, `*.generated.*`).
 - Don't hardcode colors — use Tailwind tokens or CSS variables.
 
+## Completed Games — Do Not Touch
+
+### `matter-state-sandbox`
+
+`src/games/matter-state-sandbox/` is **complete and shipped**. Do not modify any file inside it, its shared dependencies, or its CSS.
+
+- Its styles live in the global `src/index.css` under the `/* — Sandbox shell layout — */` and related `sq-*` blocks. Do not remove, rename, or change those rules — they are load-bearing for the game.
+- Do not change `src/games/_shared/` files in ways that could break this game.
+- Do not change `src/lib/games/progress.js` in ways that break its existing queries.
+
 ---
 
 ## Games Platform
@@ -60,9 +70,11 @@ Phaser renders to a `<canvas>`. React wraps it with HUD overlays.
 ### GameComponent contract
 
 Every game's `index.jsx` default export must accept:
+
 ```
 { user, profile, onExit, onProgressUpdate, initialChallengeId, reducedMotion, deviceTier }
 ```
+
 - `user`: Supabase user object
 - `profile`: SciQuest profile (role, displayName, etc.)
 - `onExit`: `() => void` — navigate back to games hub
@@ -73,6 +85,7 @@ Every game's `index.jsx` default export must accept:
 ### React ↔ Phaser communication
 
 ONLY via event bus (EventEmitter). Never pass React state or refs into Phaser scenes.
+
 - React → Phaser: emit events (e.g. `setTemperature`, `setSubstance`, `reset`)
 - Phaser → React: emit events (e.g. `stateChanged`, `transitionStart`, `transitionComplete`)
 
@@ -90,6 +103,7 @@ ONLY via event bus (EventEmitter). Never pass React state or refs into Phaser sc
 SciQuest uses a **warm cream background** (`#FAF7F2`) with **orange, teal, and yellow** accents. All new screens must match this palette.
 
 **State colors** (game canvas and badges only — not general UI):
+
 - Solid: cool blue/white — `#A8C8F0` to `#DDEEFF`
 - Liquid: teal/blue — `#3BAFA9` to `#7BC9CF`
 - Gas: light grey/white, semi-transparent — `rgba(200,220,255,0.4)`
@@ -99,6 +113,7 @@ SciQuest uses a **warm cream background** (`#FAF7F2`) with **orange, teal, and y
 **Rounded corners:** 12–16px on cards, panels, buttons.
 
 **Component rules:**
+
 - Every state must be shown by BOTH color and text label — never color alone
 - All buttons are real `<button>` elements with visible labels
 - Tap targets ≥ 44px height on mobile

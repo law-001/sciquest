@@ -283,7 +283,10 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
     );
   }
 
-  // Modal steps (welcome, towers, enemies, ready): full-screen centered card
+  // Modal steps (welcome, towers, enemies, ready): full-screen centered card.
+  // On short landscape viewports (≤ ~380 px tall after browser chrome) the card
+  // is bounded to fit within the visible area and scrolls internally so the
+  // NEXT button is always reachable — preventing the game from staying paused.
   return (
     <div
       style={{
@@ -305,8 +308,14 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
         backdropFilter: 'blur(5px)',
       }} />
 
-      {/* Card */}
-      <Card style={{ position: 'relative', zIndex: 1, pointerEvents: 'all' }}>
+      {/* Card — maxHeight caps it to the visible area; overflow-y lets the user
+          scroll to the NEXT button on compact landscape phones. */}
+      <Card style={{
+        position: 'relative', zIndex: 1, pointerEvents: 'all',
+        maxHeight: 'calc(100% - 32px)',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+      }}>
         <ProgressBar step={step} total={STEPS.length} />
 
         {/* ── WELCOME ───────────────────────────────── */}

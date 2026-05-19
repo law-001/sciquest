@@ -89,13 +89,16 @@ export function MinigameOverlay({ phase, onComplete }) {
         style={{
           width: '100%',
           maxWidth: 560,
+          maxHeight: 'calc(100% - 32px)',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           margin: '0 16px',
           background: '#0D1B2A',
           borderRadius: 16,
-          padding: '28px 32px 32px',
+          padding: 'clamp(14px,3vh,28px) clamp(14px,3vw,32px) clamp(14px,3vh,32px)',
           display: 'flex',
           flexDirection: 'column',
-          gap: 18,
+          gap: 'clamp(10px,2vh,18px)',
           animation: 'cdd-overlay-pulse 3s ease-in-out infinite',
         }}
       >
@@ -180,7 +183,7 @@ export function MinigameOverlay({ phase, onComplete }) {
         </div>
 
         {/* ── Minigame content ───────────────────────────────────── */}
-        <div style={{ minHeight: 220 }}>
+        <div style={{ minHeight: 'clamp(140px, 28vh, 220px)' }}>
           {MinigameComponent ? (
             <MinigameComponent
               onComplete={handleChildComplete}
