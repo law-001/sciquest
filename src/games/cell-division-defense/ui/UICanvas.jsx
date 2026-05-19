@@ -82,6 +82,8 @@ export function UICanvas({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const L = layoutRef.current;
+      // Shrink secondary UI (wave queue) on short viewports — mobile landscape
+      L.uiScale = Math.max(0.6, Math.min(1, H / 560));
       L.hudH  = 56;
       L.shopW = Math.max(200, Math.round(W * 0.18));
       L.shopX = 0;
@@ -394,14 +396,21 @@ export function UICanvas({
       const enemies = st.nextWaveEnemies;
       if (!enemies || enemies.length === 0) return;
 
-      const rowH = 22;
-      const pad  = 16, pw = 210;
-      const ph   = 28 + enemies.length * rowH + 26;
+      const s     = L.uiScale ?? 1;
+      const rowH  = Math.round(22 * s);
+      const pad   = Math.round(16 * s);
+      const pw    = Math.round(210 * s);
+      const headH = Math.round(28 * s);
+      const footH = Math.round(26 * s);
+      const dotR  = 5 * s;
+      const titleFont = Math.max(9, Math.round(11 * s));
+      const rowFont   = Math.max(9, Math.round(11 * s));
+      const ph   = headH + enemies.length * rowH + footH;
       const x    = L.shopW + (W - L.shopW) - pw - pad;
       const y    = H - ph - pad;
 
       ctx.save();
-      roundRect(ctx, x, y, pw, ph, 10);
+      roundRect(ctx, x, y, pw, ph, 10 * s);
       ctx.fillStyle   = 'rgba(0,0,0,0.72)';
       ctx.fill();
       ctx.strokeStyle = 'rgba(59,175,169,0.5)';
@@ -409,17 +418,17 @@ export function UICanvas({
       ctx.stroke();
 
       ctx.fillStyle    = '#3BAFA9';
-      ctx.font         = `bold 11px ${MONO}`;
+      ctx.font         = `bold ${titleFont}px ${MONO}`;
       ctx.textAlign    = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText('NEXT WAVE', x + 14, y + 8);
+      ctx.fillText('NEXT WAVE', x + 14 * s, y + 8 * s);
 
       enemies.forEach((e, i) => {
-        const ry  = y + 28 + i * rowH;
+        const ry  = y + headH + i * rowH;
         const def = ENEMY_COLORS[e.type] ?? { color: '#aaa', label: e.type.toUpperCase() };
         // Dot indicator
         ctx.beginPath();
-        ctx.arc(x + 22, ry + rowH / 2, 5, 0, Math.PI * 2);
+        ctx.arc(x + 22 * s, ry + rowH / 2, dotR, 0, Math.PI * 2);
         ctx.fillStyle = def.color;
         ctx.shadowBlur  = 6;
         ctx.shadowColor = def.color;
@@ -427,14 +436,14 @@ export function UICanvas({
         ctx.shadowBlur = 0;
         // Label + count
         ctx.fillStyle    = 'rgba(255,255,255,0.85)';
-        ctx.font         = `bold 11px ${MONO}`;
+        ctx.font         = `bold ${rowFont}px ${MONO}`;
         ctx.textAlign    = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`${String(e.count).padStart(2, ' ')}×  ${def.label}`, x + 34, ry + rowH / 2);
+        ctx.fillText(`${String(e.count).padStart(2, ' ')}×  ${def.label}`, x + 34 * s, ry + rowH / 2);
       });
 
       // Countdown bar
-      const cbX = x + 14, cbY = y + ph - 20, cbW = pw - 28, cbH = 8;
+      const cbX = x + 14 * s, cbY = y + ph - 20 * s, cbW = pw - 28 * s, cbH = 8 * s;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       roundRect(ctx, cbX, cbY, cbW, cbH, 4);
       ctx.fill();

@@ -14,16 +14,22 @@ function detectDeviceTier() {
 
 export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   const reducedMotion = useReducedMotion();
-  // Track the actual visible viewport height (window.innerHeight excludes mobile browser chrome)
-  const [vh, setVh] = useState(() => window.innerHeight);
+  // visualViewport.height is the true on-screen area; window.innerHeight on iOS
+  // Safari landscape excludes the URL bar and overstates the usable height.
+  const getViewportHeight = () => window.visualViewport?.height ?? window.innerHeight;
+  const [vh, setVh] = useState(getViewportHeight);
 
   useEffect(() => {
-    const update = () => setVh(window.innerHeight);
+    const update = () => setVh(getViewportHeight());
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
+    window.visualViewport?.addEventListener('resize', update);
+    window.visualViewport?.addEventListener('scroll', update);
     return () => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
+      window.visualViewport?.removeEventListener('resize', update);
+      window.visualViewport?.removeEventListener('scroll', update);
     };
   }, []);
 
