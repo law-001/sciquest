@@ -205,50 +205,105 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
 
   const next = () => setStep(s => s + 1);
 
+  // Non-modal steps (place + atp): compact banner pinned below the HUD so the
+  // game canvas remains accessible — a full card at the bottom covers the tower
+  // ring on small landscape viewports (≤ 375px tall) making it impossible to
+  // interact with the game.
+  if (!isModal) {
+    return (
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 22, fontFamily: MONO,
+        pointerEvents: 'none',
+      }}>
+        <style>{`
+          @keyframes tut-left { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-8px)} }
+        `}</style>
+
+        {/* Subtle dim — keep game visible */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(1px)',
+        }} />
+
+        {/* Arrow pointing to shop panel (step 3 only) */}
+        {key === 'place' && (
+          <div style={{
+            position: 'absolute',
+            left: 'max(150px, 14vw)',
+            top: '50%', transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+          }}>
+            <div style={{
+              fontSize: 'clamp(28px,4vw,42px)', color: '#FFD700',
+              textShadow: '0 0 20px rgba(255,215,0,0.9)',
+              animation: 'tut-left 0.8s ease-in-out infinite',
+            }}>←</div>
+            <div style={{
+              fontSize: 10, color: '#FFD700', fontWeight: 700,
+              letterSpacing: '0.12em', textShadow: '0 0 8px rgba(255,215,0,0.7)',
+            }}>SELECT HERE</div>
+          </div>
+        )}
+
+        {/* Compact banner — pinned below HUD, right of shop, full game width */}
+        <div style={{
+          position: 'absolute',
+          top: 64,
+          left: 'max(204px, calc(18vw + 4px))',
+          right: 10,
+          pointerEvents: 'all',
+          background: 'rgba(4,12,24,0.94)',
+          border: '1.5px solid rgba(59,175,169,0.45)',
+          borderRadius: 12,
+          padding: '10px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        }}>
+          {key === 'place' && <>
+            <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.55 }}>
+              <span style={{ color: '#FFD700', fontWeight: 700 }}>① SELECT</span> a defender from the panel
+              {' · '}
+              <span style={{ color: '#FFD700', fontWeight: 700 }}>② TAP</span> a glowing slot to place it
+            </div>
+            <Btn onClick={next}>SKIP →</Btn>
+          </>}
+
+          {key === 'atp' && <>
+            <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.55 }}>
+              <span style={{ color: '#FFD700', fontWeight: 700 }}>ATP</span> orb spawned inside the cell —
+              {' '}tap it to collect!
+            </div>
+            <Btn onClick={next} accent="#FFD700">GOT IT →</Btn>
+          </>}
+        </div>
+      </div>
+    );
+  }
+
+  // Modal steps (welcome, towers, enemies, ready): full-screen centered card
   return (
     <div
       style={{
         position: 'absolute', inset: 0, zIndex: 22, fontFamily: MONO,
         display: 'flex',
-        alignItems: isModal ? 'center' : 'flex-end',
+        alignItems: 'center',
         justifyContent: 'center',
-        padding: isModal ? 0 : '0 0 28px 0',
-        pointerEvents: isModal ? 'all' : 'none',
+        pointerEvents: 'all',
       }}
     >
       <style>{`
-        @keyframes tut-left { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-8px)} }
         @keyframes tut-glow { 0%,100%{opacity:.65} 50%{opacity:1} }
       `}</style>
 
       {/* Background dim */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: isModal ? 'rgba(0,0,0,0.82)' : 'rgba(0,0,0,0.28)',
-        backdropFilter: isModal ? 'blur(5px)' : 'blur(1px)',
-        transition: 'background 0.4s',
+        background: 'rgba(0,0,0,0.82)',
+        backdropFilter: 'blur(5px)',
       }} />
-
-      {/* Arrow pointing to shop panel (step 3) */}
-      {key === 'place' && (
-        <div style={{
-          position: 'absolute',
-          left: 'max(150px, 14vw)',
-          top: '50%', transform: 'translateY(-50%)',
-          pointerEvents: 'none',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-        }}>
-          <div style={{
-            fontSize: 'clamp(28px,4vw,42px)', color: '#FFD700',
-            textShadow: '0 0 20px rgba(255,215,0,0.9)',
-            animation: 'tut-left 0.8s ease-in-out infinite',
-          }}>←</div>
-          <div style={{
-            fontSize: 10, color: '#FFD700', fontWeight: 700,
-            letterSpacing: '0.12em', textShadow: '0 0 8px rgba(255,215,0,0.7)',
-          }}>SELECT HERE</div>
-        </div>
-      )}
 
       {/* Card */}
       <Card style={{ position: 'relative', zIndex: 1, pointerEvents: 'all' }}>
@@ -299,52 +354,6 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
           </div>
           <div style={{ marginTop: 18 }}>
             <Btn onClick={next}>NEXT →</Btn>
-          </div>
-        </>}
-
-        {/* ── PLACE TOWER ───────────────────────────── */}
-        {key === 'place' && <>
-          <STitle>PLACE YOUR FIRST TOWER</STitle>
-          <div style={{ fontSize: 'clamp(11px,1.6vw,13px)', color: 'rgba(255,255,255,0.7)', lineHeight: 1.72 }}>
-            <span style={{ color: '#FFD700', fontWeight: 700 }}>① Select</span> a defender
-            from the left panel
-            <br />
-            <span style={{ color: '#FFD700', fontWeight: 700 }}>② Click</span> any glowing
-            slot on the membrane ring to deploy it
-          </div>
-          <div style={{
-            marginTop: 14, padding: '10px 14px', borderRadius: 10,
-            background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.22)',
-            fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: 1.55,
-          }}>
-            💡 Tip: Start with a{' '}
-            <span style={{ color: '#FF6B35', fontWeight: 700 }}>Lysosome</span> (orange) —
-            cheapest and deals direct damage.
-          </div>
-          <div style={{ marginTop: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', flex: 1, lineHeight: 1.4 }}>
-              Advances automatically when you place a tower
-            </div>
-            <Btn onClick={next}>SKIP →</Btn>
-          </div>
-        </>}
-
-        {/* ── ATP ───────────────────────────────────── */}
-        {key === 'atp' && <>
-          <STitle>COLLECT ATP</STitle>
-          <div style={{ fontSize: 'clamp(11px,1.6vw,13px)', color: 'rgba(255,255,255,0.7)', lineHeight: 1.72 }}>
-            <span style={{ color: '#FFD700', fontWeight: 700 }}>ATP</span> is your
-            currency — you need it to place defenders.
-            <br /><br />
-            A glowing ATP orb has spawned inside the cell.{' '}
-            <span style={{ color: '#FFD700' }}>Click it</span> to collect it!
-            <br /><br />
-            <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: 10 }}>
-              Enemies also drop ATP when they are defeated.
-            </span>
-          </div>
-          <div style={{ marginTop: 18 }}>
-            <Btn onClick={next} accent="#FFD700">GOT IT →</Btn>
           </div>
         </>}
 
