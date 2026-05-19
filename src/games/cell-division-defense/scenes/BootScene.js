@@ -12,7 +12,7 @@ import {
 const TOWER_SIZE  = 80;
 const ENEMY_SIZE  = 64;
 const PROJ_SIZE   = 12;
-const ATP_SIZE    = 14;
+const ATP_SIZE    = 32;
 
 function makeCanvas(w, h) {
   const c = document.createElement('canvas');
@@ -76,9 +76,9 @@ export default class BootScene extends BaseGameScene {
 
     this._makeTexture('atpPickup', ATP_SIZE, ATP_SIZE, (g) => {
       g.fillStyle(0xFDE047, 1);
-      g.fillCircle(7, 7, 6);
-      g.lineStyle(1.5, 0xF59E0B, 1);
-      g.strokeCircle(7, 7, 6);
+      g.fillCircle(16, 16, 14);
+      g.lineStyle(2.5, 0xF59E0B, 1);
+      g.strokeCircle(16, 16, 14);
     });
   }
 

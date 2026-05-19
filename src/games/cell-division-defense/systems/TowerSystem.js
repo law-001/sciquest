@@ -48,15 +48,21 @@ class TowerSystem {
       delay: Math.random() * 800,
     });
 
+    const hpBar = this.scene.add.graphics();
+    hpBar.setDepth(8);
+
     slot.tower = {
       id: towerId,
       sprite,
       rangeCircle,
+      hpBar,
       def,
       cooldown: 0,
       silenced: false,
       disabled: false,
       upgraded: false,
+      hp: 40,
+      maxHp: 40,
     };
 
     return true;
@@ -66,12 +72,57 @@ class TowerSystem {
     const slot = this.slots[slotIndex];
     if (!slot?.tower) return 0;
 
-    const { sprite, rangeCircle, def } = slot.tower;
+    const { sprite, rangeCircle, hpBar, def } = slot.tower;
     sprite.destroy();
     rangeCircle.destroy();
+    hpBar.destroy();
     slot.tower = null;
 
     return Math.floor(def.cost * 0.5);
+  }
+
+  damageTower(slotIndex, amount) {
+    const slot = this.slots[slotIndex];
+    if (!slot?.tower) return;
+    slot.tower.hp = Math.max(0, slot.tower.hp - amount);
+
+    // Brief red tint flash
+    slot.tower.sprite.setTint(0xff3333);
+    this.scene.time.delayedCall(180, () => {
+      if (slot.tower) slot.tower.sprite.clearTint();
+    });
+
+    if (slot.tower.hp <= 0) {
+      this.destroyTower(slotIndex);
+    }
+  }
+
+  destroyTower(slotIndex) {
+    const slot = this.slots[slotIndex];
+    if (!slot?.tower) return;
+
+    const { x, y } = slot;
+    // Destruction burst
+    const g = this.scene.add.graphics();
+    g.setDepth(10);
+    g.fillStyle(0xff6600, 0.9);
+    g.fillCircle(x, y, 28);
+    this.scene.tweens.add({
+      targets: g,
+      alpha: { from: 0.9, to: 0 },
+      scaleX: { from: 1, to: 2.5 },
+      scaleY: { from: 1, to: 2.5 },
+      duration: 420,
+      ease: 'Quad.easeOut',
+      onComplete: () => g.destroy(),
+    });
+
+    slot.tower.sprite.destroy();
+    slot.tower.rangeCircle.destroy();
+    slot.tower.hpBar.destroy();
+    slot.tower = null;
+
+    this.scene._emitState?.();
   }
 
   upgradeTower(slotIndex) {
@@ -125,6 +176,24 @@ class TowerSystem {
         onSpawnProjectile({ x, y }, nearest, tower.def);
         this.animationSystem?.playTowerAttack(tower.id, x, y, nearest.sprite.x, nearest.sprite.y);
         tower.cooldown = tower.def.fireRate;
+        this.scene.bus?.emit('sfx', { type: 'attack' });
+      }
+
+      // Draw HP bar only when damaged
+      if (tower.hpBar) {
+        tower.hpBar.clear();
+        if (tower.hp < tower.maxHp) {
+          const bx = slot.x - 20;
+          const by = slot.y - 28;
+          const bw = 40;
+          const bh = 5;
+          tower.hpBar.fillStyle(0x000000, 0.6);
+          tower.hpBar.fillRect(bx, by, bw, bh);
+          const frac = tower.hp / tower.maxHp;
+          const col = frac > 0.5 ? 0x22c55e : frac > 0.25 ? 0xf59e0b : 0xef4444;
+          tower.hpBar.fillStyle(col, 1);
+          tower.hpBar.fillRect(bx, by, bw * frac, bh);
+        }
       }
     }
   }

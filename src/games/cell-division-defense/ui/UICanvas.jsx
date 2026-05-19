@@ -39,7 +39,7 @@ function roundRect(ctx, x, y, w, h, r) {
 export function UICanvas({
   hp, maxHp, atp, phase, wave, totalWaves,
   mutations, nextWaveEnemies, waveCountdown, waveCountdownMax,
-  selectedTower, paused,
+  selectedTower, paused, waveActive,
   onTowerSelect, onPause, onExit: _onExit,
   phaserCanvasRef,
 }) {
@@ -64,6 +64,7 @@ export function UICanvas({
       waveCountdownMax: waveCountdownMax ?? 30,
       selectedTower: selectedTower ?? null,
       paused: paused ?? false,
+      waveActive: waveActive ?? false,
     };
   });
 
@@ -322,29 +323,30 @@ export function UICanvas({
       ctx.fillText(`${st.hp} / ${st.maxHp}`, barX + barW / 2, h / 2);
       ctx.shadowBlur = 0;
 
-      // ATP
-      const atpX = barX + barW + 28;
-      ctx.font = `bold 16px ${MONO}`;
-      ctx.fillStyle   = '#FFD700';
-      ctx.textAlign   = 'left';
-      ctx.shadowBlur  = 8;
+      // ATP — pill background for visibility
+      const atpX = barX + barW + 22;
+      const atpVal = `${st.atp}`;
+      const atpLabel = `ATP: ${atpVal}`;
+      ctx.font = `bold 20px ${MONO}`;
+      const atpTW = ctx.measureText(atpLabel).width;
+      const atpPillW = atpTW + 36;
+      const atpPillH = 30;
+      const atpPillY = h / 2 - atpPillH / 2;
+      // Pill background
+      roundRect(ctx, atpX, atpPillY, atpPillW, atpPillH, atpPillH / 2);
+      ctx.fillStyle = 'rgba(255,200,0,0.15)';
+      ctx.fill();
+      roundRect(ctx, atpX, atpPillY, atpPillW, atpPillH, atpPillH / 2);
+      ctx.strokeStyle = 'rgba(255,215,0,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Text
+      ctx.shadowBlur  = 10;
       ctx.shadowColor = '#FFD700';
-      ctx.fillText('⚡', atpX, h / 2);
+      ctx.fillStyle   = '#FFD700';
+      ctx.textAlign   = 'center';
+      ctx.fillText(`ATP: ${atpVal}`, atpX + atpPillW / 2, h / 2);
       ctx.shadowBlur = 0;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(' ATP:', atpX + 16, h / 2);
-      ctx.fillStyle = '#FFD700';
-      ctx.fillText(`${st.atp}`, atpX + 70, h / 2);
-
-      // Wave counter
-      if (st.wave > 0) {
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.font = `12px ${MONO}`;
-        ctx.fillText(
-          `WAVE ${String(st.wave).padStart(2, '0')} / ${st.totalWaves}`,
-          atpX + 130, h / 2,
-        );
-      }
 
       // Pause button
       const pb = L.pauseBtn;
@@ -357,7 +359,6 @@ export function UICanvas({
       ctx.shadowBlur = 0;
       ctx.fillStyle  = '#FF8C42';
       if (st.paused) {
-        // Play triangle
         ctx.beginPath();
         ctx.moveTo(pb.x + 11, pb.y + 10);
         ctx.lineTo(pb.x + 11, pb.y + 26);
@@ -369,14 +370,25 @@ export function UICanvas({
         ctx.fillRect(pb.x + 21, pb.y + 10, 4, 16);
       }
 
-      // LIVE indicator
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
-      ctx.font = `10px ${MONO}`;
-      ctx.textAlign = 'right';
-      ctx.fillText('● LIVE', pb.x - 14, h / 2);
+      // Wave counter — right-aligned before pause button
+      if (st.wave > 0) {
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = `bold 12px ${MONO}`;
+        ctx.textAlign = 'right';
+        ctx.fillText(
+          `WAVE ${String(st.wave).padStart(2, '0')}/${st.totalWaves}`,
+          pb.x - 12, h / 2,
+        );
+      }
 
       ctx.restore();
     }
+
+    const ENEMY_COLORS = {
+      viralHijacker:  { color: '#8B00FF', label: 'VIRAL HIJACKER' },
+      radiationPulse: { color: '#FF4444', label: 'RAD PULSE' },
+      toxinDroplet:   { color: '#7FFF00', label: 'TOXIN TANK' },
+    };
 
     function drawWaveQueue(t) {
       const st = stRef.current;
@@ -384,9 +396,11 @@ export function UICanvas({
       const enemies = st.nextWaveEnemies;
       if (!enemies || enemies.length === 0) return;
 
-      const pad = 16, pw = 250, ph = 90;
-      const x = L.shopW + (W - L.shopW) - pw - pad;
-      const y = H - ph - pad;
+      const rowH = 22;
+      const pad  = 16, pw = 210;
+      const ph   = 28 + enemies.length * rowH + 26;
+      const x    = L.shopW + (W - L.shopW) - pw - pad;
+      const y    = H - ph - pad;
 
       ctx.save();
       roundRect(ctx, x, y, pw, ph, 10);
@@ -400,59 +414,40 @@ export function UICanvas({
       ctx.font         = `bold 11px ${MONO}`;
       ctx.textAlign    = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText('NEXT WAVE', x + 14, y + 10);
+      ctx.fillText('NEXT WAVE', x + 14, y + 8);
 
-      const iconY = y + 38;
-      let ix = x + 14;
-      enemies.forEach(e => {
-        for (let i = 0; i < e.count; i++) {
-          ctx.save();
-          ctx.translate(ix + 11, iconY);
-          const type = e.type;
-          if (type === 'viralHijacker' || type === 'viral') {
-            ctx.fillStyle = '#8B00FF';
-            ctx.beginPath();
-            for (let k = 0; k < 6; k++) {
-              const a = (k * 60 - 90) * Math.PI / 180;
-              k === 0 ? ctx.moveTo(Math.cos(a) * 9, Math.sin(a) * 9) : ctx.lineTo(Math.cos(a) * 9, Math.sin(a) * 9);
-            }
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#BB66FF';
-            ctx.lineWidth   = 1;
-            ctx.stroke();
-          } else {
-            ctx.fillStyle = '#7FFF00';
-            ctx.beginPath();
-            ctx.ellipse(0, 2, 8, 11, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#B8FF4A';
-            ctx.lineWidth   = 1;
-            ctx.stroke();
-          }
-          ctx.restore();
-          ix += 26;
-        }
+      enemies.forEach((e, i) => {
+        const ry  = y + 28 + i * rowH;
+        const def = ENEMY_COLORS[e.type] ?? { color: '#aaa', label: e.type.toUpperCase() };
+        // Dot indicator
+        ctx.beginPath();
+        ctx.arc(x + 22, ry + rowH / 2, 5, 0, Math.PI * 2);
+        ctx.fillStyle = def.color;
+        ctx.shadowBlur  = 6;
+        ctx.shadowColor = def.color;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // Label + count
+        ctx.fillStyle    = 'rgba(255,255,255,0.85)';
+        ctx.font         = `bold 11px ${MONO}`;
+        ctx.textAlign    = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${String(e.count).padStart(2, ' ')}×  ${def.label}`, x + 34, ry + rowH / 2);
       });
 
       // Countdown bar
-      const cbX = x + 14, cbY = y + ph - 22, cbW = pw - 28, cbH = 10;
+      const cbX = x + 14, cbY = y + ph - 20, cbW = pw - 28, cbH = 8;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      roundRect(ctx, cbX, cbY, cbW, cbH, 5);
+      roundRect(ctx, cbX, cbY, cbW, cbH, 4);
       ctx.fill();
-      const max  = st.waveCountdownMax || 30;
-      const pct  = max > 0 ? Math.max(0, Math.min(1, 1 - st.waveCountdown / max)) : 0.62 + 0.05 * Math.sin(t * 0.04);
+      const max   = st.waveCountdownMax || 30;
+      const pct   = max > 0 ? Math.max(0, Math.min(1, 1 - st.waveCountdown / max)) : 0.62 + 0.05 * Math.sin(t * 0.04);
       const fillG = ctx.createLinearGradient(cbX, 0, cbX + cbW, 0);
       fillG.addColorStop(0, '#FFB300');
       fillG.addColorStop(1, '#FF6B35');
       ctx.fillStyle = fillG;
-      roundRect(ctx, cbX + 1, cbY + 1, (cbW - 2) * pct, cbH - 2, 4);
+      roundRect(ctx, cbX + 1, cbY + 1, (cbW - 2) * pct, cbH - 2, 3);
       ctx.fill();
-      ctx.fillStyle    = 'rgba(255,255,255,0.7)';
-      ctx.font         = `9px ${MONO}`;
-      ctx.textAlign    = 'right';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(`00:${String(st.waveCountdown).padStart(2, '0')}`, cbX + cbW, cbY - 4);
 
       ctx.restore();
     }
@@ -496,6 +491,35 @@ export function UICanvas({
       ctx.restore();
     }
 
+    function drawWaveDisclaimer(t) {
+      if (!stRef.current.waveActive || stRef.current.paused) return;
+      const L   = layoutRef.current;
+      const gameX = L.shopW;
+      const gameW = W - gameX;
+      const cx  = gameX + gameW / 2;
+      const cy  = L.hudH + 22;
+      const pulse = 0.75 + 0.25 * Math.abs(Math.sin(t * 0.04));
+
+      ctx.save();
+      const text = '⚡ OBSERVE — MINI-GAME COMING NEXT!';
+      ctx.font = `bold 11px ${MONO}`;
+      const tw = ctx.measureText(text).width;
+      const pw = tw + 28, ph = 22;
+
+      roundRect(ctx, cx - pw / 2, cy - ph / 2, pw, ph, 11);
+      ctx.fillStyle = `rgba(59,175,169,${0.10 * pulse})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(59,175,169,${0.45 * pulse})`;
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+
+      ctx.fillStyle    = `rgba(59,175,169,${0.85 * pulse})`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, cx, cy);
+      ctx.restore();
+    }
+
     // ── Animation loop ─────────────────────────────────────
     function frame() {
       timeRef.current++;
@@ -503,6 +527,7 @@ export function UICanvas({
       ctx.clearRect(0, 0, W, H);
       drawShopPanel(t);
       drawHUD(t);
+      drawWaveDisclaimer(t);
       drawWaveQueue(t);
       drawMutationLog();
       rafRef.current = requestAnimationFrame(frame);
@@ -531,7 +556,7 @@ export function UICanvas({
       }
       // Click was in the game arena — forward to Phaser canvas
       const phaserCanvas = phaserCanvasRef?.current;
-      if (phaserCanvas && (mx >= L.shopW || my < 0)) {
+      if (phaserCanvas && mx >= L.shopW && my >= L.hudH) {
         phaserCanvas.dispatchEvent(new PointerEvent('pointerdown', {
           bubbles: true, cancelable: true,
           clientX: e.clientX, clientY: e.clientY,
@@ -549,16 +574,25 @@ export function UICanvas({
       }
     }
 
+    function onTouchEnd(e) {
+      if (e.cancelable) e.preventDefault();
+      const touch = e.changedTouches?.[0];
+      if (!touch) return;
+      onClick({ clientX: touch.clientX, clientY: touch.clientY, pointerId: touch.identifier ?? 1 });
+    }
+
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     canvas.addEventListener('click', onClick);
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
     rafRef.current = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       canvas.removeEventListener('click', onClick);
+      canvas.removeEventListener('touchend', onTouchEnd);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

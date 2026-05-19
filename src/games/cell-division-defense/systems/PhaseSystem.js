@@ -2,6 +2,7 @@ import { PHASES } from '../data/phases';
 
 const PHASE_ORDER = ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'];
 const INTERPHASE_DURATION = 30000;
+const WAVE_MIN_DURATION   = 30000;
 
 class PhaseSystem {
   constructor(scene, levelData, mutationSystem) {
@@ -13,6 +14,11 @@ class PhaseSystem {
     this.interphaseTimer = null;
     this.waitingForMinigame = false;
     this._minigameResultHandler = null;
+    this._tutorialCompleteHandler = null;
+    this._preWaveTimer = null;
+    this._waveStartTime = 0;
+    this._waveMinTimer = null;
+    this._waveCleared = false;
   }
 
   start() {
@@ -20,7 +26,29 @@ class PhaseSystem {
     this.scene.phase = PHASE_ORDER[0];
     this._emitState();
 
+    // Tutorial emits 'tutorialComplete' to start immediately; fallback timer if skipped
+    const onTutComplete = () => {
+      this.scene.bus?.off('tutorialComplete', onTutComplete);
+      this._tutorialCompleteHandler = null;
+      if (this.interphaseTimer) {
+        this.interphaseTimer.remove();
+        this.interphaseTimer = null;
+      }
+      // 10-second countdown warning before first wave
+      this.scene.bus?.emit('waveWarning', { seconds: 10 });
+      this._preWaveTimer = this.scene.time.delayedCall(10000, () => {
+        this._preWaveTimer = null;
+        this.advancePhase();
+      });
+    };
+    this._tutorialCompleteHandler = onTutComplete;
+    this.scene.bus?.on('tutorialComplete', onTutComplete);
+
     this.interphaseTimer = this.scene.time.delayedCall(INTERPHASE_DURATION, () => {
+      if (this._tutorialCompleteHandler) {
+        this.scene.bus?.off('tutorialComplete', this._tutorialCompleteHandler);
+        this._tutorialCompleteHandler = null;
+      }
       this.advancePhase();
     });
   }
@@ -45,22 +73,44 @@ class PhaseSystem {
     if (waveConfig) {
       this.scene.wave++;
       this.scene._waveActive = true;
+      this._waveCleared = false;
+      this._waveStartTime = Date.now();
+
+      const activeBreach = this.levelData?.breachCountByPhase?.[toPhase] ?? 3;
+
       this.scene.bus?.emit('waveStarted', {
         phase: toPhase,
         enemies: waveConfig,
         wave: this.scene.wave,
         totalWaves: 5,
+        activeBreach,
       });
-      this.scene.enemySystem?.spawnWave(waveConfig);
+      this.scene.enemySystem?.spawnWave(waveConfig, activeBreach);
       this._emitState();
+
+      // Enforce 30-second minimum wave: start timer now; fire minigame only after both
+      // the minimum duration AND all enemies being cleared.
+      this._waveMinTimer = this.scene.time.delayedCall(WAVE_MIN_DURATION, () => {
+        this._waveMinTimer = null;
+        if (this._waveCleared) {
+          this._triggerMinigame(toPhase);
+        }
+        // If not cleared yet, onWaveCleared() will handle it
+      });
     } else {
       this._triggerMinigame(toPhase);
     }
   }
 
   onWaveCleared() {
+    this._waveCleared = true;
     const phase = PHASE_ORDER[this.currentPhaseIndex];
-    this._triggerMinigame(phase);
+
+    if (this._waveMinTimer === null) {
+      // Minimum time already elapsed — go straight to minigame
+      this._triggerMinigame(phase);
+    }
+    // Otherwise wait for the minimum timer to finish
   }
 
   _triggerMinigame(phase) {
@@ -71,6 +121,7 @@ class PhaseSystem {
     }
 
     this.waitingForMinigame = true;
+    // Signal React to show the pre-minigame notification then pause + open minigame
     this.scene.bus?.emit('phaseTransition', { fromPhase: phase, toPhase: phase });
 
     // Manual once: unregister handler after first call
@@ -109,6 +160,12 @@ class PhaseSystem {
 
   destroy() {
     this.interphaseTimer?.remove();
+    this._waveMinTimer?.remove();
+    this._preWaveTimer?.remove();
+    if (this._tutorialCompleteHandler) {
+      this.scene.bus?.off('tutorialComplete', this._tutorialCompleteHandler);
+      this._tutorialCompleteHandler = null;
+    }
     if (this._minigameResultHandler) {
       this.scene.bus?.off('minigameResult', this._minigameResultHandler);
       this._minigameResultHandler = null;

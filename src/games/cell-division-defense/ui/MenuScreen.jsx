@@ -30,6 +30,37 @@ export function MenuScreen({ onStart, onExit }) {
         zIndex: 30,
       }}
     >
+      {/* Exit button anchored top-left of the full screen */}
+      <button
+        onClick={onExit}
+        style={{
+          position: 'absolute',
+          top: 16, left: 16,
+          zIndex: 10,
+          background: 'rgba(255,255,255,0.07)',
+          border: '1.5px solid rgba(255,255,255,0.18)',
+          borderRadius: 10,
+          color: 'rgba(255,255,255,0.65)',
+          fontFamily: MONO,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          padding: '8px 16px',
+          cursor: 'pointer',
+          minHeight: 40,
+          transition: 'background 0.15s, color 0.15s',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
+          e.currentTarget.style.color = '#fff';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+          e.currentTarget.style.color = 'rgba(255,255,255,0.65)';
+        }}
+      >
+        &larr; EXIT TO HUB
+      </button>
       <style>{`
         @keyframes cdd-cell-pulse   { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.04);opacity:1} }
         @keyframes cdd-nucleus-pulse{ 0%,100%{transform:scale(.96)}           50%{transform:scale(1.04)}            }
@@ -60,11 +91,11 @@ export function MenuScreen({ onStart, onExit }) {
           height: var(--sz);
           flex-shrink: 0;
         }
-        .cdd-title-h1  { font-size: clamp(16px, 3.5vw, 26px); }
-        .cdd-title-sub { font-size: clamp(10px, 1.8vw, 13px); }
-        .cdd-label     { font-size: clamp(8px,  1.2vw, 10px); }
-        .cdd-instr-row { font-size: clamp(9px,  1.3vw, 11px); }
-        .cdd-btn-start { font-size: clamp(11px, 1.8vw, 14px); padding: clamp(10px,1.8vh,13px) clamp(24px,4vw,44px); }
+        .cdd-title-h1  { font-size: clamp(22px, 4.5vw, 34px); }
+        .cdd-title-sub { font-size: clamp(12px, 2.2vw, 16px); }
+        .cdd-label     { font-size: clamp(10px, 1.5vw, 12px); }
+        .cdd-instr-row { font-size: clamp(11px, 1.6vw, 13px); }
+        .cdd-btn-start { font-size: clamp(13px, 2vw, 16px); padding: clamp(12px,2vh,16px) clamp(28px,5vw,52px); }
 
         /* Hide defenders row on very small heights */
         @media (max-height: 560px) { .cdd-defenders { display: none !important; } }
@@ -135,13 +166,14 @@ export function MenuScreen({ onStart, onExit }) {
           <h1 className="cdd-title-h1" style={{
             color: '#ffffff', fontWeight: 700, margin: 0,
             letterSpacing: '0.06em', lineHeight: 1.1,
-            textShadow: '0 0 20px rgba(255,255,255,0.15)',
+            textShadow: '0 0 28px rgba(255,255,255,0.4), 0 2px 8px rgba(0,0,0,0.8)',
           }}>
             CELL DIVISION
           </h1>
           <div className="cdd-title-sub" style={{
-            color: '#3BAFA9', letterSpacing: '0.22em', marginTop: 6,
-            textShadow: '0 0 12px #3BAFA9',
+            color: '#3BAFA9', letterSpacing: '0.22em', marginTop: 8,
+            fontWeight: 700,
+            textShadow: '0 0 16px #3BAFA9, 0 0 32px rgba(59,175,169,0.5)',
           }}>
             DIVIDE &amp; DEFEND
           </div>
@@ -160,8 +192,8 @@ export function MenuScreen({ onStart, onExit }) {
           </div>
           {INSTRUCTIONS.map(({ key, text }) => (
             <div key={key} className="cdd-instr-row" style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-              <span style={{ color: '#3BAFA9', fontSize: 10, flexShrink: 0 }}>▸</span>
-              <span style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>{text}</span>
+              <span style={{ color: '#3BAFA9', fontSize: '0.9em', flexShrink: 0 }}>&#9658;</span>
+              <span style={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.6 }}>{text}</span>
             </div>
           ))}
         </div>
@@ -208,21 +240,6 @@ export function MenuScreen({ onStart, onExit }) {
           ▶ START GAME
         </button>
 
-        {/* Exit */}
-        <button
-          onClick={onExit}
-          style={{
-            background: 'none', border: 'none',
-            color: 'rgba(255,255,255,0.3)', cursor: 'pointer',
-            fontFamily: MONO, letterSpacing: '0.1em',
-            padding: '4px 8px', marginTop: -8,
-            fontSize: 'clamp(9px, 1.4vw, 11px)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
-        >
-          ← EXIT TO HUB
-        </button>
       </div>
     </div>
   );

@@ -7,6 +7,10 @@ import { UICanvas } from './ui/UICanvas';
 import { MenuScreen } from './ui/MenuScreen';
 import { MinigameOverlay } from './ui/MinigameOverlay';
 import { ResultsScreen } from './ui/ResultsScreen';
+import { NotificationModal } from './ui/NotificationModal';
+import { CellSplitAnimation } from './ui/CellSplitAnimation';
+import { TutorialOverlay } from './ui/TutorialOverlay';
+import { CellMusic } from './audio/CellMusic';
 import { LEVELS } from './data/levels';
 
 const MONO = '"Courier New", Courier, monospace';
@@ -50,6 +54,11 @@ export default function CellDivisionDefense({
   const busRef          = useRef(null);
   const phaserCanvasRef = useRef(null);
   const selectedTowerRef = useRef(null);
+  const cellMusicRef    = useRef(null);
+
+  // Flags used inside synchronous event-bus callbacks (can't rely on React state)
+  const showCellSplitRef   = useRef(false);
+  const pendingResultsRef  = useRef(null);
 
   const [gameStarted,   setGameStarted]   = useState(false);
   const [isPortrait,    setIsPortrait]    = useState(() => window.innerHeight > window.innerWidth);
@@ -64,6 +73,11 @@ export default function CellDivisionDefense({
   const [showResults,      setShowResults]      = useState(false);
   const [resultsData,      setResultsData]      = useState(null);
   const [nextWaveEnemies,  setNextWaveEnemies]  = useState([]);
+  const [notification,     setNotification]     = useState(null); // { message, subtext, duration, onDone }
+  const [waveActive,       setWaveActive]       = useState(false);
+  const [showCellSplit,    setShowCellSplit]    = useState(false);
+  const [tutorialDone,     setTutorialDone]     = useState(false);
+  const [waveWarningSeconds, setWaveWarningSeconds] = useState(0);
 
   // Portrait detection
   useEffect(() => {
@@ -75,6 +89,25 @@ export default function CellDivisionDefense({
       screen.orientation?.removeEventListener('change', check);
     };
   }, []);
+
+  // Music lifecycle — tied to gameStarted
+  useEffect(() => {
+    if (!gameStarted) return;
+    const music = new CellMusic();
+    cellMusicRef.current = music;
+    setTimeout(() => music.start(), 200);
+    return () => {
+      music.destroy();
+      cellMusicRef.current = null;
+    };
+  }, [gameStarted]);
+
+  // Wave-warning countdown
+  useEffect(() => {
+    if (waveWarningSeconds <= 0) return;
+    const id = setTimeout(() => setWaveWarningSeconds(s => Math.max(0, s - 1)), 1000);
+    return () => clearTimeout(id);
+  }, [waveWarningSeconds]);
 
   // Phaser game lifecycle
   useEffect(() => {
@@ -127,14 +160,21 @@ export default function CellDivisionDefense({
     }
 
     function onRunComplete(payload) {
-      setResultsData({
+      const results = {
         stars:     payload.stars     ?? 0,
         mutations: payload.mutations ?? [],
         hpLeft:    payload.hpLeft    ?? 0,
         xpEarned:  payload.xpEarned  ?? 0,
-      });
-      setShowResults(true);
+      };
       onProgressUpdate?.(payload);
+
+      if (showCellSplitRef.current) {
+        // Cell split animation is showing — hold results until it finishes
+        pendingResultsRef.current = results;
+        return;
+      }
+      setResultsData(results);
+      setShowResults(true);
     }
 
     function onSlotClicked({ slotIndex, isEmpty }) {
@@ -150,17 +190,45 @@ export default function CellDivisionDefense({
 
     function onPhaseTransition({ fromPhase, toPhase }) {
       if (fromPhase === toPhase) {
+        // Wave cleared — show pre-minigame notification, then open minigame
         bus.emit('pause');
-        setMinigamePhase(toPhase);
+        cellMusicRef.current?.setMinigameMode(true);
+        cellMusicRef.current?.playMinigameFanfare();
+        setWaveActive(false);
+        setNotification({
+          message: 'What have you observed?',
+          subtext: 'Time for a mini-game!',
+          duration: 3000,
+          onDone: () => {
+            setNotification(null);
+            setMinigamePhase(toPhase);
+          },
+        });
       }
     }
 
-    function onWaveStarted({ enemies }) {
+    function onWaveStarted({ enemies, wave: w }) {
       setNextWaveEnemies(enemies ?? []);
+      setWaveActive(true);
+      setWaveWarningSeconds(0);
+      setTutorialDone(true);
+      cellMusicRef.current?.setWaveIntensity(w ?? 0);
+    }
+
+    function onWaveWarning({ seconds }) {
+      setWaveWarningSeconds(seconds ?? 10);
+    }
+
+    function onSfx({ type, enemyType }) {
+      const music = cellMusicRef.current;
+      if (!music) return;
+      if (type === 'attack') music.playAttack();
+      if (type === 'death')  music.playDeath(enemyType);
     }
 
     function onWaveCleared() {
       setNextWaveEnemies([]);
+      // waveActive stays true until notification clears (handled in onPhaseTransition)
     }
 
     bus.on('stateChanged',    onStateChanged);
@@ -169,6 +237,8 @@ export default function CellDivisionDefense({
     bus.on('phaseTransition', onPhaseTransition);
     bus.on('waveStarted',     onWaveStarted);
     bus.on('waveCleared',     onWaveCleared);
+    bus.on('waveWarning',     onWaveWarning);
+    bus.on('sfx',             onSfx);
 
     return () => {
       observer.disconnect();
@@ -178,6 +248,8 @@ export default function CellDivisionDefense({
       bus.off('phaseTransition', onPhaseTransition);
       bus.off('waveStarted',     onWaveStarted);
       bus.off('waveCleared',     onWaveCleared);
+      bus.off('waveWarning',     onWaveWarning);
+      bus.off('sfx',             onSfx);
       gameRef.current?.destroy(true);
       gameRef.current      = null;
       busRef.current?.removeAll();
@@ -195,6 +267,10 @@ export default function CellDivisionDefense({
     busRef.current?.emit('towerSelected', { towerId: next });
   }
 
+  function handleBusEmit(event, data) {
+    busRef.current?.emit(event, data);
+  }
+
   function handlePause() {
     setPaused(true);
     busRef.current?.emit('pause');
@@ -208,9 +284,45 @@ export default function CellDivisionDefense({
   const handleMinigameComplete = useCallback(({ stars }) => {
     const ph = minigamePhase;
     setMinigamePhase(null);
-    busRef.current?.emit('resume');
+    cellMusicRef.current?.setMinigameMode(false);
+
+    if (ph === 'cytokinesis') {
+      showCellSplitRef.current = true;
+      busRef.current?.emit('minigameResult', { stars, phase: ph });
+      cellMusicRef.current?.playVictory();
+      setShowCellSplit(true);
+      return;
+    }
+
+    // Emit result — PhaseSystem.advancePhase() runs synchronously, spawning next wave's enemies
     busRef.current?.emit('minigameResult', { stars, phase: ph });
+
+    // Re-pause after advancePhase so newly spawned enemy tweens are also paused
+    busRef.current?.emit('pause');
+
+    // Show "back to defending" notification, then resume
+    setNotification({
+      message: 'Back to defending!',
+      subtext: 'Protect the nucleus!',
+      duration: 3000,
+      onDone: () => {
+        setNotification(null);
+        setWaveActive(true);
+        busRef.current?.emit('resume');
+      },
+    });
   }, [minigamePhase]);
+
+  function handleCellSplitComplete() {
+    showCellSplitRef.current = false;
+    setShowCellSplit(false);
+    const results = pendingResultsRef.current;
+    pendingResultsRef.current = null;
+    if (results) {
+      setResultsData(results);
+      setShowResults(true);
+    }
+  }
 
   function handleReplay() {
     setShowResults(false);
@@ -222,7 +334,12 @@ export default function CellDivisionDefense({
     setPhase('interphase');
     setNextWaveEnemies([]);
     setSelectedTower(null);
-    selectedTowerRef.current = null;
+    setNotification(null);
+    setWaveActive(false);
+    setShowCellSplit(false);
+    showCellSplitRef.current  = false;
+    pendingResultsRef.current = null;
+    selectedTowerRef.current  = null;
     gameRef.current?.destroy(true);
     gameRef.current      = null;
     busRef.current?.removeAll();
@@ -244,7 +361,7 @@ export default function CellDivisionDefense({
       <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 
       {/* Canvas UI overlay: HUD + shop panel + wave queue + mutation log */}
-      {gameStarted && !showResults && (
+      {gameStarted && !showResults && !showCellSplit && (
         <UICanvas
           hp={hp}
           maxHp={100}
@@ -258,10 +375,61 @@ export default function CellDivisionDefense({
           waveCountdownMax={0}
           selectedTower={selectedTower}
           paused={paused}
+          waveActive={waveActive}
           onTowerSelect={handleSelectTower}
           onPause={paused ? handleResume : handlePause}
           onExit={onExit}
           phaserCanvasRef={phaserCanvasRef}
+        />
+      )}
+
+      {/* "Set up your defense" banner — shown after tutorial until first wave */}
+      {gameStarted && tutorialDone && !waveActive && !showResults && !showCellSplit && !minigamePhase && !notification && (
+        <div style={{
+          position: 'absolute',
+          top: 64,
+          left: 'max(200px, 18vw)',
+          right: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4,
+          zIndex: 14,
+          pointerEvents: 'none',
+          fontFamily: MONO,
+        }}>
+          <div style={{
+            fontSize: 'clamp(13px,2vw,18px)',
+            fontWeight: 700,
+            color: '#FFD700',
+            letterSpacing: '0.18em',
+            textShadow: '0 0 18px rgba(255,215,0,0.7), 0 2px 8px rgba(0,0,0,0.8)',
+          }}>
+            ⚡ SET UP YOUR DEFENSE
+          </div>
+          {waveWarningSeconds > 0 && (
+            <div style={{
+              fontSize: 'clamp(10px,1.4vw,12px)',
+              color: 'rgba(255,107,53,0.9)',
+              letterSpacing: '0.12em',
+              textShadow: '0 0 10px rgba(255,107,53,0.6)',
+            }}>
+              ENEMIES ARRIVE IN {waveWarningSeconds}s
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tutorial during interphase (first play only) */}
+      {gameStarted && !tutorialDone && !showResults && !showCellSplit && !minigamePhase && !notification && (
+        <TutorialOverlay
+          atp={atp}
+          onBusEmit={handleBusEmit}
+          onComplete={() => {
+            setTutorialDone(true);
+            busRef.current?.emit('tutorialComplete');
+            busRef.current?.emit('resume');
+          }}
         />
       )}
 
@@ -271,9 +439,25 @@ export default function CellDivisionDefense({
       {/* Landscape prompt */}
       {gameStarted && isPortrait && <RotatePrompt />}
 
+      {/* Pre/post minigame notification */}
+      {notification && (
+        <NotificationModal
+          key={notification.message}
+          message={notification.message}
+          subtext={notification.subtext}
+          duration={notification.duration ?? 3000}
+          onDone={notification.onDone}
+        />
+      )}
+
       {/* Minigame overlay */}
-      {gameStarted && minigamePhase && (
+      {gameStarted && minigamePhase && !notification && (
         <MinigameOverlay phase={minigamePhase} onComplete={handleMinigameComplete} />
+      )}
+
+      {/* Cell division animation after cytokinesis minigame */}
+      {showCellSplit && (
+        <CellSplitAnimation onComplete={handleCellSplitComplete} />
       )}
 
       {/* Results screen */}
@@ -290,7 +474,7 @@ export default function CellDivisionDefense({
       )}
 
       {/* Pause overlay */}
-      {paused && !minigamePhase && (
+      {paused && !minigamePhase && !notification && (
         <div
           role="dialog" aria-modal="true" aria-label="Game paused"
           style={{
@@ -322,7 +506,7 @@ export default function CellDivisionDefense({
                 fontFamily: MONO, minHeight: 44, letterSpacing: '0.1em',
               }}
             >
-              ▶ RESUME
+              &#9654; RESUME
             </button>
             <button
               onClick={onExit}
@@ -335,7 +519,7 @@ export default function CellDivisionDefense({
                 fontFamily: MONO, minHeight: 40,
               }}
             >
-              ← EXIT TO HUB
+              &larr; EXIT TO HUB
             </button>
           </div>
         </div>
