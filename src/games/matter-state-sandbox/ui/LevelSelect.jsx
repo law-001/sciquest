@@ -315,6 +315,8 @@ export function LevelSelect({
           flex: 1,
           display: "flex",
           flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
           padding: "36px 48px",
         }}
       >
