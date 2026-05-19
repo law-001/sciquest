@@ -11,6 +11,7 @@ export class CellMusic {
     this._heartbeatTimer = null;
     this._minigameMode = false;
     this._started = false;
+    this._waveNum = 0;
   }
 
   start() {
@@ -44,6 +45,19 @@ export class CellMusic {
     }
   }
 
+  setWaveIntensity(waveNum) {
+    this._waveNum = Math.max(0, waveNum);
+    if (this._master && this._ctx) {
+      const gain = this._minigameMode ? 0.14 : Math.min(0.24, 0.10 + this._waveNum * 0.024);
+      this._master.gain.setTargetAtTime(gain, this._ctx.currentTime, 0.6);
+    }
+    if (this._started) {
+      clearTimeout(this._heartbeatTimer);
+      this._heartbeatTimer = null;
+      this._scheduleHeartbeat();
+    }
+  }
+
   setVolume(v) {
     if (this._master && this._ctx) {
       this._master.gain.setTargetAtTime(
@@ -52,6 +66,162 @@ export class CellMusic {
         0.1,
       );
     }
+  }
+
+  playAttack() {
+    if (!this._ctx || !this._master) return;
+    if (this._ctx.state === 'suspended') this._ctx.resume();
+    const ctx = this._ctx;
+    const now = ctx.currentTime;
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 520;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.25, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+    osc.connect(gain);
+    gain.connect(this._master);
+    osc.start(now);
+    osc.stop(now + 0.13);
+  }
+
+  playDeath(enemyType) {
+    if (!this._ctx || !this._master) return;
+    if (this._ctx.state === 'suspended') this._ctx.resume();
+    const ctx = this._ctx;
+    const now = ctx.currentTime;
+
+    if (enemyType === 'viralHijacker') {
+      // Melee: crunchy low thud — square wave growl descending
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(55, now + 0.40);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.14, now + 0.010);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(now);
+      osc.stop(now + 0.44);
+    } else if (enemyType === 'radiationPulse') {
+      // Long range: sharp high-pitched zap — sine ping falling fast
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1400, now);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.22);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.13, now + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(now);
+      osc.stop(now + 0.27);
+      // Secondary crackle
+      const osc2  = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sawtooth';
+      osc2.frequency.setValueAtTime(900, now);
+      osc2.frequency.exponentialRampToValueAtTime(300, now + 0.14);
+      gain2.gain.setValueAtTime(0, now);
+      gain2.gain.linearRampToValueAtTime(0.07, now + 0.008);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      osc2.connect(gain2);
+      gain2.connect(this._master);
+      osc2.start(now);
+      osc2.stop(now + 0.18);
+    } else if (enemyType === 'toxinDroplet') {
+      // Tank: deep bass rumble — triangle wave sub boom
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(95, now);
+      osc.frequency.exponentialRampToValueAtTime(28, now + 0.58);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.22, now + 0.020);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(now);
+      osc.stop(now + 0.65);
+    } else {
+      // Generic fallback
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now + 0.28);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.10, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(now);
+      osc.stop(now + 0.33);
+    }
+  }
+
+  playMinigameFanfare() {
+    if (!this._ctx || !this._master) return;
+    if (this._ctx.state === 'suspended') this._ctx.resume();
+    const ctx = this._ctx;
+    const now = ctx.currentTime;
+    const notes = [261.6, 329.6, 392.0, 523.2];
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = now + i * 0.12;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.08, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(t);
+      osc.stop(t + 0.30);
+    });
+  }
+
+  playVictory() {
+    if (!this._ctx || !this._master) return;
+    if (this._ctx.state === 'suspended') this._ctx.resume();
+    const ctx = this._ctx;
+    const now = ctx.currentTime;
+    // Rising arpeggio C-E-G-C5-E5
+    const arpNotes = [261.6, 329.6, 392.0, 523.2, 659.2];
+    arpNotes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = now + i * 0.11;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.75);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(t);
+      osc.stop(t + 0.8);
+    });
+    // Sustained final chord C-E-G
+    const chordStart = now + arpNotes.length * 0.11 + 0.08;
+    [261.6, 329.6, 392.0].forEach((freq) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, chordStart);
+      gain.gain.linearRampToValueAtTime(0.12, chordStart + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.0001, chordStart + 2.0);
+      osc.connect(gain);
+      gain.connect(this._master);
+      osc.start(chordStart);
+      osc.stop(chordStart + 2.1);
+    });
   }
 
   destroy() {
@@ -70,7 +240,7 @@ export class CellMusic {
     this._ctx = new (window.AudioContext || window.webkitAudioContext)();
 
     this._master = this._ctx.createGain();
-    this._master.gain.value = 0.10;
+    this._master.gain.value = 0.04;
     this._master.connect(this._ctx.destination);
 
     // Base oscillator: sine, 55 Hz (A1)
@@ -112,7 +282,9 @@ export class CellMusic {
 
     const ctx = this._ctx;
     const now = ctx.currentTime;
-    const interval = this._minigameMode ? 1000 : 3000;
+    const interval = this._minigameMode
+      ? 1000
+      : Math.round(3000 - (Math.min(this._waveNum, 5) / 5) * 2100);
 
     const osc  = ctx.createOscillator();
     const gain = ctx.createGain();

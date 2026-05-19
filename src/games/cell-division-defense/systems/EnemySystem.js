@@ -63,6 +63,9 @@ class EnemySystem {
       type,
       breachIndex,
       alive: true,
+      // Tower-attack state
+      attackCooldownMs: 0,
+      pathPaused: false,
     };
 
     this.enemies.push(enemy);
@@ -77,15 +80,16 @@ class EnemySystem {
     return enemy;
   }
 
-  spawnWave(waveConfig) {
+  spawnWave(waveConfig, activeBreachCount = 3) {
     let delay = 0;
     let spawnIndex = 0;
+    const numBreaches = Math.min(activeBreachCount, this.paths.length);
 
     for (const group of waveConfig) {
       for (let i = 0; i < group.count; i++) {
         this._pendingSpawns++;
         const capturedDelay = delay;
-        const breachIndex = spawnIndex % 3;
+        const breachIndex = spawnIndex % numBreaches;
         const capturedType = group.type;
 
         this.scene.time.delayedCall(capturedDelay, () => {
@@ -99,7 +103,7 @@ class EnemySystem {
     }
   }
 
-  update(_delta) {
+  update(delta) {
     this._frameCount++;
 
     for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -121,8 +125,11 @@ class EnemySystem {
         continue;
       }
 
-      // Walk effects
-      if (this.animationSystem) {
+      // Tower attack logic
+      this._updateTowerAttack(enemy, delta);
+
+      // Walk effects (only when not stopped attacking a tower)
+      if (this.animationSystem && !enemy.pathPaused) {
         if (enemy.type === 'viralHijacker') {
           this.animationSystem.playViralHijackerWalk(enemy, this._frameCount);
         } else if (enemy.type === 'radiationPulse') {
@@ -150,6 +157,75 @@ class EnemySystem {
     }
   }
 
+  _updateTowerAttack(enemy, delta) {
+    const { attackType, attackRange, towerDamage, attackCooldown } = enemy.def;
+    if (!attackType || !this.towerSystem) return;
+
+    const { x, y } = enemy.sprite;
+
+    // Find nearest tower within attack range
+    let nearestIdx = -1;
+    let nearestDist = Infinity;
+    const slots = this.towerSystem.slots;
+
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      if (!slot.tower || slot.tower.hp <= 0) continue;
+      const dx = slot.x - x;
+      const dy = slot.y - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= attackRange && dist < nearestDist) {
+        nearestDist = dist;
+        nearestIdx = i;
+      }
+    }
+
+    if (nearestIdx < 0) {
+      // No tower in range — resume path if paused (melee/tank only)
+      if (enemy.pathPaused) {
+        enemy.sprite.pathTween?.resume();
+        enemy.pathPaused = false;
+      }
+      enemy.attackCooldownMs = 0;
+      return;
+    }
+
+    // Tower in range
+    if (attackType === 'melee' || attackType === 'tank') {
+      if (!enemy.pathPaused) {
+        enemy.sprite.pathTween?.pause();
+        enemy.pathPaused = true;
+      }
+    }
+
+    // Attack on cooldown
+    enemy.attackCooldownMs = (enemy.attackCooldownMs ?? 0) - delta;
+    if (enemy.attackCooldownMs > 0) return;
+    enemy.attackCooldownMs = attackCooldown;
+
+    const slot = slots[nearestIdx];
+    this.towerSystem.damageTower(nearestIdx, towerDamage);
+
+    // Visual: attack flash toward tower
+    const tx = slot.x, ty = slot.y;
+    const flash = this.scene.add.graphics();
+    flash.setDepth(9);
+    if (attackType === 'projectile') {
+      flash.lineStyle(2, 0xFFB300, 0.85);
+      flash.lineBetween(x, y, tx, ty);
+    } else {
+      flash.fillStyle(attackType === 'tank' ? 0xff4400 : 0xcc00ff, 0.7);
+      flash.fillCircle(tx, ty, attackType === 'tank' ? 14 : 10);
+    }
+    this.scene.tweens.add({
+      targets: flash,
+      alpha: { from: 0.85, to: 0 },
+      duration: attackType === 'projectile' ? 220 : 180,
+      ease: 'Quad.easeOut',
+      onComplete: () => flash.destroy(),
+    });
+  }
+
   damageEnemy(enemy, amount) {
     if (!enemy.alive) return;
     enemy.hp -= amount;
@@ -160,6 +236,7 @@ class EnemySystem {
         this._spawnAoeFlash(x, y);
       }
       this.animationSystem?.playEnemyDeath(enemy.type, x, y);
+      this.scene.bus?.emit('sfx', { type: 'death', enemyType: enemy.type });
     }
   }
 

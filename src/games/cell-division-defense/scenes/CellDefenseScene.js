@@ -116,9 +116,11 @@ export default class CellDefenseScene extends BaseGameScene {
     this.towerSystem = new TowerSystem(this, this.towerSlots, this.animationSystem);
 
     const breachPoints = [
-      { x: this.cellCX - this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 },
-      { x: this.cellCX + this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 },
-      { x: this.cellCX,                    y: this.cellCY + this.cellR * 1.5  },
+      { x: this.cellCX - this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 }, // top-left
+      { x: this.cellCX + this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 }, // top-right
+      { x: this.cellCX,                    y: this.cellCY + this.cellR * 1.5  }, // bottom
+      { x: this.cellCX - this.cellR * 1.7, y: this.cellCY + this.cellR * 0.3 }, // left
+      { x: this.cellCX + this.cellR * 1.7, y: this.cellCY + this.cellR * 0.3 }, // right
     ];
     this.enemySystem = new EnemySystem(
       this, breachPoints, this.cellCX, this.cellCY, this.cellR,
@@ -442,11 +444,13 @@ export default class CellDefenseScene extends BaseGameScene {
 
     this._busOn('pause', () => {
       this.physics.pause();
+      this.tweens.pauseAll();
       this.paused = true;
     });
 
     this._busOn('resume', () => {
       this.physics.resume();
+      this.tweens.resumeAll();
       this.paused = false;
     });
 
@@ -522,6 +526,15 @@ export default class CellDefenseScene extends BaseGameScene {
 
     this._busOn('atpPickupSpawned', ({ x, y, amount }) => {
       this._spawnAtpPickup(x, y, amount);
+    });
+
+    this._busOn('spawnTutorialAtp', () => {
+      // Spawn inside the cell, offset from nucleus so it's clearly clickable
+      this._spawnAtpPickup(
+        this.cellCX + this.cellR * 0.38,
+        this.cellCY - this.cellR * 0.42,
+        30,
+      );
     });
 
     this._busOn('aoeBlast', ({ x, y, radius }) => {
@@ -633,10 +646,11 @@ export default class CellDefenseScene extends BaseGameScene {
       this._emitState();
 
       const label = this.add.text(pickup.x, pickup.y, `+${amount} ATP`, {
-        fontSize: '11px',
+        fontSize: '18px',
+        fontStyle: 'bold',
         color: '#FFD700',
         stroke: '#000000',
-        strokeThickness: 2,
+        strokeThickness: 3,
       });
       label.setOrigin(0.5, 1);
       label.setDepth(10);
