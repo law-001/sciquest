@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/static-components */
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { getGame, getGameComponent } from '../lib/games/registry';
 import { GameAuthGate } from '../components/games/GameAuthGate';
 import { GameLoadingScreen } from '../components/games/GameLoadingScreen';
@@ -14,6 +14,19 @@ function detectDeviceTier() {
 
 export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   const reducedMotion = useReducedMotion();
+  // Track the actual visible viewport height (window.innerHeight excludes mobile browser chrome)
+  const [vh, setVh] = useState(() => window.innerHeight);
+
+  useEffect(() => {
+    const update = () => setVh(window.innerHeight);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, []);
+
   const game = getGame(activeGameId);
   const GameComponent = getGameComponent(activeGameId);
   const deviceTier = detectDeviceTier();
@@ -35,7 +48,7 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: vh, overflow: 'hidden' }}>
       <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
         <Suspense fallback={<GameLoadingScreen progress={0} message="Loading game…" />}>
           <GameComponent
