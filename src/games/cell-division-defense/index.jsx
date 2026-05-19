@@ -9,7 +9,7 @@ import { MinigameOverlay } from "./ui/MinigameOverlay";
 import { ResultsScreen } from "./ui/ResultsScreen";
 import { NotificationModal } from "./ui/NotificationModal";
 import { CellSplitAnimation } from "./ui/CellSplitAnimation";
-// import { TutorialOverlay } from './ui/TutorialOverlay';
+import { TutorialOverlay } from "./ui/TutorialOverlay";
 import { CellMusic } from "./audio/CellMusic";
 import { LEVELS } from "./data/levels";
 
