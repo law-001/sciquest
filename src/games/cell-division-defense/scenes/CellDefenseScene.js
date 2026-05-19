@@ -219,7 +219,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
       const dx = pointer.x - this._camDragStart.x;
       const dy = pointer.y - this._camDragStart.y;
-      if (!this._camIsDragging && Math.sqrt(dx * dx + dy * dy) > 8) {
+      if (!this._camIsDragging && Math.sqrt(dx * dx + dy * dy) > 12) {
         this._camIsDragging = true;
       }
       if (this._camIsDragging) {
@@ -503,12 +503,16 @@ export default class CellDefenseScene extends BaseGameScene {
       g.fillStyle(0x3BAFA9, 0.20);
       g.fillCircle(x, y, 4);
 
-      // Invisible tap zone — uses pointerup so a drag that starts on the slot
-      // doesn't accidentally trigger a tower placement.
+      // Invisible tap zone — fires on pointerup and uses the pointer's own
+      // down/up displacement to distinguish a tap from a camera drag. This is
+      // more reliable than a custom flag because mobile touches jitter slightly
+      // even when stationary, which can falsely set _camIsDragging.
       const zone = this.add.zone(x, y, 44, 44).setInteractive();
       zone.on('pointerup', (pointer) => {
-        // Ignore if this touch was part of a camera drag
-        if (this._camIsDragging) return;
+        const dist = Phaser.Math.Distance.Between(
+          pointer.downX, pointer.downY, pointer.x, pointer.y,
+        );
+        if (dist > 20) return; // pointer traveled too far — was a drag, not a tap
         const slot = this.towerSlots[i];
         this.bus?.emit('towerSlotClicked', {
           slotIndex: i,
