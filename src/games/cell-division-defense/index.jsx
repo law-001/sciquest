@@ -362,29 +362,57 @@ export default function CellDivisionDefense({
       fontFamily: MONO,
     }}>
       {/* Phaser mounts here — fills the full container */}
-      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0, touchAction: 'none' }} />
 
       {/* Canvas UI overlay: HUD + shop panel + wave queue + mutation log */}
       {gameStarted && !showResults && !showCellSplit && (
-        <UICanvas
-          hp={hp}
-          maxHp={100}
-          atp={atp}
-          phase={phase}
-          wave={wave}
-          totalWaves={5}
-          mutations={mutations}
-          nextWaveEnemies={nextWaveEnemies}
-          waveCountdown={0}
-          waveCountdownMax={0}
-          selectedTower={selectedTower}
-          paused={paused}
-          waveActive={waveActive}
-          onTowerSelect={handleSelectTower}
-          onPause={paused ? handleResume : handlePause}
-          onExit={onExit}
-          phaserCanvasRef={phaserCanvasRef}
-        />
+        <>
+          <UICanvas
+            hp={hp}
+            maxHp={100}
+            atp={atp}
+            phase={phase}
+            wave={wave}
+            totalWaves={5}
+            mutations={mutations}
+            nextWaveEnemies={nextWaveEnemies}
+            waveCountdown={0}
+            waveCountdownMax={0}
+            selectedTower={selectedTower}
+            paused={paused}
+            waveActive={waveActive}
+          />
+
+          {/* Transparent hit targets for shop tower cards */}
+          <div style={{
+            position: 'absolute', left: 0, top: 56, bottom: 0,
+            width: 'max(200px, 18vw)',
+            display: 'flex', flexDirection: 'column',
+            padding: '40px 14px 30px', gap: 10,
+            zIndex: 6, pointerEvents: 'none',
+          }}>
+            {['lysosome', 'proteinKinase', 'repairEnzyme'].map(id => (
+              <button
+                key={id}
+                onClick={() => handleSelectTower(id)}
+                style={{ flex: 1, background: 'transparent', border: 'none', pointerEvents: 'auto', cursor: 'pointer' }}
+                aria-label={`Select ${id}`}
+              />
+            ))}
+          </div>
+
+          {/* Transparent pause/resume hit target */}
+          <button
+            onClick={paused ? handleResume : handlePause}
+            style={{
+              position: 'absolute', right: 20, top: 10,
+              width: 36, height: 36,
+              background: 'transparent', border: 'none',
+              zIndex: 6, cursor: 'pointer',
+            }}
+            aria-label={paused ? 'Resume' : 'Pause'}
+          />
+        </>
       )}
 
       {/* "Set up your defense" banner — shown after tutorial until first wave */}
