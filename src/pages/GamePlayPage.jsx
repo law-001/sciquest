@@ -35,7 +35,7 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   }
 
   return (
-    <div style={{ height: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
         <Suspense fallback={<GameLoadingScreen progress={0} message="Loading game…" />}>
           <GameComponent

@@ -117,10 +117,14 @@ export default function CellDivisionDefense({
     busRef.current = bus;
 
     const fps = deviceTier === 'low' ? 30 : 60;
+    const initW = containerRef.current?.clientWidth  || window.innerWidth;
+    const initH = containerRef.current?.clientHeight || window.innerHeight;
 
     const game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: containerRef.current,
+      width:  initW,
+      height: initH,
       backgroundColor: '#0D1B2A',
       scene: [BootScene, CellDefenseScene],
       fps: { target: fps, forceSetTimeOut: deviceTier === 'low' },

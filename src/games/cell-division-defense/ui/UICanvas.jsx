@@ -557,34 +557,39 @@ export function UICanvas({
       // Click was in the game arena — forward to Phaser canvas
       const phaserCanvas = phaserCanvasRef?.current;
       if (phaserCanvas && mx >= L.shopW && my >= L.hudH) {
+        const pType = e._isTouch ? 'touch' : 'mouse';
+        const pid   = e.pointerId ?? 1;
         phaserCanvas.dispatchEvent(new PointerEvent('pointerdown', {
           bubbles: true, cancelable: true,
           clientX: e.clientX, clientY: e.clientY,
-          pointerId: e.pointerId ?? 1,
-          pointerType: 'mouse', isPrimary: true,
+          pointerId: pid, pointerType: pType, isPrimary: true,
           button: 0, buttons: 1,
         }));
         phaserCanvas.dispatchEvent(new PointerEvent('pointerup', {
           bubbles: true, cancelable: true,
           clientX: e.clientX, clientY: e.clientY,
-          pointerId: e.pointerId ?? 1,
-          pointerType: 'mouse', isPrimary: true,
+          pointerId: pid, pointerType: pType, isPrimary: true,
           button: 0, buttons: 0,
         }));
       }
+    }
+
+    function onTouchStart(e) {
+      if (e.cancelable) e.preventDefault();
     }
 
     function onTouchEnd(e) {
       if (e.cancelable) e.preventDefault();
       const touch = e.changedTouches?.[0];
       if (!touch) return;
-      onClick({ clientX: touch.clientX, clientY: touch.clientY, pointerId: touch.identifier ?? 1 });
+      onClick({ clientX: touch.clientX, clientY: touch.clientY, pointerId: touch.identifier ?? 1, _isTouch: true });
     }
 
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     canvas.addEventListener('click', onClick);
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
     canvas.addEventListener('touchend', onTouchEnd, { passive: false });
     rafRef.current = requestAnimationFrame(frame);
 
@@ -592,6 +597,7 @@ export function UICanvas({
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       canvas.removeEventListener('click', onClick);
+      canvas.removeEventListener('touchstart', onTouchStart);
       canvas.removeEventListener('touchend', onTouchEnd);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
