@@ -95,19 +95,26 @@ export default class CellDefenseScene extends BaseGameScene {
     const gameW = width  - shopW;
     const gameH = height - hudH;
 
-    this.cellCX = shopW + gameW * 0.5;
-    this.cellCY = hudH  + gameH * 0.5;
+    // Breach indicators sit outside the cell: 1.2R above (+ crosshair & label),
+    // 1.5R below, 1.7R to each side. Reserve padding so the whole cell and all
+    // entry points stay on-screen even on short mobile-landscape viewports.
+    const topPad = 46;   // crosshair + "ENTRY POINT" label above the top breaches
+    const botPad = 40;   // crosshair below the bottom breach
+    const availH = gameH - topPad - botPad;
 
-    // Cap radius so all entry points (1.5R below, 1.2R above, 1.7R sides) fit
-    // within the visible game area, with a 5 % safety margin.
     const maxR = Math.min(
-      gameH / 3,                        // bottom entry at 1.5R
-      gameH / 2.4,                      // top entry at 1.2R vs HUD
-      gameW / 3.4,                      // side entries at 1.7R
-      Math.min(width, height) * 0.30,   // aesthetic cap
+      availH / 2.7,                     // 1.2R (top) + 1.5R (bottom)
+      gameW / 3.6,                      // 1.7R + 1.7R side entries + margin
+      Math.min(width, height) * 0.32,   // aesthetic cap
     );
-    this.cellR    = Math.round(maxR * 0.95);
+    this.cellR    = Math.round(maxR);
     this.nucleusR = this.cellR * 0.16;
+
+    this.cellCX = shopW + gameW * 0.5;
+    // Center the full 2.7R breach span in the available band, then offset by the
+    // top breach extent so neither the top nor bottom entries clip off-screen.
+    this.cellCY = hudH + topPad + this.cellR * 1.2
+                + Math.max(0, (availH - this.cellR * 2.7) / 2);
 
     // Sync level-specific starting values
     const levelData = LEVELS[this.currentLevel];
