@@ -33,6 +33,34 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
     };
   }, []);
 
+  // Lock body scrolling while the game is mounted so mobile browsers don't
+  // intercept touch events (elastic scroll, URL-bar show/hide) from the canvas.
+  useEffect(() => {
+    const hs = document.documentElement.style;
+    const bs = document.body.style;
+    const prev = {
+      htmlOverflow: hs.overflow,
+      bodyOverflow: bs.overflow,
+      bodyPosition: bs.position,
+      bodyWidth: bs.width,
+      bodyOverscroll: bs.overscrollBehavior,
+    };
+    hs.overflow = 'hidden';
+    bs.overflow = 'hidden';
+    bs.overscrollBehavior = 'none';
+    // iOS Safari: position fixed on body stops elastic overscroll.
+    // Pair with width:100% so body doesn't collapse to 0 when taken out of flow.
+    bs.position = 'fixed';
+    bs.width = '100%';
+    return () => {
+      hs.overflow = prev.htmlOverflow;
+      bs.overflow = prev.bodyOverflow;
+      bs.overscrollBehavior = prev.bodyOverscroll;
+      bs.position = prev.bodyPosition;
+      bs.width = prev.bodyWidth;
+    };
+  }, []);
+
   const game = getGame(activeGameId);
   const GameComponent = getGameComponent(activeGameId);
   const deviceTier = detectDeviceTier();
@@ -54,7 +82,7 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
   }
 
   return (
-    <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: vh, overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: vh, overflow: 'hidden', touchAction: 'none' }}>
       <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
         <Suspense fallback={<GameLoadingScreen progress={0} message="Loading game…" />}>
           <GameComponent

@@ -178,7 +178,7 @@ export default function CellDivisionDefense({
 
     const fps = deviceTier === "low" ? 30 : 60;
     const initW = containerRef.current?.clientWidth || window.innerWidth;
-    const initH = containerRef.current?.clientHeight || window.innerHeight;
+    const initH = containerRef.current?.clientHeight || window.visualViewport?.height || window.innerHeight;
 
     const game = new Phaser.Game({
       type: Phaser.AUTO,
