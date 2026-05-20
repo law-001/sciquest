@@ -188,8 +188,14 @@ export default function CellDivisionDefense({
     busRef.current = bus;
 
     const fps = deviceTier === "low" ? 30 : 60;
-    const initW = containerRef.current?.clientWidth || window.innerWidth;
-    const initH = containerRef.current?.clientHeight || window.visualViewport?.height || window.innerHeight;
+    // The container can briefly report a sub-pixel height on mobile before the
+    // visualViewport / position:fixed reflow settles. Never boot Phaser at a
+    // degenerate size — fall back to the viewport so the scene builds correctly.
+    let initW = containerRef.current?.clientWidth || 0;
+    let initH = containerRef.current?.clientHeight || 0;
+    if (initW < 100) initW = window.innerWidth;
+    if (initH < 100)
+      initH = window.visualViewport?.height || window.innerHeight;
 
     const game = new Phaser.Game({
       type: Phaser.AUTO,
@@ -230,6 +236,25 @@ export default function CellDivisionDefense({
         subtree: true,
       });
     }
+
+    // Phaser's RESIZE scale mode only reacts to window resize, not to the parent
+    // resolving its size. Track the container directly so the game recovers if it
+    // booted before the mobile viewport settled (otherwise it stays stuck).
+    const resizeObserver = new ResizeObserver(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w < 100 || h < 100) return;
+      const g = gameRef.current;
+      if (g?.scale && (g.scale.width !== w || g.scale.height !== h)) {
+        // RESIZE mode syncs to the parent via refresh(); a manual resize() is
+        // re-measured away. refresh() re-reads the parent and applies it.
+        g.scale.setGameSize(w, h);
+        g.scale.refresh();
+      }
+    });
+    if (containerRef.current) resizeObserver.observe(containerRef.current);
 
     function onStateChanged({
       hp: h,
@@ -328,6 +353,7 @@ export default function CellDivisionDefense({
 
     return () => {
       observer.disconnect();
+      resizeObserver.disconnect();
       bus.off("stateChanged", onStateChanged);
       bus.off("runComplete", onRunComplete);
       bus.off("towerSlotClicked", onSlotClicked);
