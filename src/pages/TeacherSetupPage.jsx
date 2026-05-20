@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import Button from '../components/Button'
 import Input from '../components/Input'
 
-export function TeacherSetupPage({ onComplete }) {
+export function TeacherSetupPage({ onComplete, expired = false }) {
   const { user, loading, refreshProfile } = useAuth()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName]   = useState('')
@@ -16,6 +16,22 @@ export function TeacherSetupPage({ onComplete }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]         = useState('')
   const [done, setDone]           = useState(false)
+
+  const expiredScreen = (
+    <div className="min-h-screen bg-[#FAF7F2] dark:bg-stone-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-white dark:bg-stone-800 rounded-2xl shadow-lg p-8 flex flex-col items-center gap-4 text-center">
+        <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+          <GraduationCap className="w-8 h-8 text-red-500" />
+        </div>
+        <h1 className="text-xl font-black text-stone-900 dark:text-white">Invite link expired</h1>
+        <p className="text-sm text-stone-500 dark:text-stone-400">
+          This link has already been used or has expired. Ask your admin to send a new invite.
+        </p>
+      </div>
+    </div>
+  )
+
+  if (expired) return expiredScreen
 
   if (loading) {
     return (
@@ -28,21 +44,7 @@ export function TeacherSetupPage({ onComplete }) {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#FAF7F2] dark:bg-stone-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white dark:bg-stone-800 rounded-2xl shadow-lg p-8 flex flex-col items-center gap-4 text-center">
-          <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <GraduationCap className="w-8 h-8 text-red-500" />
-          </div>
-          <h1 className="text-xl font-black text-stone-900 dark:text-white">Invite link expired</h1>
-          <p className="text-sm text-stone-500 dark:text-stone-400">
-            This link has already been used or has expired. Ask your admin to send a new invite.
-          </p>
-        </div>
-      </div>
-    )
-  }
+  if (!user) return expiredScreen
 
   const handleSubmit = async (e) => {
     e.preventDefault()

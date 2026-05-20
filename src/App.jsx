@@ -32,11 +32,21 @@ function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
   // Detect an invite link before Supabase clears the URL params. Must be a ref
   // so the value is captured synchronously at render time, before any async
-  // effects run. Supabase v2 PKCE flow puts the token in query params; older
-  // implicit flow uses the hash — check both.
+  // effects run. Three cases to handle:
+  //   1. Fresh invite (PKCE): ?token_hash=...&type=invite
+  //   2. Fresh invite (implicit): #access_token=...&type=invite
+  //   3. Expired/used invite: ?error=access_denied&error_code=otp_expired
+  const _urlParams  = new URLSearchParams(window.location.search);
+  const _hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const isInviteFlow = useRef(
-    new URLSearchParams(window.location.search).get('type') === 'invite' ||
-    window.location.hash.includes('type=invite')
+    _urlParams.get('type') === 'invite' ||
+    _hashParams.get('type') === 'invite' ||
+    _urlParams.get('error_code') === 'otp_expired' ||
+    _hashParams.get('error_code') === 'otp_expired'
+  );
+  const isExpiredInvite = useRef(
+    _urlParams.get('error_code') === 'otp_expired' ||
+    _hashParams.get('error_code') === 'otp_expired'
   );
   const [currentView, setCurrentView] = useState(
     () => isInviteFlow.current ? 'teacher-setup' : 'home'
@@ -548,6 +558,7 @@ function AppContent() {
       case "teacher-setup":
         return (
           <TeacherSetupPage
+            expired={isExpiredInvite.current}
             onComplete={() => {
               isInviteFlow.current = false;
               handleNavigate("teacher-portal");
