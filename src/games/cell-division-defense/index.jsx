@@ -115,10 +115,18 @@ export default function CellDivisionDefense({
   const pendingResultsRef = useRef(null);
 
   const [gameStarted, setGameStarted] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(
-    () => window.innerHeight > window.innerWidth,
-  );
+  const [winW, setWinW] = useState(() => window.innerWidth);
+  const [winH, setWinH] = useState(() => window.innerHeight);
   const [isTouchDevice] = useState(() => navigator.maxTouchPoints > 0);
+
+  // Derived layout values — must match UICanvas.jsx and CellDefenseScene.js exactly
+  const isPortrait = winH > winW;
+  const HUD_H = 56;
+  const SHOP_W = Math.max(200, Math.round(winW * 0.18));
+  // Breakpoints for overlay sizing (landscape-only — portrait shows RotatePrompt)
+  const isXS = winW < 560;
+  const isSM = winW >= 560 && winW < 768;
+  const isShortScreen = winH < 420;
   const [hp, setHp] = useState(100);
   const [atp, setAtp] = useState(400);
   const [phase, setPhase] = useState("interphase");
@@ -136,14 +144,17 @@ export default function CellDivisionDefense({
   const [tutorialDone, setTutorialDone] = useState(false);
   const [waveWarningSeconds, setWaveWarningSeconds] = useState(0);
 
-  // Portrait detection
+  // Window dimensions — drives responsive layout and portrait detection
   useEffect(() => {
-    const check = () => setIsPortrait(window.innerHeight > window.innerWidth);
-    window.addEventListener("resize", check);
-    screen.orientation?.addEventListener("change", check);
+    const sync = () => {
+      setWinW(window.innerWidth);
+      setWinH(window.innerHeight);
+    };
+    window.addEventListener("resize", sync);
+    screen.orientation?.addEventListener("change", sync);
     return () => {
-      window.removeEventListener("resize", check);
-      screen.orientation?.removeEventListener("change", check);
+      window.removeEventListener("resize", sync);
+      screen.orientation?.removeEventListener("change", sync);
     };
   }, []);
 
@@ -472,17 +483,17 @@ export default function CellDivisionDefense({
             waveActive={waveActive}
           />
 
-          {/* Transparent hit targets for shop tower cards */}
+          {/* Transparent hit targets for shop tower cards — width mirrors UICanvas SHOP_W */}
           <div
             style={{
               position: "absolute",
               left: 0,
-              top: 56,
+              top: HUD_H,
               bottom: 0,
-              width: "max(200px, 18vw)",
+              width: SHOP_W,
               display: "flex",
               flexDirection: "column",
-              padding: "40px 14px 30px",
+              padding: `40px 14px 30px`,
               gap: 10,
               zIndex: 6,
               pointerEvents: "none",
@@ -498,34 +509,39 @@ export default function CellDivisionDefense({
                   border: "none",
                   pointerEvents: "auto",
                   cursor: "pointer",
+                  minHeight: 44,
                 }}
                 aria-label={`Select ${id}`}
               />
             ))}
           </div>
 
-          {/* Transparent pause/resume hit target */}
+          {/* Transparent pause/resume hit target — matches UICanvas pause-button rect */}
           <button
             onClick={paused ? handleResume : handlePause}
             style={{
               position: "absolute",
               right: 20,
-              top: 10,
+              top: HUD_H / 2 - 18,
               width: 36,
               height: 36,
               background: "transparent",
               border: "none",
               zIndex: 6,
               cursor: "pointer",
+              minWidth: 44,
+              minHeight: 44,
             }}
             aria-label={paused ? "Resume" : "Pause"}
           />
         </>
       )}
 
-      {/* Zoom controls — touch devices only, visible during active gameplay */}
+      {/* Zoom controls — touch devices only, after tutorial, during active gameplay.
+          Hidden during tutorial to prevent overlap with the tutorial banner. */}
       {gameStarted &&
         isTouchDevice &&
+        tutorialDone &&
         !showResults &&
         !showCellSplit &&
         !minigamePhase && (
@@ -533,8 +549,9 @@ export default function CellDivisionDefense({
             style={{
               position: "absolute",
               right: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
+              // On short landscape screens push below the top-banner area to avoid overlap
+              top: isShortScreen ? HUD_H + 80 : "50%",
+              transform: isShortScreen ? "none" : "translateY(-50%)",
               display: "flex",
               flexDirection: "column",
               gap: 6,
@@ -552,13 +569,13 @@ export default function CellDivisionDefense({
                 aria-label={title}
                 onClick={() => busRef.current?.emit(event)}
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: isXS ? 36 : 44,
+                  height: isXS ? 36 : 44,
                   borderRadius: "50%",
                   background: "rgba(13,27,42,0.75)",
                   border: "1.5px solid rgba(59,175,169,0.55)",
                   color: "#3BAFA9",
-                  fontSize: label === "⊙" ? 16 : 22,
+                  fontSize: label === "⊙" ? (isXS ? 13 : 16) : (isXS ? 18 : 22),
                   fontWeight: 700,
                   cursor: "pointer",
                   display: "flex",
@@ -574,7 +591,8 @@ export default function CellDivisionDefense({
           </div>
         )}
 
-      {/* "Set up your defense" banner — shown after tutorial until first wave */}
+      {/* "Set up your defense" banner — shown after tutorial until first wave.
+          left mirrors SHOP_W so it sits in the game area, never over the shop. */}
       {gameStarted &&
         tutorialDone &&
         !waveActive &&
@@ -585,9 +603,9 @@ export default function CellDivisionDefense({
           <div
             style={{
               position: "absolute",
-              top: 64,
-              left: "max(200px, 18vw)",
-              right: 0,
+              top: HUD_H + 8,
+              left: SHOP_W,
+              right: isTouchDevice ? 60 : 0, // clear zoom controls on touch
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -599,12 +617,13 @@ export default function CellDivisionDefense({
           >
             <div
               style={{
-                fontSize: "clamp(13px,2vw,18px)",
+                fontSize: isXS ? 11 : isSM ? 13 : "clamp(13px,2vw,18px)",
                 fontWeight: 700,
                 color: "#FFD700",
-                letterSpacing: "0.18em",
+                letterSpacing: isXS ? "0.10em" : "0.18em",
                 textShadow:
                   "0 0 18px rgba(255,215,0,0.7), 0 2px 8px rgba(0,0,0,0.8)",
+                whiteSpace: "nowrap",
               }}
             >
               ⚡ SET UP YOUR DEFENSE
@@ -612,7 +631,7 @@ export default function CellDivisionDefense({
             {waveWarningSeconds > 0 && (
               <div
                 style={{
-                  fontSize: "clamp(10px,1.4vw,12px)",
+                  fontSize: isXS ? 9 : "clamp(10px,1.4vw,12px)",
                   color: "rgba(255,107,53,0.9)",
                   letterSpacing: "0.12em",
                   textShadow: "0 0 10px rgba(255,107,53,0.6)",
@@ -683,7 +702,7 @@ export default function CellDivisionDefense({
         />
       )}
 
-      {/* Pause overlay */}
+      {/* Pause overlay — responsive padding for xs/sm screens */}
       {paused && !minigamePhase && !notification && (
         <div
           role="dialog"
@@ -706,19 +725,21 @@ export default function CellDivisionDefense({
               background: "#0D1B2A",
               border: "1.5px solid rgba(59,175,169,0.45)",
               borderRadius: 16,
-              padding: "32px 48px",
+              padding: isXS ? "20px 24px" : isSM ? "24px 36px" : "32px 48px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 20,
+              gap: isXS ? 12 : 20,
               boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+              maxWidth: "min(360px, calc(100vw - 32px))",
+              width: "100%",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <p
               style={{
                 color: "#3BAFA9",
-                fontSize: 22,
+                fontSize: isXS ? 16 : 22,
                 fontWeight: 700,
                 margin: 0,
                 letterSpacing: "0.15em",
@@ -733,17 +754,19 @@ export default function CellDivisionDefense({
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                padding: "10px 28px",
+                padding: isXS ? "8px 20px" : "10px 28px",
                 borderRadius: 999,
                 border: "1.5px solid #F97316",
                 background: "rgba(249,115,22,0.15)",
                 color: "#F97316",
-                fontSize: 14,
+                fontSize: isXS ? 12 : 14,
                 fontWeight: 700,
                 cursor: "pointer",
                 fontFamily: MONO,
                 minHeight: 44,
                 letterSpacing: "0.1em",
+                width: "100%",
+                justifyContent: "center",
               }}
             >
               &#9654; RESUME
@@ -754,16 +777,18 @@ export default function CellDivisionDefense({
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "8px 20px",
+                padding: isXS ? "6px 14px" : "8px 20px",
                 borderRadius: 999,
                 border: "1.5px solid rgba(255,255,255,0.18)",
                 background: "rgba(255,255,255,0.06)",
                 color: "rgba(255,255,255,0.6)",
-                fontSize: 12,
+                fontSize: isXS ? 11 : 12,
                 fontWeight: 700,
                 cursor: "pointer",
                 fontFamily: MONO,
                 minHeight: 40,
+                width: "100%",
+                justifyContent: "center",
               }}
             >
               &larr; EXIT TO HUB

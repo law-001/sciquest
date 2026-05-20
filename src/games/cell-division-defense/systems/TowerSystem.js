@@ -16,9 +16,13 @@ class TowerSystem {
 
     const { x, y } = slot;
 
-    const sprite = this.scene.add.sprite(x, y, towerId);
+    const sprite = this.scene.add.image(x, y, towerId);
     sprite.setDepth(5);
     sprite.setScale(1.3);
+    // Canvas-backed textures need an explicit GPU refresh the first time they're
+    // used in WebGL mode; otherwise the sprite renders as transparent.
+    const texSrc = this.scene.textures.get(towerId)?.source?.[0];
+    if (texSrc?.update) texSrc.update();
 
     // Range indicator — hidden by default
     const rangeCircle = this.scene.add.graphics();

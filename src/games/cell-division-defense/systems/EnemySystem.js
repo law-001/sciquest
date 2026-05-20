@@ -40,6 +40,9 @@ class EnemySystem {
     const follower = this.scene.add.follower(path, startX, startY, type);
     follower.setDepth(5);
     follower.setScale(1.3);
+    // Force GPU refresh for canvas-backed textures (same issue as tower images)
+    const texSrc = this.scene.textures.get(type)?.source?.[0];
+    if (texSrc?.update) texSrc.update();
 
     const hpBar = this.scene.add.graphics();
     hpBar.setDepth(7);
