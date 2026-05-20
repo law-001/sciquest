@@ -166,6 +166,10 @@ export default class CellDefenseScene extends BaseGameScene {
     const cam = this.cameras.main;
     const { width, height } = this.scale;
 
+    // Phaser tracks only one touch pointer by default; pinch-to-zoom needs two.
+    // Without this, this.input.pointer2 is undefined on touch devices.
+    this.input.addPointer(1);
+
     cam.setBounds(-width, -height, width * 3, height * 3);
 
     this.input.on("wheel", (_p, _o, _dx, dy) => {
@@ -252,7 +256,9 @@ export default class CellDefenseScene extends BaseGameScene {
   _updatePinchZoom() {
     const p1 = this.input.pointer1;
     const p2 = this.input.pointer2;
-    if (p1.isDown && p2.isDown) {
+    // Guard against a missing second pointer: an exception here would propagate
+    // out of the RAF step and permanently halt the whole game loop.
+    if (p1?.isDown && p2?.isDown) {
       const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
       if (this._camPinchDist !== null) {
         const delta = dist - this._camPinchDist;
@@ -292,9 +298,14 @@ export default class CellDefenseScene extends BaseGameScene {
     this.projectileSystem?.update(delta);
 
     this._frameCount++;
-    this._animTime++;
-    this._enemyWalkPhase += 0.045;
-    this._toxinBouncePhase += 0.04;
+    // Advance animation clocks by elapsed time, not per-frame, so the cell and
+    // enemies animate at the same real-world speed regardless of frame rate.
+    // These steps were tuned at 60fps; on mobile the heavy canvas redraw drops
+    // the rate, which otherwise made the cell strands look frozen at boot.
+    const frameStep = delta / (1000 / 60);
+    this._animTime += frameStep;
+    this._enemyWalkPhase += 0.045 * frameStep;
+    this._toxinBouncePhase += 0.04 * frameStep;
 
     this._mitosisT += delta / 6000;
     this._currentPhase = getPhase(this._mitosisT);
@@ -304,9 +315,13 @@ export default class CellDefenseScene extends BaseGameScene {
       this._phaseProgress = Math.min(1, this._phaseProgress + delta / 20000);
     }
 
-    if (!this.reducedMotion && this._frameCount % 2 === 0) {
-      this._updateEntityTextures();
+    if (this._frameCount % 2 === 0) {
+      // The cell's mitosis morph is core educational feedback, not decorative
+      // motion, so it animates even under reduced motion. Otherwise the cell
+      // sits frozen on devices with "reduce motion" enabled — common on mobile
+      // via battery-saver / accessibility settings.
       this._updateCellTexture();
+      if (!this.reducedMotion) this._updateEntityTextures();
     }
 
     if (this._waveActive && this._frameCount % 30 === 0) {
