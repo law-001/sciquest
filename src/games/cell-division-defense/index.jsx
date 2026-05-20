@@ -171,7 +171,7 @@ export default function CellDivisionDefense({
 
   // Phaser game lifecycle
   useEffect(() => {
-    if (!gameStarted || gameRef.current) return;
+    if (!gameStarted || isPortrait || gameRef.current) return;
 
     const bus = createEventBus();
     busRef.current = bus;
@@ -331,7 +331,7 @@ export default function CellDivisionDefense({
       busRef.current = null;
       phaserCanvasRef.current = null;
     };
-  }, [gameStarted]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [gameStarted, isPortrait]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -393,8 +393,8 @@ export default function CellDivisionDefense({
 
   const handleTutorialComplete = useCallback(() => {
     setTutorialDone(true);
-    busRef.current?.emit('tutorialComplete');
     busRef.current?.emit('resume');
+    busRef.current?.emit('tutorialComplete');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCellSplitComplete() {

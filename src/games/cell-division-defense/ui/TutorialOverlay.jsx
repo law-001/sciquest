@@ -174,9 +174,9 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
   useEffect(() => {
     if (MODAL_STEPS.has(step)) {
       onBusEmit('pause');
-    } else {
-      onBusEmit('resume');
+      return () => onBusEmit('resume');
     }
+    onBusEmit('resume');
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Per-step side effects
