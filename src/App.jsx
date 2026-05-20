@@ -14,6 +14,7 @@ import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { GamesHubPage } from "./pages/GamesHubPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
+import { TeacherSetupPage } from "./pages/TeacherSetupPage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 import {
   fetchProgress,
@@ -29,7 +30,27 @@ import { XpToast } from "./components/XpToast";
 
 function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
-  const [currentView, setCurrentView] = useState("home");
+  // Detect an invite link before Supabase clears the URL params. Must be a ref
+  // so the value is captured synchronously at render time, before any async
+  // effects run. Three cases to handle:
+  //   1. Fresh invite (PKCE): ?token_hash=...&type=invite
+  //   2. Fresh invite (implicit): #access_token=...&type=invite
+  //   3. Expired/used invite: ?error=access_denied&error_code=otp_expired
+  const _urlParams  = new URLSearchParams(window.location.search);
+  const _hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const isInviteFlow = useRef(
+    _urlParams.get('type') === 'invite' ||
+    _hashParams.get('type') === 'invite' ||
+    _urlParams.get('error_code') === 'otp_expired' ||
+    _hashParams.get('error_code') === 'otp_expired'
+  );
+  const isExpiredInvite = useRef(
+    _urlParams.get('error_code') === 'otp_expired' ||
+    _hashParams.get('error_code') === 'otp_expired'
+  );
+  const [currentView, setCurrentView] = useState(
+    () => isInviteFlow.current ? 'teacher-setup' : 'home'
+  );
   const initialRedirectDone = useRef(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
@@ -177,9 +198,12 @@ function AppContent() {
 
   // On refresh, once the restored session + profile are ready, redirect by role.
   // The ref guard ensures this runs at most once even as deps re-fire.
+  // Skip when the user arrived via an invite link — they need to set up their
+  // account first before being sent to the teacher portal.
   useEffect(() => {
     if (loading || initialRedirectDone.current) return;
     initialRedirectDone.current = true;
+    if (isInviteFlow.current) return;
     if (!user) return;
     const role = profile?.role ?? 'student';
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -430,7 +454,8 @@ function AppContent() {
   const isPortalView =
     currentView === "admin" ||
     currentView === "teacher-portal" ||
-    currentView === "game-play";
+    currentView === "game-play" ||
+    currentView === "teacher-setup";
 
   const renderView = () => {
     switch (currentView) {
@@ -527,6 +552,17 @@ function AppContent() {
             user={user}
             profile={profile}
             onNavigate={handleNavigate}
+          />
+        );
+
+      case "teacher-setup":
+        return (
+          <TeacherSetupPage
+            expired={isExpiredInvite.current}
+            onComplete={() => {
+              isInviteFlow.current = false;
+              handleNavigate("teacher-portal");
+            }}
           />
         );
 

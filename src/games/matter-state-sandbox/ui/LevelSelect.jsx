@@ -121,7 +121,8 @@ export function LevelSelect({
     <div
       className="sq-stage-bg"
       style={{
-        minHeight: "100vh",
+        height: "100%",
+        overflowY: "auto",
         display: "flex",
         flexDirection: "column",
         fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
@@ -315,6 +316,7 @@ export function LevelSelect({
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
+          alignItems: "center",
           padding: "36px 48px",
         }}
       >

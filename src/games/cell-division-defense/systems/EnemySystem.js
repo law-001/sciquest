@@ -6,25 +6,29 @@ class EnemySystem {
     this.scene = scene;
     this.cellCX = cellCX;
     this.cellCY = cellCY;
+    this.cellR  = cellR;
     this.enemies = [];
     this.towerSystem = null;
     this.animationSystem = null;
     this._pendingSpawns = 0;
     this._frameCount = 0;
 
-    // Build a QuadraticBezier Path for each breach point
+    this._spawnTimers = [];
+    this.rebuildPaths(breachPoints);
+  }
+
+  rebuildPaths(breachPoints) {
     this.paths = breachPoints.map(({ x: bx, y: by }) => {
-      // Control point: midpoint pushed outward by cellR*0.35 to bow path around membrane
-      const midX = (bx + cellCX) / 2;
-      const midY = (by + cellCY) / 2;
-      const dx = bx - cellCX;
-      const dy = by - cellCY;
+      const midX = (bx + this.cellCX) / 2;
+      const midY = (by + this.cellCY) / 2;
+      const dx = bx - this.cellCX;
+      const dy = by - this.cellCY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const ctrlX = midX + (dx / dist) * cellR * 0.35;
-      const ctrlY = midY + (dy / dist) * cellR * 0.35;
+      const ctrlX = midX + (dx / dist) * this.cellR * 0.35;
+      const ctrlY = midY + (dy / dist) * this.cellR * 0.35;
 
       const path = new Phaser.Curves.Path(bx, by);
-      path.quadraticBezierTo(cellCX, cellCY, ctrlX, ctrlY);
+      path.quadraticBezierTo(this.cellCX, this.cellCY, ctrlX, ctrlY);
       return { path, startX: bx, startY: by };
     });
   }
@@ -40,6 +44,9 @@ class EnemySystem {
     const follower = this.scene.add.follower(path, startX, startY, type);
     follower.setDepth(5);
     follower.setScale(1.3);
+    // Force GPU refresh for canvas-backed textures (same issue as tower images)
+    const texSrc = this.scene.textures.get(type)?.source?.[0];
+    if (texSrc?.update) texSrc.update();
 
     const hpBar = this.scene.add.graphics();
     hpBar.setDepth(7);
@@ -92,15 +99,22 @@ class EnemySystem {
         const breachIndex = spawnIndex % numBreaches;
         const capturedType = group.type;
 
-        this.scene.time.delayedCall(capturedDelay, () => {
+        const id = setTimeout(() => {
+          this._spawnTimers = this._spawnTimers.filter(t => t !== id);
           this._pendingSpawns--;
           this.spawnEnemy(capturedType, breachIndex);
-        });
+        }, capturedDelay);
+        this._spawnTimers.push(id);
 
         spawnIndex++;
         delay += group.interval;
       }
     }
+  }
+
+  destroy() {
+    this._spawnTimers.forEach(id => clearTimeout(id));
+    this._spawnTimers = [];
   }
 
   update(delta) {

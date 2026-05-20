@@ -1,14 +1,14 @@
-import Phaser from 'phaser';
-import { BaseGameScene } from '../../_shared/phaser/BaseGameScene';
-import TowerSystem from '../systems/TowerSystem';
-import EnemySystem from '../systems/EnemySystem';
-import ProjectileSystem from '../systems/ProjectileSystem';
-import AnimationSystem from '../systems/AnimationSystem';
-import PhaseSystem from '../systems/PhaseSystem';
-import MutationSystem from '../systems/MutationSystem';
-import { TOWERS } from '../data/towers';
-import { LEVELS } from '../data/levels';
-import { drawCell, getPhase, cellShapeForPhase } from './CellPhaseDraw';
+import Phaser from "phaser";
+import { BaseGameScene } from "../../_shared/phaser/BaseGameScene";
+import TowerSystem from "../systems/TowerSystem";
+import EnemySystem from "../systems/EnemySystem";
+import ProjectileSystem from "../systems/ProjectileSystem";
+import AnimationSystem from "../systems/AnimationSystem";
+import PhaseSystem from "../systems/PhaseSystem";
+import MutationSystem from "../systems/MutationSystem";
+import { TOWERS } from "../data/towers";
+import { LEVELS } from "../data/levels";
+import { drawCell, getPhase, cellShapeForPhase } from "./CellPhaseDraw";
 import {
   drawLysosome,
   drawProteinKinase,
@@ -16,95 +16,95 @@ import {
   drawViralHijacker,
   drawToxinDroplet,
   drawRadiationPulse,
-} from '../systems/EntityDraw';
+} from "../systems/EntityDraw";
 
 const HEX_SIZE = 36;
 const SLOT_COUNT = 12;
 
 export default class CellDefenseScene extends BaseGameScene {
   constructor() {
-    super({ key: 'CellDefenseScene' });
+    super({ key: "CellDefenseScene" });
 
     this.cellCX = 0;
     this.cellCY = 0;
-    this.cellR  = 0;
+    this.cellR = 0;
     this.nucleusR = 0;
 
-    this.hp        = 100;
-    this.maxHp     = 100;
-    this.atp       = 300;
+    this.hp = 100;
+    this.maxHp = 100;
+    this.atp = 300;
     this.mutations = [];
-    this.phase     = 'interphase';
-    this.wave      = 0;
-    this.paused    = false;
+    this.phase = "interphase";
+    this.wave = 0;
+    this.paused = false;
 
-    this.towers       = [];
-    this.projectiles  = [];
-    this.atpPickups   = [];
-    this.towerSlots   = [];
+    this.towers = [];
+    this.projectiles = [];
+    this.atpPickups = [];
+    this.towerSlots = [];
 
-    this.currentLevel        = 0;
-    this._waveActive         = false;
-    this.doubleHitActive     = false;
+    this.currentLevel = 0;
+    this._waveActive = false;
+    this.doubleHitActive = false;
     this.splitImbalanceActive = false;
 
-    this._frameCount  = 0;
+    this._frameCount = 0;
     this.reducedMotion = false;
-    this.deviceTier    = 'mid';
+    this.deviceTier = "mid";
 
-    this.phaseSystem    = null;
+    this.phaseSystem = null;
     this.mutationSystem = null;
 
-    // Graphics layers
-    this.hexGrid          = null;
-    this.cellGraphics     = null;
-    this.slotGraphics     = null;
+    this.hexGrid = null;
+    this.cellGraphics = null;
+    this.slotGraphics = null;
     this._selectionGraphics = null;
-    this._selectedTowerId   = null;
+    this._selectedTowerId = null;
+    this._vignetteGraphics = null;
+    this._breachGraphics = null;
+    this._breachLabels = [];
+    this._slotZones = [];
 
-    // Animated canvas texture state
-    this._cellCanvas   = null;
-    this._cellImage    = null;
+    this._cellCanvas = null;
+    this._cellImage = null;
     this._phaseProgress = 0;
-    this._animTime     = 0;
+    this._animTime = 0;
     this._entityCanvases = null;
-    this._enemyWalkPhase  = 0;
+    this._enemyWalkPhase = 0;
     this._toxinBouncePhase = 0;
 
-    // Mitosis visual cycle (real-time seconds, independent of game logic phase)
-    this._mitosisT     = 0;
+    this._mitosisT = 0;
     this._currentPhase = { idx: 0, t: 0 };
-    this._currentShape = { mode: 'circle', r: 0 };
+    this._currentShape = { mode: "circle", r: 0 };
 
-    // Bus listener registry for clean destroy()
+    this._shopW = 0;
+    this._cameraControlsEnabled = false;
+    this._camDragStart = null;
+    this._camDragScrollStart = null;
+    this._camIsDragging = false;
+    this._camPinchDist = null;
+
     this._busListeners = {};
   }
 
   init(data) {
     super.init();
     this.reducedMotion = data?.reducedMotion ?? false;
-    this.deviceTier    = data?.deviceTier   ?? 'mid';
+    this.deviceTier = data?.deviceTier ?? "mid";
   }
 
   create() {
     const { width, height } = this.scale;
+    this._buildGeometry(width, height);
 
-    // Cell geometry — shifted right to leave room for the React tower panel
-    this.cellCX   = width  * 0.55;
-    this.cellCY   = height * 0.5 + 8;
-    this.cellR    = Math.min(width, height) * 0.30;
-    this.nucleusR = this.cellR * 0.16;   // matches handoff: nr = r * 0.16
-
-    // Sync level-specific starting values
     const levelData = LEVELS[this.currentLevel];
-    this.atp   = levelData?.startAtp  ?? 300;
-    this.hp    = levelData?.nucleusHp ?? 100;
+    this.atp = levelData?.startAtp ?? 300;
+    this.hp = levelData?.nucleusHp ?? 100;
     this.maxHp = levelData?.nucleusHp ?? 100;
 
-    this._entityCanvases = this.game.registry.get('entityCanvases') ?? null;
+    this._entityCanvases = this.game.registry.get("entityCanvases") ?? null;
 
-    // Start visual cycle at prophase so action is visible immediately (matches reference)
-    this._mitosisT     = 4.0;
+    this._mitosisT = 4.0;
     this._currentPhase = getPhase(this._mitosisT);
     this._currentShape = cellShapeForPhase(this._currentPhase, this.cellR);
 
@@ -113,17 +113,19 @@ export default class CellDefenseScene extends BaseGameScene {
     this._buildTowerSlots();
 
     this.animationSystem = new AnimationSystem(this);
-    this.towerSystem = new TowerSystem(this, this.towerSlots, this.animationSystem);
+    this.towerSystem = new TowerSystem(
+      this,
+      this.towerSlots,
+      this.animationSystem,
+    );
 
-    const breachPoints = [
-      { x: this.cellCX - this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 }, // top-left
-      { x: this.cellCX + this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 }, // top-right
-      { x: this.cellCX,                    y: this.cellCY + this.cellR * 1.5  }, // bottom
-      { x: this.cellCX - this.cellR * 1.7, y: this.cellCY + this.cellR * 0.3 }, // left
-      { x: this.cellCX + this.cellR * 1.7, y: this.cellCY + this.cellR * 0.3 }, // right
-    ];
+    const breachPoints = this._getBreachPoints();
     this.enemySystem = new EnemySystem(
-      this, breachPoints, this.cellCX, this.cellCY, this.cellR,
+      this,
+      breachPoints,
+      this.cellCX,
+      this.cellCY,
+      this.cellR,
     );
     this.enemySystem.towerSystem = this.towerSystem;
     this.enemySystem.animationSystem = this.animationSystem;
@@ -147,12 +149,80 @@ export default class CellDefenseScene extends BaseGameScene {
     this.phaseSystem = new PhaseSystem(this, levelData, this.mutationSystem);
 
     this._setupBusListeners();
+    this._setupCameraControls();
     this._emitState();
+
+    this.scale.on("resize", (gameSize) => {
+      this._onResize(gameSize.width, gameSize.height);
+    });
+
     this.phaseSystem.start();
+  }
+
+  _setupCameraControls() {
+    const cam = this.cameras.main;
+    const { width, height } = this.scale;
+
+    cam.setBounds(-width, -height, width * 3, height * 3);
+
+    this.input.on("wheel", (_p, _o, _dx, dy) => {
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom - dy * 0.001, 0.4, 3.0));
+    });
+
+    this._cameraControlsEnabled = true;
+
+    this.input.on("pointerdown", (pointer) => {
+      this._camIsDragging = false;
+      if (pointer.x < this._shopW) return;
+      if (this.input.pointer2?.isDown) return;
+      this._camDragStart = { x: pointer.x, y: pointer.y };
+      this._camDragScrollStart = { x: cam.scrollX, y: cam.scrollY };
+    });
+
+    this.input.on("pointermove", (pointer) => {
+      if (!this._camDragStart || !pointer.isDown) return;
+      if (this.input.pointer2?.isDown) {
+        this._camDragStart = null;
+        return;
+      }
+      const dx = pointer.x - this._camDragStart.x;
+      const dy = pointer.y - this._camDragStart.y;
+      if (!this._camIsDragging && Math.sqrt(dx * dx + dy * dy) > 12) {
+        this._camIsDragging = true;
+      }
+      if (this._camIsDragging) {
+        cam.scrollX = this._camDragScrollStart.x - dx / cam.zoom;
+        cam.scrollY = this._camDragScrollStart.y - dy / cam.zoom;
+      }
+    });
+
+    this.input.on("pointerup", () => {
+      this._camDragStart = null;
+      this._camDragScrollStart = null;
+    });
+  }
+
+  _updatePinchZoom() {
+    const p1 = this.input.pointer1;
+    const p2 = this.input.pointer2;
+    if (p1.isDown && p2.isDown) {
+      const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+      if (this._camPinchDist !== null) {
+        const delta = dist - this._camPinchDist;
+        const cam = this.cameras.main;
+        cam.setZoom(Phaser.Math.Clamp(cam.zoom + delta * 0.005, 0.4, 3.0));
+      }
+      this._camPinchDist = dist;
+      this._camDragStart = null;
+    } else {
+      this._camPinchDist = null;
+    }
   }
 
   update(_time, delta) {
     if (this.paused) return;
+
+    if (this._cameraControlsEnabled) this._updatePinchZoom();
 
     const activeEnemies = this.enemySystem?.enemies ?? [];
 
@@ -163,7 +233,7 @@ export default class CellDefenseScene extends BaseGameScene {
         this.projectileSystem?.fire(fromPos.x, fromPos.y, enemy, def);
       },
       (type, amount) => {
-        if (type === 'heal') {
+        if (type === "heal") {
           this.hp = Math.min(100, this.hp + amount);
         }
       },
@@ -174,30 +244,26 @@ export default class CellDefenseScene extends BaseGameScene {
 
     this._frameCount++;
     this._animTime++;
-    this._enemyWalkPhase  += 0.045;
+    this._enemyWalkPhase += 0.045;
     this._toxinBouncePhase += 0.04;
 
-    // Advance visual mitosis cycle slowly so each stage is appreciable
-    this._mitosisT    += delta / 6000;
+    this._mitosisT += delta / 6000;
     this._currentPhase = getPhase(this._mitosisT);
     this._currentShape = cellShapeForPhase(this._currentPhase, this.cellR);
 
-    // Legacy phase progress for any remaining consumers
     if (this._waveActive) {
       this._phaseProgress = Math.min(1, this._phaseProgress + delta / 20000);
     }
 
-    // Animate canvas textures every 2 frames (30fps animation)
     if (!this.reducedMotion && this._frameCount % 2 === 0) {
       this._updateEntityTextures();
       this._updateCellTexture();
     }
 
-    // Check if wave is cleared (check every 30 frames to reduce overhead)
     if (this._waveActive && this._frameCount % 30 === 0) {
       if (this.enemySystem.allEnemiesDead()) {
         this._waveActive = false;
-        this.bus?.emit('waveCleared', { phase: this.phase });
+        this.bus?.emit("waveCleared", { phase: this.phase });
       }
     }
 
@@ -207,53 +273,163 @@ export default class CellDefenseScene extends BaseGameScene {
   }
 
   _emitState() {
-    this.bus?.emit('stateChanged', {
-      hp:        this.hp,
-      atp:       this.atp,
+    this.bus?.emit("stateChanged", {
+      hp: this.hp,
+      atp: this.atp,
       mutations: this.mutations,
-      phase:     this.phase,
-      wave:      this.wave,
+      phase: this.phase,
+      wave: this.wave,
     });
   }
 
-  // ── Drawing ───────────────────────────────────────────────────────────────
+  _buildGeometry(width, height) {
+    // Guard against degenerate sizes fired by Phaser on mobile before the
+    // container's height chain resolves (e.g. resize(width, 0)).
+    if (!width || !height || width < 100 || height < 100) return;
+
+    const hudH = 56;
+    const shopW = Math.max(200, Math.round(width * 0.18));
+    const gameW = width - shopW;
+    const gameH = height - hudH;
+
+    const topPad = 46;
+    const botPad = 40;
+    const availH = gameH - topPad - botPad;
+
+    const maxR = Math.min(
+      availH / 2.7,
+      gameW / 3.6,
+      Math.min(width, height) * 0.32,
+    );
+    this.cellR = Math.round(maxR);
+    this.nucleusR = this.cellR * 0.16;
+    this._shopW = shopW;
+    this.cellCX = shopW + gameW * 0.5;
+    this.cellCY =
+      hudH +
+      topPad +
+      this.cellR * 1.2 +
+      Math.max(0, (availH - this.cellR * 2.7) / 2);
+  }
+
+  _getBreachPoints() {
+    return [
+      { x: this.cellCX - this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 },
+      { x: this.cellCX + this.cellR * 1.4, y: this.cellCY - this.cellR * 1.2 },
+      { x: this.cellCX, y: this.cellCY + this.cellR * 1.5 },
+      { x: this.cellCX - this.cellR * 1.7, y: this.cellCY + this.cellR * 0.3 },
+      { x: this.cellCX + this.cellR * 1.7, y: this.cellCY + this.cellR * 0.3 },
+    ];
+  }
+
+  _onResize(width, height) {
+    // Ignore degenerate resize events (mobile URL bar show/hide can fire width=X, height=0)
+    if (!width || !height || width < 100 || height < 100) return;
+
+    this._buildGeometry(width, height);
+    const breachPoints = this._getBreachPoints();
+
+    this.hexGrid?.destroy();
+    this._vignetteGraphics?.destroy();
+    this._drawHexGrid();
+
+    if (this.textures.exists("cellPhase")) this.textures.remove("cellPhase");
+    this._cellImage?.destroy();
+    this._cellCanvas = null;
+    this._cellImage = null;
+    this._initAnimatedCell();
+
+    this._breachGraphics?.destroy();
+    this._breachLabels.forEach((l) => l.destroy());
+    this._breachLabels = [];
+    this._drawBreachIndicators(breachPoints);
+
+    const placedTowers = this.towerSlots.map((s) => s.tower ?? null);
+    this.slotGraphics?.destroy();
+    this._slotZones.forEach((z) => z.destroy());
+    this._slotZones = [];
+    this._selectionGraphics?.destroy();
+    this._selectionGraphics = null;
+    this._buildTowerSlots();
+
+    if (this.towerSystem) this.towerSystem.slots = this.towerSlots;
+
+    for (let i = 0; i < this.towerSlots.length; i++) {
+      const tower = placedTowers[i];
+      if (!tower) continue;
+      const slot = this.towerSlots[i];
+      slot.tower = tower;
+
+      if (tower.sprite?.active) {
+        this.tweens.killTweensOf(tower.sprite);
+        tower.sprite.setPosition(slot.x, slot.y);
+        this.tweens.add({
+          targets: tower.sprite,
+          y: { from: slot.y - 4, to: slot.y + 4 },
+          yoyo: true,
+          repeat: -1,
+          duration: 1500 + Math.random() * 600,
+          ease: "Sine.easeInOut",
+        });
+      }
+
+      if (tower.rangeCircle?.active && tower.def.range > 0) {
+        tower.rangeCircle.clear();
+        tower.rangeCircle.fillStyle(0xffffff, 0.06);
+        tower.rangeCircle.fillCircle(slot.x, slot.y, tower.def.range);
+        tower.rangeCircle.lineStyle(1, 0x3bafa9, 0.4);
+        tower.rangeCircle.strokeCircle(slot.x, slot.y, tower.def.range);
+      }
+    }
+
+    if (this.enemySystem) {
+      this.enemySystem.cellCX = this.cellCX;
+      this.enemySystem.cellCY = this.cellCY;
+      this.enemySystem.cellR = this.cellR;
+      this.enemySystem.rebuildPaths(breachPoints);
+    }
+  }
 
   _initAnimatedCell() {
     const diameter = Math.ceil(this.cellR * 2.6);
 
-    // Create offscreen canvas sized to the cell area
-    const c = document.createElement('canvas');
-    c.width  = diameter;
+    const c = document.createElement("canvas");
+    c.width = diameter;
     c.height = diameter;
     this._cellCanvas = c;
 
-    // Draw initial frame
     this._drawCellToCanvas();
 
-    // Register as Phaser texture (key must be unique per scene)
-    if (this.textures.exists('cellPhase')) {
-      this.textures.remove('cellPhase');
+    if (this.textures.exists("cellPhase")) {
+      this.textures.remove("cellPhase");
     }
-    this.textures.addCanvas('cellPhase', c);
+    this.textures.addCanvas("cellPhase", c);
 
-    // Place as centered image object
-    this._cellImage = this.add.image(this.cellCX, this.cellCY, 'cellPhase');
+    this._cellImage = this.add.image(this.cellCX, this.cellCY, "cellPhase");
     this._cellImage.setDepth(1);
   }
 
   _drawCellToCanvas() {
     if (!this._cellCanvas) return;
-    const ctx = this._cellCanvas.getContext('2d');
-    const hw  = this._cellCanvas.width  / 2;
-    const hh  = this._cellCanvas.height / 2;
+    const ctx = this._cellCanvas.getContext("2d");
+    const hw = this._cellCanvas.width / 2;
+    const hh = this._cellCanvas.height / 2;
     ctx.clearRect(0, 0, this._cellCanvas.width, this._cellCanvas.height);
-    drawCell(ctx, hw, hh, this.cellR, this._currentPhase, this._currentShape, this._animTime);
+    drawCell(
+      ctx,
+      hw,
+      hh,
+      this.cellR,
+      this._currentPhase,
+      this._currentShape,
+      this._animTime,
+    );
   }
 
   _updateCellTexture() {
     if (!this._cellCanvas) return;
     this._drawCellToCanvas();
-    const src = this.textures.get('cellPhase')?.source?.[0];
+    const src = this.textures.get("cellPhase")?.source?.[0];
     if (src) src.update();
   }
 
@@ -262,18 +438,21 @@ export default class CellDefenseScene extends BaseGameScene {
     const t = this._animTime;
 
     const drawFns = {
-      lysosome:      (ctx, cx, cy, r) => drawLysosome(ctx, cx, cy, r, t, 0),
-      proteinKinase: (ctx, cx, cy, r) => drawProteinKinase(ctx, cx, cy, r, t, 0),
-      repairEnzyme:  (ctx, cx, cy, r) => drawRepairEnzyme(ctx, cx, cy, r, t, 0),
-      viralHijacker: (ctx, cx, cy, r) => drawViralHijacker(ctx, cx, cy, r, t, this._enemyWalkPhase),
-      toxinDroplet:  (ctx, cx, cy, r) => drawToxinDroplet(ctx, cx, cy, r, t, this._toxinBouncePhase),
-      radiationPulse:(ctx, cx, cy, r) => drawRadiationPulse(ctx, cx, cy, r, t),
+      lysosome: (ctx, cx, cy, r) => drawLysosome(ctx, cx, cy, r, t, 0),
+      proteinKinase: (ctx, cx, cy, r) =>
+        drawProteinKinase(ctx, cx, cy, r, t, 0),
+      repairEnzyme: (ctx, cx, cy, r) => drawRepairEnzyme(ctx, cx, cy, r, t, 0),
+      viralHijacker: (ctx, cx, cy, r) =>
+        drawViralHijacker(ctx, cx, cy, r, t, this._enemyWalkPhase),
+      toxinDroplet: (ctx, cx, cy, r) =>
+        drawToxinDroplet(ctx, cx, cy, r, t, this._toxinBouncePhase),
+      radiationPulse: (ctx, cx, cy, r) => drawRadiationPulse(ctx, cx, cy, r, t),
     };
 
     for (const [key, entry] of Object.entries(this._entityCanvases)) {
       const fn = drawFns[key];
       if (!fn) continue;
-      const ctx = entry.canvas.getContext('2d');
+      const ctx = entry.canvas.getContext("2d");
       ctx.clearRect(0, 0, entry.canvas.width, entry.canvas.height);
       fn(ctx, entry.cx, entry.cy, entry.r);
       const src = this.textures.get(key)?.source?.[0];
@@ -284,30 +463,39 @@ export default class CellDefenseScene extends BaseGameScene {
   _drawBreachIndicators(breachPoints) {
     const g = this.add.graphics();
     g.setDepth(3);
+    this._breachGraphics = g;
 
     breachPoints.forEach((bp) => {
-      // Outer pulsing ring
-      g.lineStyle(2, 0xFF4040, 0.65);
+      g.lineStyle(2, 0xff4040, 0.65);
       g.strokeCircle(bp.x, bp.y, 26);
-      g.lineStyle(1, 0xFF4040, 0.25);
+      g.lineStyle(1, 0xff4040, 0.25);
       g.strokeCircle(bp.x, bp.y, 38);
 
-      // Crosshair
-      g.lineStyle(1.5, 0xFF4040, 0.6);
-      g.beginPath(); g.moveTo(bp.x - 18, bp.y); g.lineTo(bp.x + 18, bp.y); g.strokePath();
-      g.beginPath(); g.moveTo(bp.x, bp.y - 18); g.lineTo(bp.x, bp.y + 18); g.strokePath();
+      g.lineStyle(1.5, 0xff4040, 0.6);
+      g.beginPath();
+      g.moveTo(bp.x - 18, bp.y);
+      g.lineTo(bp.x + 18, bp.y);
+      g.strokePath();
+      g.beginPath();
+      g.moveTo(bp.x, bp.y - 18);
+      g.lineTo(bp.x, bp.y + 18);
+      g.strokePath();
 
-      // Arrow pointing toward cell center
       const dx = this.cellCX - bp.x;
       const dy = this.cellCY - bp.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const nx = dx / dist, ny = dy / dist;
-      const arrowBase = 32, arrowTip = 56;
-      const ax = bp.x + nx * arrowBase, ay = bp.y + ny * arrowBase;
-      const tx = bp.x + nx * arrowTip,  ty = bp.y + ny * arrowTip;
-      const px = -ny * 8, py = nx * 8;
+      const nx = dx / dist,
+        ny = dy / dist;
+      const arrowBase = 32,
+        arrowTip = 56;
+      const ax = bp.x + nx * arrowBase,
+        ay = bp.y + ny * arrowBase;
+      const tx = bp.x + nx * arrowTip,
+        ty = bp.y + ny * arrowTip;
+      const px = -ny * 8,
+        py = nx * 8;
       g.lineStyle(0, 0, 0);
-      g.fillStyle(0xFF4040, 0.75);
+      g.fillStyle(0xff4040, 0.75);
       g.beginPath();
       g.moveTo(tx, ty);
       g.lineTo(ax + px, ay + py);
@@ -315,25 +503,27 @@ export default class CellDefenseScene extends BaseGameScene {
       g.closePath();
       g.fillPath();
 
-      // "ENTRY" label
-      this.add.text(bp.x, bp.y - 44, 'ENTRY POINT', {
-        fontSize: '9px',
-        color: '#FF8080',
-        stroke: '#000000',
-        strokeThickness: 2,
-        fontFamily: '"Courier New", Courier, monospace',
-        fontStyle: 'bold',
-      }).setOrigin(0.5, 1).setDepth(3);
+      const lbl = this.add
+        .text(bp.x, bp.y - 44, "ENTRY POINT", {
+          fontSize: "9px",
+          color: "#FF8080",
+          stroke: "#000000",
+          strokeThickness: 2,
+          fontFamily: '"Courier New", Courier, monospace',
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5, 1)
+        .setDepth(3);
+      this._breachLabels.push(lbl);
     });
 
-    // Pulse the whole indicators layer
     this.tweens.add({
       targets: g,
       alpha: { from: 0.6, to: 1 },
       yoyo: true,
       repeat: -1,
       duration: 900,
-      ease: 'Sine.easeInOut',
+      ease: "Sine.easeInOut",
     });
   }
 
@@ -341,12 +531,11 @@ export default class CellDefenseScene extends BaseGameScene {
     const { width, height } = this.scale;
     const g = this.add.graphics();
 
-    // Flat-top hex layout matching game.js (col * w * 0.75, row offset on odd cols)
-    const size   = HEX_SIZE;
-    const w      = size * 2;
-    const h      = Math.sqrt(3) * size;
-    const cols   = Math.ceil(width  / (w * 0.75)) + 2;
-    const rows   = Math.ceil(height / h) + 2;
+    const size = HEX_SIZE;
+    const w = size * 2;
+    const h = Math.sqrt(3) * size;
+    const cols = Math.ceil(width / (w * 0.75)) + 2;
+    const rows = Math.ceil(height / h) + 2;
 
     g.lineStyle(0.8, 0xffffff, 0.045);
 
@@ -357,28 +546,31 @@ export default class CellDefenseScene extends BaseGameScene {
 
         g.beginPath();
         for (let i = 0; i < 6; i++) {
-          const a  = (Math.PI / 180) * (60 * i); // flat-top (0° = rightward vertex)
+          const a = (Math.PI / 180) * (60 * i);
           const px = cx + size * Math.cos(a);
           const py = cy + size * Math.sin(a);
           if (i === 0) g.moveTo(px, py);
-          else         g.lineTo(px, py);
+          else g.lineTo(px, py);
         }
         g.closePath();
         g.strokePath();
       }
     }
 
-    // Radial vignette (subtract opacity toward edges) — drawn as a dark overlay
-    const vignette = this.add.graphics();
-    vignette.fillStyle(0x000000, 0);
-    // We approximate the vignette with a simple alpha tween on the canvas edges.
-    // For now a very subtle dark border circle is enough.
-    vignette.lineStyle(Math.min(width, height) * 0.4, 0x000000, 0.35);
-    vignette.strokeCircle(width / 2, height / 2, Math.max(width, height) * 0.7);
+    this._vignetteGraphics = this.add.graphics();
+    this._vignetteGraphics.lineStyle(
+      Math.min(width, height) * 0.4,
+      0x000000,
+      0.35,
+    );
+    this._vignetteGraphics.strokeCircle(
+      width / 2,
+      height / 2,
+      Math.max(width, height) * 0.7,
+    );
 
     this.hexGrid = g;
   }
-
 
   _buildTowerSlots() {
     const g = this.add.graphics();
@@ -387,19 +579,26 @@ export default class CellDefenseScene extends BaseGameScene {
 
     for (let i = 0; i < SLOT_COUNT; i++) {
       const angle = (i / SLOT_COUNT) * Math.PI * 2 - Math.PI / 2;
-      const x     = this.cellCX + this.cellR * Math.cos(angle);
-      const y     = this.cellCY + this.cellR * Math.sin(angle);
+      const x = this.cellCX + this.cellR * Math.cos(angle);
+      const y = this.cellCY + this.cellR * Math.sin(angle);
 
-      g.lineStyle(1.5, 0x3BAFA9, 0.30);
+      g.lineStyle(1.5, 0x3bafa9, 0.3);
       g.strokeCircle(x, y, 11);
-      g.fillStyle(0x3BAFA9, 0.20);
+      g.fillStyle(0x3bafa9, 0.2);
       g.fillCircle(x, y, 4);
 
-      // Invisible click zone for this slot
       const zone = this.add.zone(x, y, 44, 44).setInteractive();
-      zone.on('pointerdown', (pointer) => {
+      this._slotZones.push(zone);
+      zone.on("pointerup", (pointer) => {
+        const dist = Phaser.Math.Distance.Between(
+          pointer.downX,
+          pointer.downY,
+          pointer.x,
+          pointer.y,
+        );
+        if (dist > 20) return;
         const slot = this.towerSlots[i];
-        this.bus?.emit('towerSlotClicked', {
+        this.bus?.emit("towerSlotClicked", {
           slotIndex: i,
           isEmpty: !slot.tower,
           towerId: slot.tower?.id ?? null,
@@ -414,8 +613,6 @@ export default class CellDefenseScene extends BaseGameScene {
     this.slotGraphics = g;
   }
 
-  // ── Event bus ─────────────────────────────────────────────────────────────
-
   _busOn(event, fn) {
     this._busListeners[event] ??= [];
     this._busListeners[event].push(fn);
@@ -425,16 +622,29 @@ export default class CellDefenseScene extends BaseGameScene {
   _setupBusListeners() {
     if (!this.bus) return;
 
-    this._busOn('phaseTransition', ({ fromPhase, toPhase }) => {
+    this._busOn("cameraZoomIn", () => {
+      const cam = this.cameras.main;
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom * 1.3, 0.4, 3.0));
+    });
+    this._busOn("cameraZoomOut", () => {
+      const cam = this.cameras.main;
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom / 1.3, 0.4, 3.0));
+    });
+    this._busOn("cameraReset", () => {
+      const cam = this.cameras.main;
+      cam.setZoom(1);
+      cam.setScroll(0, 0);
+    });
+
+    this._busOn("phaseTransition", ({ fromPhase, toPhase }) => {
       if (toPhase !== this.phase) this._phaseProgress = 0;
-      // Jump visual cell to the matching mitosis stage when game phase actually changes
       if (fromPhase !== toPhase) {
         const phaseStartT = {
-          interphase:  0,
-          prophase:    4.0,
-          metaphase:   7.5,
-          anaphase:   11.0,
-          telophase:  14.5,
+          interphase: 0,
+          prophase: 4.0,
+          metaphase: 7.5,
+          anaphase: 11.0,
+          telophase: 14.5,
           cytokinesis: 18.0,
         };
         const t = phaseStartT[toPhase];
@@ -442,26 +652,26 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this._busOn('pause', () => {
+    this._busOn("pause", () => {
       this.physics.pause();
       this.tweens.pauseAll();
       this.paused = true;
     });
 
-    this._busOn('resume', () => {
+    this._busOn("resume", () => {
       this.physics.resume();
       this.tweens.resumeAll();
       this.paused = false;
     });
 
-    this._busOn('towerSelected', ({ towerId }) => {
+    this._busOn("towerSelected", ({ towerId }) => {
       this._selectedTowerId = towerId ?? null;
       this._showSlotHighlights(this._selectedTowerId);
       const canvas = this.sys?.game?.canvas;
-      if (canvas) canvas.style.cursor = towerId ? 'crosshair' : 'default';
+      if (canvas) canvas.style.cursor = towerId ? "crosshair" : "default";
     });
 
-    this._busOn('placeTower', ({ towerId, slotIndex }) => {
+    this._busOn("placeTower", ({ towerId, slotIndex }) => {
       const def = TOWERS[towerId];
       if (!def || this.atp < def.cost) return;
 
@@ -472,7 +682,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this._busOn('sellTower', ({ slotIndex }) => {
+    this._busOn("sellTower", ({ slotIndex }) => {
       const refund = this.towerSystem.sellTower(slotIndex);
       if (refund > 0) {
         this.atp += refund;
@@ -480,7 +690,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this._busOn('upgradeTower', ({ slotIndex }) => {
+    this._busOn("upgradeTower", ({ slotIndex }) => {
       const slot = this.towerSlots[slotIndex];
       if (!slot?.tower) return;
       const upgradeCost = slot.tower.def.upgradeCost ?? 0;
@@ -490,11 +700,11 @@ export default class CellDefenseScene extends BaseGameScene {
       this._emitState();
     });
 
-    this._busOn('waveCleared', () => {
+    this._busOn("waveCleared", () => {
       this.phaseSystem?.onWaveCleared();
     });
 
-    this._busOn('enemyReachedNucleus', ({ mutationType }) => {
+    this._busOn("enemyReachedNucleus", ({ mutationType }) => {
       const damage = this.doubleHitActive ? 20 : 10;
       this.doubleHitActive = false;
       this.hp = Math.max(0, this.hp - damage);
@@ -506,30 +716,29 @@ export default class CellDefenseScene extends BaseGameScene {
       }
 
       if (this.hp <= 0) {
-        this.bus?.emit('gameOver', { reason: 'nucleusDestroyed' });
+        this.bus?.emit("gameOver", { reason: "nucleusDestroyed" });
       }
     });
 
-    this._busOn('gameOver', ({ reason }) => {
+    this._busOn("gameOver", ({ reason }) => {
       this.physics.pause();
       this.paused = true;
       this._emitState();
-      this.bus?.emit('runComplete', {
-        stars:     0,
+      this.bus?.emit("runComplete", {
+        stars: 0,
         mutations: this.mutationSystem?.getAll() ?? [],
-        hpLeft:    this.hp,
-        xpEarned:  0,
-        levelId:   LEVELS[this.currentLevel]?.id ?? null,
+        hpLeft: this.hp,
+        xpEarned: 0,
+        levelId: LEVELS[this.currentLevel]?.id ?? null,
         reason,
       });
     });
 
-    this._busOn('atpPickupSpawned', ({ x, y, amount }) => {
+    this._busOn("atpPickupSpawned", ({ x, y, amount }) => {
       this._spawnAtpPickup(x, y, amount);
     });
 
-    this._busOn('spawnTutorialAtp', () => {
-      // Spawn inside the cell, offset from nucleus so it's clearly clickable
+    this._busOn("spawnTutorialAtp", () => {
       this._spawnAtpPickup(
         this.cellCX + this.cellR * 0.38,
         this.cellCY - this.cellR * 0.42,
@@ -537,7 +746,7 @@ export default class CellDefenseScene extends BaseGameScene {
       );
     });
 
-    this._busOn('aoeBlast', ({ x, y, radius }) => {
+    this._busOn("aoeBlast", ({ x, y, radius }) => {
       const enemies = this.enemySystem?.enemies ?? [];
       for (const enemy of enemies) {
         if (!enemy.alive) continue;
@@ -549,7 +758,7 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this._busOn('towerSilence', ({ x, y }) => {
+    this._busOn("towerSilence", ({ x, y }) => {
       const slots = this.towerSystem?.slots ?? [];
       let nearestIdx = -1;
       let nearestDist = Infinity;
@@ -560,7 +769,7 @@ export default class CellDefenseScene extends BaseGameScene {
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < nearestDist) {
           nearestDist = dist;
-          nearestIdx  = i;
+          nearestIdx = i;
         }
       }
       if (nearestIdx >= 0) {
@@ -581,7 +790,7 @@ export default class CellDefenseScene extends BaseGameScene {
 
     const def = TOWERS[towerId];
     const canAfford = def && this.atp >= def.cost;
-    const color = canAfford ? 0x3BAFA9 : 0xFF4444;
+    const color = canAfford ? 0x3bafa9 : 0xff4444;
 
     for (const slot of this.towerSlots) {
       if (slot.tower) continue;
@@ -598,13 +807,14 @@ export default class CellDefenseScene extends BaseGameScene {
         yoyo: true,
         repeat: -1,
         duration: 600,
-        ease: 'Sine.easeInOut',
+        ease: "Sine.easeInOut",
       });
     }
   }
 
   destroy() {
-    // Remove all bus listeners registered by this scene
+    this.scale.off("resize");
+
     if (this.bus && this._busListeners) {
       for (const [event, fns] of Object.entries(this._busListeners)) {
         for (const fn of fns) {
@@ -615,20 +825,19 @@ export default class CellDefenseScene extends BaseGameScene {
     this._busListeners = {};
 
     this.phaseSystem?.destroy();
+    this.enemySystem?.destroy();
 
-    // Clean up animated cell texture
-    if (this.textures.exists('cellPhase')) {
-      this.textures.remove('cellPhase');
+    if (this.textures.exists("cellPhase")) {
+      this.textures.remove("cellPhase");
     }
     this._cellCanvas = null;
 
-    // Reset cursor in case we changed it
     const canvas = this.sys?.game?.canvas;
-    if (canvas) canvas.style.cursor = 'default';
+    if (canvas) canvas.style.cursor = "default";
   }
 
   _spawnAtpPickup(x, y, amount) {
-    const pickup = this.add.image(x, y, 'atpPickup');
+    const pickup = this.add.image(x, y, "atpPickup");
     pickup.setDepth(6);
     pickup.setInteractive({ useHandCursor: true });
 
@@ -638,18 +847,18 @@ export default class CellDefenseScene extends BaseGameScene {
       yoyo: true,
       repeat: 3,
       duration: 400,
-      ease: 'Sine.easeInOut',
+      ease: "Sine.easeInOut",
     });
 
-    pickup.once('pointerdown', () => {
+    pickup.once("pointerdown", () => {
       this.atp += amount;
       this._emitState();
 
       const label = this.add.text(pickup.x, pickup.y, `+${amount} ATP`, {
-        fontSize: '18px',
-        fontStyle: 'bold',
-        color: '#FFD700',
-        stroke: '#000000',
+        fontSize: "18px",
+        fontStyle: "bold",
+        color: "#FFD700",
+        stroke: "#000000",
         strokeThickness: 3,
       });
       label.setOrigin(0.5, 1);
@@ -659,7 +868,7 @@ export default class CellDefenseScene extends BaseGameScene {
         y: label.y - 32,
         alpha: { from: 1, to: 0 },
         duration: 900,
-        ease: 'Sine.easeOut',
+        ease: "Sine.easeOut",
         onComplete: () => label.destroy(),
       });
 

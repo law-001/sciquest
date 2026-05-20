@@ -232,7 +232,7 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
 .sq-sandbox-shell {
   display: grid;
   grid-template-rows: 60px 1fr 132px;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   background: var(--sq-cream-0);
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
@@ -388,6 +388,7 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  min-height: 0;
 }
 /* — State badge + stats readout (laptop sidebar) — */
 .sq-hud-readout {
@@ -1124,14 +1125,15 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
     grid-template-rows: auto 1fr;
   }
 
-  /* ── HUD: two compact rows, no horizontal scroll ── */
+  /* ── HUD: two compact rows ── */
   .sq-hud {
     flex-direction: column;
     border-right: none;
     border-bottom: var(--sq-border);
     padding: 8px 12px;
     gap: 6px;
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: hidden;
   }
 
   /* Row 1 — active card fills width, pending/done become dot indicators */
@@ -1140,6 +1142,7 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
+    overflow-x: auto;
   }
 
   .sq-ccard--active {
