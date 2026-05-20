@@ -231,6 +231,7 @@ export function AboutPage({ onBlacked }) {
               passionate about transforming science education.
             </p>
 
+            {/* COLUMN ARIES WALAO turn grid 4/5*/}
             <div className="grid md:grid-cols-5 gap-8 max-w-4xl mx-auto">
               {team.map((member, index) => (
                 <div

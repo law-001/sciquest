@@ -15,10 +15,12 @@ class TowerSystem {
     if (!def) return false;
 
     const { x, y } = slot;
+    const scale = this.scene.entityScale ?? 1;
+    const range = def.range * scale;
 
     const sprite = this.scene.add.image(x, y, towerId);
     sprite.setDepth(5);
-    sprite.setScale(1.3);
+    sprite.setScale(1.3 * scale);
     // Canvas-backed textures need an explicit GPU refresh the first time they're
     // used in WebGL mode; otherwise the sprite renders as transparent.
     const texSrc = this.scene.textures.get(towerId)?.source?.[0];
@@ -27,11 +29,11 @@ class TowerSystem {
     // Range indicator — hidden by default
     const rangeCircle = this.scene.add.graphics();
     rangeCircle.setDepth(4);
-    if (def.range > 0) {
+    if (range > 0) {
       rangeCircle.fillStyle(0xffffff, 0.06);
-      rangeCircle.fillCircle(x, y, def.range);
+      rangeCircle.fillCircle(x, y, range);
       rangeCircle.lineStyle(1, 0x3BAFA9, 0.4);
-      rangeCircle.strokeCircle(x, y, def.range);
+      rangeCircle.strokeCircle(x, y, range);
     }
     rangeCircle.setVisible(false);
 
@@ -61,6 +63,7 @@ class TowerSystem {
       rangeCircle,
       hpBar,
       def,
+      range,
       cooldown: 0,
       silenced: false,
       disabled: false,
@@ -170,7 +173,7 @@ class TowerSystem {
         const dx = enemy.sprite.x - x;
         const dy = enemy.sprite.y - y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist <= tower.def.range && dist < nearestDist) {
+        if (dist <= tower.range && dist < nearestDist) {
           nearest = enemy;
           nearestDist = dist;
         }

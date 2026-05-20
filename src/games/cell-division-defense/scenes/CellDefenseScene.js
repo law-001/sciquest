@@ -29,6 +29,9 @@ export default class CellDefenseScene extends BaseGameScene {
     this.cellCY = 0;
     this.cellR = 0;
     this.nucleusR = 0;
+    // Scales tower/enemy sprites + ranges with the cell so they stay
+    // proportional on small (mobile) viewports. Recomputed in _buildGeometry.
+    this.entityScale = 1;
 
     this.hp = 100;
     this.maxHp = 100;
@@ -63,7 +66,6 @@ export default class CellDefenseScene extends BaseGameScene {
     this._vignetteGraphics = null;
     this._breachGraphics = null;
     this._breachLabels = [];
-    this._slotZones = [];
 
     this._cellCanvas = null;
     this._cellImage = null;
@@ -83,6 +85,7 @@ export default class CellDefenseScene extends BaseGameScene {
     this._camDragScrollStart = null;
     this._camIsDragging = false;
     this._camPinchDist = null;
+    this._suppressNextTap = false;
 
     this._busListeners = {};
   }
@@ -196,9 +199,53 @@ export default class CellDefenseScene extends BaseGameScene {
       }
     });
 
-    this.input.on("pointerup", () => {
+    this.input.on("pointerup", (pointer) => {
+      const wasDragging = this._camIsDragging;
       this._camDragStart = null;
       this._camDragScrollStart = null;
+      this._camIsDragging = false;
+
+      // A pan or a pinch consumed this gesture — don't treat it as a slot tap.
+      if (wasDragging) return;
+      if (this._suppressNextTap) {
+        this._suppressNextTap = false;
+        return;
+      }
+      if (pointer.x < this._shopW) return;
+      this._handleSlotTap(pointer);
+    });
+  }
+
+  // Resolve a tap to the nearest tower slot in world space. Replaces per-slot
+  // interactive Zones, whose pointerup did not fire reliably on touch devices.
+  _handleSlotTap(pointer) {
+    let nearestIdx = -1;
+    let nearestDist = Infinity;
+    for (let i = 0; i < this.towerSlots.length; i++) {
+      const slot = this.towerSlots[i];
+      const d = Phaser.Math.Distance.Between(
+        pointer.worldX,
+        pointer.worldY,
+        slot.x,
+        slot.y,
+      );
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearestIdx = i;
+      }
+    }
+    if (nearestIdx < 0) return;
+
+    // Tap target scales with the cell so it stays generous on small screens,
+    // but stays below half the gap between adjacent slots (≈0.26·cellR).
+    const hitRadius = Math.max(30, this.cellR * 0.22);
+    if (nearestDist > hitRadius) return;
+
+    const slot = this.towerSlots[nearestIdx];
+    this.bus?.emit("towerSlotClicked", {
+      slotIndex: nearestIdx,
+      isEmpty: !slot.tower,
+      towerId: slot.tower?.id ?? null,
     });
   }
 
@@ -214,6 +261,8 @@ export default class CellDefenseScene extends BaseGameScene {
       }
       this._camPinchDist = dist;
       this._camDragStart = null;
+      // Pinch release shouldn't place a tower.
+      this._suppressNextTap = true;
     } else {
       this._camPinchDist = null;
     }
@@ -303,6 +352,9 @@ export default class CellDefenseScene extends BaseGameScene {
     );
     this.cellR = Math.round(maxR);
     this.nucleusR = this.cellR * 0.16;
+    // 214 ≈ the cell radius on a typical desktop arena, where setScale(1.3)
+    // was authored to look right. Clamp so towers never vanish or overflow.
+    this.entityScale = Phaser.Math.Clamp(this.cellR / 214, 0.4, 1.15);
     this._shopW = shopW;
     this.cellCX = shopW + gameW * 0.5;
     this.cellCY =
@@ -346,8 +398,6 @@ export default class CellDefenseScene extends BaseGameScene {
 
     const placedTowers = this.towerSlots.map((s) => s.tower ?? null);
     this.slotGraphics?.destroy();
-    this._slotZones.forEach((z) => z.destroy());
-    this._slotZones = [];
     this._selectionGraphics?.destroy();
     this._selectionGraphics = null;
     this._buildTowerSlots();
@@ -363,6 +413,7 @@ export default class CellDefenseScene extends BaseGameScene {
       if (tower.sprite?.active) {
         this.tweens.killTweensOf(tower.sprite);
         tower.sprite.setPosition(slot.x, slot.y);
+        tower.sprite.setScale(1.3 * this.entityScale);
         this.tweens.add({
           targets: tower.sprite,
           y: { from: slot.y - 4, to: slot.y + 4 },
@@ -373,12 +424,13 @@ export default class CellDefenseScene extends BaseGameScene {
         });
       }
 
-      if (tower.rangeCircle?.active && tower.def.range > 0) {
+      tower.range = tower.def.range * this.entityScale;
+      if (tower.rangeCircle?.active && tower.range > 0) {
         tower.rangeCircle.clear();
         tower.rangeCircle.fillStyle(0xffffff, 0.06);
-        tower.rangeCircle.fillCircle(slot.x, slot.y, tower.def.range);
+        tower.rangeCircle.fillCircle(slot.x, slot.y, tower.range);
         tower.rangeCircle.lineStyle(1, 0x3bafa9, 0.4);
-        tower.rangeCircle.strokeCircle(slot.x, slot.y, tower.def.range);
+        tower.rangeCircle.strokeCircle(slot.x, slot.y, tower.range);
       }
     }
 
@@ -587,26 +639,8 @@ export default class CellDefenseScene extends BaseGameScene {
       g.fillStyle(0x3bafa9, 0.2);
       g.fillCircle(x, y, 4);
 
-      const zone = this.add.zone(x, y, 44, 44).setInteractive();
-      this._slotZones.push(zone);
-      zone.on("pointerup", (pointer) => {
-        const dist = Phaser.Math.Distance.Between(
-          pointer.downX,
-          pointer.downY,
-          pointer.x,
-          pointer.y,
-        );
-        if (dist > 20) return;
-        const slot = this.towerSlots[i];
-        this.bus?.emit("towerSlotClicked", {
-          slotIndex: i,
-          isEmpty: !slot.tower,
-          towerId: slot.tower?.id ?? null,
-          canvasX: pointer.x,
-          canvasY: pointer.y,
-        });
-      });
-
+      // Slot taps are resolved by _handleSlotTap via the scene-level pointerup,
+      // which behaves consistently for both mouse and touch input.
       this.towerSlots.push({ angle, x, y, tower: null });
     }
 
@@ -851,6 +885,8 @@ export default class CellDefenseScene extends BaseGameScene {
     });
 
     pickup.once("pointerdown", () => {
+      // Collecting a pickup must not double as a slot tap on the same gesture.
+      this._suppressNextTap = true;
       this.atp += amount;
       this._emitState();
 

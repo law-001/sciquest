@@ -43,7 +43,7 @@ class EnemySystem {
 
     const follower = this.scene.add.follower(path, startX, startY, type);
     follower.setDepth(5);
-    follower.setScale(1.3);
+    follower.setScale(1.3 * (this.scene.entityScale ?? 1));
     // Force GPU refresh for canvas-backed textures (same issue as tower images)
     const texSrc = this.scene.textures.get(type)?.source?.[0];
     if (texSrc?.update) texSrc.update();
@@ -175,6 +175,8 @@ class EnemySystem {
     const { attackType, attackRange, towerDamage, attackCooldown } = enemy.def;
     if (!attackType || !this.towerSystem) return;
 
+    // Scale reach with the cell so engagement distances stay proportional on mobile.
+    const scaledRange = attackRange * (this.scene.entityScale ?? 1);
     const { x, y } = enemy.sprite;
 
     // Find nearest tower within attack range
@@ -188,7 +190,7 @@ class EnemySystem {
       const dx = slot.x - x;
       const dy = slot.y - y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist <= attackRange && dist < nearestDist) {
+      if (dist <= scaledRange && dist < nearestDist) {
         nearestDist = dist;
         nearestIdx = i;
       }
