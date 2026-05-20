@@ -38,6 +38,7 @@ import {
   fetchSectionCounts,
   deleteUser,
   wipeUserData,
+  inviteTeacher,
 } from "../lib/users";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -227,14 +228,20 @@ function InviteTeacherModal({ onClose }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSend = async () => {
     if (!email.trim()) return;
+    setError("");
     setLoading(true);
-    // TODO: call Supabase Edge Function to send teacher invite email
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    setSent(true);
+    try {
+      await inviteTeacher(email.trim());
+      setSent(true);
+    } catch (err) {
+      setError(err.message ?? "Failed to send invite. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -288,6 +295,9 @@ function InviteTeacherModal({ onClose }) {
               their password.
             </p>
           </div>
+          {error && (
+            <p className="text-sm text-red-500 font-medium mb-2">{error}</p>
+          )}
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={onClose}>
               Cancel

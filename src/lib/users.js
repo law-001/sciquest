@@ -141,6 +141,27 @@ export async function updateStudentProfile(studentId, { firstName, lastName, ava
   if (error) throw error
 }
 
+// Sends a teacher invite email via the invite-teacher Edge Function.
+// Supabase generates the invite link and delivers it — no external email
+// service required. The teacher sets their name + password via TeacherSetupPage.
+export async function inviteTeacher(email) {
+  const { data, error } = await supabase.functions.invoke('invite-teacher', {
+    body: { email },
+  })
+  if (error) {
+    let message = error.message
+    try {
+      const body = await error.context?.json()
+      if (body?.error) message = body.error
+    } catch {
+      // fall back to the generic message
+    }
+    throw new Error(message)
+  }
+  if (data?.error) throw new Error(data.error)
+  return data
+}
+
 // Deletes an auth user (cascades to students/staff + student_progress) via the
 // admin-delete-user Edge Function — the anon key cannot touch auth.users directly.
 export async function deleteUser(userId) {
