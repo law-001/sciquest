@@ -8,7 +8,13 @@ const LESSON_INDEX = (() => {
   const map = new Map()
   for (const week of WEEKS_DATA ?? []) {
     for (const lesson of week.lessons ?? []) {
-      map.set(lesson.id, { title: lesson.title, category: week.category })
+      map.set(lesson.id, {
+        title: lesson.title,
+        category: week.category,
+        weekId: week.id,
+        weekTitle: week.title,
+        weekNumber: week.weekNumber,
+      })
     }
   }
   return map
@@ -154,6 +160,9 @@ export async function fetchTeacherDashboard() {
         id,
         title: meta.title,
         category: meta.category,
+        weekId: meta.weekId,
+        weekTitle: meta.weekTitle,
+        weekNumber: meta.weekNumber,
         status: 'Published',
         sections: sections.map((s) => s.id),
         completion,
@@ -214,4 +223,23 @@ export async function gradeQuizAttempt({ attemptId, percent, maxScore }) {
     .eq('id', attemptId)
   if (error) throw error
   return { score, xp }
+}
+
+// Returns a sorted, deduplicated list of every section name currently assigned
+// to at least one student. Used by the Add Section modal.
+export async function fetchDistinctSections() {
+  const { data, error } = await supabase.from('students').select('section')
+  if (error) throw error
+  const names = [...new Set((data ?? []).map((r) => r.section).filter(Boolean))]
+  return names.sort()
+}
+
+// Clears a student's section assignment so they no longer appear in any
+// teacher's section roster.
+export async function removeStudentFromSection(studentId) {
+  const { error } = await supabase
+    .from('students')
+    .update({ section: null })
+    .eq('id', studentId)
+  if (error) throw error
 }
