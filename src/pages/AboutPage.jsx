@@ -97,6 +97,7 @@ export function AboutPage({ onBlacked }) {
     },
     {
       name: "Francesca Ricafort",
+      nameDark: "Francesca Nicafort",
       role: "Fashionista",
       initials: "FR",
       color: "bg-accent-100 text-accent-700",
@@ -267,8 +268,11 @@ export function AboutPage({ onBlacked }) {
                     )}
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">
-                    {member.name}
+                    {showDarkPortrait && member.nameDark
+                      ? member.nameDark
+                      : member.name}
                   </h3>
+
                   <p className="text-stone-400 font-medium">{member.role}</p>
                 </div>
               ))}
