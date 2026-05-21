@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   X,
   Mail,
@@ -14,10 +14,128 @@ import {
   ChevronDown,
   CheckCircle2,
   XCircle,
+  Loader2,
 } from "lucide-react";
 import Button from "../Button";
 import Input from "../Input";
 import { useAuth } from "../../context/AuthContext";
+import { fetchPublicSections } from "../../lib/sections";
+
+function SectionDropdown({ value, onChange, sections, loading, disabled }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const selected = sections.find((s) => s.name === value);
+
+  const handleKey = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setOpen((v) => !v);
+    }
+    if (e.key === "Escape") setOpen(false);
+    if (e.key === "ArrowDown" && open) {
+      const idx = sections.findIndex((s) => s.name === value);
+      const next = sections[idx + 1];
+      if (next) onChange(next.name);
+    }
+    if (e.key === "ArrowUp" && open) {
+      const idx = sections.findIndex((s) => s.name === value);
+      const prev = sections[idx - 1];
+      if (prev) onChange(prev.name);
+    }
+  };
+
+  return (
+    <div className="w-full" ref={ref}>
+      <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1.5 font-heading">
+        Section
+      </label>
+      <div className="relative">
+        <button
+          type="button"
+          disabled={disabled || loading}
+          onClick={() => setOpen((v) => !v)}
+          onKeyDown={handleKey}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className={[
+            "w-full h-10 rounded-xl border-2 bg-white dark:bg-stone-800 pl-10 pr-9 text-left",
+            "text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed",
+            open
+              ? "border-primary-500 outline-none ring-4 ring-primary-500/10 dark:ring-primary-400/10"
+              : "border-orange-200 dark:border-stone-600 hover:border-orange-300 dark:hover:border-stone-500",
+            selected
+              ? "text-stone-900 dark:text-stone-100"
+              : "text-stone-400 dark:text-stone-500",
+          ].join(" ")}
+        >
+          {loading ? "Loading…" : selected ? selected.name : "Select section"}
+        </button>
+
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <BookOpen className="w-4 h-4" />
+          )}
+        </div>
+
+        <div
+          className={`absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </div>
+
+        {open && sections.length > 0 && (
+          <ul
+            role="listbox"
+            className="absolute z-50 mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 shadow-xl overflow-auto max-h-48 py-1"
+          >
+            {sections.map((s) => (
+              <li
+                key={s.id}
+                role="option"
+                aria-selected={s.name === value}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(s.name);
+                  setOpen(false);
+                }}
+                className={[
+                  "flex items-center gap-2 px-4 py-2 text-sm cursor-pointer transition-colors",
+                  s.name === value
+                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-semibold"
+                    : "text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-700/50",
+                ].join(" ")}
+              >
+                <BookOpen className="w-3.5 h-3.5 shrink-0 opacity-50" />
+                {s.name}
+                {s.name === value && (
+                  <CheckCircle2 className="w-3.5 h-3.5 ml-auto text-primary-500" />
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {open && sections.length === 0 && !loading && (
+          <div className="absolute z-50 mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 shadow-xl px-4 py-3 text-sm text-stone-400 dark:text-stone-500">
+            No sections available yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const EMPTY_FORM = {
   email: "",
@@ -31,8 +149,16 @@ const EMPTY_FORM = {
 
 const PASSWORD_RULES = [
   { id: "length", label: "At least 8 characters", test: (v) => v.length >= 8 },
-  { id: "upper", label: "At least 1 uppercase letter", test: (v) => /[A-Z]/.test(v) },
-  { id: "lower", label: "At least 1 lowercase letter", test: (v) => /[a-z]/.test(v) },
+  {
+    id: "upper",
+    label: "At least 1 uppercase letter",
+    test: (v) => /[A-Z]/.test(v),
+  },
+  {
+    id: "lower",
+    label: "At least 1 lowercase letter",
+    test: (v) => /[a-z]/.test(v),
+  },
   { id: "number", label: "At least 1 number", test: (v) => /[0-9]/.test(v) },
 ];
 
@@ -54,6 +180,17 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     email: "",
     studentNumber: "",
   });
+  const [availableSections, setAvailableSections] = useState([]);
+  const [sectionsLoading, setSectionsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || isLogin) return;
+    setSectionsLoading(true);
+    fetchPublicSections()
+      .then((all) => setAvailableSections(all))
+      .catch(() => setAvailableSections([]))
+      .finally(() => setSectionsLoading(false));
+  }, [isOpen, isLogin]);
 
   if (!isOpen) return null;
 
@@ -264,10 +401,10 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
           role="dialog"
           aria-modal="true"
         >
-          <div className="absolute top-0 left-0 w-full h-47 bg-linear-to-br from-primary-50 to-accent-100 opacity-60" />
+          <div className="absolute top-0 left-0 w-full h-51 bg-linear-to-br from-primary-50 to-accent-100 opacity-60" />
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-white/70 rounded-full transition-all z-20"
+            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-white/70 rounded-full transition-all z-20 dark:text-stone-600"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -281,8 +418,8 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                 Verify your email
               </h2>
               <p className="text-stone-500 dark:text-stone-100 text-sm font-medium">
-                We sent an 8-digit code to{" "}
-                <strong className="text-stone-700 dark:text-stone-50 break-all">
+                We sent an 8-digit code to
+                <strong className="block text-stone-700 dark:text-stone-50 break-all mt-0.5">
                   {form.email}
                 </strong>
               </p>
@@ -434,32 +571,16 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                       error={fieldErrors.studentNumber}
                       required
                     />
-                    <div className="w-full">
-                      <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1.5 font-heading">
-                        Section
-                      </label>
-                      <div className="relative">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
-                          <BookOpen className="w-4 h-4" />
-                        </div>
-                        <select
-                          value={form.section}
-                          onChange={set("section")}
-                          required
-                          className="w-full h-10 rounded-xl border-2 border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 pl-10 pr-9 py-2 text-stone-900 dark:text-stone-100 appearance-none focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 dark:focus:ring-primary-400/10 transition-all"
-                        >
-                          <option value="" disabled>
-                            Select section
-                          </option>
-                          <option value="STEM-A">STEM-A</option>
-                          <option value="STEM-B">STEM-B</option>
-                          <option value="STEM-C">STEM-C</option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
-                          <ChevronDown className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </div>
+                    <SectionDropdown
+                      value={form.section}
+                      onChange={(name) => {
+                        setForm((prev) => ({ ...prev, section: name }));
+                        if (error) setError("");
+                      }}
+                      sections={availableSections}
+                      loading={sectionsLoading}
+                      disabled={false}
+                    />
                   </div>
                 </>
               )}

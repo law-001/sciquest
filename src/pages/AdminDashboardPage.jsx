@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Users,
   BookOpen,
@@ -25,6 +25,8 @@ import {
   Award,
   Eraser,
   RotateCcw,
+  FolderOpen,
+  Plus,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -40,6 +42,11 @@ import {
   wipeUserData,
   inviteTeacher,
 } from "../lib/users";
+import {
+  fetchAllSections,
+  createSection,
+  deleteSection,
+} from "../lib/sections";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
@@ -394,18 +401,18 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <Card key={i} className="stat-card p-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center gap-4">
               <div
                 className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center",
+                  "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
                   stat.bgLight,
                   stat.bgDark,
                 )}
               >
                 {stat.icon}
               </div>
-              <div>
-                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-stone-500 dark:text-stone-400 whitespace-nowrap">
                   {stat.label}
                 </p>
                 <p className="text-2xl font-black text-stone-900 dark:text-white">
@@ -1731,6 +1738,341 @@ function SettingsTab() {
   );
 }
 
+// ─── Sections Tab ─────────────────────────────────────────────────────────────
+
+function shortDate(ts) {
+  if (!ts) return "—";
+  return new Date(ts).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function CreateSectionModal({ onCreated, onClose }) {
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCreate = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    setError("");
+    try {
+      const section = await createSection(trimmed, "admin");
+      onCreated(section);
+      onClose();
+    } catch (err) {
+      setError(err.message ?? "Failed to create section");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+          <FolderOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-black text-stone-900 dark:text-white">
+            Create Section
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Add a new platform-wide section
+          </p>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
+          Section Name
+        </label>
+        <input
+          autoFocus
+          type="text"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (error) setError("");
+          }}
+          onKeyDown={(e) => e.key === "Enter" && name.trim() && handleCreate()}
+          placeholder="e.g. STEM-A, BIO-1, CHEM-2"
+          className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm"
+        />
+      </div>
+
+      {error && (
+        <p className="text-sm text-red-500 font-medium mb-4">{error}</p>
+      )}
+
+      <div className="flex gap-3">
+        <Button variant="outline" className="flex-1" onClick={onClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          className="flex-1"
+          leftIcon={<Plus className="w-4 h-4" />}
+          onClick={handleCreate}
+          isLoading={loading}
+          disabled={!name.trim()}
+        >
+          Create
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+function DeleteSectionModal({ section, onConfirm, onClose, isLoading, error }) {
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+          <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-black text-stone-900 dark:text-white">
+            Delete Section
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            This removes the section platform-wide
+          </p>
+        </div>
+      </div>
+      <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+        Permanently delete{" "}
+        <strong className="text-stone-900 dark:text-white">{section.name}</strong>?
+        Students currently assigned to this section will not be affected, but it
+        will no longer appear in section lists or the signup dropdown.
+      </p>
+      <div className="flex gap-3">
+        <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
+          Cancel
+        </Button>
+        <button
+          onClick={() => onConfirm(section)}
+          disabled={isLoading}
+          className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold text-sm transition-colors active:scale-95"
+        >
+          {isLoading ? "Deleting…" : "Delete Section"}
+        </button>
+      </div>
+      {error && (
+        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
+    </Modal>
+  );
+}
+
+function SectionsTab() {
+  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [sectionToDelete, setSectionToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const containerRef = useRef(null);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(null);
+    fetchAllSections()
+      .then((rows) => {
+        setSections(rows);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoadError(err.message ?? "Failed to load sections");
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      gsap.from(".anim-card", {
+        y: 22,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 0.15,
+      });
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
+
+  const handleConfirmDelete = async (section) => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteSection(section.id);
+      setSections((prev) => prev.filter((s) => s.id !== section.id));
+      setSectionToDelete(null);
+    } catch (err) {
+      setDeleteError(err.message ?? "Failed to delete section");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6" ref={containerRef}>
+      <div className="anim-heading flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+            Sections
+          </h1>
+          <p className="text-stone-500 dark:text-stone-400 font-medium">
+            Manage platform-wide science sections
+          </p>
+        </div>
+        <Button
+          leftIcon={<Plus className="w-4 h-4" />}
+          onClick={() => setShowCreate(true)}
+        >
+          Create Section
+        </Button>
+      </div>
+
+      <Card className="anim-card overflow-hidden">
+        <div className="p-6 border-b border-orange-100 dark:border-stone-700">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+            All Sections
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            {loading ? "Loading…" : `${sections.length} section${sections.length !== 1 ? "s" : ""}`}
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Created By
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Students
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+                    Loading sections…
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400">
+                    {loadError}
+                  </td>
+                </tr>
+              ) : sections.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center">
+                    <FolderOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
+                      No sections yet. Create one to get started.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                sections.map((section) => (
+                  <tr
+                    key={section.id}
+                    className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                          <FolderOpen className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        </div>
+                        <span className="text-sm font-bold text-stone-900 dark:text-white">
+                          {section.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge
+                        variant={section.createdByRole === "admin" ? "primary" : "secondary"}
+                      >
+                        {section.createdByRole === "admin" ? "Admin" : "Teacher"}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">
+                      {section.students}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {shortDate(section.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => {
+                          setSectionToDelete(section);
+                          setDeleteError(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {showCreate && (
+        <CreateSectionModal
+          onCreated={(section) => setSections((prev) => [...prev, section].sort((a, b) => a.name.localeCompare(b.name)))}
+          onClose={() => setShowCreate(false)}
+        />
+      )}
+
+      {sectionToDelete && (
+        <DeleteSectionModal
+          section={sectionToDelete}
+          onConfirm={handleConfirmDelete}
+          onClose={() => {
+            if (!deleting) {
+              setSectionToDelete(null);
+              setDeleteError(null);
+            }
+          }}
+          isLoading={deleting}
+          error={deleteError}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── Sidebar slot map ─────────────────────────────────────────────────────────
 
 const SIDEBAR_ITEMS = [
@@ -1738,6 +2080,7 @@ const SIDEBAR_ITEMS = [
   { id: "users", label: "Users", Icon: Users },
   { id: "reset-data", label: "Reset Data", Icon: Eraser },
   { id: "teachers", label: "Teachers", Icon: GraduationCap },
+  { id: "sections", label: "Sections", Icon: FolderOpen },
   { id: "lessons", label: "Lessons", Icon: BookOpen },
   { id: "quizzes", label: "Quizzes", Icon: HelpCircle },
   { id: "settings", label: "Settings", Icon: Settings },
@@ -1750,6 +2093,7 @@ const ADMIN_TAB_MAP = {
   users: UsersTab,
   "reset-data": ResetDataTab,
   teachers: TeachersTab,
+  sections: SectionsTab,
   lessons: LessonsTab,
   quizzes: QuizzesTab,
   settings: SettingsTab,

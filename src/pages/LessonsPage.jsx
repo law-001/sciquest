@@ -40,6 +40,7 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
+import { getPublishedWeekIds, isWeekPublished } from "../lib/publishedWeeks";
 import { weekMaxXp } from "../lib/week-xp";
 import { useAuth } from "../context/AuthContext";
 import { xpToNextLevel, levelFromXp } from "../lib/xp-config";
@@ -102,6 +103,7 @@ export function LessonsPage({
     profile?.first_name || user?.user_metadata?.first_name || "";
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
+  const [publishedWeekIds] = useState(() => getPublishedWeekIds());
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -410,6 +412,7 @@ export function LessonsPage({
         >
           {displayedWeeks.map((week, index) => {
             const IconComponent = ICON_MAP[week.icon] || Globe2;
+            const effectiveIsLocked = !isWeekPublished(week.id, publishedWeekIds);
 
             // Count how many lessons in this week are completed
             const completedCount = week.lessons.filter((l) =>
@@ -434,7 +437,7 @@ export function LessonsPage({
                 <Card
                   className={cn(
                     "flex flex-col h-full transition-all duration-300",
-                    week.isLocked
+                    effectiveIsLocked
                       ? "opacity-75 grayscale-[0.5]"
                       : "hover:-translate-y-1 hover:shadow-card-hover",
                   )}
@@ -453,7 +456,7 @@ export function LessonsPage({
                         />
                       </div>
                       <Badge
-                        variant={week.isLocked ? "outline" : "accent"}
+                        variant={effectiveIsLocked ? "outline" : "accent"}
                         icon={<Star className="w-3 h-3 fill-current" />}
                         title="The most XP you can earn here — finish every lesson and ace its quiz!"
                       >
@@ -499,7 +502,7 @@ export function LessonsPage({
                     </div>
 
                     {/* Progress bar (shown if started) */}
-                    {weekProgress > 0 && !week.isLocked && (
+                    {weekProgress > 0 && !effectiveIsLocked && (
                       <div className="mb-5">
                         <ProgressBar
                           progress={weekProgress}
@@ -511,7 +514,7 @@ export function LessonsPage({
 
                     {/* CTA Button */}
                     <div className="mt-auto pt-4 border-t border-orange-100 dark:border-stone-700">
-                      {week.isLocked ? (
+                      {effectiveIsLocked ? (
                         <Button
                           variant="ghost"
                           className="w-full"
