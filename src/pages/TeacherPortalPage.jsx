@@ -3556,7 +3556,10 @@ export function TeacherPortalPage({ onBack }) {
   const allSections = data?.sections ?? [];
   const sections =
     mySectionNames !== null
-      ? allSections.filter((s) => mySectionNames.includes(s.name))
+      ? mySectionNames.map(
+          (name) =>
+            allSections.find((s) => s.name === name) ?? { id: name, name, students: 0, avgScore: 0 },
+        )
       : allSections;
 
   // Scope all slot data to only the teacher's assigned sections so "All"
