@@ -243,3 +243,16 @@ export async function removeStudentFromSection(studentId) {
     .eq('id', studentId)
   if (error) throw error
 }
+
+// Fetches completed game_progress rows for a list of student IDs.
+// Used by the teacher's Progress view to show per-student game activity.
+export async function fetchGameProgressForStudents(studentIds) {
+  if (!studentIds.length) return []
+  const { data, error } = await supabase
+    .from('game_progress')
+    .select('student_id, game_id, challenge_id, best_score, score_unit, attempts, metadata')
+    .in('student_id', studentIds)
+    .eq('completed', true)
+  if (error) throw error
+  return data ?? []
+}
