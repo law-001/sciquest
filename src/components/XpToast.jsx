@@ -1,26 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Star, Sparkles, Trophy, ClipboardCheck } from "lucide-react";
 
-// XpToast — renders the notification queue as a bottom-right stack.
-//
-// Props:
-//   notifications  array of { id, kind: 'xp' | 'level-up' | 'achievement',
-//                              amount?, level?, label? }
-//   onDismiss(id)  called when a toast auto-dismisses
-//
-// The parent owns the queue and appends new items to the end. The
-// stack is anchored at the bottom, so the newest toast sits lowest and
-// earlier ones are pushed upward as more arrive. Each toast runs its
-// own enter→exit transition and auto-dismisses independently.
 const DISMISS_MS = 3200;
-// Exit transition is 700ms; unmount a hair after so it plays out.
 const EXIT_MS = 720;
 
 function ToastItem({ notification, onDismiss }) {
-  // `visible` runs an enter→exit transition without unmounting mid-fade.
   const [visible, setVisible] = useState(false);
-  // Hold the latest onDismiss without it being an effect dep — the
-  // parent recreates it each render and we must not reset the timers.
   const onDismissRef = useRef(onDismiss);
   useEffect(() => {
     onDismissRef.current = onDismiss;
@@ -43,8 +28,19 @@ function ToastItem({ notification, onDismiss }) {
   const isLevelUp = notification.kind === "level-up";
   const isAchievement = notification.kind === "achievement";
   const isQuizGraded = notification.kind === "quiz-graded";
-  // The hidden "BLACKED" achievement gets its own all-black skin.
   const isHidden = isAchievement && notification.hidden;
+
+  const borderClass = isHidden
+    ? "border-white/25"
+    : isLevelUp
+      ? "border-secondary-400/50 dark:border-secondary-400/50"
+      : isQuizGraded
+        ? "border-secondary-400/50 dark:border-secondary-400/50"
+        : "border-amber-400/50 dark:border-amber-400/40";
+
+  const bgClass = isHidden
+    ? "bg-black"
+    : "bg-white dark:bg-stone-900/95";
 
   return (
     <div
@@ -55,15 +51,7 @@ function ToastItem({ notification, onDismiss }) {
       }`}
     >
       <div
-        className={`flex items-center gap-3 backdrop-blur-xl rounded-2xl shadow-2xl px-4 py-3 max-w-sm border ${
-          isHidden
-            ? "bg-black border-white/25"
-            : isLevelUp
-              ? "bg-stone-900/95 border-secondary-400/50"
-              : isQuizGraded
-                ? "bg-stone-900/95 border-secondary-400/50"
-                : "bg-stone-900/95 border-amber-400/40"
-        }`}
+        className={`flex items-center gap-3 backdrop-blur-xl rounded-2xl shadow-2xl px-4 py-3 max-w-sm border ${bgClass} ${borderClass}`}
       >
         <div className="relative shrink-0">
           <div
@@ -97,16 +85,17 @@ function ToastItem({ notification, onDismiss }) {
             }`}
           />
         </div>
+
         <div className="min-w-0">
           {isLevelUp && (
             <>
-              <p className="text-[10px] font-bold tracking-widest uppercase text-secondary-300 flex items-center gap-1">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-secondary-500 dark:text-secondary-300 flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> Level Up
               </p>
-              <p className="text-sm font-bold text-white leading-tight">
+              <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight">
                 You reached Level {notification.level}!
               </p>
-              <p className="text-xs text-stone-300 font-medium">
+              <p className="text-xs text-stone-500 dark:text-stone-300 font-medium">
                 Keep going — more XP unlocks the next milestone.
               </p>
             </>
@@ -115,18 +104,18 @@ function ToastItem({ notification, onDismiss }) {
             <>
               <p
                 className={`text-[10px] font-bold tracking-widest uppercase ${
-                  isHidden ? "text-white" : "text-amber-400"
+                  isHidden ? "text-white" : "text-amber-500 dark:text-amber-400"
                 }`}
               >
                 {isHidden ? "Hidden Achievement Unlocked" : "Achievement Unlocked"}
               </p>
-              <p className="text-sm font-bold text-white leading-tight">
+              <p className={`text-sm font-bold leading-tight ${isHidden ? "text-white" : "text-stone-900 dark:text-white"}`}>
                 {notification.label}
               </p>
               {notification.amount > 0 && (
                 <p
                   className={`text-xs font-bold ${
-                    isHidden ? "text-stone-300" : "text-amber-300"
+                    isHidden ? "text-stone-300" : "text-amber-500 dark:text-amber-300"
                   }`}
                 >
                   +{notification.amount} XP
@@ -136,14 +125,14 @@ function ToastItem({ notification, onDismiss }) {
           )}
           {isQuizGraded && (
             <>
-              <p className="text-[10px] font-bold tracking-widest uppercase text-secondary-300">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-secondary-500 dark:text-secondary-300">
                 Quiz Graded
               </p>
-              <p className="text-sm font-bold text-white leading-tight">
+              <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight">
                 {notification.label}
               </p>
               {notification.detail && (
-                <p className="text-xs text-secondary-300 font-medium">
+                <p className="text-xs text-secondary-500 dark:text-secondary-300 font-medium">
                   {notification.detail}
                 </p>
               )}
@@ -151,14 +140,14 @@ function ToastItem({ notification, onDismiss }) {
           )}
           {!isLevelUp && !isAchievement && !isQuizGraded && (
             <>
-              <p className="text-[10px] font-bold tracking-widest uppercase text-amber-400">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-amber-500 dark:text-amber-400">
                 XP Earned
               </p>
-              <p className="text-sm font-bold text-white leading-tight">
+              <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight">
                 +{notification.amount} XP
               </p>
               {notification.detail && (
-                <p className="text-xs text-stone-300 font-medium">
+                <p className="text-xs text-stone-500 dark:text-stone-300 font-medium">
                   {notification.detail}
                 </p>
               )}
