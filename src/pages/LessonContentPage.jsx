@@ -11,6 +11,7 @@ export function LessonContentPage({
   onGoToQuiz,
   onLessonComplete,
   onLessonSelect,
+  quizLocked = false,
 }) {
   const week =
     WEEKS_DATA.find((w) => w.id === weekId) ??
@@ -29,6 +30,7 @@ export function LessonContentPage({
       onComplete={onGoToQuiz}
       onLessonComplete={onLessonComplete}
       onLessonSelect={onLessonSelect}
+      quizLocked={quizLocked}
     />
   );
 }

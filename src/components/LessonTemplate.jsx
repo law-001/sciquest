@@ -51,6 +51,7 @@ export function LessonTemplate({
   onComplete,
   onLessonComplete,
   onLessonSelect,
+  quizLocked = false,
 }) {
   const [activeSection, setActiveSection] = useState(0);
   const [prevLessonId, setPrevLessonId] = useState(lesson?.id);
@@ -461,14 +462,21 @@ export function LessonTemplate({
                   unlock the next lesson.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button
-                    size="lg"
-                    onClick={onComplete}
-                    rightIcon={<CheckCircle2 className="w-5 h-5" />}
-                    className="px-12"
-                  >
-                    Complete Lesson & Start Quiz
-                  </Button>
+                  {quizLocked ? (
+                    <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-400 dark:text-stone-500 font-bold cursor-not-allowed select-none">
+                      <Lock className="w-5 h-5" />
+                      Quiz Locked by Teacher
+                    </div>
+                  ) : (
+                    <Button
+                      size="lg"
+                      onClick={onComplete}
+                      rightIcon={<CheckCircle2 className="w-5 h-5" />}
+                      className="px-12"
+                    >
+                      Complete Lesson & Start Quiz
+                    </Button>
+                  )}
                   <Button size="lg" variant="outline" onClick={onBack}>
                     Back to Lessons
                   </Button>

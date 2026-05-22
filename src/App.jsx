@@ -24,9 +24,11 @@ import {
 } from "./lib/progress";
 import { levelFromXp } from "./lib/xp-config";
 import { addScreenSeconds } from "./lib/screentime";
+import { getPublishedQuizWeekIds, isWeekPublished } from "./lib/publishedWeeks";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
 import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { XpToast } from "./components/XpToast";
+import { NotificationBubble } from "./components/NotificationBubble";
 
 function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
@@ -62,6 +64,8 @@ function AppContent() {
   const [quizAttempts, setQuizAttempts] = useState([]);
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [notifHistory, setNotifHistory] = useState([]);
+  const [unseenCount, setUnseenCount] = useState(0);
 
   const isLoggedIn = !!user;
   const isStudent = profile?.role === "student";
@@ -170,11 +174,17 @@ function AppContent() {
   }, []);
 
   const pushNotification = (n) => {
-    setNotifications((prev) => [...prev, { id: Date.now() + Math.random(), ...n }]);
+    const entry = { id: Date.now() + Math.random(), ...n };
+    setNotifications((prev) => [...prev, entry]);
+    setNotifHistory((prev) => [...prev, entry]);
+    setUnseenCount((prev) => prev + 1);
   };
   const dismissNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
+  const handleNotifBubbleOpen = () => setUnseenCount(0);
+  const handleClearAllNotifs = () => { setNotifHistory([]); setUnseenCount(0); };
+  const handleClearOneNotif = (id) => setNotifHistory((prev) => prev.filter((n) => n.id !== id));
 
   // BLACKED is the hidden achievement: earned by watching the About
   // page portraits cross-fade light → dark. Same explicit-award path as
@@ -256,7 +266,13 @@ function AppContent() {
     handleNavigate("lesson-content");
   };
 
+  const isQuizLockedForWeek = (weekId) => {
+    if (!weekId) return false;
+    return !isWeekPublished(weekId, getPublishedQuizWeekIds());
+  };
+
   const handleGoToQuiz = () => {
+    if (isQuizLockedForWeek(activeWeekId)) return;
     handleNavigate("quiz");
   };
 
@@ -493,6 +509,7 @@ function AppContent() {
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}
             onLessonComplete={handleLessonComplete}
+            quizLocked={isQuizLockedForWeek(activeWeekId)}
             onLessonSelect={(lessonId) => {
               setActiveLessonId(lessonId);
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -603,6 +620,16 @@ function AppContent() {
       />
 
       <XpToast notifications={notifications} onDismiss={dismissNotification} />
+      {isLoggedIn && isStudent && !isPortalView && (
+        <NotificationBubble
+          notifications={notifHistory}
+          unseenCount={unseenCount}
+          onNavigate={handleNavigate}
+          onOpen={handleNotifBubbleOpen}
+          onClearAll={handleClearAllNotifs}
+          onClearOne={handleClearOneNotif}
+        />
+      )}
     </div>
   );
 }

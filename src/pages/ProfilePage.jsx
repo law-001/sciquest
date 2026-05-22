@@ -24,6 +24,9 @@ import {
   Microscope,
   FlaskConical,
   Leaf,
+  ChevronDown,
+  ChevronUp,
+  ClipboardList,
 } from "lucide-react";
 import { isHiddenAchievement } from "../lib/achievements";
 import { levelFromXp, xpToNextLevel } from "../lib/xp-config";
@@ -443,6 +446,7 @@ export function ProfilePage({
   const [activePeriod, setActivePeriod] = useState("This Week");
   const [editOpen, setEditOpen] = useState(false);
   const [hoveredBadge, setHoveredBadge] = useState(null);
+  const [myQuizzesOpen, setMyQuizzesOpen] = useState(false);
 
   const [board, setBoard] = useState([]);
   const [boardLoading, setBoardLoading] = useState(true);
@@ -453,6 +457,7 @@ export function ProfilePage({
   const [statsRef, statsTriggered] = useScrollTrigger(0.2);
   const [subjectRef, subjectTriggered] = useScrollTrigger(0.2);
   const [leaderboardRef, leaderboardTriggered] = useScrollTrigger(0.2);
+  const [myQuizzesRef, myQuizzesTriggered] = useScrollTrigger(0.2);
   const [activityRef, activityTriggered] = useScrollTrigger(0.2);
   const [achievementsRef, achievementsTriggered] = useScrollTrigger(0.1);
 
@@ -566,6 +571,26 @@ export function ProfilePage({
       .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
       .slice(0, 6);
   }, [quizAttempts, completedRows]);
+
+  // All quiz attempts newest-first, enriched with lesson info and status.
+  const quizzesDone = useMemo(() => {
+    return quizAttempts
+      .slice()
+      .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())
+      .map((a) => {
+        const info = LESSON_INDEX.get(a.lesson_id);
+        const pct = a.max_score > 0 ? Math.round((a.score / a.max_score) * 100) : null;
+        return {
+          lessonId: a.lesson_id,
+          title: info?.title ?? a.lesson_id,
+          category: info?.category ?? "Quiz",
+          score: pct,
+          pending: (a.pending_grade_count ?? 0) > 0,
+          xp: a.xp_awarded ?? 0,
+          ts: a.submitted_at,
+        };
+      });
+  }, [quizAttempts]);
 
   // Category the student has touched most — "Current Focus".
   const currentFocus = useMemo(() => {
@@ -1198,6 +1223,86 @@ export function ProfilePage({
             </div>
           </section>
         </div>
+
+        {/* MY QUIZZES */}
+        <section ref={myQuizzesRef}>
+          <div
+            className={`rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-[opacity,transform] duration-700 ease-out ${
+              myQuizzesTriggered
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+          >
+            {/* Header row — always visible */}
+            <div className="flex items-center justify-between p-6 pb-4">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-primary-500" aria-hidden="true" />
+                <h3 className="text-lg font-black text-stone-900 dark:text-white font-heading">
+                  My Quizzes
+                </h3>
+                <span className="text-xs font-bold text-stone-400 dark:text-stone-500 tabular-nums ml-1">
+                  ({quizzesDone.length})
+                </span>
+              </div>
+              <button
+                onClick={() => setMyQuizzesOpen((p) => !p)}
+                className="flex items-center gap-1.5 text-xs font-bold text-primary-500 hover:text-primary-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg px-2 py-1"
+                aria-expanded={myQuizzesOpen}
+              >
+                {myQuizzesOpen ? "Show Less" : "Show All"}
+                {myQuizzesOpen ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+
+            {/* Quiz rows */}
+            {quizzesDone.length === 0 ? (
+              <p className="px-6 pb-6 text-sm text-stone-400 dark:text-stone-500 font-medium">
+                No quizzes taken yet.
+              </p>
+            ) : (
+              <div className="px-6 pb-6 space-y-3">
+                {(myQuizzesOpen ? quizzesDone : quizzesDone.slice(0, 2)).map((q, i) => (
+                  <div
+                    key={`${q.lessonId}-${q.ts}-${i}`}
+                    className="flex items-center gap-4 p-4 rounded-xl bg-stone-100 dark:bg-stone-800/60"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                      <Target className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-stone-700 dark:text-stone-200 truncate">
+                        {q.category}: {q.title}
+                      </p>
+                      <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+                        {relTime(q.ts)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {q.score !== null && (
+                        <span className="text-sm font-black text-stone-700 dark:text-stone-200 font-heading tabular-nums">
+                          {q.score}%
+                        </span>
+                      )}
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide ${
+                          q.pending
+                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                            : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                        }`}
+                      >
+                        {q.pending ? "Pending" : "Graded"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* RECENT ACTIVITY */}
         <section ref={activityRef}>
