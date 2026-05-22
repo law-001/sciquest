@@ -6,8 +6,8 @@ function notifMeta(n) {
     return {
       title: `Level Up — You reached Level ${n.level}!`,
       sub: "Keep going — more XP unlocks the next milestone.",
-      icon: <Sparkles className="w-4 h-4 text-secondary-400" />,
-      iconBg: "bg-secondary-400/15",
+      icon: <Sparkles className="w-4 h-4 text-secondary-500 dark:text-secondary-400" />,
+      iconBg: "bg-secondary-500/10 dark:bg-secondary-400/15",
       navigateTo: "profile",
     };
   }
@@ -15,8 +15,8 @@ function notifMeta(n) {
     return {
       title: n.hidden ? "Hidden Achievement Unlocked" : `Achievement: ${n.label}`,
       sub: n.amount > 0 ? `+${n.amount} XP` : null,
-      icon: <Trophy className="w-4 h-4 text-amber-400" />,
-      iconBg: "bg-amber-400/15",
+      icon: <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400" />,
+      iconBg: "bg-amber-500/10 dark:bg-amber-400/15",
       navigateTo: "profile",
     };
   }
@@ -24,8 +24,8 @@ function notifMeta(n) {
     return {
       title: "Quiz Graded",
       sub: n.detail ? `${n.label} — ${n.detail}` : n.label,
-      icon: <ClipboardCheck className="w-4 h-4 text-secondary-400" />,
-      iconBg: "bg-secondary-400/15",
+      icon: <ClipboardCheck className="w-4 h-4 text-secondary-500 dark:text-secondary-400" />,
+      iconBg: "bg-secondary-500/10 dark:bg-secondary-400/15",
       navigateTo: "profile",
     };
   }
@@ -34,7 +34,7 @@ function notifMeta(n) {
     title: `+${n.amount} XP Earned`,
     sub: n.detail ?? null,
     icon: <Star className="w-4 h-4 text-primary-500 fill-primary-500" />,
-    iconBg: "bg-primary-500/15",
+    iconBg: "bg-primary-500/10 dark:bg-primary-500/15",
     navigateTo: "lessons",
   };
 }
@@ -62,7 +62,7 @@ export function NotificationBubble({ notifications = [], unseenCount = 0, onNavi
       <button
         onClick={open ? handleClose : handleOpen}
         aria-label={`Notifications${unseenCount > 0 ? `, ${unseenCount} unread` : ""}`}
-        className="fixed bottom-6 left-6 z-40 w-14 h-14 rounded-full bg-stone-900 dark:bg-stone-800 text-white shadow-2xl flex items-center justify-center hover:bg-stone-700 dark:hover:bg-stone-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 active:scale-95"
+        className="fixed bottom-6 left-6 z-40 w-14 h-14 rounded-full bg-white dark:bg-stone-800 text-stone-700 dark:text-white border border-stone-200 dark:border-stone-700 shadow-2xl flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 active:scale-95"
       >
         <Bell className="w-6 h-6" />
         {unseenCount > 0 && (
@@ -141,12 +141,12 @@ export function NotificationBubble({ notifications = [], unseenCount = 0, onNavi
                             {title}
                           </p>
                           {sub && (
-                            <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                               {sub}
                             </p>
                           )}
                         </div>
-                        <ChevronRight className="w-4 h-4 text-stone-300 dark:text-stone-600 shrink-0 mt-1 group-hover:text-stone-400 dark:group-hover:text-stone-400 transition-colors" />
+                        <ChevronRight className="w-4 h-4 text-stone-300 dark:text-stone-600 shrink-0 mt-1 group-hover:text-stone-500 dark:group-hover:text-stone-400 transition-colors" />
                       </button>
                     );
                   })}
