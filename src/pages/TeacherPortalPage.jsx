@@ -3052,7 +3052,7 @@ function GradeModal({ submission, onClose, onSaved }) {
             {hasValue && (
               <div className="flex items-center justify-between gap-4 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-100 dark:border-secondary-800/30 px-4 py-2.5 sm:py-3">
                 <span className="text-sm font-bold text-stone-600 dark:text-stone-300">
-                  Score {score}/{maxScore}
+                  Score {Math.round(pct)}/100
                 </span>
                 <span className="text-sm font-black text-secondary-600 dark:text-secondary-400">
                   +{xp} XP

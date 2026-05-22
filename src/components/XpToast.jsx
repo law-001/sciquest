@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Star, Sparkles, Trophy } from "lucide-react";
+import { Star, Sparkles, Trophy, ClipboardCheck } from "lucide-react";
 
 // XpToast — renders the notification queue as a bottom-right stack.
 //
@@ -42,6 +42,7 @@ function ToastItem({ notification, onDismiss }) {
 
   const isLevelUp = notification.kind === "level-up";
   const isAchievement = notification.kind === "achievement";
+  const isQuizGraded = notification.kind === "quiz-graded";
   // The hidden "BLACKED" achievement gets its own all-black skin.
   const isHidden = isAchievement && notification.hidden;
 
@@ -59,7 +60,9 @@ function ToastItem({ notification, onDismiss }) {
             ? "bg-black border-white/25"
             : isLevelUp
               ? "bg-stone-900/95 border-secondary-400/50"
-              : "bg-stone-900/95 border-amber-400/40"
+              : isQuizGraded
+                ? "bg-stone-900/95 border-secondary-400/50"
+                : "bg-stone-900/95 border-amber-400/40"
         }`}
       >
         <div className="relative shrink-0">
@@ -69,11 +72,15 @@ function ToastItem({ notification, onDismiss }) {
                 ? "from-stone-800 to-black ring-1 ring-white/20"
                 : isLevelUp
                   ? "from-secondary-400 to-secondary-600"
-                  : "from-amber-400 to-orange-500"
+                  : isQuizGraded
+                    ? "from-secondary-400 to-secondary-600"
+                    : "from-amber-400 to-orange-500"
             }`}
           >
             {isLevelUp || isAchievement ? (
               <Trophy className="w-5 h-5 text-white" />
+            ) : isQuizGraded ? (
+              <ClipboardCheck className="w-5 h-5 text-white" />
             ) : (
               <Star className="w-5 h-5 text-white fill-white" />
             )}
@@ -84,7 +91,9 @@ function ToastItem({ notification, onDismiss }) {
                 ? "border-white/30"
                 : isLevelUp
                   ? "border-secondary-400/60"
-                  : "border-amber-400/50"
+                  : isQuizGraded
+                    ? "border-secondary-400/60"
+                    : "border-amber-400/50"
             }`}
           />
         </div>
@@ -125,7 +134,22 @@ function ToastItem({ notification, onDismiss }) {
               )}
             </>
           )}
-          {!isLevelUp && !isAchievement && (
+          {isQuizGraded && (
+            <>
+              <p className="text-[10px] font-bold tracking-widest uppercase text-secondary-300">
+                Quiz Graded
+              </p>
+              <p className="text-sm font-bold text-white leading-tight">
+                {notification.label}
+              </p>
+              {notification.detail && (
+                <p className="text-xs text-secondary-300 font-medium">
+                  {notification.detail}
+                </p>
+              )}
+            </>
+          )}
+          {!isLevelUp && !isAchievement && !isQuizGraded && (
             <>
               <p className="text-[10px] font-bold tracking-widest uppercase text-amber-400">
                 XP Earned

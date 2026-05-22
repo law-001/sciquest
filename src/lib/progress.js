@@ -12,7 +12,7 @@ export async function fetchProgress(studentId) {
       .eq('completed', true),
     supabase
       .from('quiz_attempts')
-      .select('lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
+      .select('id, lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
       .eq('student_id', studentId)
       .order('submitted_at', { ascending: false }),
   ])
@@ -69,7 +69,7 @@ export async function saveQuizAttempt({
       pending_grade_count: pendingGradeCount,
       answers,
     })
-    .select('lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
+    .select('id, lesson_id, week_id, score, max_score, xp_awarded, pending_grade_count, submitted_at')
     .single()
   if (error) throw error
   return data

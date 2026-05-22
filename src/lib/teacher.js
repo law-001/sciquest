@@ -213,16 +213,19 @@ export function previewGrade(percent, maxScore) {
 // awards XP (which flows straight into the leaderboard + the student's
 // profile total, both of which sum quiz_attempts.xp_awarded), and clears
 // pending_grade_count so the submission no longer shows as "pending".
+// Score is normalized to out of 100 so the student's profile always displays
+// the exact percentage entered — avoids rounding to 100% on small max_scores.
+// XP is still computed from the original unit scale for consistency.
 // Gated by the staff_grade_attempts RLS policy.
 export async function gradeQuizAttempt({ attemptId, percent, maxScore }) {
   if (!attemptId) throw new Error('Missing attempt id')
-  const { score, xp } = previewGrade(percent, maxScore)
+  const { pct, xp } = previewGrade(percent, maxScore)
   const { error } = await supabase
     .from('quiz_attempts')
-    .update({ score, xp_awarded: xp, pending_grade_count: 0 })
+    .update({ score: Math.round(pct), max_score: 100, xp_awarded: xp, pending_grade_count: 0 })
     .eq('id', attemptId)
   if (error) throw error
-  return { score, xp }
+  return { score: Math.round(pct), xp }
 }
 
 // Returns a sorted, deduplicated list of every section name currently assigned

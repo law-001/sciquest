@@ -30,6 +30,17 @@ import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, tot
 import { XpToast } from "./components/XpToast";
 import { NotificationBubble } from "./components/NotificationBubble";
 
+// localStorage helpers — track pending attempt ids per student so the
+// "Quiz Graded" notification can fire even after a logout/login cycle.
+const pendingKey = (uid) => `sq-pending-${uid}`;
+function loadPendingIds(uid) {
+  try { return new Set(JSON.parse(localStorage.getItem(pendingKey(uid))) ?? []); }
+  catch { return new Set(); }
+}
+function savePendingIds(uid, ids) {
+  localStorage.setItem(pendingKey(uid), JSON.stringify([...ids]));
+}
+
 function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
   // Detect an invite link before Supabase clears the URL params. Must be a ref
@@ -66,6 +77,13 @@ function AppContent() {
   const [notifications, setNotifications] = useState([]);
   const [notifHistory, setNotifHistory] = useState([]);
   const [unseenCount, setUnseenCount] = useState(0);
+
+  // Stable refs so interval callbacks always see the latest values without
+  // being listed as effect deps (which would reset the interval constantly).
+  const quizAttemptsRef = useRef(quizAttempts);
+  // eslint-disable-next-line react-hooks/refs
+  quizAttemptsRef.current = quizAttempts;
+  const pushNotificationRef = useRef(null);
 
   const isLoggedIn = !!user;
   const isStudent = profile?.role === "student";
@@ -105,6 +123,31 @@ function AppContent() {
         // Anything completed is also "reached" — keeps the lesson tab nav consistent.
         setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
 
+        // Fire "Quiz Graded" for any attempt that was pending when the student
+        // last logged out and has since been graded by a teacher.
+        const pendingIds = loadPendingIds(user.id);
+        if (pendingIds.size > 0) {
+          const newlyGraded = attempts.filter(
+            (a) => a.id && pendingIds.has(a.id) && (a.pending_grade_count ?? 0) === 0,
+          );
+          if (newlyGraded.length > 0) {
+            for (const a of newlyGraded) pendingIds.delete(a.id);
+            savePendingIds(user.id, pendingIds);
+            for (const a of newlyGraded) {
+              const week = WEEKS_DATA.find((w) => w.lessons.some((l) => l.id === a.lesson_id));
+              const lesson = week?.lessons.find((l) => l.id === a.lesson_id);
+              const pct = a.max_score > 0 ? Math.round((a.score / a.max_score) * 100) : null;
+              pushNotificationRef.current?.({
+                kind: 'quiz-graded',
+                label: lesson?.title ?? a.lesson_id,
+                score: a.score,
+                maxScore: a.max_score,
+                detail: pct !== null ? `Score: ${pct}%` : null,
+              });
+            }
+          }
+        }
+
         // Auto-award everything the current progress now qualifies for.
         const ctx = {
           completedLessons: done,
@@ -123,6 +166,63 @@ function AppContent() {
         console.error("Failed to load student progress:", err);
       });
     return () => { cancelled = true };
+  }, [user?.id, isStudent]);
+
+  // Poll for essay grade updates every 30 s when the student has pending attempts.
+  // Compares the fresh DB rows against the in-memory snapshot; any attempt that
+  // flipped from pending_grade_count > 0 → 0 fires a "quiz graded" notification.
+  useEffect(() => {
+    if (!user?.id || !isStudent) return;
+
+    const POLL_MS = 30_000;
+
+    const poll = async () => {
+      const current = quizAttemptsRef.current;
+      const hasPending = current.some((a) => (a.pending_grade_count ?? 0) > 0);
+      if (!hasPending) return;
+
+      try {
+        const { attempts: fresh } = await fetchProgress(user.id);
+
+        const newlyGraded = fresh.filter((f) => {
+          if ((f.pending_grade_count ?? 0) !== 0) return false;
+          return current.some((old) => {
+            if ((old.pending_grade_count ?? 0) === 0) return false;
+            // Primary match: DB id (available once saveQuizAttempt patch lands).
+            if (old.id && f.id) return old.id === f.id;
+            // Fallback: lesson + 60s window for entries not yet patched.
+            return (
+              old.lesson_id === f.lesson_id &&
+              Math.abs(
+                new Date(old.submitted_at).getTime() -
+                  new Date(f.submitted_at).getTime(),
+              ) < 60_000
+            );
+          });
+        });
+
+        if (newlyGraded.length > 0) {
+          setQuizAttempts(fresh);
+          for (const a of newlyGraded) {
+            const week = WEEKS_DATA.find((w) => w.lessons.some((l) => l.id === a.lesson_id));
+            const lesson = week?.lessons.find((l) => l.id === a.lesson_id);
+            const pct = a.max_score > 0 ? Math.round((a.score / a.max_score) * 100) : null;
+            pushNotificationRef.current({
+              kind: 'quiz-graded',
+              label: lesson?.title ?? a.lesson_id,
+              score: a.score,
+              maxScore: a.max_score,
+              detail: pct !== null ? `Score: ${pct}%` : null,
+            });
+          }
+        }
+      } catch {
+        // Silent — grade polling is best-effort
+      }
+    };
+
+    const id = setInterval(poll, POLL_MS);
+    return () => clearInterval(id);
   }, [user?.id, isStudent]);
 
   // Curious Explorer is the one achievement earned by a UI action
@@ -179,6 +279,8 @@ function AppContent() {
     setNotifHistory((prev) => [...prev, entry]);
     setUnseenCount((prev) => prev + 1);
   };
+  // eslint-disable-next-line react-hooks/refs
+  pushNotificationRef.current = pushNotification;
   const dismissNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
@@ -364,6 +466,10 @@ function AppContent() {
     const hasScore =
       result && Number.isFinite(result.score) && Number.isFinite(result.maxScore);
 
+    // Capture the client-side timestamp once so we can identify this
+    // optimistic entry later and patch it with the real DB id + timestamp.
+    const clientTs = new Date().toISOString();
+
     // Optimistic local update — UI doesn't wait on the network.
     if (hasScore) {
       setQuizAttempts((prev) => [
@@ -374,7 +480,7 @@ function AppContent() {
           max_score: result.maxScore,
           xp_awarded: quizXp,
           pending_grade_count: result.pendingGradeCount ?? 0,
-          submitted_at: new Date().toISOString(),
+          submitted_at: clientTs,
         },
         ...prev,
       ]);
@@ -400,6 +506,24 @@ function AppContent() {
         xpAwarded: quizXp,
         pendingGradeCount: result.pendingGradeCount ?? 0,
         answers: result.answers ?? null,
+      }).then((saved) => {
+        if (saved?.id) {
+          // Patch the optimistic entry so the grade-poll can match it by id.
+          setQuizAttempts((prev) =>
+            prev.map((a) =>
+              a.lesson_id === lessonId && a.submitted_at === clientTs
+                ? { ...a, id: saved.id, submitted_at: saved.submitted_at }
+                : a,
+            ),
+          );
+          // Remember pending attempt ids so the notification fires even after
+          // the student logs out and back in before the teacher grades.
+          if ((result.pendingGradeCount ?? 0) > 0) {
+            const ids = loadPendingIds(studentId);
+            ids.add(saved.id);
+            savePendingIds(studentId, ids);
+          }
+        }
       }).catch((err) => {
         console.error("Failed to save quiz attempt:", err);
       });

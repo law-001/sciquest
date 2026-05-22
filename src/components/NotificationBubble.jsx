@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, Star, Trophy, Sparkles, X, ChevronRight } from "lucide-react";
+import { Bell, Star, Trophy, Sparkles, X, ChevronRight, ClipboardCheck } from "lucide-react";
 
 function notifMeta(n) {
   if (n.kind === "level-up") {
@@ -17,6 +17,15 @@ function notifMeta(n) {
       sub: n.amount > 0 ? `+${n.amount} XP` : null,
       icon: <Trophy className="w-4 h-4 text-amber-400" />,
       iconBg: "bg-amber-400/15",
+      navigateTo: "profile",
+    };
+  }
+  if (n.kind === "quiz-graded") {
+    return {
+      title: "Quiz Graded",
+      sub: n.detail ? `${n.label} — ${n.detail}` : n.label,
+      icon: <ClipboardCheck className="w-4 h-4 text-secondary-400" />,
+      iconBg: "bg-secondary-400/15",
       navigateTo: "profile",
     };
   }
@@ -108,7 +117,7 @@ export function NotificationBubble({ notifications = [], unseenCount = 0, onNavi
             </div>
 
             {/* List */}
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-stone-100 dark:[&::-webkit-scrollbar-track]:bg-stone-800 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-600 [&::-webkit-scrollbar-thumb]:rounded-full">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-2 text-stone-400 dark:text-stone-500">
                   <Bell className="w-8 h-8 opacity-30" />
