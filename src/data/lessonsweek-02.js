@@ -27,12 +27,23 @@ export const week02 = {
       badge: "Lesson 4",
       subtitle:
         "Understand what matter is, what it is made of, and how scientists classify different forms of matter.",
-      readTime: "~12 min read",
+      readTime: "~18 min read",
       xp: 50,
       heroImage: simulation,
       heroImageAlt: "Particle simulation of atoms and molecules",
 
-      sections: ["Overview", "Key Terms", "States at a Glance", "Applications"],
+      sections: [
+        "Overview",
+        "Key Terms",
+        "History of Matter",
+        "Classification of Matter",
+        "States at a Glance",
+        "Key Facts",
+        "Pure Substance vs Mixture",
+        "Why Matter Matters",
+        "Real-World Scenarios",
+        "Applications",
+      ],
 
       layout: [
         // ── Section 0: Intro ──
@@ -83,10 +94,62 @@ export const week02 = {
           },
         },
 
-        // ── Section 2: States at a Glance (imageCards) ──
+        // ── Section 2: History of Matter (timeline) ──
+        {
+          type: "timeline",
+          heading: "Timeline",
+          data: {
+            intro:
+              "Our understanding of matter has evolved over thousands of years. Here are the key milestones that shaped the modern particle model.",
+            steps: [
+              {
+                num: 1,
+                title: "Ancient Greece — The Four Elements (400 BCE)",
+                color: "primary",
+                description:
+                  "Greek philosophers like Empedocles proposed that all matter was made of four elements: earth, water, fire, and air. Aristotle added a fifth — 'aether' — for celestial bodies. This idea held for nearly 2,000 years.",
+                tip: "These weren't elements in the modern sense — they were categories of properties. Fire represented heat and dryness, water represented coldness and wetness.",
+              },
+              {
+                num: 2,
+                title: "Dalton's Atomic Theory (1803)",
+                color: "secondary",
+                description:
+                  "John Dalton proposed that all matter is made of tiny, indivisible particles called atoms. He stated that atoms of the same element are identical and that chemical reactions rearrange atoms without creating or destroying them.",
+                tip: "Dalton's model was mostly correct — atoms are real — but we now know atoms can be split and are not all the same within an element (isotopes).",
+              },
+              {
+                num: 3,
+                title: "Mendeleev's Periodic Table (1869)",
+                color: "accent",
+                description:
+                  "Dmitri Mendeleev organized the known elements by atomic mass and chemical properties, creating the first periodic table. He even left gaps for undiscovered elements — and correctly predicted their properties.",
+                tip: "The periodic table is still used today and contains 118 confirmed elements, all forms of pure matter.",
+              },
+              {
+                num: 4,
+                title: "Thomson & Rutherford — Inside the Atom (1897–1911)",
+                color: "primary",
+                description:
+                  "J.J. Thomson discovered the electron, showing atoms have internal structure. Ernest Rutherford later discovered the nucleus — a tiny, dense, positively charged core at the center of every atom.",
+                tip: "Rutherford's gold foil experiment showed that most of an atom is empty space, a fact that still surprises people today.",
+              },
+              {
+                num: 5,
+                title: "Modern Particle Model (20th Century)",
+                color: "secondary",
+                description:
+                  "Scientists developed quantum mechanics, revealing that electrons exist in probability clouds around the nucleus. Protons and neutrons are themselves made of quarks. The particle model we use in science class is a simplified but powerful version of this picture.",
+                tip: "The school-level particle model is accurate enough to explain states of matter, density, and heat — you don't need quantum mechanics for everyday science.",
+              },
+            ],
+          },
+        },
+
+        // ── Section 4: States at a Glance (imageCards) ──
         {
           type: "imageCards",
-          heading: "States at a Glance",
+          heading: "imageCards",
           data: {
             cards: [
               {
@@ -135,7 +198,135 @@ export const week02 = {
           },
         },
 
-        // ── Section 3: Applications ──
+        // ── Section 5: Key Facts (conceptList) ──
+        {
+          type: "conceptList",
+          heading: "Concept List",
+          data: {
+            concepts: [
+              "All matter has mass (the amount of stuff in it) and volume (the space it takes up) — if something has both, it is matter.",
+              "Energy (light, heat, sound) is NOT matter because it has no mass and takes up no space.",
+              "The particle model says all matter is made of tiny particles — atoms or molecules — that are too small to see without powerful instruments.",
+              "Matter can change state (solid → liquid → gas) when energy is added or removed, but the particles themselves stay the same.",
+              "A pure substance has only one type of particle; a mixture contains two or more types of particles that are not chemically joined.",
+              "Density tells you how tightly packed the particles are: D = m ÷ V. Objects less dense than water float; denser objects sink.",
+            ],
+          },
+        },
+
+        // ── Section 6: Comparison ──
+        {
+          type: "comparison",
+          heading: "Comparison",
+          data: {
+            intro:
+              "Knowing whether something is a pure substance or a mixture helps scientists predict how it will behave and how to separate or use it.",
+            left: {
+              label: "Pure Substance",
+              color: "primary",
+              items: [
+                "Made of only one kind of particle throughout",
+                "Has a fixed, definite composition — never changes",
+                "Cannot be separated by physical means (filtering, evaporation)",
+                "Has sharp, predictable melting and boiling points",
+                "Examples: gold (Au), water (H₂O), table salt (NaCl), oxygen (O₂)",
+              ],
+            },
+            right: {
+              label: "Mixture",
+              color: "secondary",
+              items: [
+                "Made of two or more substances combined physically",
+                "Composition can vary — any ratio is possible",
+                "Can be separated by physical methods (filtering, distillation, magnetism)",
+                "Melts and boils over a range of temperatures, not a fixed point",
+                "Examples: air, seawater, soil, trail mix, blood, orange juice",
+              ],
+            },
+          },
+        },
+
+        // ── Section 7: Reason Cards ──
+        {
+          type: "reasonCards",
+          heading: "Reason Cards",
+          data: {
+            intro:
+              "Understanding matter is not just school science — it drives real discoveries and technologies that shape everyday life.",
+            reasons: [
+              {
+                num: 1,
+                title: "Medicine",
+                color: "primary",
+                desc: "Drug design depends on knowing exactly what particles a medicine is made of and how they interact with the body at the molecular level.",
+                content:
+                  "A wrong compound — even one atom different — can be the difference between a cure and a poison.",
+              },
+              {
+                num: 2,
+                title: "Engineering",
+                color: "secondary",
+                desc: "Engineers choose materials based on density, strength, and how particles are arranged. Bridges, planes, and phone screens all depend on this.",
+                content:
+                  "Carbon fiber is light yet stronger than steel because of how its carbon atoms are bonded and arranged.",
+              },
+              {
+                num: 3,
+                title: "Environment",
+                color: "accent",
+                desc: "Pollution is unwanted matter entering air, water, or soil. Understanding the particle model helps scientists track, measure, and remove pollutants.",
+                content:
+                  "Water treatment plants use physical and chemical methods to separate harmful particles from drinking water.",
+              },
+              {
+                num: 4,
+                title: "Food Science",
+                color: "primary",
+                desc: "Chefs and food scientists use knowledge of matter to improve texture, shelf life, and nutrition. Emulsifiers, for example, keep oil and water mixed in sauces.",
+                content:
+                  "Freeze-drying removes water by turning it directly from ice to vapor, preserving food without heat damage.",
+              },
+            ],
+          },
+        },
+
+        // ── Section 8: Scenarios ──
+        {
+          type: "scenario",
+          heading: "Scenario",
+          data: {
+            intro:
+              "Apply what you have learned about matter to these real-life situations. Think through each one before reading the skill hint.",
+            scenarios: [
+              {
+                title: "The Floating Ice Cube",
+                situation:
+                  "You drop an ice cube into a glass of water. The ice floats, even though both the ice and the water are made of the exact same substance — H₂O.",
+                question:
+                  "Why does solid ice float on liquid water, even though they are the same substance?",
+                skill: "Comparing density of solids and liquids",
+              },
+              {
+                title: "Saltwater at the Beach",
+                situation:
+                  "Ocean water tastes salty, but if you leave a shallow puddle of seawater in the sun, the water evaporates and leaves behind a white crust of salt.",
+                question:
+                  "Is seawater a pure substance or a mixture? How does the evaporation experiment prove your answer?",
+                skill: "Identifying and separating mixtures",
+              },
+              {
+                title: "Blowing Up a Balloon",
+                situation:
+                  "When you blow air into a balloon, it expands. The more air you add, the bigger it gets. If you release the balloon without tying it, the air rushes out.",
+                question:
+                  "Use the particle model to explain why the balloon expands when you blow into it and shrinks when air escapes.",
+                skill: "Applying the particle model to gases",
+              },
+            ],
+          },
+        },
+
+        // ── Section 9: Applications ──
         {
           type: "applications",
           heading: "Applications",
