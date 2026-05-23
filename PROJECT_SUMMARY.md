@@ -1,5 +1,5 @@
 # SciQuest — Project Summary
-Last updated: May 17, 2026
+Last updated: May 22, 2026
 
 ## What It Is
 
@@ -28,11 +28,13 @@ No React Router. `App.jsx` holds a `currentView` string and passes `onNavigate(v
 
 ```
 home | lessons | lesson-content | quiz | about | contact
-admin | teachers | teacher-portal | profile
+admin | teachers | teacher-portal | teacher-setup | profile
 games | game-play
 ```
 
-Portal views (`admin`, `teacher-portal`, `game-play`) hide the Navbar via an `isPortalView` flag.
+Portal views (`admin`, `teacher-portal`, `teacher-setup`, `game-play`) hide the Navbar via an `isPortalView` flag.
+
+`teacher-setup` is the invite-acceptance flow: a teacher follows an admin invite link and fills in the `staff` row that the DB trigger pre-created. Expired/used links show an "Invite link expired" screen.
 
 ---
 
@@ -107,6 +109,7 @@ A Phaser-based mini-game system layered onto the React app. Phaser renders to a 
 | Game ID | Status | Category |
 |---|---|---|
 | `matter-state-sandbox` | Playable (Phaser) | Chemistry |
+| `cell-division-defense` | Playable (Phaser) | Biology |
 | `cell-explorer` | Locked (coming soon) | Biology |
 | `circuit-lab` | Locked (coming soon) | Physics |
 
@@ -176,45 +179,34 @@ Config lives entirely in `src/lib/xp-config.js` — edit numbers there to retune
 
 ---
 
-## Games Platform
+## Live Games (details)
 
-A second major feature area separate from the lesson/quiz system.
+Two games are currently playable; `cell-explorer` and `circuit-lab` are locked placeholders. See the Games Platform section above for registry, folder rules, and the GameComponent contract.
 
-**Registry:** `src/lib/games/registry.js` — `GAMES` object lists all games. Only `matter-state-sandbox` is live; `cell-explorer` and `circuit-lab` are locked placeholders.
-
-**Stack:** Phaser 3.80+ (WebGL canvas) wrapped by React for HUD overlays. React ↔ Phaser communication is **event-bus only** — never pass React state or refs into Phaser scenes.
-
-**Folder rules:**
-```
-src/games/_shared/          # Shared engine infrastructure (EventBus, BaseGameScene, hooks)
-src/games/<game-slug>/      # One game's full code
-  scenes/                   # Phaser scenes
-  ui/                       # React HUD components
-  data/                     # Static game data (challenges, levels, substances)
-  physics/                  # Game-specific physics rules
-  audio/                    # Audio helpers
-  index.jsx                 # GameComponent — default export
-src/lib/games/
-  registry.js               # Game manifest + lazy loaders
-  progress.js               # Supabase progress queries (all DB writes go here)
-src/pages/GamesHubPage.jsx  # Game browser/lobby
-src/pages/GamePlayPage.jsx  # Shell that mounts the active GameComponent
-```
-
-**GameComponent contract** (every `index.jsx` must accept):
-```
-{ user, profile, onExit, onProgressUpdate, initialChallengeId, reducedMotion, deviceTier }
-```
-
-**matter-state-sandbox** (the only live game):
+**matter-state-sandbox** (Chemistry):
 - 3 levels: Level 1 (preset buttons), Level 2 (temperature slider), Level 3 (temperature + pressure sliders)
 - Substances: water, ethanol, iron, CO₂ (defined in `data/substances.js`)
 - Challenges tracked via `useChallengeTracker` — hold the target state for N seconds to complete
-- Progress written to Supabase via `src/lib/games/progress.js`
 - Background music via `GameMusic.js` (Web Audio API)
 - Two canvas overlays: Object View (animated substance) and Particle View (particle simulation)
 
+**cell-division-defense** (Biology) — tower-defense framing of mitosis:
+- Phases of cell division drive the waves (`data/phases.js`, `systems/PhaseSystem.js`); defend the nucleus against mutating enemies
+- Towers, enemies, waves, and levels defined under `data/`; per-phase minigames in `ui/minigames/` (e.g. `ChromosomeAlign`, `ChromatidPull`, `CleavageFurrow`)
+- Custom `canvas/GameCanvas.js` render layer + React HUD (`CellDefenseHUD`, `WaveQueue`, `TowerPanel`)
+- Background music via `CellMusic.js`
+
+Both write progress to Supabase only through `src/lib/games/progress.js`.
+
 **Sandbox CSS classes** (all prefixed `sq-`): defined in `src/index.css` from line ~231 onward. The shell is a 3-row grid: `60px` top bar / `1fr` main / bottom bar (fixed height on desktop, `auto` on xs).
+
+---
+
+## Notifications
+
+Student-only. A floating bell button (bottom-left) rendered by [NotificationBubble.jsx](src/components/NotificationBubble.jsx), hidden on portal views. `App.jsx` owns the state (`notifications`, `notifHistory`, `unseenCount`) and exposes a `pushNotification(n)` helper.
+
+Four notification kinds: `xp` (XP earned), `level-up`, `achievement`, and `quiz-graded`. Transient XP pops also surface via `XpToast`; the bubble keeps the full history with an unseen badge. Quiz-graded notifications fire when a student's `pending_grade_count` flips from > 0 → 0, and survive a logout/login cycle (pending attempt ids are remembered).
 
 ---
 
@@ -251,11 +243,7 @@ src/
 │   ├── supabase.js                 # Supabase client init
 │   ├── users.js                    # Admin/teacher DB queries
 │   ├── utils.js                    # cn() classname helper
-│   └── games/                      # registry.js + progress.js
-├── games/
-│   ├── _shared/                    # Engine infra (eventBus, scenes, hooks)
-│   └── matter-state-sandbox/       # Playable Phaser game
-│   ├── xp-config.js               # XP/level economy constants + helpers
+│   ├── xp-config.js                # XP/level economy constants + helpers
 │   ├── progress.js                 # Lesson progress queries
 │   └── games/
 │       ├── registry.js             # Game manifest + lazy loaders
@@ -269,17 +257,26 @@ src/
 │   ├── games/                      # Shared game UI (GameShell, GameCard…)
 │   ├── layout/Navbar.jsx
 │   ├── modals/AuthModal.jsx
+│   ├── NotificationBubble.jsx      # Student notification bell + panel
+│   ├── XpToast.jsx                 # Transient XP pop-ups
 │   ├── LessonTemplate.jsx
 │   └── Quiztemplate.jsx
 ├── games/
 │   ├── _shared/                    # EventBus, BaseGameScene, hooks, progress utils
-│   └── matter-state-sandbox/       # Only live game
+│   ├── matter-state-sandbox/       # Live game (Chemistry)
+│   │   ├── index.jsx               # GameComponent root
+│   │   ├── scenes/                 # BootScene, SandboxScene (Phaser)
+│   │   ├── ui/                     # SandboxHUD, ControlBar, ParticleView, ObjectView…
+│   │   ├── data/                   # challenges.js, levels.js, substances.js
+│   │   ├── physics/stateRules.js   # State transition logic
+│   │   └── audio/GameMusic.js
+│   └── cell-division-defense/      # Live game (Biology) — mitosis tower defense
 │       ├── index.jsx               # GameComponent root
-│       ├── scenes/                 # BootScene, SandboxScene (Phaser)
-│       ├── ui/                     # SandboxHUD, ControlBar, ParticleView, ObjectView…
-│       ├── data/                   # challenges.js, levels.js, substances.js
-│       ├── physics/stateRules.js   # State transition logic
-│       └── audio/GameMusic.js
+│       ├── scenes/                 # BootScene, CellDefenseScene (Phaser)
+│       ├── systems/                # PhaseSystem, EnemySystem, TowerSystem…
+│       ├── ui/                     # CellDefenseHUD, WaveQueue + minigames/
+│       ├── data/                   # phases.js, towers.js, enemies.js, levels.js
+│       └── audio/CellMusic.js
 └── pages/                         # One file per view (+ template.jsx scaffolds)
 supabase/
 ├── schema.sql                     # Tables, RLS, triggers
