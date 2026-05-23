@@ -1,8 +1,10 @@
 // Supabase Edge Function: admin-delete-user
 //
-// Deletes an auth user — which, via the ON DELETE CASCADE on public.students,
-// public.staff, and public.student_progress, also removes any related rows.
-// Only callers present in public.staff with role = 'admin' are permitted.
+// Deletes an auth user along with every row that belongs to them across the
+// public schema. We delete explicitly (using the service-role key) rather than
+// relying on ON DELETE CASCADE so a missing or out-of-sync FK in production
+// can't leave orphan rows behind. Only callers present in public.staff with
+// role = 'admin' are permitted.
 //
 // Deploy:
 //   supabase functions deploy admin-delete-user
@@ -23,6 +25,17 @@ function json(body: unknown, status = 200): Response {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 }
+
+// Tables keyed by student_id that should be wiped before the auth user goes.
+// Order doesn't matter — none of these reference each other.
+const STUDENT_OWNED_TABLES = [
+  'student_progress',
+  'quiz_attempts',
+  'student_achievements',
+  'game_progress',
+  'game_saves',
+  'game_sessions',
+] as const
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -61,8 +74,21 @@ Deno.serve(async (req) => {
   if (!userId) return json({ error: 'userId is required' }, 400)
   if (userId === user.id) return json({ error: 'You cannot delete your own account' }, 400)
 
-  // 4. Delete with the service-role key.
+  // 4. Wipe owned rows with the service-role key, then delete the auth user.
   const admin = createClient(supabaseUrl, serviceKey)
+
+  for (const table of STUDENT_OWNED_TABLES) {
+    const { error } = await admin.from(table).delete().eq('student_id', userId)
+    if (error) return json({ error: `Failed to clear ${table}: ${error.message}` }, 500)
+  }
+
+  // students and staff are keyed by the auth user id directly.
+  const { error: studentsErr } = await admin.from('students').delete().eq('id', userId)
+  if (studentsErr) return json({ error: `Failed to clear students: ${studentsErr.message}` }, 500)
+
+  const { error: staffDelErr } = await admin.from('staff').delete().eq('id', userId)
+  if (staffDelErr) return json({ error: `Failed to clear staff: ${staffDelErr.message}` }, 500)
+
   const { error: delErr } = await admin.auth.admin.deleteUser(userId)
   if (delErr) return json({ error: delErr.message }, 500)
 
