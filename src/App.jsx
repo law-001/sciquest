@@ -41,6 +41,25 @@ function savePendingIds(uid, ids) {
   localStorage.setItem(pendingKey(uid), JSON.stringify([...ids]));
 }
 
+// Notification history is scoped per-user so account A's notifications
+// don't bleed into account B after a login switch.
+const notifHistoryKey = (uid) => `sq-notif-history-${uid}`;
+const unseenCountKey  = (uid) => `sq-notif-unseen-${uid}`;
+function loadNotifHistory(uid) {
+  try { return JSON.parse(localStorage.getItem(notifHistoryKey(uid))) ?? []; }
+  catch { return []; }
+}
+function loadUnseenCount(uid) {
+  try { return Number(localStorage.getItem(unseenCountKey(uid))) || 0; }
+  catch { return 0; }
+}
+function saveNotifHistory(uid, list) {
+  try { localStorage.setItem(notifHistoryKey(uid), JSON.stringify(list)); } catch { /* quota */ }
+}
+function saveUnseenCount(uid, n) {
+  try { localStorage.setItem(unseenCountKey(uid), String(n)); } catch { /* quota */ }
+}
+
 function AppContent() {
   const { user, profile, loading, signOut } = useAuth();
   // Detect an invite link before Supabase clears the URL params. Must be a ref
@@ -77,6 +96,9 @@ function AppContent() {
   const [notifications, setNotifications] = useState([]);
   const [notifHistory, setNotifHistory] = useState([]);
   const [unseenCount, setUnseenCount] = useState(0);
+  const [highlightedAchievement, setHighlightedAchievement] = useState(null);
+  const [profileScrollTarget, setProfileScrollTarget] = useState(null);
+  const [highlightedActivity, setHighlightedActivity] = useState(null);
 
   // Stable refs so interval callbacks always see the latest values without
   // being listed as effect deps (which would reset the interval constantly).
@@ -239,6 +261,17 @@ function AppContent() {
         ? prev
         : [...prev, CURIOUS_EXPLORER_KEY],
     );
+    // LandingPage's AchievementToast owns the visible popup, so we only
+    // record this in the bell history — no second XpToast.
+    pushNotificationRef.current?.(
+      {
+        kind: "achievement",
+        label: achievementLabel(CURIOUS_EXPLORER_KEY),
+        amount: achievementXp(CURIOUS_EXPLORER_KEY),
+        achievementKey: CURIOUS_EXPLORER_KEY,
+      },
+      { toast: false },
+    );
     awardAchievements(user.id, [CURIOUS_EXPLORER_KEY]).catch((err) => {
       console.error("Failed to award Curious Explorer:", err);
     });
@@ -273,20 +306,60 @@ function AppContent() {
     };
   }, []);
 
-  const pushNotification = (n) => {
+  // Hydrate notification history when the active student changes — clears
+  // any leftover state from a previous account before loading this user's
+  // own history. Non-students get an empty list (no bubble is rendered).
+  useEffect(() => {
+    setNotifications([]);
+    if (!user?.id || !isStudent) {
+      setNotifHistory([]);
+      setUnseenCount(0);
+      return;
+    }
+    setNotifHistory(loadNotifHistory(user.id));
+    setUnseenCount(loadUnseenCount(user.id));
+  }, [user?.id, isStudent]);
+
+  // `toast: false` records the notification in the bell history + unread
+  // count but skips the XpToast popup — used when another component (e.g.
+  // LandingPage's AchievementToast) already owns the visible popup.
+  const pushNotification = (n, { toast = true } = {}) => {
     const entry = { id: Date.now() + Math.random(), ...n };
-    setNotifications((prev) => [...prev, entry]);
-    setNotifHistory((prev) => [...prev, entry]);
-    setUnseenCount((prev) => prev + 1);
+    if (toast) setNotifications((prev) => [...prev, entry]);
+    setNotifHistory((prev) => {
+      const next = [...prev, entry];
+      if (user?.id) saveNotifHistory(user.id, next);
+      return next;
+    });
+    setUnseenCount((prev) => {
+      const next = prev + 1;
+      if (user?.id) saveUnseenCount(user.id, next);
+      return next;
+    });
   };
   // eslint-disable-next-line react-hooks/refs
   pushNotificationRef.current = pushNotification;
   const dismissNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
-  const handleNotifBubbleOpen = () => setUnseenCount(0);
-  const handleClearAllNotifs = () => { setNotifHistory([]); setUnseenCount(0); };
-  const handleClearOneNotif = (id) => setNotifHistory((prev) => prev.filter((n) => n.id !== id));
+  const handleNotifBubbleOpen = () => {
+    setUnseenCount(0);
+    if (user?.id) saveUnseenCount(user.id, 0);
+  };
+  const handleClearAllNotifs = () => {
+    setNotifHistory([]);
+    setUnseenCount(0);
+    if (user?.id) {
+      saveNotifHistory(user.id, []);
+      saveUnseenCount(user.id, 0);
+    }
+  };
+  const handleClearOneNotif = (id) =>
+    setNotifHistory((prev) => {
+      const next = prev.filter((n) => n.id !== id);
+      if (user?.id) saveNotifHistory(user.id, next);
+      return next;
+    });
 
   // BLACKED is the hidden achievement: earned by watching the About
   // page portraits cross-fade light → dark. Same explicit-award path as
@@ -302,6 +375,7 @@ function AppContent() {
       label: achievementLabel(BLACKED_KEY),
       amount: achievementXp(BLACKED_KEY),
       hidden: true,
+      achievementKey: BLACKED_KEY,
     });
     awardAchievements(user.id, [BLACKED_KEY]).catch((err) => {
       console.error("Failed to award BLACKED:", err);
@@ -328,6 +402,23 @@ function AppContent() {
   const handleNavigate = (view, payload) => {
     if (view === 'game-play' && payload?.gameId) {
       setActiveGameId(payload.gameId);
+    }
+    if (view === 'profile' && payload?.achievementKey) {
+      // Use a fresh token so re-clicking the same achievement notification
+      // re-triggers the highlight effect on ProfilePage.
+      setHighlightedAchievement({ key: payload.achievementKey, token: Date.now() });
+    } else if (view !== 'profile') {
+      setHighlightedAchievement(null);
+    }
+    if (view === 'profile' && payload?.scrollTo) {
+      setProfileScrollTarget({ target: payload.scrollTo, token: Date.now() });
+    } else if (view !== 'profile') {
+      setProfileScrollTarget(null);
+    }
+    if (view === 'profile' && payload?.highlightLesson) {
+      setHighlightedActivity({ lessonId: payload.highlightLesson, token: Date.now() });
+    } else if (view !== 'profile') {
+      setHighlightedActivity(null);
     }
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -401,7 +492,7 @@ function AppContent() {
     ]);
 
     if (lessonXp > 0) {
-      pushNotification({ kind: "xp", amount: lessonXp, detail: lesson?.title });
+      pushNotification({ kind: "xp", amount: lessonXp, detail: lesson?.title, source: "lesson", lessonId });
     }
     const newLevel = levelFromXp(totalXp + lessonXp);
     if (newLevel > currentLevel) {
@@ -441,6 +532,7 @@ function AppContent() {
               kind: "achievement",
               label: achievementLabel(key),
               amount: achievementXp(key),
+              achievementKey: key,
             });
           }
         })
@@ -488,7 +580,7 @@ function AppContent() {
 
     // Toast(s). XP earned first; level-up next if it crossed a threshold.
     if (quizXp > 0) {
-      pushNotification({ kind: "xp", amount: quizXp, detail: lesson?.title });
+      pushNotification({ kind: "xp", amount: quizXp, detail: lesson?.title, source: "quiz" });
     }
     const newLevel = levelFromXp(totalXp + quizXp);
     if (newLevel > currentLevel) {
@@ -555,6 +647,7 @@ function AppContent() {
               kind: "achievement",
               label: achievementLabel(key),
               amount: achievementXp(key),
+              achievementKey: key,
             });
           }
         })
@@ -673,6 +766,9 @@ function AppContent() {
             quizAttempts={effectiveQuizAttempts}
             unlockedAchievements={effectiveUnlockedAchievements}
             totalXp={totalXp}
+            highlightAchievement={highlightedAchievement}
+            scrollTarget={profileScrollTarget}
+            highlightActivity={highlightedActivity}
           />
         );
 

@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import sandbox from "../../assets/sandbox.png";
 import celldiv from "../../assets/celldivision.png";
+import mysteryLab from "../../assets/mysterylab.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -22,6 +23,21 @@ export const GAMES = {
     engine: "phaser",
     category: "Chemistry",
     loader: () => import("../../games/matter-state-sandbox/index.jsx"),
+    minRole: "student",
+  },
+  "mystery-lab": {
+    id: "mystery-lab",
+    title: "Mystery Lab: The Dying Pond",
+    tagline:
+      "Junior science detectives use the scientific method to solve a fish-die-off mystery.",
+    subject: "Science",
+    relatedLessonIds: ["week-01-scientific-method"],
+    difficulty: 2,
+    estimatedMinutes: 20,
+    thumbnail: mysteryLab,
+    engine: "react",
+    category: "Scientific Method",
+    loader: () => import("../../games/mystery-lab/index.jsx"),
     minRole: "student",
   },
   "cell-division-defense": {

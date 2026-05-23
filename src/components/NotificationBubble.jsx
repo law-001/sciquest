@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Bell, Star, Trophy, Sparkles, X, ChevronRight, ClipboardCheck } from "lucide-react";
 
 function notifMeta(n) {
@@ -29,18 +29,21 @@ function notifMeta(n) {
       navigateTo: "profile",
     };
   }
-  // xp
+  // xp — lesson completions route to the profile's Recent Activity
+  // section; quiz XP still drops the student back into the lessons list.
   return {
     title: `+${n.amount} XP Earned`,
     sub: n.detail ?? null,
     icon: <Star className="w-4 h-4 text-primary-500 fill-primary-500" />,
     iconBg: "bg-primary-500/10 dark:bg-primary-500/15",
-    navigateTo: "lessons",
+    navigateTo: n.source === "lesson" ? "profile" : "lessons",
+    scrollTo: n.source === "lesson" ? "activity" : undefined,
   };
 }
 
 export function NotificationBubble({ notifications = [], unseenCount = 0, onNavigate, onOpen, onClearAll, onClearOne }) {
   const [open, setOpen] = useState(false);
+  const listRef = useRef(null);
 
   const handleOpen = () => {
     setOpen(true);
@@ -49,11 +52,26 @@ export function NotificationBubble({ notifications = [], unseenCount = 0, onNavi
 
   const handleClose = () => setOpen(false);
 
+  // When the panel opens (or a new notification arrives while open), jump the
+  // list to the bottom so the most recent entry — now the last item — is in view.
+  useEffect(() => {
+    if (!open || !listRef.current) return;
+    listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [open, notifications.length]);
+
   const handleNotifClick = (n) => {
-    const { navigateTo } = notifMeta(n);
+    const { navigateTo, scrollTo } = notifMeta(n);
     onClearOne?.(n.id);
     setOpen(false);
-    onNavigate?.(navigateTo);
+    const payload = {};
+    if (n.kind === "achievement" && n.achievementKey) {
+      payload.achievementKey = n.achievementKey;
+    }
+    if (scrollTo) payload.scrollTo = scrollTo;
+    if (n.source === "lesson" && n.lessonId) {
+      payload.highlightLesson = n.lessonId;
+    }
+    onNavigate?.(navigateTo, Object.keys(payload).length > 0 ? payload : undefined);
   };
 
   return (
@@ -117,7 +135,10 @@ export function NotificationBubble({ notifications = [], unseenCount = 0, onNavi
             </div>
 
             {/* List */}
-            <div className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-stone-100 dark:[&::-webkit-scrollbar-track]:bg-stone-800 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-600 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div
+              ref={listRef}
+              className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-stone-100 dark:[&::-webkit-scrollbar-track]:bg-stone-800 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-600 [&::-webkit-scrollbar-thumb]:rounded-full"
+            >
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-2 text-stone-400 dark:text-stone-500">
                   <Bell className="w-8 h-8 opacity-30" />
@@ -125,7 +146,7 @@ export function NotificationBubble({ notifications = [], unseenCount = 0, onNavi
                 </div>
               ) : (
                 <div className="divide-y divide-stone-100 dark:divide-stone-800">
-                  {[...notifications].reverse().map((n) => {
+                  {notifications.map((n) => {
                     const { title, sub, icon, iconBg } = notifMeta(n);
                     return (
                       <button

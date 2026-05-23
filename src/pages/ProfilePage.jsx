@@ -438,6 +438,9 @@ export function ProfilePage({
   quizAttempts = [],
   unlockedAchievements = [],
   totalXp = 0,
+  highlightAchievement = null,
+  scrollTarget = null,
+  highlightActivity = null,
 }) {
   const { user, profile, refreshProfile } = useAuth();
   const isStudent = profile?.role === "student";
@@ -447,6 +450,8 @@ export function ProfilePage({
   const [editOpen, setEditOpen] = useState(false);
   const [hoveredBadge, setHoveredBadge] = useState(null);
   const [myQuizzesOpen, setMyQuizzesOpen] = useState(false);
+  const [activeHighlight, setActiveHighlight] = useState(null);
+  const [activeActivityHighlight, setActiveActivityHighlight] = useState(null);
 
   const [board, setBoard] = useState([]);
   const [boardLoading, setBoardLoading] = useState(true);
@@ -544,6 +549,7 @@ export function ProfilePage({
       const pct = a.max_score > 0 ? Math.round((a.score / a.max_score) * 100) : null;
       items.push({
         type: "quiz",
+        lessonId: a.lesson_id,
         label: `${info?.category ?? "Quiz"}: ${info?.title ?? a.lesson_id}`,
         score: pct,
         xp: a.xp_awarded ?? 0,
@@ -557,6 +563,7 @@ export function ProfilePage({
       const info = LESSON_INDEX.get(r.lesson_id);
       items.push({
         type: "lesson",
+        lessonId: r.lesson_id,
         label: `${info?.category ?? "Lesson"}: ${info?.title ?? r.lesson_id}`,
         score: null,
         xp: r.xp_awarded ?? 0,
@@ -715,6 +722,57 @@ export function ProfilePage({
       cancelled = true;
     };
   }, []);
+
+  // Achievement highlight — when arriving here from an achievement
+  // notification, scroll the achievements grid into view and pulse the
+  // earned badge for a few seconds. Re-fires when the token changes so
+  // re-clicking the same achievement notification re-triggers it.
+  useEffect(() => {
+    const key = highlightAchievement?.key;
+    if (!key) return;
+    setActiveHighlight(key);
+    const scrollId = setTimeout(() => {
+      achievementsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 250);
+    const clearId = setTimeout(() => setActiveHighlight(null), 3500);
+    return () => {
+      clearTimeout(scrollId);
+      clearTimeout(clearId);
+    };
+  }, [highlightAchievement?.key, highlightAchievement?.token, achievementsRef]);
+
+  // Pulse the most recent matching activity row when a lesson-XP notif
+  // sent us to Recent Activity. Token re-fires for repeat clicks.
+  useEffect(() => {
+    const lessonId = highlightActivity?.lessonId;
+    if (!lessonId) return;
+    setActiveActivityHighlight(lessonId);
+    const id = setTimeout(() => setActiveActivityHighlight(null), 3500);
+    return () => clearTimeout(id);
+  }, [highlightActivity?.lessonId, highlightActivity?.token]);
+
+  // Scroll target — when arriving here from a notification (e.g. a
+  // lesson-complete XP notif), scroll the corresponding section into
+  // view. The token re-fires the effect if the user clicks the same
+  // notif again while already on this page.
+  useEffect(() => {
+    const target = scrollTarget?.target;
+    if (!target) return;
+    const ref =
+      target === "activity"
+        ? activityRef
+        : target === "achievements"
+          ? achievementsRef
+          : null;
+    if (!ref) return;
+    const id = setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 250);
+    return () => clearTimeout(id);
+  }, [scrollTarget?.target, scrollTarget?.token, activityRef, achievementsRef]);
 
   // Global screen-time total — polled so it stays roughly live.
   useEffect(() => {
@@ -1328,13 +1386,22 @@ export function ProfilePage({
               </p>
             ) : (
               <div className="space-y-3">
-                {recentActivity.map((item, i) => (
+                {recentActivity.map((item, i) => {
+                  const isHighlighted =
+                    activeActivityHighlight &&
+                    item.type === "lesson" &&
+                    item.lessonId === activeActivityHighlight;
+                  return (
                   <div
                     key={`${item.type}-${item.ts}-${i}`}
                     className={`flex items-center gap-4 p-4 rounded-xl bg-stone-100 dark:bg-stone-800/60 transition-[opacity,transform] duration-500 ease-out ${
                       activityTriggered
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 -translate-x-4"
+                    } ${
+                      isHighlighted
+                        ? "ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-stone-900 animate-pulse"
+                        : ""
                     }`}
                     style={{
                       transitionDelay: activityTriggered
@@ -1374,7 +1441,8 @@ export function ProfilePage({
                       +{item.xp} XP
                     </span>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1420,6 +1488,10 @@ export function ProfilePage({
                       <div
                         className={`relative w-14 h-14 rounded-2xl flex items-center justify-center cursor-default transition-transform duration-200 hover:scale-105 ${
                           unlocked ? bg : "bg-stone-200 dark:bg-stone-800/80"
+                        } ${
+                          activeHighlight === key
+                            ? "ring-4 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-stone-900 animate-pulse scale-110"
+                            : ""
                         }`}
                       >
                         <Icon
