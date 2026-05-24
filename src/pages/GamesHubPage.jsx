@@ -6,10 +6,7 @@ import {
   Atom,
   Activity,
   Cpu,
-  Dna,
-  Zap,
   FlaskConical,
-  Telescope,
   Star,
   Search,
   X,
@@ -32,44 +29,9 @@ const CATEGORY_STYLES = {
     "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
   Astronomy:
     "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+  "Scientific Method":
+    "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
 };
-
-// 3 additional locked games to append to any registry list
-const EXTRA_LOCKED_GAMES = [
-  {
-    id: "dna-decoder",
-    title: "DNA Decoder",
-    tagline:
-      "Unravel the double helix and decode the secrets hidden inside every living cell.",
-    category: "Biology",
-    difficulty: 2,
-    estimatedMinutes: 12,
-    locked: true,
-    totalLevels: 5,
-  },
-  {
-    id: "quantum-leap",
-    title: "Quantum Leap",
-    tagline:
-      "Bend the rules of classical physics and explore the strange world of quantum mechanics.",
-    category: "Physics",
-    difficulty: 3,
-    estimatedMinutes: 15,
-    locked: true,
-    totalLevels: 4,
-  },
-  {
-    id: "stellar-forge",
-    title: "Stellar Forge",
-    tagline:
-      "Ignite nuclear fusion and forge the elements that make up every star in the universe.",
-    category: "Astronomy",
-    difficulty: 2,
-    estimatedMinutes: 10,
-    locked: true,
-    totalLevels: 4,
-  },
-];
 
 function DifficultyDots({ level }) {
   const label = ["", "Easy", "Medium", "Hard"][level] ?? "";
@@ -103,23 +65,12 @@ function CategoryBadge({ category }) {
 const LOCKED_ICONS = {
   "cell-explorer": Activity,
   "circuit-builder": Cpu,
-  "dna-decoder": Dna,
-  "quantum-leap": Zap,
-  "stellar-forge": Telescope,
 };
 
 function LockedThumbnail({ gameId }) {
   const Icon = LOCKED_ICONS[gameId] ?? FlaskConical;
 
-  // Subtle warm gradient per game
-  const gradients = {
-    "dna-decoder":
-      "from-emerald-50 to-teal-100 dark:from-emerald-950/40 dark:to-teal-900/30",
-    "quantum-leap":
-      "from-violet-50 to-purple-100 dark:from-violet-950/40 dark:to-purple-900/30",
-    "stellar-forge":
-      "from-indigo-50 to-blue-100 dark:from-indigo-950/40 dark:to-blue-900/30",
-  };
+  const gradients = {};
 
   const grad =
     gradients[gameId] ??
@@ -297,13 +248,7 @@ export function GamesHubPage({
   const level = levelFromXp(totalXp);
   const levelProgress = xpToNextLevel(totalXp);
 
-  const registryGames = listGames();
-  // Merge registry games with extra locked ones, avoiding duplicates by id
-  const existingIds = new Set(registryGames.map((g) => g.id));
-  const games = [
-    ...registryGames,
-    ...EXTRA_LOCKED_GAMES.filter((g) => !existingIds.has(g.id)),
-  ];
+  const games = listGames();
 
   const displayedGames = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
