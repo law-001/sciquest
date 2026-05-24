@@ -9,7 +9,7 @@ export function ShortAnswer({ question, value = "", onChange, isSubmitted }) {
         disabled={isSubmitted}
         placeholder="Type your answer here..."
         rows={4}
-        className="w-full p-4 rounded-xl border-2 border-orange-200 focus:border-primary-400 focus:outline-none text-stone-700 font-medium resize-none bg-white/60 transition-colors disabled:opacity-70 dark:bg-stone-700 dark:placeholder-stone-200"
+        className="w-full p-4 rounded-xl border-2 border-orange-200 focus:border-primary-400 focus:outline-none text-stone-700 font-medium resize-none bg-white/60 transition-colors disabled:opacity-70 dark:bg-stone-700 dark:placeholder-stone-200 dark:text-stone-100"
       />
 
       {question.rubric && !isSubmitted && (

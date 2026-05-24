@@ -14,7 +14,7 @@ export function EssayQuestion({ question, value = "", onChange, isSubmitted }) {
         disabled={isSubmitted}
         placeholder={`Write your response here (minimum ${minWords} words)...`}
         rows={9}
-        className="w-full p-4 rounded-xl border-2 border-orange-200 focus:border-primary-400 focus:outline-none text-stone-700 font-medium resize-none bg-white/60 transition-colors disabled:opacity-70 dark:bg-stone-800"
+        className="w-full p-4 rounded-xl border-2 border-orange-200 focus:border-primary-400 focus:outline-none text-stone-700 font-medium resize-none bg-white/60 transition-colors disabled:opacity-70 dark:bg-stone-800 dark:text-stone-100"
       />
 
       <div className="flex justify-between items-center text-xs font-bold pl-1">

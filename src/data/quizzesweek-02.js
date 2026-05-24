@@ -2,7 +2,7 @@
 
 export const QUIZZES_WEEK_02 = {
   // ── Lesson 4: What is Matter? — matching + short-answer ──────────────────
-  "lesson-4": {
+  "lesson-particle-theory": {
     lessonId: "lesson-4",
     title: "What is Matter?",
     description:
@@ -41,8 +41,7 @@ export const QUIZZES_WEEK_02 = {
       {
         id: "q2",
         type: "short-answer",
-        question:
-          "Explain the particle theory of matter and its key ideas.",
+        question: "Explain the particle theory of matter and its key ideas.",
         rubric:
           "Include the five key statements: all matter is made of tiny particles; particles are in constant motion; there is empty space between particles; particles attract each other; and temperature affects particle speed.",
         points: 10,
@@ -70,7 +69,7 @@ export const QUIZZES_WEEK_02 = {
 
   // ── Lesson 5: Particle Theory of Matter — identification ─────────────────
   "lesson-5": {
-    lessonId: "lesson-5",
+    lessonId: "lesson-particle-theory",
     title: "Particle Theory of Matter",
     description:
       "Read each question carefully. Identify the correct scientific term being described in each item. Spelling counts.",
@@ -82,10 +81,7 @@ export const QUIZZES_WEEK_02 = {
         question:
           "The theory that states matter is made up of tiny, constantly moving particles.",
         correctAnswer: "Particle Theory of Matter",
-        acceptedAnswers: [
-          "particle theory of matter",
-          "particle theory",
-        ],
+        acceptedAnswers: ["particle theory of matter", "particle theory"],
         points: 5,
       },
       {
@@ -136,8 +132,7 @@ export const QUIZZES_WEEK_02 = {
       {
         id: "q7",
         type: "identification",
-        question:
-          "The energy that particles have due to their motion.",
+        question: "The energy that particles have due to their motion.",
         correctAnswer: "Kinetic Energy",
         acceptedAnswers: ["kinetic energy"],
         points: 5,
@@ -154,8 +149,7 @@ export const QUIZZES_WEEK_02 = {
       {
         id: "q9",
         type: "identification",
-        question:
-          "The phase change from gas to liquid due to loss of energy.",
+        question: "The phase change from gas to liquid due to loss of energy.",
         correctAnswer: "Condensation",
         acceptedAnswers: ["condensation"],
         points: 5,
@@ -163,8 +157,7 @@ export const QUIZZES_WEEK_02 = {
       {
         id: "q10",
         type: "identification",
-        question:
-          "The arrangement of particles in a solid.",
+        question: "The arrangement of particles in a solid.",
         correctAnswer: "Tightly packed in a regular pattern",
         acceptedAnswers: [
           "tightly packed in a regular pattern",
@@ -173,32 +166,6 @@ export const QUIZZES_WEEK_02 = {
           "close together in a regular pattern",
         ],
         points: 5,
-      },
-    ],
-  },
-
-  // ── Lesson 6: States of Matter — ordering ────────────────────────────────
-  "lesson-6": {
-    lessonId: "lesson-6",
-    title: "States of Matter",
-    description:
-      "Test your understanding of the properties and particle arrangements of the states of matter.",
-    timeLimit: 900,
-    questions: [
-      {
-        id: "q1",
-        type: "ordering",
-        question:
-          "Arrange the following state changes in the order they would occur when a solid substance is continuously heated from well below its melting point to above its boiling point:",
-        items: [
-          "The solid absorbs heat and its particles vibrate faster",
-          "The solid reaches its melting point and begins to melt",
-          "The solid and liquid exist together while heat is absorbed",
-          "The substance is fully liquid and its temperature continues to rise",
-          "The liquid reaches its boiling point and begins to evaporate rapidly",
-          "The substance is fully in the gas state",
-        ],
-        points: 15,
       },
     ],
   },

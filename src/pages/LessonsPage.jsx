@@ -437,7 +437,7 @@ export function LessonsPage({
             );
             const lockLabel =
               lockReason === "prev-week-incomplete"
-                ? "Finish every quiz in the previous week first"
+                ? "Finish previous week first"
                 : "Locked";
 
             // Count progress by quizzes passed — matches the new unlock rule.

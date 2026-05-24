@@ -3,7 +3,14 @@
 // Submit Quiz button at bottom, results screen after submission.
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, RotateCcw, Star, Trophy } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  RotateCcw,
+  Star,
+  Trophy,
+} from "lucide-react";
 import Button from "./Button";
 import Card from "./Card";
 import Badge from "./Badge";
@@ -183,7 +190,9 @@ function formatRemaining(totalSec) {
 // Confetti positions computed at module load — not during render — so Math.random is safe here.
 const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
   left: `${Math.random() * 100}%`,
-  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][Math.floor(Math.random() * 4)],
+  backgroundColor: ["#f97316", "#14b8a6", "#eab308", "#fb7185"][
+    Math.floor(Math.random() * 4)
+  ],
   animationDelay: `${Math.random() * 2}s`,
   animationDuration: `${2 + Math.random() * 2}s`,
 }));
@@ -241,13 +250,18 @@ export function QuizContainer({
       /* ignore */
     }
     const ts = Date.now();
-    try { localStorage.setItem(timerStartKey, String(ts)); } catch { /* quota */ }
+    try {
+      localStorage.setItem(timerStartKey, String(ts));
+    } catch {
+      /* quota */
+    }
     return ts;
   });
 
-  const remainingSec = hasTimer && startedAt
-    ? Math.max(0, timeLimitSeconds - Math.floor((now - startedAt) / 1000))
-    : null;
+  const remainingSec =
+    hasTimer && startedAt
+      ? Math.max(0, timeLimitSeconds - Math.floor((now - startedAt) / 1000))
+      : null;
 
   // Keep submit handler reachable from the timer effect without re-binding
   // it every render (which would tear down the interval).
@@ -305,7 +319,11 @@ export function QuizContainer({
     setIsSubmitted(true);
     setSubmittedResult(result);
     localStorage.removeItem(storageKey);
-    try { localStorage.removeItem(timerStartKey); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem(timerStartKey);
+    } catch {
+      /* ignore */
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
     // XP / persistence fires here on submit — not when leaving the results screen.
     onComplete?.(result);
@@ -326,7 +344,11 @@ export function QuizContainer({
     setShowConfetti(false);
     if (hasTimer) {
       const ts = Date.now();
-      try { localStorage.setItem(timerStartKey, String(ts)); } catch { /* quota */ }
+      try {
+        localStorage.setItem(timerStartKey, String(ts));
+      } catch {
+        /* quota */
+      }
       setStartedAt(ts);
       setNow(ts);
     }
@@ -400,7 +422,7 @@ export function QuizContainer({
             />
           </div>
 
-          <h2 className="text-3xl font-black text-stone-900 mb-1">
+          <h2 className="text-3xl font-black text-stone-900 mb-1 dark:text-stone-100">
             {passed ? "Quiz Complete!" : "Keep Practicing!"}
           </h2>
           {submittedResult?.autoSubmitted && (
@@ -441,7 +463,8 @@ export function QuizContainer({
             </p>
             {pending > 0 && (
               <p className="text-xs font-bold text-amber-600 mt-3">
-                {pending} {pending === 1 ? "essay" : "essays"} awaiting teacher grading
+                {pending} {pending === 1 ? "essay" : "essays"} awaiting teacher
+                grading
               </p>
             )}
           </div>
@@ -472,7 +495,8 @@ export function QuizContainer({
             if (!Component) return null;
             const earned = scoreQuestion(q, answers[q.id]);
             const pts = questionUnits(q);
-            const manualGrade = isManualGrade(q) && isAnswered(q, answers[q.id]);
+            const manualGrade =
+              isManualGrade(q) && isAnswered(q, answers[q.id]);
 
             return (
               <Card key={q.id} className="p-6">
@@ -529,7 +553,7 @@ export function QuizContainer({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 lg:pt-8 pb-36">
         <div className="grid grid-cols-1 lg:grid-cols-[180px_minmax(0,1fr)_260px] gap-6 lg:gap-8">
           {/* LEFT rail — Exit (sticks beside the quiz on desktop) */}
-          <aside className="order-1 lg:order-none lg:sticky lg:top-20 lg:self-start">
+          <aside className="order-1 lg:order-0 lg:sticky lg:top-20 lg:self-start">
             <button
               onClick={onExit}
               className="flex items-center gap-2 text-stone-500 hover:text-primary-600 font-bold transition-colors text-sm px-3 py-2 -ml-3"
@@ -539,58 +563,58 @@ export function QuizContainer({
           </aside>
 
           {/* CENTER — questions */}
-          <main className="order-3 lg:order-none w-full max-w-3xl mx-auto space-y-8">
+          <main className="order-3 lg:order-0 w-full max-w-3xl mx-auto space-y-8">
             {questions.map((q, i) => {
-          const Component = QUESTION_MAP[q.type];
-          if (!Component) return null;
-          const answered = isAnswered(q, answers[q.id]);
+              const Component = QUESTION_MAP[q.type];
+              if (!Component) return null;
+              const answered = isAnswered(q, answers[q.id]);
 
-          return (
-            <Card
-              key={q.id}
-              id={`question-${q.id}`}
-              className={cn(
-                "p-6 md:p-8 transition-all border-2",
-                answered ? "border-secondary-200" : "border-orange-100",
-              )}
-            >
-              {/* Question header */}
-              <div className="flex items-start justify-between gap-3 mb-5">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-black text-sm flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {TYPE_LABELS[q.type] ?? q.type}
-                  </Badge>
-                  {answered && (
-                    <CheckCircle2 className="w-4 h-4 text-secondary-500" />
+              return (
+                <Card
+                  key={q.id}
+                  id={`question-${q.id}`}
+                  className={cn(
+                    "p-6 md:p-8 transition-all border-2",
+                    answered ? "border-secondary-200" : "border-orange-100",
                   )}
-                </div>
-                <span className="text-xs font-bold text-stone-400 shrink-0">
-                  {questionUnits(q)} pts
-                </span>
-              </div>
+                >
+                  {/* Question header */}
+                  <div className="flex items-start justify-between gap-3 mb-5">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-black text-sm flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {TYPE_LABELS[q.type] ?? q.type}
+                      </Badge>
+                      {answered && (
+                        <CheckCircle2 className="w-4 h-4 text-secondary-500" />
+                      )}
+                    </div>
+                    <span className="text-xs font-bold text-stone-400 shrink-0">
+                      {questionUnits(q)} pts
+                    </span>
+                  </div>
 
-              {/* Question text */}
-              <p className="text-lg md:text-xl font-bold text-stone-900 dark:text-white mb-6 leading-snug">
-                {q.question}
-              </p>
+                  {/* Question text */}
+                  <p className="text-lg md:text-xl font-bold text-stone-900 dark:text-white mb-6 leading-snug">
+                    {q.question}
+                  </p>
 
-              {/* Slot component */}
-              <Component
-                question={q}
-                value={answers[q.id]}
-                onChange={(answer) => handleChange(q.id, answer)}
-                isSubmitted={false}
-              />
-            </Card>
-          );
-        })}
+                  {/* Slot component */}
+                  <Component
+                    question={q}
+                    value={answers[q.id]}
+                    onChange={(answer) => handleChange(q.id, answer)}
+                    isSubmitted={false}
+                  />
+                </Card>
+              );
+            })}
           </main>
 
           {/* RIGHT rail — lesson info, timer, XP, progress (sticks beside the quiz on desktop) */}
-          <aside className="order-2 lg:order-none lg:sticky lg:top-20 lg:self-start flex flex-col gap-3">
+          <aside className="order-2 lg:order-0 lg:sticky lg:top-20 lg:self-start flex flex-col gap-3">
             {lesson && (
               <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
                 <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">
