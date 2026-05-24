@@ -40,7 +40,7 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
-import { getPublishedWeekIds, isWeekPublished } from "../lib/publishedWeeks";
+import { isWeekUnlocked, weekLockReason } from "../lib/lessonGating";
 import { weekMaxXp } from "../lib/week-xp";
 import { useAuth } from "../context/AuthContext";
 import { xpToNextLevel, levelFromXp } from "../lib/xp-config";
@@ -95,6 +95,7 @@ export function LessonsPage({
   totalXp = 0,
   isLoggedIn,
   onLoginClick,
+  publishedWeekIds = null,
 }) {
   const level = levelFromXp(totalXp);
   const levelProgress = xpToNextLevel(totalXp);
@@ -103,7 +104,6 @@ export function LessonsPage({
     profile?.first_name || user?.user_metadata?.first_name || "";
   const [mounted, setMounted] = useState(false);
   const [cardsRef, cardsTriggered] = useScrollTrigger(0.05);
-  const [publishedWeekIds] = useState(() => getPublishedWeekIds());
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -412,7 +412,22 @@ export function LessonsPage({
         >
           {displayedWeeks.map((week, index) => {
             const IconComponent = ICON_MAP[week.icon] || Globe2;
-            const effectiveIsLocked = !isWeekPublished(week.id, publishedWeekIds);
+            const lockReason = weekLockReason(
+              week,
+              WEEKS_DATA,
+              completedLessons,
+              publishedWeekIds,
+            );
+            const effectiveIsLocked = !isWeekUnlocked(
+              week,
+              WEEKS_DATA,
+              completedLessons,
+              publishedWeekIds,
+            );
+            const lockLabel =
+              lockReason === "prev-week-incomplete"
+                ? "Finish the previous week first"
+                : "Locked";
 
             // Count how many lessons in this week are completed
             const completedCount = week.lessons.filter((l) =>
@@ -520,8 +535,9 @@ export function LessonsPage({
                           className="w-full"
                           disabled
                           leftIcon={<Lock className="w-4 h-4" />}
+                          title={lockLabel}
                         >
-                          Locked
+                          {lockLabel}
                         </Button>
                       ) : (
                         <Button

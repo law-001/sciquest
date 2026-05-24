@@ -330,27 +330,34 @@ export function LessonTemplate({
         <div className="bg-white/80 dark:bg-stone-800/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex gap-3 py-2">
-              {weekLessons.map((l) => {
+              {weekLessons.map((l, idx) => {
                 const isActive = l.id === activeLessonId;
                 const isDone = completedLessons.includes(l.id);
                 const isReached = reachedLessons.includes(l.id);
-                const isLocked = false;
-                const isClickable = true;
+                const prev = idx > 0 ? weekLessons[idx - 1] : null;
+                const prevDone = prev ? completedLessons.includes(prev.id) : true;
+                const isLocked = !isActive && !isDone && !prevDone;
+                const isClickable = !isLocked;
+                const lockTitle = isLocked
+                  ? `Finish "${prev?.title ?? "the previous lesson"}" first`
+                  : undefined;
 
                 return (
                   <button
                     key={l.id}
                     onClick={() => isClickable && onLessonSelect?.(l.id)}
                     disabled={isLocked}
+                    title={lockTitle}
+                    aria-disabled={isLocked}
                     className={cn(
                       "flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all",
                       isActive
                         ? "bg-primary-50 text-primary-700 border border-primary-200"
-                        : isDone
-                          ? "text-secondary-600 hover:bg-secondary-50 hover:text-secondary-700 cursor-pointer"
-                          : isReached
+                        : isLocked
+                          ? "text-stone-300 cursor-not-allowed opacity-60"
+                          : isDone || isReached
                             ? "text-secondary-600 hover:bg-secondary-50 hover:text-secondary-700 cursor-pointer"
-                            : "text-stone-300 cursor-not-allowed",
+                            : "text-stone-500 hover:bg-secondary-50 hover:text-secondary-700 cursor-pointer",
                     )}
                   >
                     {isDone && !isActive && (
