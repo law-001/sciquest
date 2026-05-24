@@ -24,7 +24,20 @@ import {
 } from "./lib/progress";
 import { levelFromXp } from "./lib/xp-config";
 import { addScreenSeconds } from "./lib/screentime";
-import { getPublishedQuizWeekIds, isWeekPublished } from "./lib/publishedWeeks";
+import {
+  getPublishedWeekIds,
+  getPublishedQuizWeekIds,
+  fetchPublishedWeekIds,
+  fetchPublishedQuizWeekIds,
+  isWeekPublished,
+  subscribeToPublishedState,
+} from "./lib/publishedWeeks";
+import {
+  getCachedQuizSettings,
+  fetchQuizSettings,
+  subscribeToQuizSettings,
+  getQuizTimeLimit,
+} from "./lib/quizSettings";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
 import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { XpToast } from "./components/XpToast";
@@ -99,6 +112,13 @@ function AppContent() {
   const [highlightedAchievement, setHighlightedAchievement] = useState(null);
   const [profileScrollTarget, setProfileScrollTarget] = useState(null);
   const [highlightedActivity, setHighlightedActivity] = useState(null);
+  const [publishedWeekIds, setPublishedWeekIds] = useState(() =>
+    getPublishedWeekIds(),
+  );
+  const [publishedQuizWeekIds, setPublishedQuizWeekIds] = useState(() =>
+    getPublishedQuizWeekIds(),
+  );
+  const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
 
   // Stable refs so interval callbacks always see the latest values without
   // being listed as effect deps (which would reset the interval constantly).
@@ -246,6 +266,43 @@ function AppContent() {
     const id = setInterval(poll, POLL_MS);
     return () => clearInterval(id);
   }, [user?.id, isStudent]);
+
+  // Pull the global publish state + per-quiz timer config on mount, then
+  // subscribe to realtime changes so a teacher's toggle on one device
+  // propagates to every open client.
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetchPublishedWeekIds(),
+      fetchPublishedQuizWeekIds(),
+      fetchQuizSettings(),
+    ])
+      .then(([lessons, quizzes, settings]) => {
+        if (cancelled) return;
+        setPublishedWeekIds(lessons);
+        setPublishedQuizWeekIds(quizzes);
+        setQuizSettings(settings);
+      })
+      .catch((err) => {
+        console.error("Failed to load course settings:", err);
+      });
+
+    const unsubPublish = subscribeToPublishedState((scope, ids) => {
+      if (scope === "lessons") setPublishedWeekIds(ids);
+      else if (scope === "quizzes") setPublishedQuizWeekIds(ids);
+    });
+    const unsubQuiz = subscribeToQuizSettings(() => {
+      // Pull a fresh map rather than patching in place — keeps the cached
+      // snapshot authoritative and avoids stale entries on rapid edits.
+      fetchQuizSettings().then((m) => { if (!cancelled) setQuizSettings(m); }).catch(() => {});
+    });
+
+    return () => {
+      cancelled = true;
+      unsubPublish();
+      unsubQuiz();
+    };
+  }, []);
 
   // Curious Explorer is the one achievement earned by a UI action
   // (scrolling the landing page) rather than derived from progress.
@@ -461,7 +518,7 @@ function AppContent() {
 
   const isQuizLockedForWeek = (weekId) => {
     if (!weekId) return false;
-    return !isWeekPublished(weekId, getPublishedQuizWeekIds());
+    return !isWeekPublished(weekId, publishedQuizWeekIds);
   };
 
   const handleGoToQuiz = () => {
@@ -713,6 +770,7 @@ function AppContent() {
             totalXp={totalXp}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsAuthModalOpen(true)}
+            publishedWeekIds={publishedWeekIds}
           />
         );
 
@@ -742,6 +800,7 @@ function AppContent() {
             onBack={() => handleNavigate("lessons")}
             onComplete={handleQuizComplete}
             onFinish={handleQuizFinish}
+            timeLimitSeconds={getQuizTimeLimit(quizSettings, activeLessonId)}
           />
         );
 

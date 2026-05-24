@@ -53,7 +53,17 @@ import {
   isWeekPublished,
   getPublishedQuizWeekIds,
   savePublishedQuizWeekIds,
+  fetchPublishedWeekIds,
+  fetchPublishedQuizWeekIds,
+  subscribeToPublishedState,
 } from "../lib/publishedWeeks";
+import {
+  getCachedQuizSettings,
+  fetchQuizSettings,
+  saveQuizTimeLimit,
+  subscribeToQuizSettings,
+  getQuizTimeLimit,
+} from "../lib/quizSettings";
 
 // --- Slot components ---
 // Every slot receives the fetched `data` bundle plus the active sectionId
@@ -3092,6 +3102,124 @@ function GradeModal({ submission, onClose, onSaved }) {
   );
 }
 
+// Lets a teacher attach (or clear) a time limit on a single quiz. Choices are
+// human-friendly minute buckets plus a custom field; "No timer" clears any
+// existing limit. The control writes through to Supabase so other devices
+// pick up the change via the realtime subscription.
+const TIMER_PRESETS_MIN = [0, 5, 10, 15, 20, 30, 45, 60];
+
+function QuizTimerControl({ lessonId, currentSeconds }) {
+  const currentMin = currentSeconds ? Math.round(currentSeconds / 60) : 0;
+  const isPreset = TIMER_PRESETS_MIN.includes(currentMin);
+  const [selection, setSelection] = useState(() =>
+    isPreset ? String(currentMin) : "custom",
+  );
+  const [customMin, setCustomMin] = useState(() =>
+    isPreset ? "" : String(currentMin || ""),
+  );
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    const min = currentSeconds ? Math.round(currentSeconds / 60) : 0;
+    if (TIMER_PRESETS_MIN.includes(min)) {
+      setSelection(String(min));
+      setCustomMin("");
+    } else {
+      setSelection("custom");
+      setCustomMin(String(min));
+    }
+  }, [currentSeconds]);
+
+  async function commit(nextSeconds) {
+    setSaving(true);
+    try {
+      await saveQuizTimeLimit(lessonId, nextSeconds);
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 1500);
+    } catch (err) {
+      console.error("Failed to save quiz timer:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handlePresetChange(e) {
+    const val = e.target.value;
+    setSelection(val);
+    if (val === "custom") return;
+    const min = Number(val);
+    commit(min > 0 ? min * 60 : null);
+  }
+
+  function handleCustomCommit() {
+    const min = Number(customMin);
+    if (!Number.isFinite(min) || min <= 0) {
+      commit(null);
+      return;
+    }
+    commit(Math.round(min) * 60);
+  }
+
+  return (
+    <div className="pt-3 border-t border-orange-100 dark:border-stone-700">
+      <label
+        htmlFor={`timer-${lessonId}`}
+        className="flex items-center gap-1.5 text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5"
+      >
+        <Clock className="w-3.5 h-3.5" />
+        Time limit
+      </label>
+      <div className="flex items-center gap-1.5">
+        <select
+          id={`timer-${lessonId}`}
+          value={selection}
+          onChange={handlePresetChange}
+          disabled={saving}
+          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+        >
+          <option value="0">No timer</option>
+          {TIMER_PRESETS_MIN.filter((m) => m > 0).map((m) => (
+            <option key={m} value={String(m)}>
+              {m} min
+            </option>
+          ))}
+          <option value="custom">Custom…</option>
+        </select>
+        {selection === "custom" && (
+          <>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={customMin}
+              onChange={(e) => setCustomMin(e.target.value)}
+              onBlur={handleCustomCommit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
+              placeholder="min"
+              disabled={saving}
+              className="w-16 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+            />
+            <span className="text-xs font-bold text-stone-400">min</span>
+          </>
+        )}
+        {savedFlash && (
+          <span className="text-xs font-bold text-secondary-600 dark:text-secondary-400">
+            Saved
+          </span>
+        )}
+      </div>
+      <p className="text-[10px] font-medium text-stone-400 dark:text-stone-500 mt-1">
+        {currentSeconds
+          ? "Quiz auto-submits when the timer runs out."
+          : "Students get unlimited time."}
+      </p>
+    </div>
+  );
+}
+
 const QUIZ_TYPE_LABELS = {
   "multiple-choice": "Multiple Choice",
   "true-false": "True/False",
@@ -3110,6 +3238,7 @@ function QuizzesManagementSlot({
   sectionId,
   publishedQuizWeekIds,
   onPublishedQuizWeekIdsChange,
+  quizSettings,
 }) {
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
@@ -3238,6 +3367,7 @@ function QuizzesManagementSlot({
                   expandedWeek.id,
                   publishedQuizWeekIds,
                 );
+                const currentLimit = getQuizTimeLimit(quizSettings, lesson.id);
                 return (
                   <Card key={lesson.id} className="p-5" hoverable>
                     <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center mb-4">
@@ -3275,13 +3405,17 @@ function QuizzesManagementSlot({
                       {quiz?.questions?.length ?? 0}{" "}
                       {quiz?.questions?.length === 1 ? "question" : "questions"}
                     </p>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 mb-3">
                       <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
                         <span>Completion</span>
                         <span>{pct}%</span>
                       </div>
                       <ProgressBar progress={pct} color="secondary" size="sm" />
                     </div>
+                    <QuizTimerControl
+                      lessonId={lesson.id}
+                      currentSeconds={currentLimit}
+                    />
                   </Card>
                 );
               })}
@@ -3490,7 +3624,9 @@ export function TeacherPortalPage({ onBack }) {
 
   function setPublishedWeekIds(ids) {
     setPublishedWeekIdsState(ids);
-    savePublishedWeekIds(ids);
+    savePublishedWeekIds(ids).catch((err) => {
+      console.error("Failed to save published week ids:", err);
+    });
   }
 
   const [publishedQuizWeekIds, setPublishedQuizWeekIdsState] = useState(() =>
@@ -3499,8 +3635,44 @@ export function TeacherPortalPage({ onBack }) {
 
   function setPublishedQuizWeekIds(ids) {
     setPublishedQuizWeekIdsState(ids);
-    savePublishedQuizWeekIds(ids);
+    savePublishedQuizWeekIds(ids).catch((err) => {
+      console.error("Failed to save published quiz week ids:", err);
+    });
   }
+
+  const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
+
+  // Hydrate global settings from Supabase on mount, then subscribe so other
+  // teachers' edits show up live in this portal too.
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetchPublishedWeekIds(),
+      fetchPublishedQuizWeekIds(),
+      fetchQuizSettings(),
+    ])
+      .then(([lessons, quizzes, settings]) => {
+        if (cancelled) return;
+        setPublishedWeekIdsState(lessons);
+        setPublishedQuizWeekIdsState(quizzes);
+        setQuizSettings(settings);
+      })
+      .catch((err) => console.error("Failed to load course settings:", err));
+
+    const unsubPublish = subscribeToPublishedState((scope, ids) => {
+      if (scope === "lessons") setPublishedWeekIdsState(ids);
+      else if (scope === "quizzes") setPublishedQuizWeekIdsState(ids);
+    });
+    const unsubQuiz = subscribeToQuizSettings(() => {
+      fetchQuizSettings().then((m) => { if (!cancelled) setQuizSettings(m); }).catch(() => {});
+    });
+
+    return () => {
+      cancelled = true;
+      unsubPublish();
+      unsubQuiz();
+    };
+  }, []);
 
   useEffect(() => {
     function handleOutside(e) {
@@ -3735,6 +3907,7 @@ export function TeacherPortalPage({ onBack }) {
                 onPublishedWeekIdsChange={setPublishedWeekIds}
                 publishedQuizWeekIds={publishedQuizWeekIds}
                 onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
+                quizSettings={quizSettings}
               />
             )}
           </div>

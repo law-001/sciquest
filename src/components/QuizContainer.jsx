@@ -2,8 +2,8 @@
 // Single-page quiz: all questions visible at once, auto-saves to localStorage,
 // Submit Quiz button at bottom, results screen after submission.
 
-import React, { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, RotateCcw, Star, Trophy } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { ArrowLeft, CheckCircle2, Clock, RotateCcw, Star, Trophy } from "lucide-react";
 import Button from "./Button";
 import Card from "./Card";
 import Badge from "./Badge";
@@ -173,6 +173,13 @@ function isAnswered(q, answer) {
   }
 }
 
+function formatRemaining(totalSec) {
+  const s = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${String(r).padStart(2, "0")}`;
+}
+
 // Confetti positions computed at module load — not during render — so Math.random is safe here.
 const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
   left: `${Math.random() * 100}%`,
@@ -190,9 +197,12 @@ export function QuizContainer({
   onExit,
   onComplete,
   onFinish,
+  timeLimitSeconds = null,
 }) {
   const { questions } = quiz;
   const storageKey = `quiz-answers-${quiz.lessonId}`;
+  const timerStartKey = `quiz-started-${quiz.lessonId}`;
+  const hasTimer = Number.isFinite(timeLimitSeconds) && timeLimitSeconds > 0;
 
   // 1-indexed number of the attempt being taken now. Once priorAttempts hits
   // the cap, no further submissions are allowed.
@@ -217,6 +227,44 @@ export function QuizContainer({
     localStorage.setItem(storageKey, JSON.stringify(answers));
   }, [answers, storageKey]);
 
+  // ── Timer ────────────────────────────────────────────────────────────────
+  // Start time is persisted so a refresh mid-quiz resumes the countdown from
+  // where it left off; otherwise students could just reload to reset.
+  const [now, setNow] = useState(() => Date.now());
+  const [startedAt, setStartedAt] = useState(() => {
+    if (!hasTimer || attemptsExhausted) return null;
+    try {
+      const stored = localStorage.getItem(timerStartKey);
+      const parsed = stored ? Number(stored) : NaN;
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    } catch {
+      /* ignore */
+    }
+    const ts = Date.now();
+    try { localStorage.setItem(timerStartKey, String(ts)); } catch { /* quota */ }
+    return ts;
+  });
+
+  const remainingSec = hasTimer && startedAt
+    ? Math.max(0, timeLimitSeconds - Math.floor((now - startedAt) / 1000))
+    : null;
+
+  // Keep submit handler reachable from the timer effect without re-binding
+  // it every render (which would tear down the interval).
+  const handleSubmitRef = useRef(null);
+
+  useEffect(() => {
+    if (!hasTimer || isSubmitted || attemptsExhausted) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [hasTimer, isSubmitted, attemptsExhausted]);
+
+  useEffect(() => {
+    if (remainingSec === 0 && !isSubmitted && !attemptsExhausted) {
+      handleSubmitRef.current?.(true);
+    }
+  }, [remainingSec, isSubmitted, attemptsExhausted]);
+
   const answeredCount = questions.filter((q) =>
     isAnswered(q, answers[q.id]),
   ).length;
@@ -226,7 +274,7 @@ export function QuizContainer({
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (autoSubmitted = false) => {
     if (attemptsExhausted) return;
 
     const earned = questions.reduce(
@@ -247,6 +295,7 @@ export function QuizContainer({
       autoMaxScore: autoMax,
       xpEarned,
       pendingGradeCount: pending,
+      autoSubmitted,
       // Snapshot of what the student submitted, keyed by question id —
       // persisted so a teacher can review it later when grading.
       answers,
@@ -256,10 +305,15 @@ export function QuizContainer({
     setIsSubmitted(true);
     setSubmittedResult(result);
     localStorage.removeItem(storageKey);
+    try { localStorage.removeItem(timerStartKey); } catch { /* ignore */ }
     window.scrollTo({ top: 0, behavior: "smooth" });
     // XP / persistence fires here on submit — not when leaving the results screen.
     onComplete?.(result);
   };
+
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  });
 
   const handleDone = () => {
     onFinish?.();
@@ -270,6 +324,12 @@ export function QuizContainer({
     setAnswers({});
     setIsSubmitted(false);
     setShowConfetti(false);
+    if (hasTimer) {
+      const ts = Date.now();
+      try { localStorage.setItem(timerStartKey, String(ts)); } catch { /* quota */ }
+      setStartedAt(ts);
+      setNow(ts);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -343,6 +403,11 @@ export function QuizContainer({
           <h2 className="text-3xl font-black text-stone-900 mb-1">
             {passed ? "Quiz Complete!" : "Keep Practicing!"}
           </h2>
+          {submittedResult?.autoSubmitted && (
+            <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">
+              Auto-submitted — time ran out
+            </p>
+          )}
           {lesson && (
             <p className="text-stone-400 text-sm font-bold uppercase tracking-wider mb-6">
               {lesson.title}
@@ -476,6 +541,24 @@ export function QuizContainer({
                   {lesson.title}
                 </span>
               )}
+              {hasTimer && remainingSec !== null && (
+                <span
+                  role="timer"
+                  aria-live={remainingSec <= 30 ? "assertive" : "off"}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tabular-nums border",
+                    remainingSec <= 30
+                      ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700 animate-pulse"
+                      : remainingSec <= 120
+                        ? "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700"
+                        : "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700",
+                  )}
+                  title="Time remaining"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  {formatRemaining(remainingSec)}
+                </span>
+              )}
               <Badge
                 variant="accent"
                 icon={<Star className="w-3 h-3 fill-current" />}
@@ -568,7 +651,7 @@ export function QuizContainer({
           <Button
             variant="primary"
             size="lg"
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(false)}
             disabled={answeredCount === 0 || attemptsExhausted}
             rightIcon={<CheckCircle2 className="w-5 h-5" />}
             className="ml-auto px-8"
