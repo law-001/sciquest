@@ -203,7 +203,7 @@ const SUBJECTS = [
 ];
 
 const STATS = [
-  { target: 200, suffix: "+", label: "Students" },
+  { target: 70, suffix: "+", label: "Students" },
   { target: 160, suffix: "+", label: "Lessons" },
   { target: 160, suffix: "+", label: "Quizzes" },
   { target: 1.2, suffix: "k", label: "XP Earned", decimals: 1 },
@@ -493,7 +493,6 @@ export function LandingPage({ onStartLearning, canEarnExplorer, onExplore }) {
   const sceneCfg = (SCENE_CFG[sceneKey] ?? SCENE_CFG.earth)[
     isDark ? "dark" : "light"
   ];
-
 
   /* XP bar animation */
   useEffect(() => {
@@ -1769,9 +1768,9 @@ export function LandingPage({ onStartLearning, canEarnExplorer, onExplore }) {
                 SciQuest turns the curriculum into challenges you actually want
                 to finish. No textbook walls, no boring slides.
               </p>
-              <p className="text-sm font-bold text-primary-600 mb-8">
+              {/* <p className="text-sm font-bold text-primary-600 mb-8">
                 Join 2,400+ students already on the platform.
-              </p>
+              </p> */}
 
               <ul className="space-y-5">
                 {[
@@ -1854,8 +1853,7 @@ export function LandingPage({ onStartLearning, canEarnExplorer, onExplore }) {
             Ready to level up?
           </h2>
           <p className="text-lg text-stone-400 mb-10 max-w-xl mx-auto">
-            Thousands of students are already making science something they look
-            forward to.
+            Students are already making science something they look forward to.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
