@@ -51,10 +51,14 @@ import {
   getPublishedWeekIds,
   savePublishedWeekIds,
   isWeekPublished,
+  isWeekOpen,
   getPublishedQuizWeekIds,
   savePublishedQuizWeekIds,
+  getOpenWeekIds,
+  saveOpenWeekIds,
   fetchPublishedWeekIds,
   fetchPublishedQuizWeekIds,
+  fetchOpenWeekIds,
   subscribeToPublishedState,
 } from "../lib/publishedWeeks";
 import {
@@ -809,19 +813,44 @@ function LessonsSlot({
   sectionId,
   publishedWeekIds,
   onPublishedWeekIdsChange,
+  openWeekIds,
+  onOpenWeekIdsChange,
 }) {
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
 
-  function togglePublish(weekId) {
-    const base = publishedWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
-    const next = new Set(base);
-    if (next.has(weekId)) {
-      next.delete(weekId);
+  // Weeks have three states a teacher can cycle through:
+  //   hidden    → not in publish set, not in open set        (locked for everyone)
+  //   published → in publish set, not in open set            (locked until previous week is done)
+  //   open      → in publish set AND in open set             (accessible regardless of prior progress)
+  function getWeekState(weekId) {
+    if (!isWeekPublished(weekId, publishedWeekIds)) return "hidden";
+    if (isWeekOpen(weekId, openWeekIds)) return "open";
+    return "published";
+  }
+
+  function cycleWeekState(weekId) {
+    const state = getWeekState(weekId);
+    const publishBase = publishedWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
+    const nextPublish = new Set(publishBase);
+    const nextOpen = new Set(openWeekIds ?? []);
+
+    if (state === "hidden") {
+      // hidden → published
+      nextPublish.add(weekId);
+      nextOpen.delete(weekId);
+    } else if (state === "published") {
+      // published → open
+      nextPublish.add(weekId);
+      nextOpen.add(weekId);
     } else {
-      next.add(weekId);
+      // open → hidden
+      nextPublish.delete(weekId);
+      nextOpen.delete(weekId);
     }
-    onPublishedWeekIdsChange(next);
+
+    onPublishedWeekIdsChange(nextPublish);
+    onOpenWeekIdsChange(nextOpen);
   }
 
   // Build a lookup from lesson id → activity data (completion map).
@@ -887,27 +916,43 @@ function LessonsSlot({
                   className="pl-8 pr-3 py-1.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 w-40"
                 />
               </div>
-              <button
-                onClick={() => togglePublish(expandedWeek.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-colors",
-                  isWeekPublished(expandedWeek.id, publishedWeekIds)
-                    ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                    : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
-                )}
-              >
-                {isWeekPublished(expandedWeek.id, publishedWeekIds) ? (
-                  <>
-                    <Eye className="w-4 h-4" />
-                    Published
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-4 h-4" />
-                    Hidden
-                  </>
-                )}
-              </button>
+              {(() => {
+                const state = getWeekState(expandedWeek.id);
+                const meta =
+                  state === "open"
+                    ? {
+                        cls: "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-700 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
+                        Icon: Eye,
+                        label: "Open for All",
+                        nextLabel: "Click to hide",
+                      }
+                    : state === "published"
+                      ? {
+                          cls: "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200",
+                          Icon: Eye,
+                          label: "Published",
+                          nextLabel: "Click to open for all",
+                        }
+                      : {
+                          cls: "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
+                          Icon: EyeOff,
+                          label: "Hidden",
+                          nextLabel: "Click to publish",
+                        };
+                return (
+                  <button
+                    onClick={() => cycleWeekState(expandedWeek.id)}
+                    title={meta.nextLabel}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-colors",
+                      meta.cls,
+                    )}
+                  >
+                    <meta.Icon className="w-4 h-4" />
+                    {meta.label}
+                  </button>
+                );
+              })()}
             </div>
           </div>
 
@@ -986,17 +1031,39 @@ function LessonsSlot({
                       ) / week.lessons.length,
                     )
                   : 0;
-                const published = isWeekPublished(week.id, publishedWeekIds);
+                const state = getWeekState(week.id);
+                const visible = state !== "hidden";
+                const badgeMeta =
+                  state === "open"
+                    ? {
+                        cls: "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-700 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
+                        Icon: Eye,
+                        label: "Open for All",
+                        nextLabel: `Hide week ${week.weekNumber}`,
+                      }
+                    : state === "published"
+                      ? {
+                          cls: "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200",
+                          Icon: Eye,
+                          label: "Published",
+                          nextLabel: `Open week ${week.weekNumber} for all`,
+                        }
+                      : {
+                          cls: "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
+                          Icon: EyeOff,
+                          label: "Hidden",
+                          nextLabel: `Publish week ${week.weekNumber}`,
+                        };
                 return (
                   <Card
                     key={week.id}
                     className={cn(
                       "p-5 transition-opacity",
-                      published ? "cursor-pointer" : "opacity-60",
+                      visible ? "cursor-pointer" : "opacity-60",
                     )}
-                    hoverable={published}
+                    hoverable={visible}
                     onClick={
-                      published
+                      visible
                         ? () => { setExpandedWeekId(week.id); setSearch(""); }
                         : undefined
                     }
@@ -1008,29 +1075,17 @@ function LessonsSlot({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        togglePublish(week.id);
+                        cycleWeekState(week.id);
                       }}
                       className={cn(
                         "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors",
-                        published
-                          ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                          : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
+                        badgeMeta.cls,
                       )}
-                      title={
-                        published ? "Click to hide" : "Click to publish"
-                      }
-                      aria-label={
-                        published
-                          ? `Hide week ${week.weekNumber}`
-                          : `Publish week ${week.weekNumber}`
-                      }
+                      title={badgeMeta.nextLabel}
+                      aria-label={badgeMeta.nextLabel}
                     >
-                      {published ? (
-                        <Eye className="w-3 h-3" />
-                      ) : (
-                        <EyeOff className="w-3 h-3" />
-                      )}
-                      {published ? "Published" : "Hidden"}
+                      <badgeMeta.Icon className="w-3 h-3" />
+                      {badgeMeta.label}
                     </button>
                   </div>
                   <span className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1 block">
@@ -3640,6 +3695,15 @@ export function TeacherPortalPage({ onBack }) {
     });
   }
 
+  const [openWeekIds, setOpenWeekIdsState] = useState(() => getOpenWeekIds());
+
+  function setOpenWeekIds(ids) {
+    setOpenWeekIdsState(ids);
+    saveOpenWeekIds(ids).catch((err) => {
+      console.error("Failed to save open week ids:", err);
+    });
+  }
+
   const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
 
   // Hydrate global settings from Supabase on mount, then subscribe so other
@@ -3649,12 +3713,14 @@ export function TeacherPortalPage({ onBack }) {
     Promise.all([
       fetchPublishedWeekIds(),
       fetchPublishedQuizWeekIds(),
+      fetchOpenWeekIds(),
       fetchQuizSettings(),
     ])
-      .then(([lessons, quizzes, settings]) => {
+      .then(([lessons, quizzes, open, settings]) => {
         if (cancelled) return;
         setPublishedWeekIdsState(lessons);
         setPublishedQuizWeekIdsState(quizzes);
+        setOpenWeekIdsState(open);
         setQuizSettings(settings);
       })
       .catch((err) => console.error("Failed to load course settings:", err));
@@ -3662,6 +3728,7 @@ export function TeacherPortalPage({ onBack }) {
     const unsubPublish = subscribeToPublishedState((scope, ids) => {
       if (scope === "lessons") setPublishedWeekIdsState(ids);
       else if (scope === "quizzes") setPublishedQuizWeekIdsState(ids);
+      else if (scope === "open") setOpenWeekIdsState(ids);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
       fetchQuizSettings().then((m) => { if (!cancelled) setQuizSettings(m); }).catch(() => {});
@@ -3905,6 +3972,8 @@ export function TeacherPortalPage({ onBack }) {
                 onSectionNamesChange={setMySectionNames}
                 publishedWeekIds={publishedWeekIds}
                 onPublishedWeekIdsChange={setPublishedWeekIds}
+                openWeekIds={openWeekIds}
+                onOpenWeekIdsChange={setOpenWeekIds}
                 publishedQuizWeekIds={publishedQuizWeekIds}
                 onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
                 quizSettings={quizSettings}

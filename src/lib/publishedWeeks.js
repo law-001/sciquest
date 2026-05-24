@@ -10,6 +10,7 @@ import { supabase } from './supabase'
 
 const LESSONS_CACHE = 'sq_published_weeks'
 const QUIZZES_CACHE = 'sq_published_quiz_weeks'
+const OPEN_CACHE = 'sq_open_weeks'
 
 function readCache(key) {
   try {
@@ -42,6 +43,17 @@ export function isWeekPublished(weekId, publishedIds) {
   return publishedIds.has(weekId)
 }
 
+// "Open for all" is opt-in per week — default (no row, or week not in set)
+// is `false`, so the normal previous-week prerequisite still applies.
+export function getOpenWeekIds() {
+  return readCache(OPEN_CACHE)
+}
+
+export function isWeekOpen(weekId, openIds) {
+  if (!openIds) return false
+  return openIds.has(weekId)
+}
+
 async function fetchScope(scope) {
   const { data, error } = await supabase
     .from('course_publish_state')
@@ -62,6 +74,12 @@ export async function fetchPublishedWeekIds() {
 export async function fetchPublishedQuizWeekIds() {
   const ids = await fetchScope('quizzes')
   writeCache(QUIZZES_CACHE, ids)
+  return ids
+}
+
+export async function fetchOpenWeekIds() {
+  const ids = await fetchScope('open')
+  writeCache(OPEN_CACHE, ids)
   return ids
 }
 
@@ -86,6 +104,11 @@ export async function savePublishedQuizWeekIds(ids) {
   await upsertScope('quizzes', ids)
 }
 
+export async function saveOpenWeekIds(ids) {
+  writeCache(OPEN_CACHE, ids)
+  await upsertScope('open', ids)
+}
+
 // Subscribe to realtime updates so toggles made on one device propagate
 // to every other open client within seconds. Returns an unsubscribe fn.
 export function subscribeToPublishedState(onChange) {
@@ -102,7 +125,15 @@ export function subscribeToPublishedState(onChange) {
         const ids = payload.eventType === 'DELETE'
           ? null
           : new Set(row.week_ids ?? [])
-        const cacheKey = row.scope === 'lessons' ? LESSONS_CACHE : QUIZZES_CACHE
+        const cacheKey =
+          row.scope === 'lessons'
+            ? LESSONS_CACHE
+            : row.scope === 'quizzes'
+              ? QUIZZES_CACHE
+              : row.scope === 'open'
+                ? OPEN_CACHE
+                : null
+        if (!cacheKey) return
         writeCache(cacheKey, ids)
         onChange(row.scope, ids)
       },

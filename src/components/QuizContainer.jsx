@@ -522,68 +522,25 @@ export function QuizContainer({
   }
 
   // ── Quiz screen (single-page) ───────────────────────────────────────────────
+  const xpPossible = autoGradableUnits(questions) * QUIZ_XP_PER_CORRECT;
+
   return (
     <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
-      {/* Sticky header */}
-      <div className="top-0 z-30 backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 bg-[#fdf6e3]/92 dark:bg-stone-900/92">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 lg:pt-8 pb-36">
+        <div className="grid grid-cols-1 lg:grid-cols-[180px_minmax(0,1fr)_260px] gap-6 lg:gap-8">
+          {/* LEFT rail — Exit (sticks beside the quiz on desktop) */}
+          <aside className="order-1 lg:order-none lg:sticky lg:top-20 lg:self-start">
             <button
               onClick={onExit}
-              className="flex items-center gap-2 text-stone-500 hover:text-primary-600 font-bold transition-colors text-sm"
+              className="flex items-center gap-2 text-stone-500 hover:text-primary-600 font-bold transition-colors text-sm px-3 py-2 -ml-3"
             >
               <ArrowLeft className="w-4 h-4" /> Exit Quiz
             </button>
+          </aside>
 
-            <div className="flex items-center gap-3">
-              {lesson && (
-                <span className="hidden sm:block text-xs font-bold text-stone-400 uppercase tracking-wider">
-                  {lesson.title}
-                </span>
-              )}
-              {hasTimer && remainingSec !== null && (
-                <span
-                  role="timer"
-                  aria-live={remainingSec <= 30 ? "assertive" : "off"}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tabular-nums border",
-                    remainingSec <= 30
-                      ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700 animate-pulse"
-                      : remainingSec <= 120
-                        ? "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700"
-                        : "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700",
-                  )}
-                  title="Time remaining"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  {formatRemaining(remainingSec)}
-                </span>
-              )}
-              <Badge
-                variant="accent"
-                icon={<Star className="w-3 h-3 fill-current" />}
-              >
-                {autoGradableUnits(questions) * QUIZ_XP_PER_CORRECT} XP possible
-              </Badge>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="pb-3">
-            <div className="flex justify-between text-xs font-bold text-stone-400 mb-1.5">
-              <span>
-                {answeredCount} of {questions.length} answered
-              </span>
-              <span>{progress}%</span>
-            </div>
-            <ProgressBar progress={progress} color="secondary" size="sm" />
-          </div>
-        </div>
-      </div>
-
-      {/* All questions */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 pb-36 space-y-8">
-        {questions.map((q, i) => {
+          {/* CENTER — questions */}
+          <main className="order-3 lg:order-none w-full max-w-3xl mx-auto space-y-8">
+            {questions.map((q, i) => {
           const Component = QUESTION_MAP[q.type];
           if (!Component) return null;
           const answered = isAnswered(q, answers[q.id]);
@@ -630,6 +587,71 @@ export function QuizContainer({
             </Card>
           );
         })}
+          </main>
+
+          {/* RIGHT rail — lesson info, timer, XP, progress (sticks beside the quiz on desktop) */}
+          <aside className="order-2 lg:order-none lg:sticky lg:top-20 lg:self-start flex flex-col gap-3">
+            {lesson && (
+              <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
+                <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">
+                  Lesson
+                </div>
+                <div className="text-sm font-black text-stone-700 dark:text-stone-200 leading-snug">
+                  {lesson.title}
+                </div>
+              </div>
+            )}
+
+            {hasTimer && remainingSec !== null && (
+              <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
+                <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">
+                  Time Limit
+                </div>
+                <span
+                  role="timer"
+                  aria-live={remainingSec <= 30 ? "assertive" : "off"}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tabular-nums border",
+                    remainingSec <= 30
+                      ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700 animate-pulse"
+                      : remainingSec <= 120
+                        ? "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700"
+                        : "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700",
+                  )}
+                  title="Time remaining"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  {formatRemaining(remainingSec)}
+                </span>
+              </div>
+            )}
+
+            <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
+              <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">
+                XP Possible
+              </div>
+              <Badge
+                variant="accent"
+                icon={<Star className="w-3 h-3 fill-current" />}
+              >
+                {xpPossible} XP
+              </Badge>
+            </div>
+
+            <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
+              <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">
+                Progress
+              </div>
+              <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5">
+                <span>
+                  {answeredCount} of {questions.length}
+                </span>
+                <span>{progress}%</span>
+              </div>
+              <ProgressBar progress={progress} color="secondary" size="sm" />
+            </div>
+          </aside>
+        </div>
       </div>
 
       {/* Sticky Submit footer */}
