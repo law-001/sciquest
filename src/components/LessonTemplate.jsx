@@ -6,6 +6,8 @@ import {
   Star,
   Clock,
   Lock,
+  BookOpen,
+  ExternalLink,
 } from "lucide-react";
 import Button from "./Button";
 import Card from "./Card";
@@ -26,6 +28,75 @@ import {
   ScenarioSection,
   DiagramSection,
 } from "./lesson-slots";
+
+function ReferencesSection({ references }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={ref}
+      className="mt-16 pt-8 border-t border-orange-200 dark:border-stone-700"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(24px)",
+        transition: "opacity 0.6s ease, transform 0.6s ease",
+      }}
+    >
+      <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-6 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-700/50 flex items-center justify-center transition-transform duration-300 hover:scale-110">
+          <BookOpen className="w-5 h-5 text-stone-500 dark:text-stone-300" />
+        </div>
+        References
+      </h2>
+
+      <Card className="p-6 bg-stone-50 dark:bg-stone-800/40 border-stone-200 dark:border-stone-700/40">
+        <ol className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {references.map((item, i) => (
+            <li
+              key={i}
+              className="group/ref flex items-center gap-3"
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(10px)",
+                transition: `opacity 0.5s ease ${i * 60}ms, transform 0.5s ease ${i * 60}ms`,
+              }}
+            >
+              <span className="w-7 h-7 rounded-full bg-accent-100 dark:bg-accent-700/30 flex items-center justify-center shrink-0 text-xs font-black text-accent-600 dark:text-accent-300 transition-all duration-300 group-hover/ref:bg-accent-200 dark:group-hover/ref:bg-accent-700/50">
+                {i + 1}
+              </span>
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200 group/link"
+              >
+                <span className="group-hover/link:underline underline-offset-2">
+                  {item.label}
+                </span>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200" />
+              </a>
+            </li>
+          ))}
+        </ol>
+      </Card>
+    </section>
+  );
+}
 
 // ── SLOT_MAP: maps type strings → components ──
 const SLOT_MAP = {
@@ -444,6 +515,11 @@ export function LessonTemplate({
                 );
               })}
             </div>
+
+            {/* References */}
+            {lesson.references?.length > 0 && (
+              <ReferencesSection references={lesson.references} />
+            )}
 
             {/* Completion CTA */}
             <div

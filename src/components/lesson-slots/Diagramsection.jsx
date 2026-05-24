@@ -50,7 +50,7 @@ export default function DiagramSection({ id, heading, data }) {
 
       <Card className="p-8">
         {title && (
-          <h3 className="text-xl font-bold text-stone-900 mb-6 text-center">
+          <h3 className="text-xl font-bold text-stone-900 dark:text-white mb-6 text-center">
             {title}
           </h3>
         )}
@@ -69,9 +69,9 @@ export default function DiagramSection({ id, heading, data }) {
               }}
             >
               <div
-                className={`w-28 h-28 rounded-2xl bg-${node.color}-50 border-2 border-${node.color}-300 flex items-center justify-center text-center p-3 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:border-${node.color}-400 cursor-default`}
+                className={`w-28 h-28 rounded-2xl bg-${node.color}-50 dark:bg-stone-700 border-2 border-${node.color}-300 dark:border-stone-500 flex items-center justify-center text-center p-3 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:border-${node.color}-400 cursor-default`}
               >
-                <p className={`text-sm font-bold text-${node.color}-800`}>
+                <p className={`text-sm font-bold text-${node.color}-800 dark:text-white`}>
                   {node.label}
                 </p>
               </div>
@@ -84,7 +84,7 @@ export default function DiagramSection({ id, heading, data }) {
                     return (
                       <span
                         key={targetId}
-                        className="text-xs font-medium text-stone-500 bg-stone-100 rounded-full px-2 py-0.5 transition-all duration-200 hover:bg-stone-200 hover:text-stone-700 cursor-default"
+                        className="text-xs font-medium text-stone-500 dark:text-stone-300 bg-stone-100 dark:bg-stone-600 rounded-full px-2 py-0.5 transition-all duration-200 hover:bg-stone-200 dark:hover:bg-stone-500 hover:text-stone-700 dark:hover:text-stone-100 cursor-default"
                       >
                         → {target.label}
                       </span>

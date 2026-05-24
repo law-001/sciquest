@@ -55,7 +55,7 @@ export default function ComparisonSection({ id, heading, data }) {
             className={`group p-6 border-t-4 border-t-${left.color}-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}
           >
             <h3
-              className={`text-xl font-bold text-${left.color}-700 mb-4 transition-colors duration-300 group-hover:text-${left.color}-800`}
+              className={`text-xl font-bold text-${left.color}-700 dark:text-stone-100 mb-4 transition-colors duration-300 group-hover:text-${left.color}-800 dark:group-hover:text-white`}
             >
               {left.label}
             </h3>
@@ -89,7 +89,7 @@ export default function ComparisonSection({ id, heading, data }) {
             className={`group p-6 border-t-4 border-t-${right.color}-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}
           >
             <h3
-              className={`text-xl font-bold text-${right.color}-700 mb-4 transition-colors duration-300 group-hover:text-${right.color}-800`}
+              className={`text-xl font-bold text-${right.color}-700 dark:text-stone-100 mb-4 transition-colors duration-300 group-hover:text-${right.color}-800 dark:group-hover:text-white`}
             >
               {right.label}
             </h3>

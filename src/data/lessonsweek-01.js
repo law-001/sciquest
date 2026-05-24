@@ -1,11 +1,17 @@
 // ─── Week 1: Scientific Models ───────────────────
-// Data only — no JSX. Each lesson uses layout[] to pick slot types.
+// Data only   no JSX. Each lesson uses layout[] to pick slot types.
 
-import microscope from "../assets/Microscopic.jpg";
-import globe from "../assets/globe.jpg";
-import web from "../assets/web.jpg";
-import equation from "../assets/equation.jpg";
-import simulation from "../assets/simulation.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import globe from "../assets/week1/globe.jpg";
+import web from "../assets/week1/web.jpg";
+import equation from "../assets/week1/equation.jpg";
+import simulation from "../assets/week1/simulation.jpg";
+import scimethod from "../assets/week1/scimethod.jpg";
+import model from "../assets/week1/model.jpg";
+import weatherforecast from "../assets/week1/weatherforecast.webp";
+import medicalmodel from "../assets/week1/medicalmodel.jpg";
+import engrmodel from "../assets/week1/engrmodel.webp";
+import climate from "../assets/week1/climate.jpg";
 
 import { week02 } from "./lessonsweek-02";
 import { week03 } from "./lessonsweek-03";
@@ -39,7 +45,7 @@ const week01 = {
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════
-    // LESSON 1 — Uses of Scientific Models
+    // LESSON 1   Uses of Scientific Models
     // ═══════════════════════════════════════════════════
     {
       id: "lesson-1",
@@ -61,6 +67,33 @@ const week01 = {
         "Breakdown",
         "Understanding",
         "Applications",
+      ],
+
+      references: [
+        {
+          label: "SERC Carleton   Teaching With Models",
+          url: "https://serc.carleton.edu/introgeo/models/index.html",
+        },
+        {
+          label: "SERC Carleton   What Is a Model?",
+          url: "https://serc.carleton.edu/teachearth/teaching_methods/models/WhatIsAModel.html",
+        },
+        {
+          label: "NSTA   Using Models to Teach Science",
+          url: "https://www.nsta.org/using-models-teach-science",
+        },
+        {
+          label: "Texas Gateway   Scientific Models",
+          url: "https://texasgateway.org/resource/scientific-models",
+        },
+        {
+          label: "University of Hawaii   Practices of Science: Using Models",
+          url: "https://manoa.hawaii.edu/exploringourfluidearth/physical/density-effects/density-driven-currents/practices-science-using-models",
+        },
+        {
+          label: "Wikipedia   Scientific Modelling",
+          url: "https://en.wikipedia.org/wiki/Scientific_modelling",
+        },
       ],
 
       layout: [
@@ -273,20 +306,9 @@ const week01 = {
         },
       ],
     },
-
     // ═══════════════════════════════════════════════════
-    // LESSON 2 — Science Process Skills & Scientific Method
+    // LESSON 2   Integrated Science Process Skills & Scientific Method
     // ═══════════════════════════════════════════════════
-    // ─────────────────────────────────────────────────────────────────
-    // LESSON 2 — Integrated Science Process Skills & Scientific Method
-    // Week 1 | Grade 7 Science
-    // Teaching Days: 1 (60 minutes)
-    // Competencies:
-    //   • Recognize each science process skill
-    //   • Use scientific attitudes to seek solutions to human problems
-    //   • Appreciate the role and contribution of science in our world
-    // ─────────────────────────────────────────────────────────────────
-
     {
       id: "lesson-2",
       weekId: "week-1",
@@ -294,97 +316,62 @@ const week01 = {
       title: "Integrated Science Process Skills and the Scientific Method",
       badge: "Lesson 2",
       subtitle:
-        "Discover how scientists think, investigate, and solve problems — and how YOU already use these skills every single day.",
-      readTime: "~20 min read",
+        "Discover how scientists think, investigate, and solve problems   and how YOU already use these skills every single day.",
+      readTime: "~18 min read",
       xp: 50,
-      heroImage: microscope, // reuse existing import from week-01.js
+      heroImage: scimethod,
       heroImageAlt: "Students conducting a scientific investigation in class",
 
-      // sections[] drives the sidebar TOC — must match layout[] 1-to-1
       sections: [
         "Introduction",
-        "Key Terms",
         "The Scientific Method",
-        "Science Process Skills",
-        "Scientific Attitudes",
         "Skills vs. Attitudes",
+        "Scientific Attitudes",
         "Real-Life Scenarios",
         "Why Science Matters",
       ],
 
+      references: [
+        {
+          label: "Science Buddies   Steps of the Scientific Method",
+          url: "https://www.sciencebuddies.org/science-fair-projects/science-fair/steps-of-the-scientific-method",
+        },
+        {
+          label: "National Geographic Education   The Scientific Method",
+          url: "https://education.nationalgeographic.org/resource/scientific-method/",
+        },
+        {
+          label: "UC Berkeley   Understanding Science: How Science Works",
+          url: "https://undsci.berkeley.edu/understanding-science/how-science-works/the-scientific-method/",
+        },
+        {
+          label: "Khan Academy   The Scientific Method",
+          url: "https://www.khanacademy.org/science/biology/intro-to-biology/science-of-biology/a/the-science-of-biology",
+        },
+      ],
+
       layout: [
-        // ── SECTION 0 · Introduction ────────────────────────────────
+        // ── SECTION 0 · Introduction ──────────────────────────────────
         {
           type: "intro",
           heading: "Introduction",
           data: {
             paragraphs: [
-              "Have you ever wondered how scientists figure out the answers to big questions — like why the sky is blue, or how diseases spread? Scientific discoveries do not happen by accident. They follow a <strong class='text-primary-700'>structured and logical process</strong> called the <strong class='text-primary-700'>Scientific Method</strong>.",
-              "To carry out this process, scientists rely on <strong class='text-primary-700'>Science Process Skills</strong> — a set of thinking and doing skills that help them observe the world carefully, ask meaningful questions, and find evidence-based answers. These same skills are used in everyday life, from choosing what to eat for breakfast to designing the next generation of smartphones.",
-              "In this lesson, you will learn to <strong class='text-primary-700'>recognize</strong> each science process skill, understand how <strong class='text-primary-700'>scientific attitudes</strong> guide honest and responsible investigations, and appreciate how science helps us solve real human problems.",
+              "Have you ever wondered how scientists figure out the answers to big questions   like why the sky is blue, or how diseases spread? Scientific discoveries do not happen by accident. They follow a <strong class='text-primary-700'>structured and logical process</strong> called the <strong class='text-primary-700'>Scientific Method</strong>.",
+              "To carry out this process, scientists rely on <strong class='text-primary-700'>Science Process Skills</strong>   a set of thinking and doing skills that help them observe the world carefully, ask meaningful questions, and find evidence-based answers. These same skills appear in everyday life: from choosing what to eat for breakfast to designing the next generation of smartphones.",
             ],
             didYouKnow:
-              "When Myra compares the volumes of two alcohol containers, or when Jesse infers that a loud knock means a guest has arrived — they are already using science process skills without even realizing it!",
+              "When Myra compares the volumes of two alcohol containers, or when Jesse infers that a loud knock means a guest has arrived   they are already using science process skills without even realizing it!",
           },
         },
 
-        // ── SECTION 1 · Key Terms ────────────────────────────────────
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Scientific Method",
-                desc: "A systematic, step-by-step process scientists use to investigate questions, gather evidence, and draw reliable conclusions.",
-              },
-              {
-                term: "Science Process Skills",
-                desc: "A set of thinking and investigative skills — such as observing, classifying, and experimenting — that scientists use to study the natural world.",
-              },
-              {
-                term: "Observation",
-                desc: "Gathering information about objects or events using the five senses or scientific tools like rulers and thermometers.",
-              },
-              {
-                term: "Inference",
-                desc: "An explanation or conclusion drawn from observations and prior knowledge — it goes beyond what is directly seen.",
-              },
-              {
-                term: "Prediction",
-                desc: "A statement about what might happen in the future, based on patterns observed in data or prior experience.",
-              },
-              {
-                term: "Classification",
-                desc: "Grouping or arranging objects, events, or data based on their similarities and differences.",
-              },
-              {
-                term: "Measurement",
-                desc: "Using standard units and tools to describe the quantity of an object or event (e.g., length, volume, temperature).",
-              },
-              {
-                term: "Experimentation",
-                desc: "Designing and conducting controlled tests to investigate a hypothesis and collect data.",
-              },
-              {
-                term: "Communication",
-                desc: "Sharing the results of scientific work through written reports, graphs, oral presentations, or discussions.",
-              },
-              {
-                term: "Scientific Attitude",
-                desc: "A value or disposition — such as curiosity, honesty, and perseverance — that guides responsible and ethical scientific practice.",
-              },
-            ],
-          },
-        },
-
-        // ── SECTION 2 · The Scientific Method (Timeline) ─────────────
+        // ── SECTION 1 · The Scientific Method (timeline) ─────────────
         {
           type: "timeline",
           heading: "The Scientific Method",
           data: {
             intro:
-              "The Scientific Method is the backbone of every scientific investigation. It gives scientists — and students like you — a reliable roadmap for asking questions and finding answers based on evidence, not guesswork.",
+              "The Scientific Method is the backbone of every scientific investigation. It gives scientists   and students like you   a reliable roadmap for asking questions and finding answers based on evidence, not guesswork.",
             steps: [
               {
                 num: 1,
@@ -399,7 +386,7 @@ const week01 = {
                 title: "Gather Background Information",
                 color: "secondary",
                 description:
-                  "Before experimenting, scientists research what is already known about the topic. This prevents repeating past mistakes and helps form a smarter hypothesis. Example: Reading about photosynthesis before designing a plant growth experiment.",
+                  "Before experimenting, scientists research what is already known about the topic. This prevents repeating past mistakes and helps form a smarter hypothesis. Example: reading about photosynthesis before designing a plant growth experiment.",
                 tip: "Use books, credible websites, and previous experiments as your sources.",
               },
               {
@@ -407,8 +394,8 @@ const week01 = {
                 title: "Form a Hypothesis",
                 color: "accent",
                 description:
-                  "A hypothesis is an educated, testable guess about the answer to your question. It is written as an 'If... then...' statement. Example: 'If a plant receives more sunlight, then it will grow taller in two weeks.'",
-                tip: "A hypothesis is not just a wild guess — it must be based on what you already know.",
+                  "A hypothesis is an educated, testable guess written as an 'If… then…' statement. Example: 'If a plant receives more sunlight, then it will grow taller in two weeks.'",
+                tip: "A hypothesis must be based on prior knowledge   it is not a random guess.",
               },
               {
                 num: 4,
@@ -416,137 +403,67 @@ const week01 = {
                 color: "primary",
                 description:
                   "Scientists design a fair test to check whether their hypothesis is correct. They control all variables except the one being tested (the independent variable) and measure the outcome (the dependent variable).",
-                tip: "Always repeat your experiment at least 3 times to make sure your results are reliable.",
+                tip: "Always repeat your experiment at least 3 times to ensure your results are reliable.",
               },
               {
                 num: 5,
-                title: "Collect and Analyze Data",
+                title: "Analyze Data and Draw a Conclusion",
                 color: "secondary",
                 description:
-                  "During and after the experiment, scientists record all measurements and observations carefully. They then organize the data using tables, graphs, and charts to spot patterns and trends.",
-                tip: "Honest data collection is essential — never change your data to match your hypothesis.",
+                  "Scientists record all measurements, organize the data using tables and graphs, and then decide whether their hypothesis was supported or refuted by the evidence.",
+                tip: "It is perfectly fine if your hypothesis was wrong   that is still a valuable scientific finding!",
               },
               {
                 num: 6,
-                title: "Draw a Conclusion",
+                title: "Communicate Results",
                 color: "accent",
                 description:
-                  "Based on the analyzed data, scientists decide whether their hypothesis was supported or refuted. A conclusion explains what the results mean and what new questions they raise.",
-                tip: "It's perfectly fine if your hypothesis was wrong — that's still a valuable scientific finding!",
-              },
-              {
-                num: 7,
-                title: "Communicate Results",
-                color: "primary",
-                description:
-                  "Scientists share their findings with others through reports, presentations, or publications. This allows other scientists to verify, challenge, or build on the results.",
+                  "Scientists share their findings through reports, presentations, or publications so that others can verify, challenge, or build on the results.",
                 tip: "Clear communication is what makes science a collaborative, growing body of knowledge.",
               },
             ],
           },
         },
 
-        // ── SECTION 3 · Science Process Skills (imageCards) ──────────
+        // ── SECTION 2 · Skills vs. Attitudes (comparison) ────────────
         {
-          type: "imageCards",
-          heading: "Science Process Skills",
+          type: "comparison",
+          heading: "Skills vs. Attitudes",
           data: {
-            cards: [
-              {
-                title: "Observing",
-                label: "Basic Skill",
-                variant: "primary",
-                color: "primary",
-                image: microscope,
-                imageAlt: "Student observing through a microscope",
-                desc: "Using the five senses — or scientific tools — to gather information about objects and events. This is the most fundamental of all process skills.",
-                examples: [
-                  "Adrian looked at the traffic light and noticed it turned red. (Sight)",
-                  "Jesse heard a loud knock on the door. (Hearing)",
-                  "Measuring the temperature of water with a thermometer",
-                ],
-              },
-              {
-                title: "Classifying",
-                label: "Basic Skill",
-                variant: "secondary",
-                color: "secondary",
-                image: web,
-                imageAlt: "Organized categories on a board",
-                desc: "Grouping objects, organisms, or data based on their shared properties or characteristics. Classification helps scientists organize information and find patterns.",
-                examples: [
-                  "Real rearranging clothes in her cabinet by type and color",
-                  "Sorting materials as solid, liquid, or gas",
-                  "Grouping animals by the number of legs they have",
-                ],
-              },
-              {
-                title: "Measuring",
-                label: "Basic Skill",
-                variant: "primary",
-                color: "primary",
-                image: equation,
-                imageAlt: "Ruler and measuring tools",
-                desc: "Using standard units and instruments to describe quantities accurately. Measurement makes observations precise and allows results to be compared.",
-                examples: [
-                  "Myra comparing the volumes of two alcohol containers",
-                  "Recording the mass of a rock sample in grams",
-                  "Measuring the growth of a plant in centimeters each day",
-                ],
-              },
-              {
-                title: "Inferring",
-                label: "Integrated Skill",
-                variant: "secondary",
-                color: "secondary",
-                image: simulation,
-                imageAlt: "Student thinking and making connections",
-                desc: "Using prior knowledge and observations to form an explanation about something. Unlike observations, inferences cannot be directly verified by the senses alone.",
-                examples: [
-                  "Jesse inferred his guest arrived after hearing a loud knock",
-                  "Concluding that wet grass means it rained earlier",
-                  "Inferring that a plant is unhealthy based on its yellowing leaves",
-                ],
-              },
-              {
-                title: "Predicting",
-                label: "Integrated Skill",
-                variant: "primary",
-                color: "primary",
-                image: globe,
-                imageAlt: "Weather forecast chart",
-                desc: "Stating what you think will happen in the future based on patterns and prior observations. A prediction must be testable — it is different from a random guess.",
-                examples: [
-                  "William predicted the watermelon might be sweet based on its size and color",
-                  "Predicting that more fertilizer will produce taller plants",
-                  "Forecasting tomorrow's weather using wind and cloud patterns",
-                ],
-              },
-              {
-                title: "Experimenting & Communicating",
-                label: "Integrated Skill",
-                variant: "secondary",
-                color: "secondary",
-                image: equation,
-                imageAlt: "Students presenting experiment results",
-                desc: "Designing and conducting controlled tests to investigate a hypothesis, then sharing the findings clearly with others through written or oral reports.",
-                examples: [
-                  "Pam checks and records the results of her experiment accurately",
-                  "Presenting lab findings using graphs and tables",
-                  "Writing a scientific report and sharing it with classmates",
-                ],
-              },
-            ],
+            intro:
+              "It is important to understand the difference between what scientists DO (process skills) and how they BEHAVE while doing it (scientific attitudes). Both are essential for reliable, ethical science.",
+            left: {
+              label: "⚙️ Science Process Skills",
+              color: "primary",
+              items: [
+                "Actions and techniques used during investigation",
+                "Can be practiced and improved through repeated activities",
+                "Examples: Observing, Classifying, Measuring, Inferring, Predicting, Experimenting, Communicating",
+                "Answer the question: WHAT does a scientist DO?",
+                "Produce data, results, and conclusions",
+              ],
+            },
+            right: {
+              label: "🌟 Scientific Attitudes",
+              color: "secondary",
+              items: [
+                "Values and dispositions that guide scientific behavior",
+                "Developed through reflection, modeling, and habit",
+                "Examples: Curiosity, Integrity, Open-mindedness, Collaboration, Perseverance, Objectivity",
+                "Answer the question: HOW does a scientist BEHAVE?",
+                "Ensure science is honest, ethical, and trustworthy",
+              ],
+            },
           },
         },
 
-        // ── SECTION 4 · Scientific Attitudes (reasonCards) ───────────
+        // ── SECTION 3 · Scientific Attitudes (reasonCards) ───────────
         {
           type: "reasonCards",
           heading: "Scientific Attitudes",
           data: {
             intro:
-              "Science process skills tell us WHAT to do. Scientific attitudes tell us HOW to do it — with honesty, respect, and responsibility. These attitudes are just as important as the skills themselves, especially when collecting and reporting data.",
+              "Science process skills tell us WHAT to do. Scientific attitudes tell us HOW to do it   with honesty, respect, and responsibility. These attitudes are just as important as the skills themselves, especially when collecting and reporting data.",
             reasons: [
               {
                 num: "🔍",
@@ -600,45 +517,13 @@ const week01 = {
           },
         },
 
-        // ── SECTION 5 · Skills vs. Attitudes (comparison) ────────────
-        {
-          type: "comparison",
-          heading: "Skills vs. Attitudes",
-          data: {
-            intro:
-              "It is important to understand the difference between what scientists DO (process skills) and how they BEHAVE while doing it (scientific attitudes). Both are essential for reliable, ethical science.",
-            left: {
-              label: "⚙️ Science Process Skills",
-              color: "primary",
-              items: [
-                "Actions and techniques used during investigation",
-                "Can be practiced and improved through repeated activities",
-                "Examples: Observing, Classifying, Measuring, Inferring, Predicting, Experimenting, Communicating",
-                "Answer the question: WHAT does a scientist DO?",
-                "Produce data, results, and conclusions",
-              ],
-            },
-            right: {
-              label: "🌟 Scientific Attitudes",
-              color: "secondary",
-              items: [
-                "Values and dispositions that guide scientific behavior",
-                "Developed through reflection, modeling, and habit",
-                "Examples: Curiosity, Integrity, Open-mindedness, Collaboration, Perseverance, Objectivity",
-                "Answer the question: HOW does a scientist BEHAVE?",
-                "Ensure science is honest, ethical, and trustworthy",
-              ],
-            },
-          },
-        },
-
-        // ── SECTION 6 · Real-Life Scenarios (scenario) ───────────────
+        // ── SECTION 4 · Real-Life Scenarios (scenario) ───────────────
         {
           type: "scenario",
           heading: "Real-Life Scenarios",
           data: {
             intro:
-              "Let's practice identifying science process skills and attitudes in action! Read each scenario below and think about which skill or attitude is being used. These are based on real seatwork situations you will encounter in class.",
+              "Practice identifying science process skills and attitudes in action! Read each scenario below and decide which skill or attitude is being demonstrated.",
             scenarios: [
               {
                 title: "Myra and the Alcohol Containers",
@@ -647,43 +532,25 @@ const week01 = {
                 question:
                   "What science process skill is Myra demonstrating? How is this different from simply looking at the containers?",
                 skill:
-                  "Measuring — she is using standard markings (units) to determine and compare volumes precisely.",
-              },
-              {
-                title: "Adrian at the Traffic Light",
-                situation:
-                  "While crossing the street, Adrian notices that the traffic light has changed from green to red, and immediately stops walking.",
-                question:
-                  "Which of the five senses is Adrian using? Is this an observation or an inference? Why?",
-                skill:
-                  "Observing (sight) — Adrian is using a sense to gather direct information about the environment.",
-              },
-              {
-                title: "Real and the Cabinet",
-                situation:
-                  "Real notices her clothes are all mixed up. She decides to arrange them by type: school uniforms in one section, casual clothes in another, and sports clothes in a third section.",
-                question:
-                  "What is Real doing to her clothes? What criteria is she using to organize them?",
-                skill:
-                  "Classifying — Real is grouping objects based on shared characteristics (type/function).",
+                  "Measuring   she is using standard markings (units) to determine and compare volumes precisely.",
               },
               {
                 title: "Jesse's Loud Knock",
                 situation:
-                  "Jesse is studying in his room when he hears a loud knock on the front door. He thinks to himself: 'That must be my guest — they said they would arrive around this time.'",
+                  "Jesse is studying in his room when he hears a loud knock on the front door. He thinks to himself: 'That must be my guest   they said they would arrive around this time.'",
                 question:
                   "Jesse cannot see who is at the door yet. Is his conclusion an observation or an inference? What is the difference?",
                 skill:
-                  "Inferring — Jesse uses prior knowledge (his guest's expected arrival) combined with an observation (the knock) to form an explanation.",
+                  "Inferring   Jesse uses prior knowledge (his guest's expected arrival) combined with an observation (the knock) to form an explanation.",
               },
               {
                 title: "William and the Watermelon",
                 situation:
                   "At the market, William taps a watermelon and listens to the sound it makes. Based on past experience, he says: 'I think this watermelon will be sweet.'",
                 question:
-                  "William hasn't tasted the watermelon yet. How is this statement different from an inference? What makes it a prediction?",
+                  "William hasn't tasted the watermelon yet. How is this different from an inference? What makes it a prediction?",
                 skill:
-                  "Predicting — William is using a pattern from past experience to state what will happen in the future.",
+                  "Predicting   William is using a pattern from past experience to state what will happen in the future.",
               },
               {
                 title: "Dhanna Never Gives Up",
@@ -692,13 +559,13 @@ const week01 = {
                 question:
                   "What scientific attitude is Dhanna demonstrating? Why is this attitude especially important in science?",
                 skill:
-                  "Perseverance — Dhanna continues despite setbacks, ensuring her results are based on actual evidence.",
+                  "Perseverance   Dhanna continues despite setbacks, ensuring her results are based on actual evidence.",
               },
             ],
           },
         },
 
-        // ── SECTION 7 · Why Science Matters (applications) ───────────
+        // ── SECTION 5 · Why Science Matters (applications) ───────────
         {
           type: "applications",
           heading: "Why Science Matters",
@@ -707,7 +574,7 @@ const week01 = {
               {
                 title: "Solving Everyday Problems",
                 description:
-                  "Science process skills are not just for laboratories — they help us solve real problems, from designing better tools to finding cures for diseases. Every invention started with a curious question.",
+                  "Science process skills are not just for laboratories   they help us solve real problems, from designing better tools to finding cures for diseases. Every invention started with a curious question.",
                 icon: "🔧",
                 color: "border-l-primary-500",
               },
@@ -721,30 +588,16 @@ const week01 = {
               {
                 title: "Science Is Collaborative",
                 description:
-                  "No scientist works alone. Discoveries like vaccines, space travel, and the internet were all made possible by teams of scientists sharing ideas, challenging each other, and building on each other's work.",
+                  "No scientist works alone. Discoveries like vaccines, space travel, and the internet were all made possible by teams sharing ideas, challenging each other, and building on each other's work.",
                 icon: "🌍",
                 color: "border-l-accent-500",
               },
               {
-                title: "Critical Thinking for Life",
-                description:
-                  "Learning to observe carefully, question assumptions, and draw evidence-based conclusions makes you a better thinker — not just in science class, but in every decision you make in life.",
-                icon: "💡",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Appreciating Scientific Progress",
-                description:
-                  "From understanding how diseases spread to predicting earthquakes, science has transformed how humanity lives. These achievements rest on generations of scientists faithfully following the scientific method.",
-                icon: "🚀",
-                color: "border-l-secondary-500",
-              },
-              {
                 title: "You Are Already a Scientist",
                 description:
-                  "Every time you observe something unusual, ask 'why?', try something to see what happens, and tell someone what you found — you are practicing the scientific method. Science is a way of thinking, not just a subject.",
+                  "Every time you observe something unusual, ask 'why?', try something to see what happens, and tell someone what you found   you are practicing the scientific method. Science is a way of thinking, not just a subject.",
                 icon: "🧪",
-                color: "border-l-accent-500",
+                color: "border-l-primary-500",
               },
             ],
           },
@@ -753,7 +606,7 @@ const week01 = {
     },
 
     // ═══════════════════════════════════════════════════
-    // LESSON 3 — Models in Real Life
+    // LESSON 3   Models in Real Life
     // ═══════════════════════════════════════════════════
     {
       id: "lesson-3",
@@ -763,31 +616,91 @@ const week01 = {
       title: "Models in Real Life",
       subtitle:
         "Discover how scientific models are used every day by doctors, engineers, and scientists to solve real-world problems.",
-      readTime: "~12 min read",
+      readTime: "~15 min read",
       xp: 50,
-      heroImage: simulation,
+      heroImage: model,
       heroImageAlt: "Computer simulation model",
 
       sections: [
+        "Key Concepts",
         "Introduction",
         "Models in Action",
+        "Why Models Matter",
+        "Core Principles",
         "Real-Life Scenarios",
-        "Impact of Models",
+      ],
+
+      references: [
+        {
+          label: "NASA Earth Observatory   Modeling Climate",
+          url: "https://earthobservatory.nasa.gov/features/ModelingClimate",
+        },
+        {
+          label: "NOAA   Climate.gov: What Are Climate Models?",
+          url: "https://www.climate.gov/maps-pubs/news/no-models-no-forecasts-inside-science-weather-prediction",
+        },
+        {
+          label: "Wikipedia   Scientific Modelling",
+          url: "https://en.wikipedia.org/wiki/Scientific_modelling",
+        },
+        {
+          label: "PBS Learning Media   Computer Simulations in Science",
+          url: "https://www.pbslearningmedia.org/",
+        },
+        {
+          label: "Science Daily   Engineering Models",
+          url: "https://www.sciencedaily.com/news/matter_energy/engineering/",
+        },
       ],
 
       layout: [
+        // ── SECTION 0 · Key Concepts (keyTerms) ──────────────────────
+
         {
           type: "intro",
           heading: "Introduction",
           data: {
             paragraphs: [
               "Scientific models are not just for textbooks. They are used every day by <strong class='text-primary-700'>doctors, engineers, weather forecasters, and environmentalists</strong> to solve real problems and make life-changing decisions.",
-              "A model does not need to be perfect to be useful. Even a simplified version of a system can help scientists predict outcomes, avoid disasters, and design better technology. In this lesson, we explore how different types of models are applied in the real world.",
+              "A model does not need to be perfect to be useful. Even a simplified version of a system can help scientists predict outcomes, avoid disasters, and design better technology. The key is that a model captures the most important features of the real thing   and in this lesson, we explore exactly how that works across many fields.",
             ],
             didYouKnow:
-              "NASA engineers use mathematical models called 'finite element models' to simulate stress on rocket parts before launching — preventing costly failures in space!",
+              "NASA engineers use mathematical models called 'finite element models' to simulate stress on rocket parts before launching   preventing costly failures in space!",
           },
         },
+
+        {
+          type: "keyTerms",
+          heading: "Key Concepts",
+          data: {
+            terms: [
+              {
+                term: "Finite Element Model",
+                desc: "A mathematical model that breaks a complex structure like a rocket part or a bridge into thousands of small sections to analyze stress, heat, or vibration before real construction begins.",
+              },
+              {
+                term: "Epidemiological Model",
+                desc: "A mathematical or simulation model used to track how a disease spreads through a population, helping governments decide on health interventions and policies.",
+              },
+              {
+                term: "Climate Model",
+                desc: "A computer simulation representing Earth's atmosphere, oceans, land, and ice to study how global temperatures and weather patterns change over time.",
+              },
+              {
+                term: "Scale Model",
+                desc: "A physical replica of an object built at a proportionally different size   larger or smaller   that preserves the shape and relative dimensions of the original.",
+              },
+              {
+                term: "Predictive Model",
+                desc: "Any model   physical, mathematical, or computer-based   used to forecast future events or conditions based on current data and known patterns.",
+              },
+            ],
+          },
+        },
+
+        // ── SECTION 1 · Introduction (intro) ─────────────────────────
+
+        // ── SECTION 2 · Models in Action (imageCards) ────────────────
         {
           type: "imageCards",
           heading: "Models in Action",
@@ -799,7 +712,7 @@ const week01 = {
                 variant: "primary",
                 color: "primary",
                 desc: "Meteorologists use computer simulation models to predict weather patterns up to 10 days in advance.",
-                image: simulation,
+                image: weatherforecast,
                 imageAlt: "Weather simulation model",
                 examples: [
                   "Track storm and typhoon paths",
@@ -812,8 +725,8 @@ const week01 = {
                 label: "Physical & Math",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Doctors use 3D physical models and mathematical models to understand diseases and plan surgery.",
-                image: microscope,
+                desc: "Doctors use 3D physical models and mathematical models to understand diseases and plan complex surgeries.",
+                image: medicalmodel,
                 imageAlt: "Medical imaging model",
                 examples: [
                   "3D anatomical models for surgical planning",
@@ -827,11 +740,11 @@ const week01 = {
                 variant: "primary",
                 color: "primary",
                 desc: "Engineers build scale models and use equations to test safety before constructing bridges, buildings, and aircraft.",
-                image: equation,
+                image: engrmodel,
                 imageAlt: "Engineering blueprint",
                 examples: [
-                  "Scale models of bridges to test strength",
-                  "Aerodynamic simulations for aircraft",
+                  "Scale models of bridges to test structural strength",
+                  "Aerodynamic simulations for aircraft design",
                   "Car crash simulations using computers",
                 ],
               },
@@ -840,8 +753,8 @@ const week01 = {
                 label: "Simulation",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Climate scientists use powerful computer models to study how Earth's temperature changes over decades.",
-                image: globe,
+                desc: "Climate scientists use powerful computer models to study how Earth's temperature and weather change over decades.",
+                image: climate,
                 imageAlt: "Climate model globe",
                 examples: [
                   "Predict sea level rise from melting ice caps",
@@ -852,6 +765,76 @@ const week01 = {
             ],
           },
         },
+
+        // ── SECTION 3 · Why Models Matter (reasonCards) ──────────────
+        {
+          type: "reasonCards",
+          heading: "Why Models Matter",
+          data: {
+            intro:
+              "Real-world models are not just convenient tools   they are often essential for safety, efficiency, and human survival. Here is why scientists and professionals depend on them every day:",
+            reasons: [
+              {
+                num: 1,
+                title: "Safety First",
+                color: "primary",
+                desc: "Test designs before they are built",
+                content:
+                  "Engineers crash-test virtual car models thousands of times before a single physical prototype is manufactured.",
+              },
+              {
+                num: 2,
+                title: "Save Lives",
+                color: "secondary",
+                desc: "Predict disasters and disease spread",
+                content:
+                  "Typhoon simulation models give coastal communities hours or days of warning so they can evacuate safely.",
+              },
+              {
+                num: 3,
+                title: "Save Resources",
+                color: "accent",
+                desc: "Reduce the cost of real-world trials",
+                content:
+                  "Drug companies use mathematical models to narrow thousands of chemical compounds down to the most promising candidates before lab testing.",
+              },
+              {
+                num: 4,
+                title: "Understand the Invisible",
+                color: "primary",
+                desc: "Simulate what cannot be directly seen",
+                content:
+                  "Climate models let scientists observe how greenhouse gases warm the planet over 100-year timescales   something no human could watch in real time.",
+              },
+              {
+                num: 5,
+                title: "Improve Over Time",
+                color: "secondary",
+                desc: "Update models as new data arrives",
+                content:
+                  "Weather prediction models improve every year as satellites provide more precise atmospheric and ocean temperature data.",
+              },
+            ],
+          },
+        },
+
+        // ── SECTION 4 · Core Principles (conceptList) ────────────────
+        {
+          type: "conceptList",
+          heading: "Core Principles",
+          data: {
+            concepts: [
+              "All real-world models are simplifications   they represent the most important features of a system, not every detail.",
+              "A model's usefulness is judged by how well it predicts or explains real events, not by how realistic it looks.",
+              "Models must be validated: their predictions are checked against actual observed data before they are trusted.",
+              "When new data contradicts a model's predictions, scientists update or replace the model   models are never final.",
+              "The same mathematical framework can often be applied to many different problems (e.g., fluid dynamics equations work for air, water, and blood alike).",
+              "Ethical use of models matters: a flawed medical or safety model used carelessly can lead to serious harm.",
+            ],
+          },
+        },
+
+        // ── SECTION 5 · Real-Life Scenarios (scenario) ───────────────
         {
           type: "scenario",
           heading: "Real-Life Scenarios",
@@ -866,7 +849,7 @@ const week01 = {
                 question:
                   "What type of model is the computer program? How does it help protect people?",
                 skill:
-                  "Simulation model — it processes real data to predict future events, giving communities time to evacuate and prepare.",
+                  "Simulation model   it processes real data to predict future events, giving communities time to evacuate and prepare.",
               },
               {
                 title: "Building a Safe Bridge",
@@ -875,7 +858,7 @@ const week01 = {
                 question:
                   "What type of model are the engineers using? What is the benefit of testing a small version first?",
                 skill:
-                  "Physical model — it allows engineers to find weaknesses in the design before spending millions on the real structure.",
+                  "Physical model   it allows engineers to find weaknesses in the design before spending millions on the real structure.",
               },
               {
                 title: "Tracking a New Disease",
@@ -884,43 +867,16 @@ const week01 = {
                 question:
                   "What type of model is the scientist using? What assumptions might limit its accuracy?",
                 skill:
-                  "Simulation model — it imitates real-world spread patterns, but assumes all students have the same contact rates, which may not be true.",
-              },
-            ],
-          },
-        },
-        {
-          type: "applications",
-          heading: "Impact of Models",
-          data: {
-            apps: [
-              {
-                title: "Disaster Preparedness",
-                description:
-                  "Simulation models of typhoons, floods, and earthquakes help governments plan evacuations and save thousands of lives each year.",
-                icon: "🌀",
-                color: "border-l-primary-500",
+                  "Simulation model   it imitates real-world spread patterns, but assumes all students have the same contact rates, which may not be true.",
               },
               {
-                title: "Medicine and Surgery",
-                description:
-                  "3D physical models and mathematical models help surgeons plan complex operations and develop life-saving treatments.",
-                icon: "🏥",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Sustainable Energy",
-                description:
-                  "Engineers use mathematical and simulation models to design more efficient solar panels, wind turbines, and batteries.",
-                icon: "⚡",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Environmental Protection",
-                description:
-                  "Climate scientists use simulation models to study pollution, deforestation, and ocean acidification, guiding policies that protect ecosystems.",
-                icon: "🌍",
-                color: "border-l-primary-500",
+                title: "Predicting a Tsunami",
+                situation:
+                  "After a large earthquake is detected under the ocean floor, scientists run a mathematical model that calculates how fast the resulting wave will travel and where it will reach land.",
+                question:
+                  "Why is this mathematical model critical for public safety? What data does it need to work correctly?",
+                skill:
+                  "Mathematical model   it uses earthquake location, depth, and magnitude to calculate wave arrival times, giving coastal communities critical minutes or hours to evacuate.",
               },
             ],
           },

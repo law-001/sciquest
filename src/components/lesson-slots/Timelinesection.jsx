@@ -61,7 +61,7 @@ export default function TimelineSection({ id, heading, data }) {
                 {step.num}
               </div>
               {i < steps.length - 1 && (
-                <div className={`w-0.5 flex-1 bg-${step.color}-200 mt-2`} />
+                <div className={`w-0.5 flex-1 bg-${step.color}-200 dark:bg-${step.color}-600 mt-2`} />
               )}
             </div>
 

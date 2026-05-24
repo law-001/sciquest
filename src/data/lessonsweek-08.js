@@ -1,7 +1,7 @@
 // Week 8: Acids, Bases, and Salts — Grade 7 Science
 
-import equation from "../assets/equation.jpg";
-import simulation from "../assets/simulation.jpg";
+import equation from "../assets/week1/equation.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 
 export const week08 = {

@@ -1,8 +1,8 @@
 // Week 13: Cell Parts and Functions — Grade 7 Science
 
-import microscope from "../assets/Microscopic.jpg";
-import web from "../assets/web.jpg";
-import simulation from "../assets/simulation.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import web from "../assets/week1/web.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 
 export const week13 = {

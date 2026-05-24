@@ -58,7 +58,7 @@ export default function ReasonCardsSection({ id, heading, data }) {
             >
               <div className="flex items-center gap-3 mb-3">
                 <div
-                  className={`w-8 h-8 rounded-lg bg-${item.color}-50 flex items-center justify-center text-${item.color}-500 font-black text-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-${item.color}-100`}
+                  className={`w-8 h-8 rounded-lg bg-${item.color}-100 flex items-center justify-center text-${item.color}-600 font-black text-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-${item.color}-200`}
                 >
                   {item.num}
                 </div>

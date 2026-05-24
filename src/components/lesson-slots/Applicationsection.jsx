@@ -52,7 +52,7 @@ export default function ApplicationsSection({ id, heading, data }) {
             }}
           >
             <Card
-              className={`group p-6 border-l-4 ${app.color} transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
+              className={`group p-6 border-l-4 ${app.color} transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full`}
             >
               <span className="text-3xl mb-3 inline-block transition-transform duration-300 group-hover:scale-125 group-hover:-rotate-6">
                 {app.icon}

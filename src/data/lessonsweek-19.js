@@ -1,8 +1,8 @@
 // Week 19: Food Chains and Food Webs — Grade 7 Science
 
-import globe from "../assets/globe.jpg";
-import web from "../assets/web.jpg";
-import simulation from "../assets/simulation.jpg";
+import globe from "../assets/week1/globe.jpg";
+import web from "../assets/week1/web.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import flowchart from "../assets/flowchart.jpg";
 
 export const week19 = {

@@ -17,7 +17,7 @@ export const GAMES = {
       "Heat and cool matter to observe its fascinating transformation between physical states.",
     subject: "Science",
     relatedLessonIds: ["week-03-matter", "week-04-phase-change"],
-    difficulty: 2,
+    difficulty: 1,
     estimatedMinutes: 15,
     thumbnail: sandbox,
     engine: "phaser",

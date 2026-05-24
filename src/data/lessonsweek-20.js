@@ -1,8 +1,8 @@
 // Week 20: Energy Flow and Biological Organization — Grade 7 Science
 
-import web from "../assets/web.jpg";
-import equation from "../assets/equation.jpg";
-import simulation from "../assets/simulation.jpg";
+import web from "../assets/week1/web.jpg";
+import equation from "../assets/week1/equation.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import flowchart from "../assets/flowchart.jpg";
 
 export const week20 = {

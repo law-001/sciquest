@@ -52,7 +52,7 @@ export default function IntroSection({ id, heading, data }) {
 
       {didYouKnow && (
         <Card
-          className="p-6 bg-secondary-50 border-secondary-200 mt-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+          className="p-6 bg-secondary-50 dark:bg-secondary-700/20 border-secondary-200 dark:border-secondary-700/40 mt-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(12px)",
@@ -60,14 +60,14 @@ export default function IntroSection({ id, heading, data }) {
           }}
         >
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-secondary-100 flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-110 hover:rotate-12">
-              <Lightbulb className="w-5 h-5 text-secondary-600" />
+            <div className="w-10 h-10 rounded-xl bg-secondary-100 dark:bg-secondary-700/30 flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-110 hover:rotate-12">
+              <Lightbulb className="w-5 h-5 text-secondary-600 dark:text-secondary-300" />
             </div>
             <div>
-              <h4 className="font-bold text-secondary-800 mb-1">
+              <h4 className="font-bold text-secondary-800 dark:text-secondary-300 mb-1">
                 Did You Know?
               </h4>
-              <p className="text-secondary-400 text-base">{didYouKnow}</p>
+              <p className="text-secondary-700 dark:text-stone-300 text-base">{didYouKnow}</p>
             </div>
           </div>
         </Card>

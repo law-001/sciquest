@@ -52,7 +52,7 @@ export default function ImageCardsSection({ id, heading, data }) {
               transition: `opacity 0.5s ease ${i * 100}ms, transform 0.5s ease ${i * 100}ms`,
             }}
           >
-            <Card className="group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <Card className="group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full">
               <div className="h-48 relative overflow-hidden">
                 <img
                   src={m.image}
@@ -81,7 +81,7 @@ export default function ImageCardsSection({ id, heading, data }) {
                   {m.examples.map((ex, j) => (
                     <li
                       key={j}
-                      className="group/ex flex items-start gap-2 cursor-default transition-colors duration-200 hover:text-stone-800"
+                      className="group/ex flex items-start gap-2 cursor-default transition-colors duration-200 hover:text-stone-800 dark:hover:text-stone-200"
                     >
                       <ChevronRight
                         className={`w-4 h-4 text-${m.color}-500 mt-1 shrink-0 transition-transform duration-200 group-hover/ex:translate-x-1`}

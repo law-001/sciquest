@@ -1,6 +1,6 @@
 // Week 4: Scientific Investigation — Grade 7 Science
 
-import equation from "../assets/equation.jpg";
+import equation from "../assets/week1/equation.jpg";
 import lab from "../assets/lab.jpg";
 import flowchart from "../assets/flowchart.jpg";
 

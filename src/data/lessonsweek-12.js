@@ -1,8 +1,8 @@
 // Week 12: Cell Theory — Grade 7 Science
 
-import microscope from "../assets/Microscopic.jpg";
-import globe from "../assets/globe.jpg";
-import simulation from "../assets/simulation.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import globe from "../assets/week1/globe.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 
 export const week12 = {
   id: "week-12",

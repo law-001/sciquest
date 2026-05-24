@@ -1,9 +1,9 @@
 // Week 18: Types of Reproduction Compared — Grade 7 Science
 
-import globe from "../assets/globe.jpg";
-import web from "../assets/web.jpg";
-import equation from "../assets/equation.jpg";
-import simulation from "../assets/simulation.jpg";
+import globe from "../assets/week1/globe.jpg";
+import web from "../assets/week1/web.jpg";
+import equation from "../assets/week1/equation.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 
 export const week18 = {

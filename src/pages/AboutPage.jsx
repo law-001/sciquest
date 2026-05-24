@@ -15,7 +15,7 @@ import ariesPhotoDark from "../assets/ARIESDARKMODE.jpg";
 
 // Toggle the light/dark portrait cross-fade. When false, portraits stay in
 // light mode regardless of theme (light mode is the default).
-const enableDarkmodeTransition = true;
+const enableDarkmodeTransition = false;
 
 function useScrollTrigger(threshold = 0.15) {
   const [el, setEl] = useState(null);
@@ -112,14 +112,13 @@ export function AboutPage({ onBlacked }) {
       image: aezenPhoto,
       imageDark: aezenPhotoDark,
     },
-    {
-      name: "Aries Walao",
-      role: "Fashionista Ex",
-      initials: "AW",
-      color: "bg-accent-100 text-accent-700",
-      image: ariesPhoto,
-      imageDark: ariesPhotoDark,
-    },
+
+    // name: "Aries Walao",
+    // role: "Fashionista Ex",
+    // initials: "AW",
+    // color: "bg-accent-100 text-accent-700",
+    // image: ariesPhoto,
+    // imageDark: ariesPhotoDark,
   ];
 
   const [benefitsRef, benefitsTriggered] = useScrollTrigger(0.1);
@@ -232,7 +231,7 @@ export function AboutPage({ onBlacked }) {
             </p>
 
             {/* COLUMN ARIES WALAO turn grid 4/5*/}
-            <div className="grid md:grid-cols-5 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-4 gap-8 max-w-4xl mx-auto">
               {team.map((member, index) => (
                 <div
                   key={index}

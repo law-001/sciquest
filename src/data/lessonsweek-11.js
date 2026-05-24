@@ -1,7 +1,7 @@
 // Week 11: The Microscope — Grade 7 Science
 
-import microscope from "../assets/Microscopic.jpg";
-import simulation from "../assets/simulation.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 
 export const week11 = {

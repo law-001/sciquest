@@ -1,8 +1,8 @@
 // Week 15: Cell Reproduction: Mitosis — Grade 7 Science
 
-import microscope from "../assets/Microscopic.jpg";
-import equation from "../assets/equation.jpg";
-import simulation from "../assets/simulation.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import equation from "../assets/week1/equation.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 import flowchart from "../assets/flowchart.jpg";
 

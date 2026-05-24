@@ -1,7 +1,7 @@
 // Week 10: Laboratory Safety — Grade 7 Science
 
-import globe from "../assets/globe.jpg";
-import equation from "../assets/equation.jpg";
+import globe from "../assets/week1/globe.jpg";
+import equation from "../assets/week1/equation.jpg";
 import lab from "../assets/lab.jpg";
 import modernclassroom from "../assets/modernclassroom.jpg";
 import flowchart from "../assets/flowchart.jpg";

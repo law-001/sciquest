@@ -1,8 +1,8 @@
 // Week 14: Plant and Animal Cells — Grade 7 Science
 
-import microscope from "../assets/Microscopic.jpg";
-import globe from "../assets/globe.jpg";
-import simulation from "../assets/simulation.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import globe from "../assets/week1/globe.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 
 export const week14 = {
   id: "week-14",

@@ -1,8 +1,8 @@
 // Week 6: Solutions and Solubility — Grade 7 Science
 
-import web from "../assets/web.jpg";
-import equation from "../assets/equation.jpg";
-import simulation from "../assets/simulation.jpg";
+import web from "../assets/week1/web.jpg";
+import equation from "../assets/week1/equation.jpg";
+import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 
 export const week06 = {

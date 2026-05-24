@@ -41,7 +41,7 @@ export default function KeyTermsSection({ id, heading, data }) {
         <p className="dark:text-white">{heading}</p>
       </SectionHeading>
 
-      <Card className="p-8 bg-secondary-50 border-secondary-200">
+      <Card className="p-8 bg-secondary-50 dark:bg-secondary-700/20 border-secondary-200 dark:border-secondary-700/40">
         <ol className="space-y-5">
           {terms.map((item, i) => (
             <li
@@ -53,11 +53,11 @@ export default function KeyTermsSection({ id, heading, data }) {
                 transition: `opacity 0.5s ease ${i * 80}ms, transform 0.5s ease ${i * 80}ms`,
               }}
             >
-              <div className="w-8 h-8 rounded-full bg-secondary-200 flex items-center justify-center shrink-0 text-stone-700 font-black text-sm mt-3 transition-all duration-300 group-hover/item:scale-110 group-hover/item:bg-secondary-300">
+              <div className="w-8 h-8 rounded-full bg-secondary-200 dark:bg-secondary-700/40 flex items-center justify-center shrink-0 text-stone-700 dark:text-secondary-200 font-black text-sm mt-3 transition-all duration-300 group-hover/item:scale-110 group-hover/item:bg-secondary-300 dark:group-hover/item:bg-secondary-600/50">
                 {i + 1}
               </div>
-              <p className="text-secondary-800 text-base font-medium pt-1 transition-colors duration-300 group-hover/item:text-secondary-900">
-                <span className="font-bold text-secondary-400 group-hover/item:text-secondary-800 transition-colors duration-300">
+              <p className="text-secondary-800 dark:text-stone-200 text-base font-medium pt-1 transition-colors duration-300 group-hover/item:text-secondary-900 dark:group-hover/item:text-white">
+                <span className="font-bold text-secondary-500 dark:text-secondary-400 group-hover/item:text-secondary-700 dark:group-hover/item:text-secondary-300 transition-colors duration-300">
                   {item.term}:
                 </span>{" "}
                 {item.desc}
