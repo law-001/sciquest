@@ -21,7 +21,7 @@ export function IdentificationQuestion({
         disabled={isSubmitted}
         placeholder="Type your answer…"
         className={cn(
-          "w-full p-4 rounded-xl border-2 font-bold focus:outline-none transition-colors",
+          "w-full p-4 rounded-xl border-2 font-bold focus:outline-none transition-colors dark:text-stone-100",
           isSubmitted
             ? isCorrect
               ? "border-secondary-400 bg-secondary-50 text-secondary-700"

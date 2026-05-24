@@ -333,7 +333,10 @@ function AddSectionModal({ existingSectionNames, onAdd, onClose }) {
             ].map((opt) => (
               <button
                 key={opt.id}
-                onClick={() => { setMode(opt.id); setCreateError(""); }}
+                onClick={() => {
+                  setMode(opt.id);
+                  setCreateError("");
+                }}
                 className={cn(
                   "flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-colors",
                   mode === opt.id
@@ -356,7 +359,11 @@ function AddSectionModal({ existingSectionNames, onAdd, onClose }) {
                 {dbSections.map((section) => (
                   <button
                     key={section.id}
-                    onClick={() => setSelected(selected === section.name ? null : section.name)}
+                    onClick={() =>
+                      setSelected(
+                        selected === section.name ? null : section.name,
+                      )
+                    }
                     className={cn(
                       "w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors",
                       selected === section.name
@@ -405,8 +412,13 @@ function AddSectionModal({ existingSectionNames, onAdd, onClose }) {
                 id="new-section-name"
                 type="text"
                 value={newName}
-                onChange={(e) => { setNewName(e.target.value); setCreateError(""); }}
-                onKeyDown={(e) => e.key === "Enter" && canAdd && !creating && handleAdd()}
+                onChange={(e) => {
+                  setNewName(e.target.value);
+                  setCreateError("");
+                }}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && canAdd && !creating && handleAdd()
+                }
                 placeholder="e.g. Section A, Grade 7-Narra"
                 autoFocus
                 className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-900 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600"
@@ -421,7 +433,12 @@ function AddSectionModal({ existingSectionNames, onAdd, onClose }) {
         </div>
 
         <div className="border-t border-orange-100 dark:border-stone-700 p-6 flex gap-3">
-          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={creating}>
+          <Button
+            variant="ghost"
+            className="flex-1"
+            onClick={onClose}
+            disabled={creating}
+          >
             Cancel
           </Button>
           <Button
@@ -831,7 +848,8 @@ function LessonsSlot({
 
   function cycleWeekState(weekId) {
     const state = getWeekState(weekId);
-    const publishBase = publishedWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
+    const publishBase =
+      publishedWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
     const nextPublish = new Set(publishBase);
     const nextOpen = new Set(openWeekIds ?? []);
 
@@ -890,7 +908,10 @@ function LessonsSlot({
         <>
           <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => { setExpandedWeekId(null); setSearch(""); }}
+              onClick={() => {
+                setExpandedWeekId(null);
+                setSearch("");
+              }}
               aria-label="Back to weeks"
               className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
             >
@@ -923,7 +944,7 @@ function LessonsSlot({
                     ? {
                         cls: "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-700 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
                         Icon: Eye,
-                        label: "Open for All",
+                        label: "No Pre-requisites",
                         nextLabel: "Click to hide",
                       }
                     : state === "published"
@@ -1038,7 +1059,7 @@ function LessonsSlot({
                     ? {
                         cls: "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-700 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
                         Icon: Eye,
-                        label: "Open for All",
+                        label: "No Pre-requisites",
                         nextLabel: `Hide week ${week.weekNumber}`,
                       }
                     : state === "published"
@@ -1064,55 +1085,58 @@ function LessonsSlot({
                     hoverable={visible}
                     onClick={
                       visible
-                        ? () => { setExpandedWeekId(week.id); setSearch(""); }
+                        ? () => {
+                            setExpandedWeekId(week.id);
+                            setSearch("");
+                          }
                         : undefined
                     }
                   >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 flex items-center justify-center">
-                      <BookOpen className="w-5 h-5 text-secondary-500" />
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-secondary-500" />
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          cycleWeekState(week.id);
+                        }}
+                        className={cn(
+                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors",
+                          badgeMeta.cls,
+                        )}
+                        title={badgeMeta.nextLabel}
+                        aria-label={badgeMeta.nextLabel}
+                      >
+                        <badgeMeta.Icon className="w-3 h-3" />
+                        {badgeMeta.label}
+                      </button>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        cycleWeekState(week.id);
-                      }}
-                      className={cn(
-                        "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors",
-                        badgeMeta.cls,
-                      )}
-                      title={badgeMeta.nextLabel}
-                      aria-label={badgeMeta.nextLabel}
-                    >
-                      <badgeMeta.Icon className="w-3 h-3" />
-                      {badgeMeta.label}
-                    </button>
-                  </div>
-                  <span className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1 block">
-                    Week {week.weekNumber}
-                  </span>
-                  <h3 className="text-base font-bold text-stone-900 dark:text-white mb-1">
-                    {week.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
-                    {week.lessons.length}{" "}
-                    {week.lessons.length === 1 ? "lesson" : "lessons"}
-                  </p>
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
-                      <span>Avg completion</span>
-                      <span>{avgPct}%</span>
+                    <span className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1 block">
+                      Week {week.weekNumber}
+                    </span>
+                    <h3 className="text-base font-bold text-stone-900 dark:text-white mb-1">
+                      {week.title}
+                    </h3>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
+                      {week.lessons.length}{" "}
+                      {week.lessons.length === 1 ? "lesson" : "lessons"}
+                    </p>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
+                        <span>Avg completion</span>
+                        <span>{avgPct}%</span>
+                      </div>
+                      <ProgressBar
+                        progress={avgPct}
+                        color="secondary"
+                        size="sm"
+                      />
                     </div>
-                    <ProgressBar
-                      progress={avgPct}
-                      color="secondary"
-                      size="sm"
-                    />
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Search className="w-8 h-8 text-stone-300 mb-3" />
@@ -1207,7 +1231,13 @@ function getRubricItems(lessonId) {
   if (!quiz?.questions) return [];
   return quiz.questions
     .filter((q) => MANUAL_QUESTION_TYPES.has(q.type) && q.rubric)
-    .map((q) => ({ id: q.id, type: q.type, question: q.question, rubric: q.rubric, points: q.points ?? null }));
+    .map((q) => ({
+      id: q.id,
+      type: q.type,
+      question: q.question,
+      rubric: q.rubric,
+      points: q.points ?? null,
+    }));
 }
 
 function QuizCheckingSlot({ data, sectionId, onGrade }) {
@@ -1286,7 +1316,10 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
               const hasEssay = types.includes("essay");
               const minWords = (() => {
                 const quiz = getQuizByLesson(sub.lessonId);
-                return quiz?.questions?.find((q) => q.type === "essay")?.minWords ?? null;
+                return (
+                  quiz?.questions?.find((q) => q.type === "essay")?.minWords ??
+                  null
+                );
               })();
 
               return (
@@ -1462,7 +1495,9 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                           <div className="flex items-center gap-2">
                             <Badge
                               variant={
-                                sub.status === "graded" ? "secondary" : "outline"
+                                sub.status === "graded"
+                                  ? "secondary"
+                                  : "outline"
                               }
                               className={cn(
                                 "text-xs",
@@ -1512,13 +1547,29 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
 // DepEd numerical grading descriptors used in Philippine schools.
 function gradeDescriptor(pct) {
   if (pct >= 90)
-    return { label: "Outstanding", short: "O", color: "text-emerald-600 dark:text-emerald-400" };
+    return {
+      label: "Outstanding",
+      short: "O",
+      color: "text-emerald-600 dark:text-emerald-400",
+    };
   if (pct >= 85)
-    return { label: "Very Satisfactory", short: "VS", color: "text-secondary-600 dark:text-secondary-400" };
+    return {
+      label: "Very Satisfactory",
+      short: "VS",
+      color: "text-secondary-600 dark:text-secondary-400",
+    };
   if (pct >= 80)
-    return { label: "Satisfactory", short: "S", color: "text-blue-600 dark:text-blue-400" };
+    return {
+      label: "Satisfactory",
+      short: "S",
+      color: "text-blue-600 dark:text-blue-400",
+    };
   if (pct >= 75)
-    return { label: "Fairly Satisfactory", short: "FS", color: "text-accent-600 dark:text-accent-500" };
+    return {
+      label: "Fairly Satisfactory",
+      short: "FS",
+      color: "text-accent-600 dark:text-accent-500",
+    };
   return {
     label: "Did Not Meet Expectations",
     short: "DNME",
@@ -1657,8 +1708,7 @@ function GradebookSlot({ data, sectionId }) {
             },
             {
               label: "Section Rank",
-              value:
-                selectedStudent.best.size > 0 ? `#${rank}` : "—",
+              value: selectedStudent.best.size > 0 ? `#${rank}` : "—",
               icon: <Award className="w-5 h-5 text-science-pink" />,
               bg: "bg-pink-50 dark:bg-pink-900/20",
             },
@@ -1762,10 +1812,7 @@ function GradebookSlot({ data, sectionId }) {
                               {cell.score}/{cell.maxScore} pts
                             </span>
                             <span
-                              className={cn(
-                                "text-base font-black",
-                                d?.color,
-                              )}
+                              className={cn("text-base font-black", d?.color)}
                             >
                               {pct}%
                             </span>
@@ -2440,7 +2487,9 @@ function ProgressSlot({ data, sectionId }) {
                     <p className="text-xs text-stone-400 font-medium mt-0.5">
                       {week.lessons.length} lesson
                       {week.lessons.length !== 1 ? "s" : ""}
-                      {attempted > 0 ? ` · ${attempted} quiz${attempted !== 1 ? "zes" : ""} taken` : ""}
+                      {attempted > 0
+                        ? ` · ${attempted} quiz${attempted !== 1 ? "zes" : ""} taken`
+                        : ""}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
@@ -2804,8 +2853,7 @@ function ProgressSlot({ data, sectionId }) {
                       (s) =>
                         s.student === student.name && s.section === sectionId,
                     );
-                    const gamesPlayed =
-                      gameProgress.get(student.id)?.size ?? 0;
+                    const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
                     const status = engagementStatus(
                       student,
                       studentSubs.length > 0,
@@ -3360,7 +3408,10 @@ function QuizzesManagementSlot({
         <>
           <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => { setExpandedWeekId(null); setSearch(""); }}
+              onClick={() => {
+                setExpandedWeekId(null);
+                setSearch("");
+              }}
               aria-label="Back to weeks"
               className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
             >
@@ -3518,7 +3569,10 @@ function QuizzesManagementSlot({
                       ) / week.lessons.length,
                     )
                   : 0;
-                const published = isWeekPublished(week.id, publishedQuizWeekIds);
+                const published = isWeekPublished(
+                  week.id,
+                  publishedQuizWeekIds,
+                );
                 return (
                   <Card
                     key={week.id}
@@ -3529,7 +3583,10 @@ function QuizzesManagementSlot({
                     hoverable={published}
                     onClick={
                       published
-                        ? () => { setExpandedWeekId(week.id); setSearch(""); }
+                        ? () => {
+                            setExpandedWeekId(week.id);
+                            setSearch("");
+                          }
                         : undefined
                     }
                   >
@@ -3704,7 +3761,9 @@ export function TeacherPortalPage({ onBack }) {
     });
   }
 
-  const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
+  const [quizSettings, setQuizSettings] = useState(() =>
+    getCachedQuizSettings(),
+  );
 
   // Hydrate global settings from Supabase on mount, then subscribe so other
   // teachers' edits show up live in this portal too.
@@ -3731,7 +3790,11 @@ export function TeacherPortalPage({ onBack }) {
       else if (scope === "open") setOpenWeekIdsState(ids);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
-      fetchQuizSettings().then((m) => { if (!cancelled) setQuizSettings(m); }).catch(() => {});
+      fetchQuizSettings()
+        .then((m) => {
+          if (!cancelled) setQuizSettings(m);
+        })
+        .catch(() => {});
     });
 
     return () => {
@@ -3797,7 +3860,12 @@ export function TeacherPortalPage({ onBack }) {
     mySectionNames !== null
       ? mySectionNames.map(
           (name) =>
-            allSections.find((s) => s.name === name) ?? { id: name, name, students: 0, avgScore: 0 },
+            allSections.find((s) => s.name === name) ?? {
+              id: name,
+              name,
+              students: 0,
+              avgScore: 0,
+            },
         )
       : allSections;
 
