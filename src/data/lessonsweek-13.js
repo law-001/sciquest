@@ -1,7 +1,6 @@
 // Week 13: Cell Parts and Functions — Grade 7 Science
 
 import microscope from "../assets/week1/Microscopic.jpg";
-import web from "../assets/week1/web.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 
@@ -238,7 +237,7 @@ export const week13 = {
                 variant: "primary",
                 color: "primary",
                 desc: "Ribosomes, ER, and Golgi apparatus work together to build, process, and ship proteins.",
-                image: web,
+                image: null,
                 imageAlt: "Diagram of rough ER, ribosomes, and Golgi apparatus",
                 examples: [
                   "Ribosomes assemble proteins",

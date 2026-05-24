@@ -1,6 +1,5 @@
 // Week 6: Solutions and Solubility — Grade 7 Science
 
-import web from "../assets/week1/web.jpg";
 import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
@@ -122,7 +121,7 @@ export const week06 = {
                 variant: "primary",
                 color: "primary",
                 desc: "A colloid contains medium-sized particles that are dispersed throughout but do not settle. The particles scatter light (Tyndall effect).",
-                image: web,
+                image: null,
                 imageAlt: "Milk as a colloid example",
                 examples: [
                   "Milk (fat droplets in water)",

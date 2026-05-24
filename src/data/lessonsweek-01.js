@@ -3,9 +3,9 @@
 
 import microscope from "../assets/week1/Microscopic.jpg";
 import globe from "../assets/week1/globe.jpg";
-import web from "../assets/week1/web.jpg";
+import web from "../assets/week1/web.png";
 import equation from "../assets/week1/equation.jpg";
-import simulation from "../assets/week1/simulation.jpg";
+import simulation from "../assets/week1/simulation.jpeg";
 import scimethod from "../assets/week1/scimethod.jpg";
 import model from "../assets/week1/model.jpg";
 import weatherforecast from "../assets/week1/weatherforecast.webp";
@@ -71,28 +71,8 @@ const week01 = {
 
       references: [
         {
-          label: "SERC Carleton   Teaching With Models",
-          url: "https://serc.carleton.edu/introgeo/models/index.html",
-        },
-        {
-          label: "SERC Carleton   What Is a Model?",
-          url: "https://serc.carleton.edu/teachearth/teaching_methods/models/WhatIsAModel.html",
-        },
-        {
-          label: "NSTA   Using Models to Teach Science",
-          url: "https://www.nsta.org/using-models-teach-science",
-        },
-        {
-          label: "Texas Gateway   Scientific Models",
-          url: "https://texasgateway.org/resource/scientific-models",
-        },
-        {
-          label: "University of Hawaii   Practices of Science: Using Models",
-          url: "https://manoa.hawaii.edu/exploringourfluidearth/physical/density-effects/density-driven-currents/practices-science-using-models",
-        },
-        {
-          label: "Wikipedia   Scientific Modelling",
-          url: "https://en.wikipedia.org/wiki/Scientific_modelling",
+          label: "Models in Grade 7 Science Curriculum",
+          url: "https://www.scribd.com/document/765241446/Grade-7-Science-Lecture-First-Quarter-Matatag-Curriculum-A5-size-notebook-for-printing",
         },
       ],
 
@@ -103,88 +83,10 @@ const week01 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "Scientific models are <strong class='text-primary-700'>simplified representations</strong> of real-world objects, systems, or processes. They help scientists understand, explain, and predict natural phenomena that are too small, too large, too fast, too slow, or too dangerous to observe directly.",
-              "Models are important in science because they <strong class='text-primary-700'>make complex ideas easier</strong> to study and communicate. They allow scientists to test ideas safely, make predictions, and improve their understanding step by step. Without models, many important discoveries in physics, chemistry, biology, and Earth science would be much more difficult.",
+              "A scientific model is a representation of an idea, object, process, or system <strong class='text-primary-700'>used to describe and explain phenomena</strong> that cannot be directly experienced. It serves as a visual way of connecting theories with experiments and helps guide scientific research by simplifying complex ideas or realities. Scientific models also represent objects, systems, or events to help people better understand the natural world by using familiar things to explain unfamiliar concepts. Through models, people can visualize or imagine things that are difficult to see or understand clearly.",
             ],
             didYouKnow:
               "The early atomic model by Niels Bohr imagined electrons orbiting the nucleus like planets but today, scientists know electrons actually move in unpredictable \u201cclouds,\u201d not fixed paths!",
-          },
-        },
-
-        // ── Section 1: Key Terms ──
-        {
-          type: "keyTerms",
-          heading: "Key Concepts",
-          data: {
-            terms: [
-              {
-                term: "Scientific Model",
-                desc: "A simplified representation of a real object, system, or process that helps scientists explain how something works or predict what will happen.",
-              },
-              {
-                term: "Physical Model",
-                desc: "A three-dimensional, tangible object built to represent something in the real world, often at a different size (scale model).",
-              },
-              {
-                term: "Conceptual Model",
-                desc: "A mental or visual picture that shows the relationships between ideas or parts of a system, often drawn as diagrams or flowcharts.",
-              },
-              {
-                term: "Mathematical Model",
-                desc: "A model that uses mathematical equations and numbers to describe and predict the behavior of a system.",
-              },
-              {
-                term: "Simulation",
-                desc: 'A computer-based model that imitates the operation of a real process or system over time, allowing scientists to run "what if" experiments safely.',
-              },
-            ],
-          },
-        },
-
-        // ── Section 2: Why Use Models (reasonCards) ──
-        {
-          type: "reasonCards",
-          heading: "Fundamentals",
-          data: {
-            intro:
-              "Many scientific phenomena cannot be observed directly. Atoms are too small to see, climate systems are too large and slow-changing, and some events are too dangerous to study in real time. Scientists create models to:",
-            reasons: [
-              {
-                num: 1,
-                title: "Simplification",
-                color: "primary",
-                desc: "Simplify complex systems",
-                content: "e.g. Solar system diagram",
-              },
-              {
-                num: 2,
-                title: "Visualization",
-                color: "secondary",
-                desc: "Visualize things that cannot be seen",
-                content: "e.g. Atom model",
-              },
-              {
-                num: 3,
-                title: "Testing",
-                color: "accent",
-                desc: "Test ideas without risk",
-                content: "e.g. Volcano simulation",
-              },
-              {
-                num: 4,
-                title: "Predictions",
-                color: "primary",
-                desc: "Make predictions about the future",
-                content: "e.g. Weather forecast model",
-              },
-              {
-                num: 5,
-                title: "Communications",
-                color: "secondary",
-                desc: "Communicate ideas clearly to others",
-                content: "e.g. food chain diagram",
-              },
-            ],
           },
         },
 
@@ -199,13 +101,13 @@ const week01 = {
                 label: "Physical",
                 variant: "primary",
                 color: "primary",
-                desc: "These are actual objects that represent something else.",
+                desc: "Smaller and simpler versions of the actual object being studied. These models are usually tangible and three-dimensional.",
                 image: globe,
                 imageAlt: "Globe model",
                 examples: [
                   "A globe (model of Earth)",
-                  "A model of the solar system with orbiting planets",
-                  "A scaled-down model of a bridge used by engineers to test strength",
+                  "Human skeleton",
+                  "A map",
                 ],
               },
               {
@@ -213,13 +115,13 @@ const week01 = {
                 label: "Conceptual",
                 variant: "secondary",
                 color: "secondary",
-                desc: "These are diagrams or mental pictures that show how parts of a system relate to one another.",
+                desc: "Models that combine ideas to explain a phenomenon or event. They help people understand abstract or complex concepts.",
                 image: web,
                 imageAlt: "Conceptual diagram",
                 examples: [
                   "The Bohr model of the atom",
-                  "Food web diagrams showing energy flow in an ecosystem",
-                  "The water cycle diagram",
+                  "Atom model",
+                  "Molecular model",
                 ],
               },
               {
@@ -227,13 +129,12 @@ const week01 = {
                 label: "Mathematical",
                 variant: "secondary",
                 color: "secondary",
-                desc: "These use equations to describe relationships and make predictions.",
+                desc: "Models that use mathematical equations and computer programs to represent scientific phenomena. Commonly used in physics, engineering, and technology.",
                 image: equation,
                 imageAlt: "Mathematical equations",
                 examples: [
-                  "Newton's laws of motion expressed as equations",
-                  "Population growth models in biology",
-                  "Equations used to calculate the trajectory of a rocket",
+                  "Spacecraft trajectory calculations",
+                  "Maxwell’s equations used in communication systems",
                 ],
               },
               {
@@ -241,14 +142,105 @@ const week01 = {
                 label: "Simulation",
                 variant: "primary",
                 color: "primary",
-                desc: "Computer programs that imitate real processes.",
+                desc: "Models that use equations and algorithms to imitate behaviors or processes over time..",
                 image: simulation,
                 imageAlt: "Computer simulation",
                 examples: [
                   "Weather simulation programs",
-                  "Flight simulators used to train pilots",
-                  "Molecular dynamics simulations that show how medicines interact with viruses",
+                  "Predicting the spread of diseases",
                 ],
+              },
+            ],
+          },
+        },
+
+        // ── Section 1: Key Terms ──
+        {
+          type: "keyTerms",
+          heading: "What Can Models Represent?",
+          data: {
+            terms: [
+              {
+                term: "Objects that are too small to see",
+                desc: "Such as atoms, molecules, and microscopic organisms that cannot be observed with the naked eye.",
+              },
+              {
+                term: "Objects that are too large to see",
+                desc: "Such as planets, solar systems, and galaxies that are too vast to view all at once.",
+              },
+              {
+                term: "Objects that no longer exist",
+                desc: "Such as extinct animals or ancient structures that can only be reconstructed through models.",
+              },
+              {
+                term: "Objects that have not yet been invented",
+                desc: "Such as future technologies or theoretical devices that exist only as conceptual models.",
+              },
+              {
+                term: "Events that happen very slowly",
+                desc: "Such as continental drift or erosion that occur over thousands or millions of years.",
+              },
+              {
+                term: "Events that happen very quickly",
+                desc: "Such as a lightning strike or chemical reaction that occur too fast to observe directly.",
+              },
+              {
+                term: "Events that may happen in the future",
+                desc: "Such as climate change or natural disasters that scientists predict using models.",
+              },
+            ],
+          },
+        },
+
+        // ── Section 2: Why Use Models (reasonCards) ──
+        {
+          type: "reasonCards",
+          heading: "Uses of Models",
+          data: {
+            intro:
+              "Many scientific phenomena cannot be observed directly. Atoms are too small to see, climate systems are too large and slow-changing, and some events are too dangerous to study in real time. Scientists create models to:",
+            reasons: [
+              {
+                num: 1,
+                title: "Testing Ideas",
+                color: "primary",
+                desc: "Models make it easier for scientists to study and test ideas without using the actual system.",
+                content: "e.g. Flight simulator testing aircraft designs",
+              },
+              {
+                num: 2,
+                title: "Making and Testing Predictions",
+                color: "secondary",
+                desc: "Models help predict future events or possible changes, such as the effects of increasing carbon dioxide in the atmosphere.",
+                content: "e.g. Climate model predicting sea level rise",
+              },
+              {
+                num: 3,
+                title: "Communication",
+                color: "accent",
+                desc: "Models help scientists share observations and explain ideas more clearly to other people.",
+                content: "e.g. DNA double helix diagram",
+              },
+              {
+                num: 4,
+                title: "Representing Objects or Events",
+                color: "primary",
+                desc: "Models help represent things that are too small, too large, or difficult to observe directly.",
+                content: "e.g. Scale model of the solar system",
+              },
+              {
+                num: 5,
+                title: "Building Scientific Knowledge",
+                color: "secondary",
+                desc: "Models help explain scientific theories and may be improved or replaced when new information is discovered.",
+                content: "e.g. Atomic model updated over time",
+              },
+              {
+                num: 6,
+                title: "Saving Time, Money, and Lives",
+                color: "accent",
+                desc: "Using models is often safer, faster, and less expensive than experimenting with real objects or systems.",
+                content: "e.g. Crash test dummy simulations",
               },
             ],
           },

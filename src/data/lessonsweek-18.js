@@ -1,7 +1,6 @@
 // Week 18: Types of Reproduction Compared — Grade 7 Science
 
 import globe from "../assets/week1/globe.jpg";
-import web from "../assets/week1/web.jpg";
 import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
@@ -286,9 +285,9 @@ export const week18 = {
         "Real organisms that illustrate sexual and asexual reproduction",
       readTime: "~13 min read",
       xp: 50,
-      heroImage: web,
+      heroImage: null,
       heroImageAlt:
-        "Web diagram connecting diverse organisms that use different types of reproduction",
+        "null diagram connecting diverse organisms that use different types of reproduction",
       sections: [
         "Reproduction All Around Us",
         "Visual Examples",
@@ -350,9 +349,9 @@ export const week18 = {
                 variant: "primary",
                 color: "primary",
                 desc: "From frogs spawning in ponds to bees pollinating flowers, sexual reproduction is everywhere.",
-                image: web,
+                image: null,
                 imageAlt:
-                  "Web diagram showing frog egg masses in water and flower pollination",
+                  "null diagram showing frog egg masses in water and flower pollination",
                 examples: [
                   "Frogs: lay thousands of eggs in ponds — external fertilization",
                   "Flowering plants: pollen transferred by wind or insects",

@@ -1,6 +1,5 @@
 // Week 7: Concentration of Solutions — Grade 7 Science
 
-import web from "../assets/week1/web.jpg";
 import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
@@ -213,7 +212,7 @@ export const week07 = {
                 variant: "primary",
                 color: "primary",
                 desc: "Used for extremely dilute solutions where concentrations are very small. 1 ppm = 1 mg of solute per 1 kg of solution.",
-                image: web,
+                image: null,
                 imageAlt: "Water quality testing equipment",
                 examples: [
                   "Chlorine in swimming pools: 1–3 ppm",
