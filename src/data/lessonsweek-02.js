@@ -27,7 +27,7 @@ export const week02 = {
     //  states comparison, temperature effect)
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-particle-theory",
+      id: "lesson-4",
       weekId: "week-2",
       lessonNumber: 4,
       title: "Particle Theory of Matter",

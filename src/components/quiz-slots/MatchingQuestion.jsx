@@ -35,7 +35,7 @@ export function MatchingQuestion({
                 onChange={(e) => handleSelect(left, e.target.value)}
                 disabled={isSubmitted}
                 className={cn(
-                  "w-full p-3 rounded-xl border-2 font-bold text-sm appearance-none cursor-pointer focus:outline-none transition-colors dark:bg-stone-700 border-stone-200 dark:border-stone-800 hover:border-orange-200 ",
+                  "dark:text-stone-100 w-full p-3 rounded-xl border-2 font-bold text-sm appearance-none cursor-pointer focus:outline-none transition-colors dark:bg-stone-700 border-stone-200 dark:border-stone-800 hover:border-orange-200 ",
                   isCorrect
                     ? "border-secondary-400 bg-secondary-50 text-secondary-700"
                     : isWrong

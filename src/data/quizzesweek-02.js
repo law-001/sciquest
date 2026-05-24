@@ -2,7 +2,7 @@
 
 export const QUIZZES_WEEK_02 = {
   // ── Lesson 4: What is Matter? — matching + short-answer ──────────────────
-  "lesson-particle-theory": {
+  "lesson-4": {
     lessonId: "lesson-4",
     title: "What is Matter?",
     description:
