@@ -117,6 +117,7 @@ export function LessonTemplate({
   weekLessons = [],
   activeLessonId,
   completedLessons = [],
+  lessonsPassed = [],
   reachedLessons = [],
   onBack,
   onComplete,
@@ -332,14 +333,15 @@ export function LessonTemplate({
             <div className="flex gap-3 py-2">
               {weekLessons.map((l, idx) => {
                 const isActive = l.id === activeLessonId;
-                const isDone = completedLessons.includes(l.id);
+                const isPassed = lessonsPassed.includes(l.id);
+                const isDone = completedLessons.includes(l.id) || isPassed;
                 const isReached = reachedLessons.includes(l.id);
                 const prev = idx > 0 ? weekLessons[idx - 1] : null;
-                const prevDone = prev ? completedLessons.includes(prev.id) : true;
-                const isLocked = !isActive && !isDone && !prevDone;
+                const prevPassed = prev ? lessonsPassed.includes(prev.id) : true;
+                const isLocked = !isActive && !isPassed && !prevPassed;
                 const isClickable = !isLocked;
                 const lockTitle = isLocked
-                  ? `Finish "${prev?.title ?? "the previous lesson"}" first`
+                  ? `Submit the quiz for "${prev?.title ?? "the previous lesson"}" first`
                   : undefined;
 
                 return (

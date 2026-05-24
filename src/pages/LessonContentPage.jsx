@@ -6,6 +6,7 @@ export function LessonContentPage({
   weekId,
   activeLessonId,
   completedLessons = [],
+  lessonsPassed = [],
   reachedLessons = [],
   onBack,
   onGoToQuiz,
@@ -25,6 +26,7 @@ export function LessonContentPage({
       weekLessons={week?.lessons ?? []}
       activeLessonId={activeLessonId}
       completedLessons={completedLessons}
+      lessonsPassed={lessonsPassed}
       reachedLessons={reachedLessons}
       onBack={onBack}
       onComplete={onGoToQuiz}

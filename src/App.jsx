@@ -27,8 +27,10 @@ import { addScreenSeconds } from "./lib/screentime";
 import {
   getPublishedWeekIds,
   getPublishedQuizWeekIds,
+  getOpenWeekIds,
   fetchPublishedWeekIds,
   fetchPublishedQuizWeekIds,
+  fetchOpenWeekIds,
   isWeekPublished,
   subscribeToPublishedState,
 } from "./lib/publishedWeeks";
@@ -38,6 +40,7 @@ import {
   subscribeToQuizSettings,
   getQuizTimeLimit,
 } from "./lib/quizSettings";
+import { lessonsPassedFromAttempts } from "./lib/lessonGating";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
 import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { XpToast } from "./components/XpToast";
@@ -71,6 +74,26 @@ function saveNotifHistory(uid, list) {
 }
 function saveUnseenCount(uid, n) {
   try { localStorage.setItem(unseenCountKey(uid), String(n)); } catch { /* quota */ }
+}
+
+// QuizContainer auto-saves answers to `quiz-answers-<lessonId>` and clears the
+// key on submit, so a lesson with a non-empty entry has an in-progress quiz.
+// Returns the lesson id of the first such lesson in the week, or null.
+function findOngoingQuizLessonId(week) {
+  if (!week?.lessons) return null;
+  for (const lesson of week.lessons) {
+    try {
+      const raw = localStorage.getItem(`quiz-answers-${lesson.id}`);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+        return lesson.id;
+      }
+    } catch {
+      /* corrupt entry — ignore */
+    }
+  }
+  return null;
 }
 
 function AppContent() {
@@ -118,6 +141,7 @@ function AppContent() {
   const [publishedQuizWeekIds, setPublishedQuizWeekIds] = useState(() =>
     getPublishedQuizWeekIds(),
   );
+  const [openWeekIds, setOpenWeekIds] = useState(() => getOpenWeekIds());
   const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
 
   // Stable refs so interval callbacks always see the latest values without
@@ -136,6 +160,9 @@ function AppContent() {
   const effectiveCompletedRows    = (user && isStudent) ? completedRows    : [];
   const effectiveQuizAttempts     = (user && isStudent) ? quizAttempts     : [];
   const effectiveUnlockedAchievements = (user && isStudent) ? unlockedAchievements : [];
+
+  // Lesson + week gating now keys off submitted quiz attempts, not lesson reads.
+  const lessonsPassed = lessonsPassedFromAttempts(effectiveQuizAttempts);
 
   // Total XP = lesson + quiz XP plus the bonus from every unlocked
   // achievement, so an unlock genuinely moves the student's total and
@@ -275,12 +302,14 @@ function AppContent() {
     Promise.all([
       fetchPublishedWeekIds(),
       fetchPublishedQuizWeekIds(),
+      fetchOpenWeekIds(),
       fetchQuizSettings(),
     ])
-      .then(([lessons, quizzes, settings]) => {
+      .then(([lessons, quizzes, open, settings]) => {
         if (cancelled) return;
         setPublishedWeekIds(lessons);
         setPublishedQuizWeekIds(quizzes);
+        setOpenWeekIds(open);
         setQuizSettings(settings);
       })
       .catch((err) => {
@@ -290,6 +319,7 @@ function AppContent() {
     const unsubPublish = subscribeToPublishedState((scope, ids) => {
       if (scope === "lessons") setPublishedWeekIds(ids);
       else if (scope === "quizzes") setPublishedQuizWeekIds(ids);
+      else if (scope === "open") setOpenWeekIds(ids);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
       // Pull a fresh map rather than patching in place — keeps the cached
@@ -504,10 +534,25 @@ function AppContent() {
   const handleStartWeek = (weekId) => {
     const week = WEEKS_DATA.find((w) => w.id === weekId);
     if (!week) return;
-    const firstIncomplete = week.lessons.find(
-      (l) => !effectiveCompletedLessons.includes(l.id),
+
+    // If the student left a quiz mid-attempt (saved answers in localStorage),
+    // jump straight into that quiz so they don't lose the in-progress work.
+    const ongoingQuizLessonId = findOngoingQuizLessonId(week);
+    if (ongoingQuizLessonId && !isQuizLockedForWeek(weekId)) {
+      setActiveWeekId(weekId);
+      setActiveLessonId(ongoingQuizLessonId);
+      if (!reachedLessons.includes(ongoingQuizLessonId)) {
+        setReachedLessons((prev) => [...prev, ongoingQuizLessonId]);
+      }
+      handleNavigate("quiz");
+      return;
+    }
+
+    // Otherwise resume at the first lesson whose quiz hasn't been submitted.
+    const firstUntaken = week.lessons.find(
+      (l) => !lessonsPassed.includes(l.id),
     );
-    const target = firstIncomplete ?? week.lessons[0];
+    const target = firstUntaken ?? week.lessons[0];
     setActiveWeekId(weekId);
     setActiveLessonId(target.id);
     if (!reachedLessons.includes(target.id)) {
@@ -765,12 +810,12 @@ function AppContent() {
         return (
           <LessonsPage
             onStartWeek={handleStartWeek}
-            completedLessons={effectiveCompletedLessons}
             quizAttempts={effectiveQuizAttempts}
             totalXp={totalXp}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsAuthModalOpen(true)}
             publishedWeekIds={publishedWeekIds}
+            openWeekIds={openWeekIds}
           />
         );
 
@@ -780,6 +825,7 @@ function AppContent() {
             weekId={activeWeekId}
             activeLessonId={activeLessonId}
             completedLessons={effectiveCompletedLessons}
+            lessonsPassed={lessonsPassed}
             reachedLessons={reachedLessons}
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}

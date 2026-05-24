@@ -40,7 +40,11 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { cn } from "../lib/utils";
-import { isWeekUnlocked, weekLockReason } from "../lib/lessonGating";
+import {
+  isWeekUnlocked,
+  weekLockReason,
+  lessonsPassedFromAttempts,
+} from "../lib/lessonGating";
 import { weekMaxXp } from "../lib/week-xp";
 import { useAuth } from "../context/AuthContext";
 import { xpToNextLevel, levelFromXp } from "../lib/xp-config";
@@ -91,12 +95,17 @@ function useScrollTrigger(threshold = 0.1) {
 
 export function LessonsPage({
   onStartWeek,
-  completedLessons = [],
+  quizAttempts = [],
   totalXp = 0,
   isLoggedIn,
   onLoginClick,
   publishedWeekIds = null,
+  openWeekIds = null,
 }) {
+  const lessonsPassed = useMemo(
+    () => lessonsPassedFromAttempts(quizAttempts),
+    [quizAttempts],
+  );
   const level = levelFromXp(totalXp);
   const levelProgress = xpToNextLevel(totalXp);
   const { user, profile } = useAuth();
@@ -415,23 +424,25 @@ export function LessonsPage({
             const lockReason = weekLockReason(
               week,
               WEEKS_DATA,
-              completedLessons,
+              lessonsPassed,
               publishedWeekIds,
+              openWeekIds,
             );
             const effectiveIsLocked = !isWeekUnlocked(
               week,
               WEEKS_DATA,
-              completedLessons,
+              lessonsPassed,
               publishedWeekIds,
+              openWeekIds,
             );
             const lockLabel =
               lockReason === "prev-week-incomplete"
-                ? "Finish the previous week first"
+                ? "Finish every quiz in the previous week first"
                 : "Locked";
 
-            // Count how many lessons in this week are completed
+            // Count progress by quizzes passed — matches the new unlock rule.
             const completedCount = week.lessons.filter((l) =>
-              completedLessons.includes(l.id),
+              lessonsPassed.includes(l.id),
             ).length;
             const totalLessons = week.lessons.length;
             const weekProgress = Math.round(
@@ -499,7 +510,7 @@ export function LessonsPage({
                     {/* Sub-lesson pills */}
                     <div className="flex gap-2 mb-5 flex-wrap ">
                       {week.lessons.map((lesson) => {
-                        const isDone = completedLessons.includes(lesson.id);
+                        const isDone = lessonsPassed.includes(lesson.id);
                         return (
                           <span
                             key={lesson.id}
