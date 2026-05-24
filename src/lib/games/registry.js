@@ -54,28 +54,6 @@ export const GAMES = {
     loader: () => import("../../games/cell-division-defense/index.jsx"),
     minRole: "student",
   },
-  "cell-explorer": {
-    id: "cell-explorer",
-    title: "Cell Explorer",
-    tagline: "Journey inside a living cell and discover its hidden secrets",
-    difficulty: 1,
-    estimatedMinutes: 10,
-    totalLevels: 4,
-    thumbnail: null,
-    locked: true,
-    category: "Biology",
-  },
-  "circuit-lab": {
-    id: "circuit-lab",
-    title: "Circuit Lab",
-    tagline: "Build and test electrical circuits in a virtual physics lab",
-    difficulty: 3,
-    estimatedMinutes: 20,
-    totalLevels: 5,
-    thumbnail: null,
-    locked: true,
-    category: "Physics",
-  },
 };
 
 export const getGame = (id) => GAMES[id] ?? null;
