@@ -2,7 +2,6 @@
 
 import microscope from "../assets/week1/Microscopic.jpg";
 import globe from "../assets/week1/globe.jpg";
-import web from "../assets/week1/web.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 
 export const week17 = {
@@ -246,9 +245,9 @@ export const week17 = {
                 variant: "primary",
                 color: "primary",
                 desc: "Pollen (containing sperm) is carried by wind or animals to the egg cells inside a flower's ovary.",
-                image: web,
+                image: null,
                 imageAlt:
-                  "Web-like diagram showing how pollination connects plants for sexual reproduction",
+                  "null-like diagram showing how pollination connects plants for sexual reproduction",
                 examples: [
                   "Pollen acts as male gamete",
                   "Insects and wind transfer pollen",

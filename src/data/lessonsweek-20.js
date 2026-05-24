@@ -1,6 +1,4 @@
 // Week 20: Energy Flow and Biological Organization — Grade 7 Science
-
-import web from "../assets/week1/web.jpg";
 import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import flowchart from "../assets/flowchart.jpg";
@@ -362,9 +360,9 @@ export const week20 = {
       subtitle: "How species interact with each other in ecosystems",
       readTime: "~13 min read",
       xp: 50,
-      heroImage: web,
+      heroImage: null,
       heroImageAlt:
-        "Web diagram showing different types of species interactions in ecosystems",
+        "null diagram showing different types of species interactions in ecosystems",
       sections: [
         "How Species Interact",
         "Key Terms",

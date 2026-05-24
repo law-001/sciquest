@@ -1,17 +1,16 @@
-// Week 19: Food Chains and Food Webs — Grade 7 Science
+// Week 19: Food Chains and Food nulls — Grade 7 Science
 
 import globe from "../assets/week1/globe.jpg";
-import web from "../assets/week1/web.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import flowchart from "../assets/flowchart.jpg";
 
 export const week19 = {
   id: "week-19",
   weekNumber: 19,
-  title: "Food Chains and Food Webs",
+  title: "Food Chains and Food nulls",
   category: "Ecology",
   description:
-    "Explore how energy flows through ecosystems via food chains and food webs, and understand the roles of producers, consumers, and decomposers.",
+    "Explore how energy flows through ecosystems via food chains and food nulls, and understand the roles of producers, consumers, and decomposers.",
   icon: "Network",
   color: "secondary",
   isLocked: false,
@@ -110,9 +109,9 @@ export const week19 = {
                 variant: "secondary",
                 color: "secondary",
                 desc: "Animals that eat producers or other consumers, organized into trophic levels.",
-                image: web,
+                image: null,
                 imageAlt:
-                  "Web diagram showing consumer relationships between herbivores and carnivores",
+                  "null diagram showing consumer relationships between herbivores and carnivores",
                 examples: [
                   "Primary: rabbit, grasshopper, deer (eat plants)",
                   "Secondary: frog, fox, small fish (eat herbivores)",
@@ -159,7 +158,7 @@ export const week19 = {
               {
                 title: "Fisheries Management",
                 description:
-                  "Understanding which fish are producers, primary consumers, or top predators helps fisheries managers decide sustainable catch limits and protect ocean food webs from collapse.",
+                  "Understanding which fish are producers, primary consumers, or top predators helps fisheries managers decide sustainable catch limits and protect ocean food nulls from collapse.",
                 icon: "🐟",
                 color: "border-l-accent-500",
               },
@@ -312,17 +311,17 @@ export const week19 = {
       id: "lesson-57",
       weekId: "week-19",
       lessonNumber: 57,
-      title: "Food Webs",
+      title: "Food nulls",
       badge: "Lesson 3",
-      subtitle: "How interconnected food chains create a complex web of life",
+      subtitle: "How interconnected food chains create a complex null of life",
       readTime: "~13 min read",
       xp: 50,
-      heroImage: web,
+      heroImage: null,
       heroImageAlt:
-        "Web diagram showing the interconnected food web of an ecosystem",
+        "null diagram showing the interconnected food null of an ecosystem",
       sections: [
         "Beyond the Food Chain",
-        "Food Chain vs. Food Web",
+        "Food Chain vs. Food null",
         "Ecosystem Disruption Scenarios",
         "Real-World Applications",
       ],
@@ -332,9 +331,9 @@ export const week19 = {
           heading: "Beyond the Food Chain",
           data: {
             paragraphs: [
-              "A food chain gives us a simple picture of energy flow, but nature is rarely that simple. In reality, most animals eat more than one type of food and are preyed upon by more than one predator. A <strong class='text-primary-700'>food web</strong> shows the complex, interconnected network of ALL the feeding relationships in an ecosystem.",
-              "In a food web, many food chains overlap and interlink. For example, a frog might eat grasshoppers AND flies, while the frog is eaten by both snakes AND herons. These overlapping connections mean that food webs are far more resilient than simple food chains — if one food source disappears, an animal may switch to another.",
-              "However, removing a <strong class='text-primary-700'>keystone species</strong> — a species that has an outsized effect on its ecosystem — can trigger a <strong class='text-primary-700'>trophic cascade</strong>, where changes at one trophic level cause dramatic changes throughout the entire food web. The more biodiversity an ecosystem has, the more stable its food web.",
+              "A food chain gives us a simple picture of energy flow, but nature is rarely that simple. In reality, most animals eat more than one type of food and are preyed upon by more than one predator. A <strong class='text-primary-700'>food null</strong> shows the complex, interconnected network of ALL the feeding relationships in an ecosystem.",
+              "In a food null, many food chains overlap and interlink. For example, a frog might eat grasshoppers AND flies, while the frog is eaten by both snakes AND herons. These overlapping connections mean that food nulls are far more resilient than simple food chains — if one food source disappears, an animal may switch to another.",
+              "However, removing a <strong class='text-primary-700'>keystone species</strong> — a species that has an outsized effect on its ecosystem — can trigger a <strong class='text-primary-700'>trophic cascade</strong>, where changes at one trophic level cause dramatic changes throughout the entire food null. The more biodiversity an ecosystem has, the more stable its food null.",
             ],
             didYouKnow:
               "When wolves were reintroduced to Yellowstone National Park in 1995, they reduced elk grazing near rivers — allowing willows and aspens to grow back, which stabilized riverbanks, reduced erosion, and even changed the course of rivers. This is a trophic cascade!",
@@ -342,10 +341,10 @@ export const week19 = {
         },
         {
           type: "comparison",
-          heading: "Food Chain vs. Food Web",
+          heading: "Food Chain vs. Food null",
           data: {
             intro:
-              "While food chains and food webs both show energy flow, they differ significantly in complexity and accuracy.",
+              "While food chains and food nulls both show energy flow, they differ significantly in complexity and accuracy.",
             left: {
               label: "Food Chain",
               color: "primary",
@@ -358,7 +357,7 @@ export const week19 = {
               ],
             },
             right: {
-              label: "Food Web",
+              label: "Food null",
               color: "secondary",
               items: [
                 "Complex, INTERCONNECTED network of organisms",
@@ -375,14 +374,14 @@ export const week19 = {
           heading: "Ecosystem Disruption Scenarios",
           data: {
             intro:
-              "These real-world examples show how removing or disrupting one part of a food web can affect everything else.",
+              "These real-world examples show how removing or disrupting one part of a food null can affect everything else.",
             scenarios: [
               {
                 title: "Wolves Removed from Yellowstone",
                 situation:
                   "For most of the 20th century, wolves were hunted to extinction in Yellowstone National Park. With no natural predators, the elk population exploded and heavily grazed the riverbanks, causing erosion and destroying habitat.",
                 question:
-                  "How did removing one species from the top of the food web affect the entire ecosystem?",
+                  "How did removing one species from the top of the food null affect the entire ecosystem?",
                 skill:
                   "Trophic cascade — removing the top predator (wolves) caused the primary consumer (elk) population to boom, which overconsumption of plants (producers) destabilized the ecosystem. When wolves were reintroduced in 1995, the entire ecosystem recovered.",
               },
@@ -391,18 +390,18 @@ export const week19 = {
                 situation:
                   "Commercial fishing removes enormous numbers of bluefin tuna from the ocean every year. Tuna are apex predators that eat smaller fish like mackerel and herring.",
                 question:
-                  "What happens to the rest of the food web when tuna are overfished?",
+                  "What happens to the rest of the food null when tuna are overfished?",
                 skill:
-                  "Without tuna to control them, populations of mackerel and herring explode, leading to overgrazing of zooplankton and phytoplankton (producers). This reduces oxygen production in the ocean and disrupts the entire aquatic food web.",
+                  "Without tuna to control them, populations of mackerel and herring explode, leading to overgrazing of zooplankton and phytoplankton (producers). This reduces oxygen production in the ocean and disrupts the entire aquatic food null.",
               },
               {
                 title: "Algae Bloom in a Lake",
                 situation:
                   "Agricultural runoff containing fertilizers flows into a lake, causing an explosion of algae growth — an algal bloom. The algae cover the water surface, blocking sunlight from reaching underwater plants.",
                 question:
-                  "How does a sudden increase in producers (algae) disrupt the food web?",
+                  "How does a sudden increase in producers (algae) disrupt the food null?",
                 skill:
-                  "The algae bloom blocks light, killing underwater plants and reducing oxygen in the water (when algae decompose). Fish and other aquatic consumers suffocate and die, collapsing the entire aquatic food web — a process called eutrophication.",
+                  "The algae bloom blocks light, killing underwater plants and reducing oxygen in the water (when algae decompose). Fish and other aquatic consumers suffocate and die, collapsing the entire aquatic food null — a process called eutrophication.",
               },
             ],
           },
@@ -415,28 +414,28 @@ export const week19 = {
               {
                 title: "Conservation Biology",
                 description:
-                  "Scientists use food web models to identify keystone species and predict how ecosystem changes (habitat loss, hunting, climate change) will affect entire communities of organisms.",
+                  "Scientists use food null models to identify keystone species and predict how ecosystem changes (habitat loss, hunting, climate change) will affect entire communities of organisms.",
                 icon: "🌿",
                 color: "border-l-primary-500",
               },
               {
                 title: "Wildlife Management",
                 description:
-                  "Wildlife managers use food web knowledge to determine sustainable hunting and fishing limits, preventing the removal of key species that would destabilize entire ecosystems.",
+                  "Wildlife managers use food null knowledge to determine sustainable hunting and fishing limits, preventing the removal of key species that would destabilize entire ecosystems.",
                 icon: "🦅",
                 color: "border-l-secondary-500",
               },
               {
                 title: "Invasive Species Control",
                 description:
-                  "Invasive species disrupt food webs by competing with native species or lacking natural predators. Understanding the food web helps managers decide how to control invasive species most effectively.",
+                  "Invasive species disrupt food nulls by competing with native species or lacking natural predators. Understanding the food null helps managers decide how to control invasive species most effectively.",
                 icon: "🦎",
                 color: "border-l-accent-500",
               },
               {
                 title: "Environmental Impact Assessment",
                 description:
-                  "Before construction projects (dams, highways, factories) are approved, scientists use food web analysis to predict how the project will affect local ecosystems — protecting biodiversity while allowing development.",
+                  "Before construction projects (dams, highways, factories) are approved, scientists use food null analysis to predict how the project will affect local ecosystems — protecting biodiversity while allowing development.",
                 icon: "🔬",
                 color: "border-l-primary-500",
               },

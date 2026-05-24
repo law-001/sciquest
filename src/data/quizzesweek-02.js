@@ -1,107 +1,177 @@
 // Week 2 quizzes — Grade 7 Science: Particle Model of Matter
 
 export const QUIZZES_WEEK_02 = {
-  // ── Lesson 4: What is Matter? — identification ────────────────────────────
+  // ── Lesson 4: What is Matter? — matching + short-answer ──────────────────
   "lesson-4": {
     lessonId: "lesson-4",
     title: "What is Matter?",
-    description: "Test your understanding of matter vocabulary and properties.",
+    description:
+      "Match phase changes and demonstrate your understanding of the particle theory and states of matter.",
     timeLimit: 900,
     questions: [
       {
         id: "q1",
-        type: "identification",
+        type: "matching",
         question:
-          "What is the scientific term for anything that has mass and takes up space (volume)?",
-        correctAnswer: "matter",
-        acceptedAnswers: ["matter"],
-        points: 5,
+          "Seatwork 3: Match the following phase changes by selecting the correct term from Column B for each description in Column A.",
+        leftItems: [
+          "Liquid to Solid",
+          "Liquid to Gas",
+          "Gas to Liquid",
+          "Solid to Gas",
+          "Solid to Liquid",
+        ],
+        rightItems: [
+          "freezing",
+          "melting",
+          "evaporation",
+          "condensation",
+          "sublimation",
+          "deposition",
+        ],
+        correctPairs: {
+          "Liquid to Solid": "freezing",
+          "Liquid to Gas": "evaporation",
+          "Gas to Liquid": "condensation",
+          "Solid to Gas": "sublimation",
+          "Solid to Liquid": "melting",
+        },
+        points: 10,
       },
       {
         id: "q2",
-        type: "identification",
+        type: "short-answer",
         question:
-          "What property of matter describes the amount of material in an object, measured in grams or kilograms?",
-        correctAnswer: "mass",
-        acceptedAnswers: ["mass"],
-        points: 5,
+          "Explain the particle theory of matter and its key ideas.",
+        rubric:
+          "Include the five key statements: all matter is made of tiny particles; particles are in constant motion; there is empty space between particles; particles attract each other; and temperature affects particle speed.",
+        points: 10,
       },
       {
         id: "q3",
-        type: "identification",
+        type: "short-answer",
         question:
-          "What is the scientific term for the amount of three-dimensional space that matter occupies?",
-        correctAnswer: "volume",
-        acceptedAnswers: ["volume"],
-        points: 5,
+          "Demonstrate your critical thinking skills by identifying and describing two distinct properties of matter for each state: solid, liquid, and gas.",
+        rubric:
+          "For each state name two properties (e.g., definite shape, definite volume, ability to flow, compressibility) and explain them using particle arrangement.",
+        points: 10,
       },
       {
         id: "q4",
-        type: "identification",
+        type: "short-answer",
         question:
-          "What property of matter is calculated by dividing mass by volume and tells you how much matter is packed into a given space?",
-        correctAnswer: "density",
-        acceptedAnswers: ["density"],
-        points: 5,
-      },
-      {
-        id: "q5",
-        type: "identification",
-        question:
-          "What term describes matter made of only one type of particle throughout, such as pure water or pure gold?",
-        correctAnswer: "pure substance",
-        acceptedAnswers: ["pure substance", "pure substances"],
-        points: 5,
+          "Support your descriptions by providing one real-life example for each state of matter (solid, liquid, and gas) and briefly explain how its properties relate to particle behavior.",
+        rubric:
+          "Choose a clear real-world example for each state and link it back to particle spacing, motion, or forces.",
+        points: 10,
       },
     ],
   },
 
-  // ── Lesson 5: Particle Theory of Matter — fill-blanks ────────────────────
+  // ── Lesson 5: Particle Theory of Matter — identification ─────────────────
   "lesson-5": {
     lessonId: "lesson-5",
     title: "Particle Theory of Matter",
     description:
-      "Test your knowledge of the five statements of the particle theory of matter.",
+      "Read each question carefully. Identify the correct scientific term being described in each item. Spelling counts.",
     timeLimit: 900,
     questions: [
       {
         id: "q1",
-        type: "fill-blanks",
+        type: "identification",
         question:
-          "All matter is made up of extremely small ___ that cannot be seen with the naked eye.",
-        blanks: ["particles"],
+          "The theory that states matter is made up of tiny, constantly moving particles.",
+        correctAnswer: "Particle Theory of Matter",
+        acceptedAnswers: [
+          "particle theory of matter",
+          "particle theory",
+        ],
         points: 5,
       },
       {
         id: "q2",
-        type: "fill-blanks",
+        type: "identification",
         question:
-          "The particles of matter are in constant ___, and this motion never completely stops.",
-        blanks: ["motion"],
+          "The state of matter where particles are tightly packed and vibrate in place.",
+        correctAnswer: "Solid",
+        acceptedAnswers: ["solid"],
         points: 5,
       },
       {
         id: "q3",
-        type: "fill-blanks",
+        type: "identification",
         question:
-          "There is ___ space between the particles of matter. In gases, this space is very ___.",
-        blanks: ["empty", "large"],
+          "The state of matter where particles are far apart and move freely.",
+        correctAnswer: "Gas",
+        acceptedAnswers: ["gas"],
         points: 5,
       },
       {
         id: "q4",
-        type: "fill-blanks",
+        type: "identification",
         question:
-          "Particles of matter ___ each other. In solids these forces are very ___, while in gases they are very weak.",
-        blanks: ["attract", "strong"],
+          "The state of matter that has a definite volume but takes the shape of its container.",
+        correctAnswer: "Liquid",
+        acceptedAnswers: ["liquid"],
         points: 5,
       },
       {
         id: "q5",
-        type: "fill-blanks",
+        type: "identification",
         question:
-          "When the ___ of a substance increases, its particles move ___. Temperature is a measure of the average ___ energy of the particles.",
-        blanks: ["temperature", "faster", "kinetic"],
+          "The movement of particles from an area of high concentration to low concentration.",
+        correctAnswer: "Diffusion",
+        acceptedAnswers: ["diffusion"],
+        points: 5,
+      },
+      {
+        id: "q6",
+        type: "identification",
+        question:
+          "This property describes how easily the particles of a substance can be compressed.",
+        correctAnswer: "Compressibility",
+        acceptedAnswers: ["compressibility"],
+        points: 5,
+      },
+      {
+        id: "q7",
+        type: "identification",
+        question:
+          "The energy that particles have due to their motion.",
+        correctAnswer: "Kinetic Energy",
+        acceptedAnswers: ["kinetic energy"],
+        points: 5,
+      },
+      {
+        id: "q8",
+        type: "identification",
+        question:
+          "The process where particles gain enough energy to change from solid to liquid.",
+        correctAnswer: "Melting",
+        acceptedAnswers: ["melting"],
+        points: 5,
+      },
+      {
+        id: "q9",
+        type: "identification",
+        question:
+          "The phase change from gas to liquid due to loss of energy.",
+        correctAnswer: "Condensation",
+        acceptedAnswers: ["condensation"],
+        points: 5,
+      },
+      {
+        id: "q10",
+        type: "identification",
+        question:
+          "The arrangement of particles in a solid.",
+        correctAnswer: "Tightly packed in a regular pattern",
+        acceptedAnswers: [
+          "tightly packed in a regular pattern",
+          "tightly packed",
+          "regular pattern",
+          "close together in a regular pattern",
+        ],
         points: 5,
       },
     ],
