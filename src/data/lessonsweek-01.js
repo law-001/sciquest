@@ -62,9 +62,9 @@ const week01 = {
 
       sections: [
         "Overview",
-        "Key Concepts",
-        "Fundamentals",
         "Breakdown",
+        "What Can Models Represent?",
+        "Uses of Models",
         "Understanding",
         "Applications",
       ],
@@ -614,8 +614,8 @@ const week01 = {
       heroImageAlt: "Computer simulation model",
 
       sections: [
-        "Key Concepts",
         "Introduction",
+        "Key Concepts",
         "Models in Action",
         "Why Models Matter",
         "Core Principles",

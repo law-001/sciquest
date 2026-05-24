@@ -69,7 +69,7 @@ export const QUIZZES_WEEK_02 = {
 
   // ── Lesson 5: Particle Theory of Matter — identification ─────────────────
   "lesson-5": {
-    lessonId: "lesson-particle-theory",
+    lessonId: "lesson-5",
     title: "Particle Theory of Matter",
     description:
       "Read each question carefully. Identify the correct scientific term being described in each item. Spelling counts.",
@@ -77,6 +77,61 @@ export const QUIZZES_WEEK_02 = {
     questions: [
       {
         id: "q1",
+        type: "multiple-choice",
+        question: "Melting of ice",
+        options: [
+          "Change of state of matter requires energy",
+          "Change of state of matter releases energy",
+        ],
+        correctAnswer: "Change of state of matter requires energy",
+        points: 5,
+      },
+      {
+        id: "q2",
+        type: "multiple-choice",
+        question: "Boiling of water",
+        options: [
+          "Change of state of matter requires energy",
+          "Change of state of matter releases energy",
+        ],
+        correctAnswer: "Change of state of matter requires energy",
+        points: 5,
+      },
+      {
+        id: "q3",
+        type: "multiple-choice",
+        question: "Formation of dew",
+        options: [
+          "Change of state of matter requires energy",
+          "Change of state of matter releases energy",
+        ],
+        correctAnswer: "Change of state of matter releases energy",
+        points: 5,
+      },
+      {
+        id: "q4",
+        type: "multiple-choice",
+        question: "Formation of frost",
+        options: [
+          "Change of state of matter requires energy",
+          "Change of state of matter releases energy",
+        ],
+        correctAnswer: "Change of state of matter releases energy",
+        points: 5,
+      },
+      {
+        id: "q5",
+        type: "multiple-choice",
+        question: "Evaporation of alcohol",
+        options: [
+          "Change of state of matter requires energy",
+          "Change of state of matter releases energy",
+        ],
+        correctAnswer: "Change of state of matter requires energy",
+        points: 5,
+      },
+      {
+        id: "q6",
         type: "identification",
         question:
           "The theory that states matter is made up of tiny, constantly moving particles.",
@@ -85,7 +140,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q2",
+        id: "q7",
         type: "identification",
         question:
           "The state of matter where particles are tightly packed and vibrate in place.",
@@ -94,7 +149,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q3",
+        id: "q8",
         type: "identification",
         question:
           "The state of matter where particles are far apart and move freely.",
@@ -103,7 +158,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q4",
+        id: "q9",
         type: "identification",
         question:
           "The state of matter that has a definite volume but takes the shape of its container.",
@@ -112,7 +167,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q5",
+        id: "q10",
         type: "identification",
         question:
           "The movement of particles from an area of high concentration to low concentration.",
@@ -121,7 +176,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q6",
+        id: "q11",
         type: "identification",
         question:
           "This property describes how easily the particles of a substance can be compressed.",
@@ -130,7 +185,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q7",
+        id: "q12",
         type: "identification",
         question: "The energy that particles have due to their motion.",
         correctAnswer: "Kinetic Energy",
@@ -138,7 +193,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q8",
+        id: "q13",
         type: "identification",
         question:
           "The process where particles gain enough energy to change from solid to liquid.",
@@ -147,7 +202,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q9",
+        id: "q14",
         type: "identification",
         question: "The phase change from gas to liquid due to loss of energy.",
         correctAnswer: "Condensation",
@@ -155,7 +210,7 @@ export const QUIZZES_WEEK_02 = {
         points: 5,
       },
       {
-        id: "q10",
+        id: "q15",
         type: "identification",
         question: "The arrangement of particles in a solid.",
         correctAnswer: "Tightly packed in a regular pattern",

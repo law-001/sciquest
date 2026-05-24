@@ -40,11 +40,11 @@ export const week02 = {
       heroImageAlt: "Microscopic view illustrating particle theory",
 
       sections: [
-        "Introduction",
-        "Key Terms",
-        "Particles by State",
+        "What is Matter?",
+        "Important Properties of Matter",
         "Five Statements of Particle Theory",
         "Key Ideas About Particles",
+        "Atoms and Molecules",
         "Temperature and Particles",
       ],
 
@@ -107,56 +107,6 @@ export const week02 = {
               {
                 term: "Temperature",
                 desc: "A measure of the average kinetic energy of particles in a substance the faster the particles move, the higher the temperature.",
-              },
-            ],
-          },
-        },
-
-        // ── Section 2: Particles by State ──
-        // (Directly addresses Objective 3: illustrate & compare states)
-        {
-          type: "imageCards",
-          heading: "States of Matter and Particle Behavior",
-          data: {
-            cards: [
-              {
-                title: "Solids",
-                label: "Tightly Packed",
-                variant: "primary",
-                color: "primary",
-                desc: "A state of matter where particles are tightly packed together and only vibrate in place. Solids have a definite shape and a definite volume.",
-                image: solid,
-                imageAlt: "Particle diagram of a solid",
-                examples: [
-                  "Rocks, Wood, Ice, Metals, Glass",
-                  "Because the particles are closely packed, solids are usually hard and difficult to compress.",
-                ],
-              },
-              {
-                title: "Liquids",
-                label: "Flowing Freely",
-                variant: "secondary",
-                color: "secondary",
-                desc: "A state of matter where particles are loosely packed and can slide past one another. Liquids have no definite shape but have a definite volume.",
-                image: liquid,
-                imageAlt: "Particle diagram of a liquid",
-                examples: [
-                  "Water, Oil, Milk",
-                  "Liquids take the shape of their container while keeping the same amount of volume.",
-                ],
-              },
-              {
-                title: "Gases",
-                label: "Spread Apart",
-                variant: "primary",
-                color: "accent",
-                desc: "A state of matter where particles are far apart and move freely and rapidly. Gases have no definite shape and no definite volume. Gases spread out to fill any container they are placed in.",
-                image: gas,
-                imageAlt: "Particle diagram of a gas",
-                examples: [
-                  "Oxygen, Carbon Dioxide, Helium, Water Vapor",
-                  "Because the particles are widely spaced, gases can easily be compressed.",
-                ],
               },
             ],
           },
@@ -268,16 +218,16 @@ export const week02 = {
     },
 
     // ═══════════════════════════════════════════════════
-    // LESSON 6 — States of Matter
+    // LESSON 5 — States of Matter
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-6",
+      id: "lesson-5",
       weekId: "week-2",
       lessonNumber: 5,
-      title: "States of Matter",
+      title: "Particle Nature of Matter States",
       badge: "Lesson 5",
       subtitle:
-        "Compare the properties of solids, liquids, gases, and the rare fourth state of matter, plasma.",
+        "Understanding the particle nature of matter helps explain how matter behaves in its different states at the microscopic level. Matter commonly exists in three main states: solid, liquid, and gas. ",
       readTime: "~13 min read",
       xp: 50,
       heroImage: lesson6hero,
@@ -285,29 +235,18 @@ export const week02 = {
 
       sections: [
         "Introduction",
-        "Key Terms",
-        "Solid vs. Gas",
+        "States of Matter and Particle Behavior",
+        "Motion Energy of Particles",
+        "Temperature and Particle Movement",
         "State Changes",
+        "Key Ideas About Particles",
         "Real-World Scenarios",
-        "Applications",
       ],
 
       references: [
         {
-          label: "PhET   States of Matter Simulation",
-          url: "https://phet.colorado.edu/en/simulations/states-of-matter",
-        },
-        {
-          label: "CK-12   States of Matter",
-          url: "https://www.ck12.org/c/physical-science/states-of-matter",
-        },
-        {
-          label: "Britannica   Plasma",
-          url: "https://www.britannica.com/science/plasma-state-of-matter",
-        },
-        {
-          label: "Khan Academy   States of Matter",
-          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces",
+          label: "Particle Nature of Matter States",
+          url: "https://www.scribd.com/presentation/919258922/CHAP-2-LESSON-2-THE-PARTICLE-NATURE-OF-THE-THREE-STATES-OF-MATTER",
         },
       ],
 
@@ -318,43 +257,93 @@ export const week02 = {
           heading: "Introduction",
           data: {
             paragraphs: [
-              "Matter exists in different <strong class='text-primary-700'>physical states</strong> depending on how its particles are arranged and how much energy they have. The three main states of matter are <strong class='text-primary-700'>solid</strong>, <strong class='text-primary-700'>liquid</strong>, and <strong class='text-primary-700'>gas</strong>. Each state has distinct properties determined by the spacing, motion, and attraction between its particles.",
-              "There is also a rare fourth state of matter called <strong class='text-primary-700'>plasma</strong>. Plasma occurs at extremely high temperatures when electrons are stripped from atoms, creating an electrically charged gas. Examples include lightning, the sun, and neon signs.",
+              "The particle nature of matter explains that all matter is made up of tiny particles that are constantly moving. These particles <strong class='text-primary-700'>behave differently depending on the state of matter</strong>, whether solid, liquid, or gas. Understanding how particles move and interact helps explain the properties and behavior of matter in everyday life.",
+              "The arrangement, movement, and attractive forces between particles determine whether a substance exists as a solid, liquid, or gas. <strong class='text-primary-700'>Temperature and pressure also affect how particles behave</strong> and can cause matter to change from one state to another.",
             ],
             didYouKnow:
-              "More than 99% of all visible matter in the universe is in the plasma state, found in stars like our sun. Plasma is actually the most common state of matter in the universe, even though we rarely see it on Earth!",
+              "Even though solid objects appear still, their particles are constantly vibrating in place. The higher the temperature, the faster the particles move.",
           },
         },
 
-        // ── Section 1: Key Terms ──
         {
-          type: "keyTerms",
-          heading: "Key Terms",
+          type: "imageCards",
+          heading: "States of Matter and Particle Behavior",
           data: {
-            terms: [
+            cards: [
               {
-                term: "Solid",
-                desc: "A state of matter with a definite (fixed) shape and a definite (fixed) volume. Particles are tightly packed and vibrate in place.",
+                title: "Solids",
+                label: "Tightly Packed",
+                variant: "primary",
+                color: "primary",
+                desc: "A state of matter where particles are tightly packed together and only vibrate in place. Solids have a definite shape and a definite volume.",
+                image: solid,
+                imageAlt: "Particle diagram of a solid",
+                examples: [
+                  "Rocks, Wood, Ice, Metals, Glass",
+                  "Because the particles are closely packed, solids are usually hard and difficult to compress.",
+                ],
               },
               {
-                term: "Liquid",
-                desc: "A state of matter with a definite volume but no definite shape. Particles are close together but flow and slide past one another.",
+                title: "Liquids",
+                label: "Flowing Freely",
+                variant: "secondary",
+                color: "secondary",
+                desc: "A state of matter where particles are loosely packed and can slide past one another. Liquids have no definite shape but have a definite volume.",
+                image: liquid,
+                imageAlt: "Particle diagram of a liquid",
+                examples: [
+                  "Water, Oil, Milk",
+                  "Liquids take the shape of their container while keeping the same amount of volume.",
+                ],
               },
               {
-                term: "Gas",
-                desc: "A state of matter with no definite shape and no definite volume. Particles move rapidly, are far apart, and spread to fill any container.",
+                title: "Gases",
+                label: "Spread Apart",
+                variant: "primary",
+                color: "accent",
+                desc: "A state of matter where particles are far apart and move freely and rapidly. Gases have no definite shape and no definite volume. Gases spread out to fill any container they are placed in.",
+                image: gas,
+                imageAlt: "Particle diagram of a gas",
+                examples: [
+                  "Oxygen, Carbon Dioxide, Helium, Water Vapor",
+                  "Because the particles are widely spaced, gases can easily be compressed.",
+                ],
+              },
+            ],
+          },
+        },
+
+        // ── Section 2: Why Use Models (reasonCards) ──
+        {
+          type: "reasonCards",
+          heading: "Motion Energy of Particles",
+          data: {
+            intro:
+              "Particles of matter are always moving and possess motion energy. The amount of motion energy affects how particles behave in each state of matter.",
+            reasons: [
+              {
+                num: 1,
+                title: "Solids",
+                color: "primary",
+                desc: "Particles in solids have low motion energy. The attractive forces between particles are stronger than their movement, causing them to stay closely packed and vibrate in fixed positions. ",
+                content:
+                  "e.g. A metal spoon keeps its shape no matter what container it is placed in because its particles are locked in fixed positions.",
               },
               {
-                term: "Plasma",
-                desc: "A rare, high-energy state of matter made of electrically charged particles (ions and electrons). Found in lightning, stars, and fluorescent lights.",
+                num: 2,
+                title: "Liquids",
+                color: "secondary",
+                desc: "Particles in liquids have moderate motion energy. They can move around one another while still remaining close together, allowing liquids to flow.",
+                content:
+                  "e.g. Water takes the shape of any container it is poured into because its particles can slide past one another while staying close together.",
               },
               {
-                term: "Physical State",
-                desc: "The form in which matter exists (solid, liquid, gas, or plasma), determined by temperature, pressure, and the forces between particles.",
-              },
-              {
-                term: "Intermolecular Forces",
-                desc: "Attractive forces between particles of matter. These forces determine whether a substance is a solid, liquid, or gas at a given temperature.",
+                num: 3,
+                title: "Gases",
+                color: "accent",
+                desc: "Particles in gases have high motion energy. Their movement is much stronger than the attractive forces between them, causing particles to spread far apart and move freely.",
+                content:
+                  "e.g. Air fills an entire room because gas particles move rapidly and spread out to occupy all available space.",
               },
             ],
           },
@@ -363,30 +352,27 @@ export const week02 = {
         // ── Section 2: Solid vs. Gas (comparison) ──
         {
           type: "comparison",
-          heading: "Solid vs. Gas",
+          heading: "Temperature and Particle Movement",
           data: {
-            intro:
-              "Solids and gases are at opposite ends of the matter spectrum. Understanding their differences reveals how particle arrangement determines the properties of matter.",
+            intro: "Temperature directly affects the movement of particles.",
             left: {
-              label: "Solid",
+              label: "When Matter is Heated",
               color: "primary",
               items: [
-                "Definite shape that does not change without force",
-                "Definite volume that does not expand to fill a container",
-                "Particles are tightly packed in a fixed, regular arrangement",
-                "Very strong intermolecular forces hold particles together",
-                "Examples: ice, iron, wood, rock, plastic",
+                "Particles gain more motion energy and move faster",
+                "Attractive force between particles become weaker",
+                "Particles spread farther apart",
+                "Matter may change from solid to liquid or from liquid to gas",
               ],
             },
             right: {
-              label: "Gas",
+              label: "When Matter is Cooled",
               color: "secondary",
               items: [
-                "No definite shape, takes the shape of any container",
-                "No definite volume, expands to completely fill any container",
-                "Particles are far apart and move rapidly in all directions",
-                "Very weak intermolecular forces allow particles to move almost freely",
-                "Examples: oxygen, steam, carbon dioxide, helium, air",
+                "Particles lose motion energy and move slower",
+                "Attractive forces become stronger",
+                "Particles move closer together and become more organized",
+                "Matter may change from gas to liquid or from liquid to solid",
               ],
             },
           },
@@ -442,11 +428,45 @@ export const week02 = {
               },
               {
                 num: 6,
-                title: "Ionization — Gas to Plasma",
+                title: "Deposition — Gas to Solid",
                 color: "accent",
                 description:
-                  "At extremely high temperatures, gas particles collide so violently that electrons are stripped from atoms, creating free electrons and positively charged ions. This electrically charged state of matter is plasma.",
-                tip: "Lightning, the sun, and neon signs are all examples of plasma. Plasma is actually the most common state of matter in the universe.",
+                  "Some gases change directly into a solid without passing through the liquid state. This occurs when gas particles lose enough energy to lock immediately into fixed positions.",
+                tip: "Frost is a common example water vapor in the air deposits directly onto cold surfaces as ice crystals, skipping the liquid stage entirely.",
+              },
+            ],
+          },
+        },
+
+        // ── Section 1: Key Terms ──
+        {
+          type: "keyTerms",
+          heading: "Key Ideas About Particles",
+          data: {
+            terms: [
+              {
+                term: "Constant Motion",
+                desc: "All particles of matter are constantly moving even in a solid, particles never completely stop and continue to vibrate in place.",
+              },
+              {
+                term: "Compressibility",
+                desc: "The spaces between particles affect how compressible matter is  gases compress easily while solids and liquids resist compression.",
+              },
+              {
+                term: "Intermolecular Forces",
+                desc: "Strong intermolecular forces produce solids while weak forces produce gases, determining how freely particles can move.",
+              },
+              {
+                term: "Temperature Effect",
+                desc: "Heating increases particle movement while cooling slows particles down, causing matter to expand or contract accordingly.",
+              },
+              {
+                term: "Particle Model",
+                desc: "The particle model explains the properties and behavior of matter why solids hold their shape, liquids flow, and gases spread out.",
+              },
+              {
+                term: "Scientific Theory",
+                desc: "The particle model is a scientific theory used to explain changes in matter and natural processes like phase changes and heat transfer.",
               },
             ],
           },
@@ -489,43 +509,43 @@ export const week02 = {
           },
         },
 
-        // ── Section 5: Applications ──
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Cooking and Food Science",
-                description:
-                  "Cooking involves all three states of matter. Ice melts to water (solid to liquid), water boils to steam (liquid to gas), and understanding these states helps chefs control texture and flavor.",
-                icon: "🍽️",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Weather and Atmosphere",
-                description:
-                  "Water naturally cycles between solid (snow and ice), liquid (rain), and gas (water vapor) in the atmosphere. The study of these changes is fundamental to meteorology and climate science.",
-                icon: "🌦️",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Manufacturing",
-                description:
-                  "Many manufacturing processes involve changing the state of materials: melting metals to cast them into shapes, pressurizing gases into cylinders, or freeze-drying food for preservation.",
-                icon: "🏭",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Biology and Medicine",
-                description:
-                  "Living organisms depend on the properties of all states of matter, from solid bones to liquid blood to the gases we breathe. Medical equipment also uses controlled state changes, like sterilization with steam.",
-                icon: "🧬",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
+        // // ── Section 5: Applications ──
+        // {
+        //   type: "applications",
+        //   heading: "Applications",
+        //   data: {
+        //     apps: [
+        //       {
+        //         title: "Cooking and Food Science",
+        //         description:
+        //           "Cooking involves all three states of matter. Ice melts to water (solid to liquid), water boils to steam (liquid to gas), and understanding these states helps chefs control texture and flavor.",
+        //         icon: "🍽️",
+        //         color: "border-l-primary-500",
+        //       },
+        //       {
+        //         title: "Weather and Atmosphere",
+        //         description:
+        //           "Water naturally cycles between solid (snow and ice), liquid (rain), and gas (water vapor) in the atmosphere. The study of these changes is fundamental to meteorology and climate science.",
+        //         icon: "🌦️",
+        //         color: "border-l-secondary-500",
+        //       },
+        //       {
+        //         title: "Manufacturing",
+        //         description:
+        //           "Many manufacturing processes involve changing the state of materials: melting metals to cast them into shapes, pressurizing gases into cylinders, or freeze-drying food for preservation.",
+        //         icon: "🏭",
+        //         color: "border-l-accent-500",
+        //       },
+        //       {
+        //         title: "Biology and Medicine",
+        //         description:
+        //           "Living organisms depend on the properties of all states of matter, from solid bones to liquid blood to the gases we breathe. Medical equipment also uses controlled state changes, like sterilization with steam.",
+        //         icon: "🧬",
+        //         color: "border-l-primary-500",
+        //       },
+        //     ],
+        //   },
+        // },
       ],
     },
   ],
