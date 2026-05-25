@@ -1,77 +1,174 @@
 // Week 3 quizzes — Grade 7 Science: Changes in State of Matter
 
 export const QUIZZES_WEEK_03 = {
-  // ── Lesson 7: Melting and Freezing — multiple-choice ─────────────────────
+  // ── Lesson 7: Melting and Freezing — all 10 slot types ────────────────────
   "lesson-7": {
     lessonId: "lesson-7",
     title: "Melting and Freezing",
     description:
       "Test your understanding of melting, freezing, and the energy changes involved.",
-    timeLimit: 900,
+    timeLimit: 1200,
     questions: [
       {
         id: "q1",
-        type: "multiple-choice",
-        question: "What is the definition of melting?",
-        options: [
-          "A liquid changing into a gas when heated",
-          "A solid changing directly into a gas",
-          "A solid changing into a liquid when heat energy is added",
-          "A gas changing into a liquid when cooled",
-        ],
-        correctAnswer: "A solid changing into a liquid when heat energy is added",
+        type: "true-false",
+        question:
+          "Melting is an endothermic process, meaning the substance absorbs heat energy from its surroundings.",
+        correctAnswer: true,
         points: 5,
+        explanation:
+          "During melting, heat energy is absorbed from the surroundings to break the bonds holding particles in the solid structure. This is why ice feels cold when you hold it — it is drawing heat away from your hand.",
       },
       {
         id: "q2",
-        type: "multiple-choice",
+        type: "fill-blanks",
         question:
-          "At what temperature does pure water melt (and freeze) at standard atmospheric pressure?",
-        options: ["100°C", "0°C", "37°C", "−273°C"],
-        correctAnswer: "0°C",
+          "Pure water melts and freezes at ___ °C. While a substance is changing state, its temperature stays ___ until the change is complete.",
+        blanks: ["0", "constant"],
         points: 5,
+        explanation:
+          "The melting and freezing point of pure water is 0°C. All absorbed energy goes into breaking bonds rather than raising the temperature, so the temperature remains constant during the state change.",
       },
       {
         id: "q3",
-        type: "multiple-choice",
+        type: "identification",
         question:
-          "Melting is described as an endothermic process. What does this mean?",
-        options: [
-          "The substance releases heat to the surroundings",
-          "The substance absorbs heat energy from the surroundings",
-          "The temperature of the substance rises continuously during melting",
-          "The substance requires no energy to change state",
-        ],
-        correctAnswer: "The substance absorbs heat energy from the surroundings",
+          "What is the name of the process by which a solid changes into a liquid by absorbing heat energy?",
+        correctAnswer: "melting",
+        acceptedAnswers: ["melting", "fusion"],
         points: 5,
       },
       {
         id: "q4",
-        type: "multiple-choice",
+        type: "ordering",
         question:
-          "While a pure solid substance is melting at its melting point, what happens to its temperature?",
-        options: [
-          "It rises steadily as heat is added",
-          "It falls because energy is released",
-          "It stays constant until all the solid has melted",
-          "It fluctuates randomly between two values",
+          "Arrange the following events in the correct order for what happens when ice melts into liquid water:",
+        items: [
+          "Heat energy is added to the ice",
+          "Ice particles begin to vibrate faster",
+          "Bonds between particles start to break",
+          "Temperature stays constant at 0°C",
+          "All ice has turned into liquid water",
         ],
-        correctAnswer: "It stays constant until all the solid has melted",
         points: 5,
       },
       {
         id: "q5",
+        type: "matching",
+        question: "Match each term to its correct description.",
+        leftItems: ["Melting", "Freezing", "Melting point", "Endothermic", "Exothermic"],
+        rightItems: [
+          "Solid → Liquid",
+          "Liquid → Solid",
+          "Temperature at which a state change occurs",
+          "Absorbs heat from surroundings",
+          "Releases heat to surroundings",
+        ],
+        correctPairs: {
+          "Melting": "Solid → Liquid",
+          "Freezing": "Liquid → Solid",
+          "Melting point": "Temperature at which a state change occurs",
+          "Endothermic": "Absorbs heat from surroundings",
+          "Exothermic": "Releases heat to surroundings",
+        },
+        points: 5,
+      },
+      {
+        id: "q6",
         type: "multiple-choice",
         question:
-          "Which of the following correctly describes the relationship between melting point and freezing point for a pure substance?",
+          "A pure substance is being cooled from liquid to solid. Which statement best describes what happens to its temperature as it freezes?",
         options: [
-          "The freezing point is always lower than the melting point",
-          "The freezing point is always higher than the melting point",
-          "They are the same temperature for a pure substance",
-          "They depend on the color and texture of the substance",
+          "The temperature drops steadily throughout the entire process",
+          "The temperature stays constant until all the liquid has turned solid",
+          "The temperature rises briefly before dropping again",
+          "The temperature immediately drops to absolute zero",
         ],
-        correctAnswer: "They are the same temperature for a pure substance",
+        correctAnswer:
+          "The temperature stays constant until all the liquid has turned solid",
         points: 5,
+        explanation:
+          "Freezing, like melting, is a state change that occurs at a fixed temperature. The energy released as bonds form between particles keeps the temperature constant until the entire substance has solidified.",
+      },
+      {
+        id: "q7",
+        type: "short-answer",
+        question:
+          "Explain why the temperature of a melting substance stays constant even though heat is continuously being added to it.",
+        points: 10,
+        rubric:
+          "Should explain that the heat energy is used to break the bonds between particles (overcoming intermolecular forces) rather than increasing kinetic energy. Since temperature measures kinetic energy, it does not rise during the state change.",
+      },
+      {
+        id: "q8",
+        type: "essay",
+        question:
+          "Using your knowledge of particles and energy, describe what happens at the particle level when a block of ice is slowly heated until it completely melts into liquid water. Include the role of heat energy, particle movement, and bonding in your answer.",
+        minWords: 80,
+        points: 15,
+      },
+      {
+        id: "q9",
+        type: "picture-based",
+        imageUrl: null,
+        imageAlt:
+          "A heating curve graph showing temperature (°C) on the y-axis and time on the x-axis. The line rises, then goes flat at 0°C, then rises again after all the ice has melted.",
+        question:
+          "The graph shows a heating curve for water being heated from −20°C. What is occurring during the flat (horizontal) section of the graph at 0°C?",
+        options: [
+          "The water is cooling down and releasing heat",
+          "The ice is melting — heat energy is breaking bonds, not raising temperature",
+          "The thermometer is broken and not recording correctly",
+          "The substance is boiling and turning into steam",
+        ],
+        correctAnswer:
+          "The ice is melting — heat energy is breaking bonds, not raising temperature",
+        points: 5,
+        explanation:
+          "The flat section is the melting plateau. All added heat energy goes into breaking the bonds between water molecules in the ice rather than increasing particle kinetic energy, so the temperature does not rise until melting is complete.",
+      },
+      {
+        id: "q10",
+        type: "case-study",
+        scenario:
+          "Maria leaves a bar of chocolate on a sunny windowsill. After 30 minutes she notices the chocolate has turned from a solid bar into a puddle of liquid. She puts it in the freezer and an hour later it has hardened back into a solid. Maria's younger brother asks her why chocolate melts so easily compared to ice.",
+        points: 15,
+        subQuestions: [
+          {
+            id: "q10-a",
+            type: "multiple-choice",
+            question:
+              "Why does chocolate melt at a lower temperature than water ice?",
+            options: [
+              "Chocolate contains more water than ice does",
+              "Chocolate has a lower melting point because its particles need less energy to break free from each other",
+              "Chocolate is darker in color and therefore absorbs more sunlight",
+              "Ice always has a higher melting point than any food substance",
+            ],
+            correctAnswer:
+              "Chocolate has a lower melting point because its particles need less energy to break free from each other",
+            points: 5,
+          },
+          {
+            id: "q10-b",
+            type: "true-false",
+            question:
+              "When Maria placed the liquid chocolate in the freezer to re-solidify, the chocolate released heat energy to the surroundings.",
+            correctAnswer: true,
+            points: 5,
+            explanation:
+              "Freezing is an exothermic process. As liquid particles slow down and bond together to form a solid, they release the energy that was originally absorbed during melting.",
+          },
+          {
+            id: "q10-c",
+            type: "short-answer",
+            question:
+              "Maria's brother suggests that melting and freezing are opposite processes. Do you agree? Use evidence from this scenario to support your answer.",
+            points: 5,
+            rubric:
+              "Should agree and explain that melting (solid → liquid) absorbs heat while freezing (liquid → solid) releases heat. Both occur at the same temperature for a pure substance. Evidence: chocolate melted on the windowsill (absorbed heat) and re-solidified in the freezer (released heat).",
+          },
+        ],
       },
     ],
   },
