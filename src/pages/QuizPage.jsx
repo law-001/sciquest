@@ -5,7 +5,16 @@ import { QuizContainer } from "../components/QuizContainer";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { getQuizByLesson } from "../data/quizzesweek-01";
 
-export function QuizPage({ activeLessonId, priorAttempts = 0, onBack, onComplete, onFinish, timeLimitSeconds = null }) {
+export function QuizPage({
+  activeLessonId,
+  priorAttempts = 0,
+  onBack,
+  onComplete,
+  onFinish,
+  timeLimitSeconds = null,
+  maxAttempts = null,
+  showCorrectAnswers = true,
+}) {
   const allLessons = WEEKS_DATA.flatMap((w) => w.lessons);
   const lesson = allLessons.find((l) => l.id === activeLessonId);
   const quiz = getQuizByLesson(activeLessonId);
@@ -45,6 +54,8 @@ export function QuizPage({ activeLessonId, priorAttempts = 0, onBack, onComplete
       onComplete={onComplete}
       onFinish={onFinish}
       timeLimitSeconds={timeLimitSeconds}
+      maxAttempts={maxAttempts}
+      showCorrectAnswers={showCorrectAnswers}
     />
   );
 }
