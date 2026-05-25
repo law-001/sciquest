@@ -198,17 +198,32 @@ export function QuizContainer({
   onComplete,
   onFinish,
   timeLimitSeconds = null,
+  maxAttempts = null,
+  showCorrectAnswers = true,
 }) {
   const { questions } = quiz;
   const storageKey = `quiz-answers-${quiz.lessonId}`;
   const timerStartKey = `quiz-started-${quiz.lessonId}`;
   const hasTimer = Number.isFinite(timeLimitSeconds) && timeLimitSeconds > 0;
 
+  // Per-quiz override: null/undefined ⇒ "unlimited". A positive int caps
+  // submissions; anything else falls back to the app-wide default so old
+  // quizzes without a setting still behave as they used to.
+  const attemptCap =
+    maxAttempts == null
+      ? Infinity
+      : Number.isFinite(maxAttempts) && maxAttempts > 0
+        ? maxAttempts
+        : MAX_QUIZ_ATTEMPTS;
+  const isUnlimited = !Number.isFinite(attemptCap);
+
   // 1-indexed number of the attempt being taken now. Once priorAttempts hits
   // the cap, no further submissions are allowed.
   const attemptNumber = priorAttempts + 1;
-  const attemptsExhausted = priorAttempts >= MAX_QUIZ_ATTEMPTS;
-  const attemptsLeft = Math.max(0, MAX_QUIZ_ATTEMPTS - priorAttempts);
+  const attemptsExhausted = priorAttempts >= attemptCap;
+  const attemptsLeft = isUnlimited
+    ? Infinity
+    : Math.max(0, attemptCap - priorAttempts);
 
   const [answers, setAnswers] = useState(() => {
     try {
@@ -345,7 +360,7 @@ export function QuizContainer({
             No attempts remaining
           </h2>
           <p className="text-stone-500 dark:text-stone-400 font-bold mb-6">
-            You've used all {MAX_QUIZ_ATTEMPTS} attempts for
+            You've used all {attemptCap} attempts for
             {lesson ? ` "${lesson.title}"` : " this quiz"}. Your best score has
             been saved.
           </p>
@@ -433,11 +448,16 @@ export function QuizContainer({
               <span>+{xpEarned} XP Earned</span>
             </div>
             <p className="text-xs font-bold text-stone-400 mt-2">
-              Attempt {Math.min(priorAttempts, MAX_QUIZ_ATTEMPTS)} of{" "}
-              {MAX_QUIZ_ATTEMPTS}
-              {attemptsExhausted
-                ? " — no attempts left"
-                : ` — ${attemptsLeft} left (reduced XP)`}
+              {isUnlimited
+                ? `Attempt ${priorAttempts} — unlimited attempts`
+                : `Attempt ${Math.min(priorAttempts, attemptCap)} of ${attemptCap}`}
+              {!isUnlimited && attemptsExhausted && " — no attempts left"}
+              {!isUnlimited && !attemptsExhausted && (
+                priorAttempts >= MAX_QUIZ_ATTEMPTS
+                  ? " — no more XP"
+                  : ` — ${attemptsLeft} left (reduced XP)`
+              )}
+              {isUnlimited && priorAttempts >= MAX_QUIZ_ATTEMPTS && " — no more XP"}
             </p>
             {pending > 0 && (
               <p className="text-xs font-bold text-amber-600 mt-3">
@@ -456,13 +476,15 @@ export function QuizContainer({
                 onClick={handleRetry}
                 leftIcon={<RotateCcw className="w-4 h-4" />}
               >
-                Retry Quiz ({attemptsLeft} left)
+                Retry Quiz{isUnlimited ? "" : ` (${attemptsLeft} left)`}
               </Button>
             )}
           </div>
         </Card>
 
-        {/* Per-question review */}
+        {/* Per-question review — hidden when the teacher has chosen not to
+            reveal correct answers for this quiz. */}
+        {showCorrectAnswers && (
         <div className="max-w-2xl w-full relative z-10 space-y-4">
           <h3 className="text-xl font-black text-stone-700 dark:text-stone-200 mb-2">
             Review Your Answers
@@ -517,6 +539,7 @@ export function QuizContainer({
             );
           })}
         </div>
+        )}
       </div>
     );
   }
@@ -666,8 +689,12 @@ export function QuizContainer({
                   } remaining`}
             </div>
             <div className="text-xs font-bold text-stone-400 mt-0.5">
-              Attempt {attemptNumber} of {MAX_QUIZ_ATTEMPTS}
-              {attemptNumber > 1 && " — XP reduced for retries"}
+              {isUnlimited
+                ? `Attempt ${attemptNumber} — unlimited attempts`
+                : `Attempt ${attemptNumber} of ${attemptCap}`}
+              {attemptNumber > MAX_QUIZ_ATTEMPTS
+                ? " — no XP for this attempt"
+                : attemptNumber > 1 && " — XP reduced for retries"}
             </div>
           </div>
           <Button

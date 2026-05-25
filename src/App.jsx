@@ -39,6 +39,8 @@ import {
   fetchQuizSettings,
   subscribeToQuizSettings,
   getQuizTimeLimit,
+  getQuizMaxAttempts,
+  getQuizShowAnswers,
 } from "./lib/quizSettings";
 import { lessonsPassedFromAttempts } from "./lib/lessonGating";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
@@ -847,6 +849,8 @@ function AppContent() {
             onComplete={handleQuizComplete}
             onFinish={handleQuizFinish}
             timeLimitSeconds={getQuizTimeLimit(quizSettings, activeLessonId)}
+            maxAttempts={getQuizMaxAttempts(quizSettings, activeLessonId)}
+            showCorrectAnswers={getQuizShowAnswers(quizSettings, activeLessonId)}
           />
         );
 

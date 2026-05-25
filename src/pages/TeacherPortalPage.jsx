@@ -27,6 +27,7 @@ import {
   Gamepad2,
   Search,
   ClipboardCheck,
+  RotateCcw,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -65,8 +66,12 @@ import {
   getCachedQuizSettings,
   fetchQuizSettings,
   saveQuizTimeLimit,
+  saveQuizMaxAttempts,
+  saveQuizShowAnswers,
   subscribeToQuizSettings,
   getQuizTimeLimit,
+  getQuizMaxAttempts,
+  getQuizShowAnswers,
 } from "../lib/quizSettings";
 
 // --- Slot components ---
@@ -3275,6 +3280,147 @@ function QuizTimerControl({ lessonId, currentSeconds }) {
   );
 }
 
+// Attempts presets shown in the dropdown. "0" is rendered as "Unlimited".
+const ATTEMPTS_PRESETS = [1, 2, 3, 4, 5];
+
+function QuizAttemptsControl({ lessonId, currentAttempts }) {
+  // null = unlimited (saved value); the <select> uses "0" for that.
+  const [selection, setSelection] = useState(() =>
+    currentAttempts == null ? "0" : String(currentAttempts),
+  );
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    setSelection(currentAttempts == null ? "0" : String(currentAttempts));
+  }, [currentAttempts]);
+
+  async function commit(value) {
+    setSaving(true);
+    try {
+      await saveQuizMaxAttempts(lessonId, value);
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 1500);
+    } catch (err) {
+      console.error("Failed to save quiz attempts:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleChange(e) {
+    const val = e.target.value;
+    setSelection(val);
+    const n = Number(val);
+    commit(n > 0 ? n : null);
+  }
+
+  return (
+    <div className="pt-3 border-t border-orange-100 dark:border-stone-700">
+      <label
+        htmlFor={`attempts-${lessonId}`}
+        className="flex items-center gap-1.5 text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5"
+      >
+        <RotateCcw className="w-3.5 h-3.5" />
+        Attempts
+      </label>
+      <div className="flex items-center gap-1.5">
+        <select
+          id={`attempts-${lessonId}`}
+          value={selection}
+          onChange={handleChange}
+          disabled={saving}
+          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+        >
+          {ATTEMPTS_PRESETS.map((n) => (
+            <option key={n} value={String(n)}>
+              {n} {n === 1 ? "attempt" : "attempts"}
+            </option>
+          ))}
+          <option value="0">Unlimited</option>
+        </select>
+        {savedFlash && (
+          <span className="text-xs font-bold text-secondary-600 dark:text-secondary-400">
+            Saved
+          </span>
+        )}
+      </div>
+      <p className="text-[10px] font-medium text-stone-400 dark:text-stone-500 mt-1">
+        XP scales 100% / 50% / 25% across the first 3 attempts. Anything
+        beyond attempt 3 earns no XP.
+      </p>
+    </div>
+  );
+}
+
+function QuizShowAnswersControl({ lessonId, currentShow }) {
+  // currentShow defaults to true upstream — treat undefined as on.
+  const enabled = currentShow !== false;
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  async function handleToggle() {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await saveQuizShowAnswers(lessonId, !enabled);
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 1500);
+    } catch (err) {
+      console.error("Failed to save show-answers setting:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="pt-3 border-t border-orange-100 dark:border-stone-700">
+      <div className="flex items-center justify-between gap-2">
+        <label
+          htmlFor={`show-answers-${lessonId}`}
+          className="flex items-center gap-1.5 text-xs font-bold text-stone-500 dark:text-stone-400"
+        >
+          {enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          Show correct answers
+        </label>
+        <button
+          id={`show-answers-${lessonId}`}
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Show correct answers after submit"
+          onClick={handleToggle}
+          disabled={saving}
+          className={cn(
+            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-400",
+            enabled
+              ? "bg-secondary-500 border-secondary-500"
+              : "bg-stone-200 dark:bg-stone-700 border-stone-300 dark:border-stone-600",
+            saving && "opacity-60 cursor-not-allowed",
+          )}
+        >
+          <span
+            className={cn(
+              "inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
+              enabled ? "translate-x-[18px]" : "translate-x-[2px]",
+            )}
+          />
+        </button>
+      </div>
+      <p className="text-[10px] font-medium text-stone-400 dark:text-stone-500 mt-1 flex items-center gap-1.5">
+        {enabled
+          ? "Per-question review reveals the right answer after submit."
+          : "Results screen hides the per-question review."}
+        {savedFlash && (
+          <span className="text-secondary-600 dark:text-secondary-400 font-bold">
+            Saved
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
+
 const QUIZ_TYPE_LABELS = {
   "multiple-choice": "Multiple Choice",
   "true-false": "True/False",
@@ -3423,6 +3569,8 @@ function QuizzesManagementSlot({
                   publishedQuizWeekIds,
                 );
                 const currentLimit = getQuizTimeLimit(quizSettings, lesson.id);
+                const currentAttempts = getQuizMaxAttempts(quizSettings, lesson.id);
+                const currentShow = getQuizShowAnswers(quizSettings, lesson.id);
                 return (
                   <Card key={lesson.id} className="p-5" hoverable>
                     <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center mb-4">
@@ -3470,6 +3618,14 @@ function QuizzesManagementSlot({
                     <QuizTimerControl
                       lessonId={lesson.id}
                       currentSeconds={currentLimit}
+                    />
+                    <QuizAttemptsControl
+                      lessonId={lesson.id}
+                      currentAttempts={currentAttempts}
+                    />
+                    <QuizShowAnswersControl
+                      lessonId={lesson.id}
+                      currentShow={currentShow}
                     />
                   </Card>
                 );
