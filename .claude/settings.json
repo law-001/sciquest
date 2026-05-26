@@ -26,7 +26,8 @@
       "Bash(Sort-Object Name)",
       "Bash(Select-String \"week-1[6-9]|week-20\")",
       "Bash(python3 \"C:\\\\Users\\\\markd\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"educational game challenge tracker compact panel\" --design-system -p \"SciQuest Matter Sandbox\")",
-      "Bash(node -e \"const icons = require\\('lucide-react'\\); const matches = Object.keys\\(icons\\).filter\\(k => /folder/i.test\\(k\\)\\); console.log\\(matches.join\\('\\\\n'\\)\\)\")"
+      "Bash(node -e \"const icons = require\\('lucide-react'\\); const matches = Object.keys\\(icons\\).filter\\(k => /folder/i.test\\(k\\)\\); console.log\\(matches.join\\('\\\\n'\\)\\)\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\markd\\\\.claude\\\\projects\\\\c--Users-markd-sciquest\\\\a73dbb68-3e9a-40d2-b27e-284ebc2cfff6.jsonl\" -Tail 50)"
     ],
     "deny": [
       "Read(**/.env)",

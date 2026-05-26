@@ -27,6 +27,7 @@ import {
   RotateCcw,
   FolderOpen,
   Plus,
+  UserCheck,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -36,6 +37,7 @@ import {
   fetchUsers,
   fetchRecentUsers,
   fetchTeachers,
+  fetchStudents,
   fetchDashboardCounts,
   fetchSectionCounts,
   deleteUser,
@@ -424,15 +426,16 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Users Table */}
-        <Card className="users-table lg:col-span-2 overflow-hidden">
+        <Card className="users-table xl:col-span-2 overflow-hidden">
           <div className="p-6 border-b border-orange-100 dark:border-stone-700">
             <h2 className="text-lg font-bold text-stone-900 dark:text-white">
               Recent Users
             </h2>
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
@@ -466,16 +469,16 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
                       key={user.id}
                       className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 max-w-0 w-full">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                             {user.name.charAt(0)}
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-stone-900 dark:text-white">
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
                               {user.name}
                             </p>
-                            <p className="text-xs text-stone-500 dark:text-stone-400">
+                            <p className="text-xs text-stone-500 dark:text-stone-400 truncate" title={user.email}>
                               {user.email}
                             </p>
                           </div>
@@ -518,6 +521,65 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
                 )}
               </tbody>
             </table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+            {recentUsers.length === 0 ? (
+              <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+                No recent users
+              </p>
+            ) : (
+              recentUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-5 py-4 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={
+                        user.role === "Teacher" ? "secondary" : "primary"
+                      }
+                    >
+                      {user.role}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between mt-2 pl-11">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-xs font-bold",
+                        user.status === "Active"
+                          ? "text-secondary-600 dark:text-secondary-400"
+                          : "text-stone-400 dark:text-stone-500",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full",
+                          user.status === "Active"
+                            ? "bg-secondary-500"
+                            : "bg-stone-300 dark:bg-stone-600",
+                        )}
+                      />
+                      {user.status}
+                    </span>
+                    <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                      {user.joined}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </Card>
 
@@ -766,7 +828,8 @@ function UsersTab() {
             )}
           </div>
         )}
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
@@ -888,6 +951,87 @@ function UsersTab() {
               )}
             </tbody>
           </table>
+        </div>
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+          {loading ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              Loading users…
+            </p>
+          ) : loadError ? (
+            <p className="px-5 py-10 text-center text-sm text-red-600 dark:text-red-400">
+              {loadError}
+            </p>
+          ) : users.length === 0 ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              No users yet
+            </p>
+          ) : (
+            users.map((user) => (
+              <div
+                key={user.id}
+                className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                        {user.name}
+                      </p>
+                      <Badge
+                        variant={
+                          user.role === "Teacher" ? "secondary" : "primary"
+                        }
+                      >
+                        {user.role}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                      {user.email}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1">
+                      {user.section !== "—" && (
+                        <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                          {user.section}
+                        </span>
+                      )}
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 text-xs font-bold",
+                          user.status === "Active"
+                            ? "text-secondary-600 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            user.status === "Active"
+                              ? "bg-secondary-500"
+                              : "bg-stone-300 dark:bg-stone-600",
+                          )}
+                        />
+                        {user.status}
+                      </span>
+                      <span className="text-xs text-stone-400 font-medium">
+                        {user.joined}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setUserToRemove(user)}
+                  className="shrink-0 p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  aria-label={`Remove ${user.name}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </Card>
 
@@ -1024,7 +1168,8 @@ function ResetDataTab() {
           />
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
@@ -1121,6 +1266,67 @@ function ResetDataTab() {
             </tbody>
           </table>
         </div>
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+          {loading ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              Loading users…
+            </p>
+          ) : loadError ? (
+            <p className="px-5 py-10 text-center text-sm text-red-600 dark:text-red-400">
+              {loadError}
+            </p>
+          ) : results.length === 0 ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              No users found
+            </p>
+          ) : (
+            results.map((user) => (
+              <div
+                key={user.id}
+                className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                        {user.name}
+                      </p>
+                      <Badge
+                        variant={
+                          user.role === "Teacher" ? "secondary" : "primary"
+                        }
+                      >
+                        {user.role}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                      {user.email}
+                    </p>
+                    {user.section !== "—" && (
+                      <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
+                        {user.section}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setUserToWipe(user);
+                    setWipedName(null);
+                  }}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors whitespace-nowrap"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </Card>
 
       {userToWipe && (
@@ -1148,6 +1354,11 @@ function TeachersTab() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [teacherToRemove, setTeacherToRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState(null);
+  const [showRemoveSearch, setShowRemoveSearch] = useState(false);
+  const [removeQuery, setRemoveQuery] = useState("");
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -1169,6 +1380,12 @@ function TeachersTab() {
       cancelled = true;
     };
   }, []);
+
+  const removeSearchResults = removeQuery.trim()
+    ? teachers.filter((t) =>
+        t.name.toLowerCase().includes(removeQuery.toLowerCase()),
+      )
+    : [];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -1196,6 +1413,20 @@ function TeachersTab() {
     return () => ctx.revert();
   }, []);
 
+  const handleConfirmRemove = async (teacher) => {
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await deleteUser(teacher.id);
+      setTeachers((prev) => prev.filter((t) => t.id !== teacher.id));
+      setTeacherToRemove(null);
+    } catch (err) {
+      setRemoveError(err.message ?? "Failed to remove teacher");
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="flex items-center justify-between">
@@ -1218,15 +1449,84 @@ function TeachersTab() {
       </div>
 
       <Card className="anim-card overflow-hidden">
-        <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-          <h2 className="text-lg font-bold text-stone-900 dark:text-white">
-            All Teachers
-          </h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">
-            {loading ? "Loading…" : `${teachers.length} teachers`}
-          </p>
+        <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+              All Teachers
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {loading ? "Loading…" : `${teachers.length} teachers`}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setShowRemoveSearch((v) => !v);
+              setRemoveQuery("");
+            }}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors",
+              showRemoveSearch
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
+            )}
+          >
+            <UserX className="w-4 h-4" />
+            Remove Teacher
+          </button>
         </div>
-        <div className="overflow-x-auto">
+
+        {showRemoveSearch && (
+          <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
+            <input
+              autoFocus
+              type="text"
+              value={removeQuery}
+              onChange={(e) => setRemoveQuery(e.target.value)}
+              placeholder="Search by name..."
+              className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
+            />
+            {removeQuery.trim() && (
+              <div className="mt-3 space-y-1.5">
+                {removeSearchResults.length === 0 ? (
+                  <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
+                    No teachers found
+                  </p>
+                ) : (
+                  removeSearchResults.map((teacher) => (
+                    <div
+                      key={teacher.id}
+                      className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {teacher.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {teacher.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {teacher.email}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setTeacherToRemove(teacher)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
@@ -1245,13 +1545,16 @@ function TeachersTab() {
                 <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                   Joined
                 </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
                   >
                     Loading teachers…
@@ -1260,7 +1563,7 @@ function TeachersTab() {
               ) : loadError ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400"
                   >
                     {loadError}
@@ -1269,7 +1572,7 @@ function TeachersTab() {
               ) : teachers.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
                   >
                     No teachers yet
@@ -1325,16 +1628,476 @@ function TeachersTab() {
                     <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {teacher.joined}
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => setTeacherToRemove(teacher)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+          {loading ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              Loading teachers…
+            </p>
+          ) : loadError ? (
+            <p className="px-5 py-10 text-center text-sm text-red-600 dark:text-red-400">
+              {loadError}
+            </p>
+          ) : teachers.length === 0 ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              No teachers yet
+            </p>
+          ) : (
+            teachers.map((teacher) => (
+              <div
+                key={teacher.id}
+                className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    {teacher.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                      {teacher.name}
+                    </p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
+                      {teacher.email}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
+                        {teacher.classes} classes · {teacher.students} students
+                      </span>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 text-xs font-bold",
+                          teacher.status === "Active"
+                            ? "text-secondary-600 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            teacher.status === "Active"
+                              ? "bg-secondary-500"
+                              : "bg-stone-300 dark:bg-stone-600",
+                          )}
+                        />
+                        {teacher.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setTeacherToRemove(teacher)}
+                  className="shrink-0 p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  aria-label={`Remove ${teacher.name}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </Card>
 
       {showInvite && (
         <InviteTeacherModal onClose={() => setShowInvite(false)} />
+      )}
+
+      {teacherToRemove && (
+        <RemoveUserModal
+          user={teacherToRemove}
+          onConfirm={handleConfirmRemove}
+          onClose={() => {
+            if (!removing) {
+              setTeacherToRemove(null);
+              setRemoveError(null);
+            }
+          }}
+          isLoading={removing}
+          error={removeError}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Students Tab ─────────────────────────────────────────────────────────────
+
+function StudentsTab() {
+  const [students, setStudents] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [filterSection, setFilterSection] = useState("all");
+  const [studentToRemove, setStudentToRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState(null);
+  const [showRemoveSearch, setShowRemoveSearch] = useState(false);
+  const [removeQuery, setRemoveQuery] = useState("");
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchStudents(), fetchAllSections()])
+      .then(([rows, sectionRows]) => {
+        if (!cancelled) {
+          setStudents(rows);
+          setSections(sectionRows);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(err.message ?? "Failed to load students");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const removeSearchResults = removeQuery.trim()
+    ? students.filter((u) =>
+        u.name.toLowerCase().includes(removeQuery.toLowerCase()),
+      )
+    : [];
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".anim-heading", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      gsap.from(".anim-card", {
+        y: 22,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 0.15,
+      });
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
+
+  const filtered =
+    filterSection === "all"
+      ? students
+      : students.filter((u) => u.section === filterSection);
+
+  const handleConfirmRemove = async (student) => {
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await deleteUser(student.id);
+      setStudents((prev) => prev.filter((u) => u.id !== student.id));
+      setStudentToRemove(null);
+    } catch (err) {
+      setRemoveError(err.message ?? "Failed to remove student");
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6" ref={containerRef}>
+      <div className="anim-heading">
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
+          Students
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">
+          Manage enrolled student accounts
+        </p>
+      </div>
+
+      <Card className="anim-card overflow-hidden">
+        <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+              All Students
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {loading
+                ? "Loading…"
+                : `${filtered.length} student${filtered.length !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={filterSection}
+              onChange={(e) => setFilterSection(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-400"
+            >
+              <option value="all">All Sections</option>
+              {sections.map((s) => (
+                <option key={s.id} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                setShowRemoveSearch((v) => !v);
+                setRemoveQuery("");
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors",
+                showRemoveSearch
+                  ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                  : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
+              )}
+            >
+              <UserX className="w-4 h-4" />
+              Remove Student
+            </button>
+          </div>
+        </div>
+
+        {showRemoveSearch && (
+          <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
+            <input
+              autoFocus
+              type="text"
+              value={removeQuery}
+              onChange={(e) => setRemoveQuery(e.target.value)}
+              placeholder="Search student by name..."
+              className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-700 text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
+            />
+            {removeQuery.trim() && (
+              <div className="mt-3 space-y-1.5">
+                {removeSearchResults.length === 0 ? (
+                  <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
+                    No students found
+                  </p>
+                ) : (
+                  removeSearchResults.map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {student.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {student.email}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setStudentToRemove(student)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Section
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Joined
+                </th>
+                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    Loading students…
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-red-600 dark:text-red-400"
+                  >
+                    {loadError}
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
+                  >
+                    No students found
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-stone-900 dark:text-white">
+                            {student.name}
+                          </p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            {student.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {student.section}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 text-xs font-bold",
+                          student.status === "Active"
+                            ? "text-secondary-600 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "w-2 h-2 rounded-full",
+                            student.status === "Active"
+                              ? "bg-secondary-500"
+                              : "bg-stone-300 dark:bg-stone-600",
+                          )}
+                        />
+                        {student.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      {student.joined}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => setStudentToRemove(student)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+          {loading ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              Loading students…
+            </p>
+          ) : loadError ? (
+            <p className="px-5 py-10 text-center text-sm text-red-600 dark:text-red-400">
+              {loadError}
+            </p>
+          ) : filtered.length === 0 ? (
+            <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              No students found
+            </p>
+          ) : (
+            filtered.map((student) => (
+              <div
+                key={student.id}
+                className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    {student.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                      {student.name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span className="text-xs text-stone-500 dark:text-stone-400 truncate">
+                        {student.email}
+                      </span>
+                      {student.section !== "—" && (
+                        <Badge variant="outline" className="text-xs py-0">
+                          {student.section}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setStudentToRemove(student)}
+                  className="shrink-0 p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  aria-label={`Remove ${student.name}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
+
+      {studentToRemove && (
+        <RemoveUserModal
+          user={studentToRemove}
+          onConfirm={handleConfirmRemove}
+          onClose={() => {
+            if (!removing) {
+              setStudentToRemove(null);
+              setRemoveError(null);
+            }
+          }}
+          isLoading={removing}
+          error={removeError}
+        />
       )}
     </div>
   );
@@ -1353,17 +2116,14 @@ function LessonsTab() {
         duration: 0.45,
         ease: "power2.out",
       });
-      ScrollTrigger.batch(".week-card", {
-        onEnter: (batch) =>
-          gsap.from(batch, {
-            y: 32,
-            opacity: 0,
-            duration: 0.5,
-            stagger: 0.1,
-            ease: "power2.out",
-            clearProps: "all",
-          }),
-        start: "top 90%",
+      gsap.from(".week-card", {
+        y: 32,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "power2.out",
+        delay: 0.15,
+        clearProps: "all",
       });
     }, containerRef);
     return () => ctx.revert();
@@ -1434,17 +2194,14 @@ function QuizzesTab() {
         duration: 0.45,
         ease: "power2.out",
       });
-      ScrollTrigger.batch(".week-card", {
-        onEnter: (batch) =>
-          gsap.from(batch, {
-            y: 32,
-            opacity: 0,
-            duration: 0.5,
-            stagger: 0.1,
-            ease: "power2.out",
-            clearProps: "all",
-          }),
-        start: "top 90%",
+      gsap.from(".week-card", {
+        y: 32,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "power2.out",
+        delay: 0.15,
+        clearProps: "all",
       });
     }, containerRef);
     return () => ctx.revert();
@@ -2080,6 +2837,7 @@ const SIDEBAR_ITEMS = [
   { id: "users", label: "Users", Icon: Users },
   { id: "reset-data", label: "Reset Data", Icon: Eraser },
   { id: "teachers", label: "Teachers", Icon: GraduationCap },
+  { id: "students", label: "Students", Icon: UserCheck },
   { id: "sections", label: "Sections", Icon: FolderOpen },
   { id: "lessons", label: "Lessons", Icon: BookOpen },
   { id: "quizzes", label: "Quizzes", Icon: HelpCircle },
@@ -2093,6 +2851,7 @@ const ADMIN_TAB_MAP = {
   users: UsersTab,
   "reset-data": ResetDataTab,
   teachers: TeachersTab,
+  students: StudentsTab,
   sections: SectionsTab,
   lessons: LessonsTab,
   quizzes: QuizzesTab,
