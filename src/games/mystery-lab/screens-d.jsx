@@ -76,6 +76,10 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
   const visitedPondB = observations.some(o => o.pond === "B");
   const hasInvestigated = visitedPondA && visitedPondB && experiments.length > 0;
 
+  const [shake, setShake] = useState(null);
+  const [hint, setHint] = useState(null);
+  const [justPlaced, setJustPlaced] = useState(null);
+
   if (!hasInvestigated) {
     return (
       <div data-screen-label="07 Evidence Board" className="col gap-4">
@@ -114,10 +118,6 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
   const isComplete = currentStepIdx >= STORY_STEPS.length;
   const currentStep = STORY_STEPS[currentStepIdx];
 
-  const [shake, setShake] = useState(null);
-  const [hint, setHint] = useState(null);
-  const [justPlaced, setJustPlaced] = useState(null);
-
   const onPickClue = (clue) => {
     if (isComplete) return;
     if (clue.forStep === currentStep.id) {
@@ -155,7 +155,7 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
       {/* Comic strip across the top */}
       <ComicStrip steps={STORY_STEPS} placed={placed} currentStepIdx={currentStepIdx} justPlaced={justPlaced} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
+      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
         {/* clue pile + prompt */}
         <div className="card" style={{ padding: 18, minHeight: 240 }}>
           {!isComplete ? (
@@ -182,11 +182,11 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
         </div>
 
         {/* mentor + progress */}
-        <div className="col gap-3">
+        <div className="col gap-3 ml-game-sidebar">
           <div className="card" style={{
             padding: 14,
-            background: hint ? "#fef3c7" : (isComplete ? "#dcfce7" : "var(--orange-50)"),
-            borderColor: hint ? "#fbbf24" : (isComplete ? "#86efac" : "var(--orange-200)"),
+            background: hint ? "var(--yellow-100)" : (isComplete ? "var(--teal-50)" : "var(--orange-50)"),
+            borderColor: hint ? "var(--yellow-400)" : (isComplete ? "var(--teal-300)" : "var(--orange-200)"),
             transition: "background .3s",
           }}>
             <div className="row gap-3" style={{ alignItems: "flex-start" }}>
@@ -725,16 +725,16 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
       {/* Newspaper */}
       <div className="card bounce-in" style={{
         padding: 0, overflow: "hidden", borderRadius: 4,
-        background: "#f8efd1",
-        backgroundImage: "radial-gradient(rgba(28,20,16,0.06) 1px, transparent 1.5px)",
+        background: "var(--bg-paper)",
+        backgroundImage: "radial-gradient(var(--line-soft) 1px, transparent 1.5px)",
         backgroundSize: "10px 10px",
-        border: "2px solid #1c1410",
+        border: "2px solid var(--text)",
         position: "relative",
         zIndex: 2,
       }}>
         <div style={{ padding: "20px 32px 18px" }}>
           {/* Masthead */}
-          <div style={{ borderBottom: "4px double #1c1410", paddingBottom: 12, marginBottom: 18 }}>
+          <div style={{ borderBottom: "4px double var(--text)", paddingBottom: 12, marginBottom: 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap" }}>
               <div style={{ fontFamily: "Caveat", fontSize: 16, fontWeight: 700 }}>Vol. I · No. 001</div>
               <h1 className="h-display" style={{ fontSize: 34, fontFamily: "serif", fontWeight: 900, letterSpacing: "-0.01em" }}>
@@ -749,7 +749,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
 
           {/* Headline */}
           <div style={{ textAlign: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: "var(--orange-700)" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: "var(--orange-500)" }}>
               ★ BREAKING ★ ★ BREAKING ★
             </div>
             <h2 style={{
@@ -758,12 +758,12 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
               fontSize: 46,
               lineHeight: 1,
               marginTop: 6,
-              color: "#1c1410",
+              color: "var(--text)",
               letterSpacing: "-0.02em",
             }}>
               MYSTERY SOLVED!
             </h2>
-            <div style={{ fontFamily: "Caveat", fontSize: 26, fontWeight: 700, marginTop: 6, color: "var(--orange-700)" }}>
+            <div style={{ fontFamily: "Caveat", fontSize: 26, fontWeight: 700, marginTop: 6, color: "var(--orange-500)" }}>
               {v.causeRight
                 ? "Junior detective traces fish deaths to factory waste."
                 : "Detective files theory · town still investigating."}
@@ -771,22 +771,22 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
           </div>
 
           {/* 2-col body */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginTop: 18, borderTop: "2px solid #1c1410", paddingTop: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginTop: 18, borderTop: "2px solid var(--text)", paddingTop: 18 }}>
             <div>
               <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
                 Case at a glance
               </div>
-              <p style={{ fontSize: 14, lineHeight: 1.55, margin: 0, fontWeight: 500, color: "#1c1410", columnFill: "balance" }}>
+              <p style={{ fontSize: 14, lineHeight: 1.55, margin: 0, fontWeight: 500, color: "var(--text)", columnFill: "balance" }}>
                 MAPLE CREEK — After a thorough investigation
                 of two adjacent ponds, junior detective <b>YOU</b>
                 identified <b>industrial pollution</b> from the
                 neighbouring factory as the likely cause of
                 Pond A's fish die-off. The evidence chain
-                tracks <i>factory drainage → contamination → 
-                low oxygen → fish death</i>. The Mayor's office
+                tracks <i>factory drainage → contamination →
+                low oxygen → fish death</i>. The Mayor&#39;s office
                 has been notified.
               </p>
-              <div style={{ marginTop: 14, padding: 12, border: "2px dashed #1c1410", fontFamily: "Caveat", fontSize: 19, fontWeight: 700, lineHeight: 1.3 }}>
+              <div style={{ marginTop: 14, padding: 12, border: "2px dashed var(--line)", fontFamily: "Caveat", fontSize: 19, fontWeight: 700, lineHeight: 1.3, color: "var(--text)" }}>
                 "I checked the temperature, the smell, the colour —
                 then I tested everything in the lab. Pond B was the
                 control. Science works."
@@ -799,7 +799,8 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
             <div>
               {/* polaroid */}
               <div style={{
-                background: "#fdf6e3",
+                background: "var(--bg-paper)",
+                border: "1px solid var(--line)",
                 padding: 10,
                 paddingBottom: 36,
                 transform: "rotate(2deg)",
@@ -861,7 +862,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
           <div style={{ position: "relative", marginTop: 20, marginBottom: 12, display: "inline-block" }}>
             <ScientificMethodBadge />
           </div>
-          <div style={{ fontFamily: "Nunito", fontWeight: 800, fontSize: 14, color: "var(--ink-800)" }}>
+          <div style={{ fontFamily: "Nunito", fontWeight: 800, fontSize: 14, color: "var(--text)" }}>
             +{xpAward} XP · Level 4 → Level 5
           </div>
         </div>

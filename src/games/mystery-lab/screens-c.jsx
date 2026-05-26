@@ -137,9 +137,9 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
+      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
         {/* Lab bench */}
-        <div className="card" style={{
+        <div className="card ml-scene-card" style={{
           padding: 0,
           position: "relative",
           overflow: "hidden",
@@ -223,7 +223,7 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
         </div>
 
         {/* Side: live results + hypotheses verdict */}
-        <div className="col gap-3">
+        <div className="col gap-3 ml-game-sidebar">
           <div className="card" style={{ padding: 16 }}>
             <h3 style={{ fontSize: 16 }}>Hypothesis verdict</h3>
             <p className="text-soft" style={{ fontSize: 12, fontWeight: 600, margin: "4px 0 12px" }}>Updates as you test.</p>
@@ -638,9 +638,9 @@ function PHMiniGame({ onDone }) {
 
 /* Oxygen: 3-level timing bar */
 const OXYGEN_LEVELS = [
-  { greenStart: 35, greenEnd: 65, speed: 2,   label: "Level 1" },
-  { greenStart: 40, greenEnd: 60, speed: 3.5, label: "Level 2" },
-  { greenStart: 44, greenEnd: 56, speed: 3.8, label: "Level 3" },
+  { greenStart: 35, greenEnd: 65, speed: 2,    label: "Level 1" },
+  { greenStart: 40, greenEnd: 60, speed: 2.5,  label: "Level 2" },
+  { greenStart: 44, greenEnd: 56, speed: 2.75, label: "Level 3" },
 ];
 
 function OxygenMiniGame({ onDone }) {

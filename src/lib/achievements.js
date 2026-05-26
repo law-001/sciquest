@@ -1,3 +1,5 @@
+import { GAME_XP } from '../games/config/xp.js'
+
 // ============================================================
 // Achievement catalog + auto-award criteria.
 //
@@ -25,6 +27,8 @@
 
 export const CURIOUS_EXPLORER_KEY = 'curious-explorer'
 export const BLACKED_KEY = 'blacked'
+export const MYSTERY_LAB_COMPLETE_KEY = 'mystery-lab-complete'
+export const CELL_DIVISION_COMPLETE_KEY = 'cell-division-complete'
 
 // Local calendar day for a timestamp, as YYYY-MM-DD. Streaks and
 // "in a single day" are judged in the student's own timezone.
@@ -202,6 +206,20 @@ export const ACHIEVEMENTS = [
     // explicitly when a logged-in student watches the About page
     // portraits cross-fade light → dark (see App.handleBlackedUnlock).
     hidden: true,
+    criteria: NOT_YET_DERIVABLE,
+  },
+  {
+    key: MYSTERY_LAB_COMPLETE_KEY,
+    label: 'Lab Detective',
+    req: 'Solve the Dying Pond mystery in Mystery Lab',
+    xp: GAME_XP['mystery-lab'].achievementXp,
+    criteria: NOT_YET_DERIVABLE,
+  },
+  {
+    key: CELL_DIVISION_COMPLETE_KEY,
+    label: 'Cell Guardian',
+    req: 'Successfully defend the nucleus in Cell Division Defense',
+    xp: GAME_XP['cell-division-defense'].achievementXp,
     criteria: NOT_YET_DERIVABLE,
   },
 ]

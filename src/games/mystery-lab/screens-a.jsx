@@ -1,15 +1,411 @@
 /* ============================================================
    Mystery Lab — Screens part 1
+   0. Cinematic Intro
    1. Opening Story
    2. Investigation Map
    ============================================================ */
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DetectiveHoot, Lucide, NotebookBadge, CrimeTape } from "./shared.jsx";
 import {
   Pond, Tree, DeadTree, Factory, LabTent, Rock, Bush, GrassPatch, Signpost, Cloud,
   BackdropLayer, Butterfly, Dragonfly, Flower, DeadFlower, DeadShrub, Cattail, MudPatch, Footprints,
   BulletinBoard, Bird, AnimatedCloud,
 } from "./world.jsx";
+
+/* ===== Screen 0: Cinematic Intro ===== */
+const PANELS = [
+  {
+    id: "peaceful",
+    label: "Maple Creek",
+    time: "Tuesday · 7:00 AM",
+    mood: "happy",
+    accent: "#f97316",
+    speech: "Ahh, Maple Creek. Normally the most peaceful spot in the county. Two ponds, clean water, happy fish. The kind of place where nothing ever goes wrong...",
+  },
+  {
+    id: "alarm",
+    label: "Pond A — Emergency",
+    time: "Friday · 6:45 AM",
+    mood: "stern",
+    accent: "#dc2626",
+    speech: "Until three days ago. Dozens of fish found belly-up, overnight. Dead. Mayor Lin called me in a complete panic. I've investigated a lot of cases — but I've never seen anything like this.",
+  },
+  {
+    id: "compare",
+    label: "Pond B — 200 Metres Away",
+    time: "Same day · 9:15 AM",
+    mood: "thinking",
+    accent: "#0d9488",
+    speech: "Then I checked Pond B. Two hundred metres down the creek. Completely fine — healthy fish, clear water. Same source. Same rain. Same season. If everything is the same... why is only ONE pond dying?",
+  },
+  {
+    id: "mission",
+    label: "Investigation HQ",
+    time: "Right now",
+    mood: "happy",
+    accent: "#f97316",
+    speech: "That mystery is exactly why I need YOU, detective. Observe both ponds. Run experiments in the lab. Pin the evidence. Then write the case report for the Mayor. Science is the only way to crack this. Are you ready?",
+  },
+];
+
+function PanelScenePeaceful() {
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #7dd3fc 0%, #b8f0a0 55%, #84cc16 100%)", overflow: "hidden" }}>
+      {/* sun */}
+      <div style={{ position: "absolute", top: 16, right: 80, width: 68, height: 68, borderRadius: 999, background: "radial-gradient(circle, #fef9c3, #facc15)", boxShadow: "0 0 60px 22px rgba(250,204,21,0.5)" }} />
+      <Cloud style={{ top: 26, left: 36 }} />
+      <Cloud style={{ top: 48, left: 230, transform: "scale(0.72)" }} />
+      <Cloud style={{ top: 20, right: 150, transform: "scale(0.82)" }} />
+      <AnimatedCloud x={-200} y={30} scale={0.9} duration={26} delay={-6} />
+      <Bird x={-100} y={35} size={16} duration={13} delay={-4} />
+      <Bird x={-100} y={55} size={12} duration={18} delay={-10} />
+      <Butterfly x={260} y={100} size={22} color="#fb923c" />
+      <Butterfly x={380} y={80} size={18} color="#f472b6" />
+      {/* background row — small, high up */}
+      <div style={{ position: "absolute", bottom: 60, left: "8%"  }}><Tree size={38} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 55, left: "22%" }}><Tree size={34} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 58, left: "37%" }}><Tree size={36} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 52, left: "62%" }}><Tree size={34} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 60, right: "14%"}}><Tree size={38} variant={0} /></div>
+      {/* midground row */}
+      <div style={{ position: "absolute", bottom: 28, left: "4%"  }}><Tree size={56} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 22, left: "17%" }}><Tree size={52} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 30, left: "33%" }}><Tree size={50} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 20, right: "18%"}}><Tree size={54} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 26, right: "5%" }}><Tree size={58} variant={2} /></div>
+      {/* foreground row — large */}
+      <div style={{ position: "absolute", bottom: 0,  left: "0%"  }}><Tree size={82} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 0,  left: "11%" }}><Tree size={74} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 0,  right: "9%" }}><Tree size={78} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 0,  right: "0%" }}><Tree size={86} variant={1} /></div>
+      {/* pond */}
+      <div style={{ position: "absolute", bottom: 8, left: "46%", transform: "translateX(-50%) scale(0.68)" }}>
+        <Pond size={200} />
+      </div>
+    </div>
+  );
+}
+
+function PanelSceneAlarm() {
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #0f0200 0%, #5c1005 28%, #8b2410 55%, #4a1a06 100%)", overflow: "hidden" }}>
+      {/* red glow from above */}
+      <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 400, height: 140, background: "radial-gradient(ellipse, rgba(220,38,38,0.30) 0%, transparent 70%)", pointerEvents: "none" }} />
+      {/* background dead trees */}
+      <div style={{ position: "absolute", bottom: 48, left: "6%"  }}><DeadTree size={46} /></div>
+      <div style={{ position: "absolute", bottom: 44, left: "20%" }}><DeadTree size={40} /></div>
+      <div style={{ position: "absolute", bottom: 50, left: "35%" }}><DeadTree size={38} /></div>
+      <div style={{ position: "absolute", bottom: 46, right: "20%"}}><DeadTree size={42} /></div>
+      <div style={{ position: "absolute", bottom: 48, right: "6%" }}><DeadTree size={44} /></div>
+      {/* midground */}
+      <div style={{ position: "absolute", bottom: 20, left: "2%"  }}><DeadTree size={68} /></div>
+      <div style={{ position: "absolute", bottom: 16, left: "16%" }}><DeadTree size={60} /></div>
+      <div style={{ position: "absolute", bottom: 22, right: "15%"}}><DeadTree size={64} /></div>
+      <div style={{ position: "absolute", bottom: 18, right: "2%" }}><DeadTree size={70} /></div>
+      {/* foreground */}
+      <div style={{ position: "absolute", bottom: 0, left: "0%"  }}><DeadTree size={92} /></div>
+      <div style={{ position: "absolute", bottom: 0, right: "0%" }}><DeadTree size={88} /></div>
+      {/* ground debris */}
+      <div style={{ position: "absolute", bottom: 0, left: "30%", transform: "translateX(-50%)" }}><DeadShrub x={0} y={0} size={36} /></div>
+      <div style={{ position: "absolute", bottom: 0, right: "28%", transform: "translateX(50%)" }}><DeadShrub x={0} y={0} size={30} /></div>
+      {/* sick pond centred */}
+      <div style={{ position: "absolute", bottom: 6, left: "50%", transform: "translateX(-50%) scale(0.88)" }}>
+        <Pond sick size={270} dead={5} />
+      </div>
+    </div>
+  );
+}
+
+function PanelSceneCompare() {
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, right: "50%", background: "linear-gradient(180deg, #7dd3fc 0%, #bbf7d0 52%, #84cc16 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, left: "50%",  background: "linear-gradient(180deg, #0f0200 0%, #5c1005 30%, #4a1a06 100%)" }} />
+      <div style={{ position: "absolute", top: 0, bottom: 0, left: "50%", width: 3, background: "rgba(28,20,16,0.55)", transform: "translateX(-50%)", zIndex: 2 }} />
+      {/* healthy left — trees */}
+      <div style={{ position: "absolute", bottom: 40, left: "3%"  }}><Tree size={44} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 36, left: "14%" }}><Tree size={38} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 14, left: "1%"  }}><Tree size={68} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 10, left: "13%" }}><Tree size={58} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 0,  left: "0%"  }}><Tree size={84} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 6,  left: "28%", transform: "translateX(-50%) scale(0.6)" }}>
+        <Pond size={190} label="B" />
+      </div>
+      {/* dead right — trees */}
+      <div style={{ position: "absolute", bottom: 38, right: "3%"  }}><DeadTree size={46} /></div>
+      <div style={{ position: "absolute", bottom: 34, right: "15%" }}><DeadTree size={40} /></div>
+      <div style={{ position: "absolute", bottom: 12, right: "2%"  }}><DeadTree size={72} /></div>
+      <div style={{ position: "absolute", bottom: 8,  right: "14%" }}><DeadTree size={60} /></div>
+      <div style={{ position: "absolute", bottom: 0,  right: "0%"  }}><DeadTree size={88} /></div>
+      <div style={{ position: "absolute", bottom: 4,  left: "74%", transform: "translateX(-50%) scale(0.6)" }}>
+        <Pond sick size={190} label="A" dead={4} />
+      </div>
+      {/* question mark centred */}
+      <div style={{
+        position: "absolute", top: "36%", left: "50%", transform: "translate(-50%, -50%)",
+        fontFamily: "Nunito", fontWeight: 900, fontSize: 80, lineHeight: 1,
+        color: "#fef9c3", textShadow: "0 0 30px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.6)",
+        pointerEvents: "none", zIndex: 3,
+      }}>?</div>
+    </div>
+  );
+}
+
+function PanelSceneMission() {
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #7dd3fc 0%, #fef3c7 30%, #fed7aa 60%, #84cc16 100%)", overflow: "hidden" }}>
+      <Cloud style={{ top: 18, left: 30 }} />
+      <Cloud style={{ top: 40, right: 70, transform: "scale(0.78)" }} />
+      <Cloud style={{ top: 12, left: "40%", transform: "scale(0.65)" }} />
+      <AnimatedCloud x={-200} y={22} scale={0.85} duration={30} delay={-10} />
+      <Bird x={-100} y={28} size={14} duration={15} delay={-5} />
+      <Bird x={-100} y={48} size={11} duration={20} delay={-12} />
+      {/* background row */}
+      <div style={{ position: "absolute", bottom: 64, left: "3%"  }}><Tree size={36} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 60, left: "14%" }}><Tree size={32} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 66, left: "25%" }}><Tree size={34} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 62, right: "24%"}}><Tree size={34} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 60, right: "13%"}}><Tree size={32} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 64, right: "3%" }}><Tree size={36} variant={1} /></div>
+      {/* midground row */}
+      <div style={{ position: "absolute", bottom: 30, left: "1%"  }}><Tree size={58} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 26, left: "10%" }}><Tree size={52} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 32, left: "20%" }}><Tree size={48} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 28, right: "19%"}}><Tree size={50} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 24, right: "9%" }}><Tree size={54} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 28, right: "0%" }}><Tree size={60} variant={0} /></div>
+      {/* foreground row */}
+      <div style={{ position: "absolute", bottom: 0, left: "0%"  }}><Tree size={86} variant={0} /></div>
+      <div style={{ position: "absolute", bottom: 0, left: "8%"  }}><Tree size={76} variant={2} /></div>
+      <div style={{ position: "absolute", bottom: 0, right: "7%" }}><Tree size={80} variant={1} /></div>
+      <div style={{ position: "absolute", bottom: 0, right: "0%" }}><Tree size={90} variant={0} /></div>
+      {/* Hoot centred, floats */}
+      <div className="float" style={{ position: "absolute", top: "48%", left: "50%", transform: "translate(-50%, -54%)", zIndex: 4 }}>
+        <DetectiveHoot size={150} mood="happy" />
+      </div>
+      {/* investigation props */}
+      <svg style={{ position: "absolute", bottom: 22, left: "28%", opacity: 0.75, zIndex: 3 }} width="44" height="44" viewBox="0 0 48 48" fill="none">
+        <circle cx="20" cy="20" r="12" stroke="#1c1410" strokeWidth="3" />
+        <line x1="29" y1="29" x2="42" y2="42" stroke="#1c1410" strokeWidth="3.5" strokeLinecap="round" />
+      </svg>
+      <svg style={{ position: "absolute", bottom: 18, right: "27%", opacity: 0.70, zIndex: 3 }} width="38" height="42" viewBox="0 0 42 42" fill="none">
+        <rect x="6" y="4" width="30" height="36" rx="4" fill="#fdf6e3" stroke="#1c1410" strokeWidth="2.5" />
+        <line x1="12" y1="14" x2="30" y2="14" stroke="#1c1410" strokeWidth="2" />
+        <line x1="12" y1="21" x2="30" y2="21" stroke="#1c1410" strokeWidth="2" />
+        <line x1="12" y1="28" x2="22" y2="28" stroke="#1c1410" strokeWidth="2" />
+      </svg>
+    </div>
+  );
+}
+
+function IntroScreen({ go }) {
+  const [panel, setPanel] = useState(0);
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+  const timerRef = useRef(null);
+
+  const current = PANELS[panel];
+  const isLast = panel === PANELS.length - 1;
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    clearInterval(timerRef.current);
+    let i = 0;
+    const full = current.speech;
+    timerRef.current = setInterval(() => {
+      i++;
+      setDisplayed(full.slice(0, i));
+      if (i >= full.length) {
+        clearInterval(timerRef.current);
+        setDone(true);
+      }
+    }, 22);
+    return () => clearInterval(timerRef.current);
+  }, [panel]);
+
+  const advance = () => {
+    if (!done) {
+      clearInterval(timerRef.current);
+      setDisplayed(current.speech);
+      setDone(true);
+    } else if (!isLast) {
+      setPanel(p => p + 1);
+    } else {
+      go("map");
+    }
+  };
+
+  const sceneMap = {
+    peaceful: <PanelScenePeaceful />,
+    alarm:    <PanelSceneAlarm />,
+    compare:  <PanelSceneCompare />,
+    mission:  <PanelSceneMission />,
+  };
+
+  return (
+    <div
+      data-screen-label="00 Intro"
+      onClick={advance}
+      style={{
+        position: "relative", height: "100%",
+        display: "flex", flexDirection: "column",
+        cursor: "pointer", userSelect: "none",
+        background: "var(--bg)",
+        borderRadius: 20, overflow: "hidden",
+      }}
+    >
+      {/* ── Scene illustration ── */}
+      <div style={{ position: "relative", flex: 1, minHeight: 0, overflow: "hidden" }}>
+        {sceneMap[current.id]}
+
+        {/* location caption box — bottom-left of scene */}
+        <div style={{
+          position: "absolute", bottom: 14, left: 18,
+          background: "rgba(28,20,16,0.82)",
+          color: "#fef9c3",
+          padding: "5px 14px 6px",
+          borderRadius: 6,
+          fontFamily: "Nunito", fontWeight: 800, fontSize: 13,
+          letterSpacing: "0.04em",
+          backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", gap: 8,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+        }}>
+          <Lucide name="pin" size={12} color={current.accent} />
+          {current.label}
+          <span style={{ fontWeight: 500, opacity: 0.65, fontSize: 11, marginLeft: 4 }}>{current.time}</span>
+        </div>
+
+        {/* panel counter top-right */}
+        <div style={{
+          position: "absolute", top: 14, right: 18,
+          background: "rgba(28,20,16,0.75)",
+          color: "rgba(253,246,227,0.75)",
+          padding: "4px 10px",
+          borderRadius: 999,
+          fontFamily: "Nunito", fontWeight: 800, fontSize: 11,
+          letterSpacing: "0.08em",
+        }}>
+          {panel + 1} / {PANELS.length}
+        </div>
+
+        {/* skip button */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); go("map"); }}
+          style={{
+            position: "absolute", top: 14, left: 18,
+            background: "rgba(28,20,16,0.65)",
+            color: "rgba(253,246,227,0.75)",
+            border: "none", padding: "5px 12px",
+            borderRadius: 999,
+            fontFamily: "Nunito", fontWeight: 800, fontSize: 11,
+            cursor: "pointer", letterSpacing: "0.06em",
+          }}
+        >
+          Skip intro
+        </button>
+      </div>
+
+      {/* ── Speech strip ── */}
+      <div style={{
+        flexShrink: 0,
+        background: "var(--bg-elev)",
+        borderTop: "2px solid var(--line)",
+        display: "flex", flexDirection: "column",
+        padding: "12px 20px 12px",
+        gap: 8,
+      }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          {/* Hoot */}
+          <div style={{ flexShrink: 0 }}>
+            <DetectiveHoot size={58} mood={current.mood} />
+          </div>
+
+          {/* typewriter text */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontSize: 9, fontWeight: 800, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: current.accent,
+              fontFamily: "Nunito", marginBottom: 4,
+            }}>
+              Hoot says
+            </div>
+            <p style={{
+              margin: 0,
+              fontFamily: "Nunito", fontWeight: 600,
+              fontSize: "clamp(12px, 1.4vw, 14px)",
+              lineHeight: 1.5,
+              color: "var(--text)",
+            }}>
+              {displayed}
+              {!done && (
+                <span style={{
+                  display: "inline-block", width: 2, height: "1em",
+                  background: current.accent,
+                  marginLeft: 2, verticalAlign: "text-bottom",
+                  animation: "ml-shimmer 0.7s ease-in-out infinite",
+                }} />
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* bottom row: dots + action */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* step dots */}
+          <div style={{ display: "flex", gap: 7 }}>
+            {PANELS.map((_, i) => (
+              <div key={i} style={{
+                width: i === panel ? 22 : 8, height: 8, borderRadius: 999,
+                background: i === panel ? current.accent : "var(--line)",
+                transition: "all .25s",
+              }} />
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {!done && (
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: "var(--muted)",
+                fontFamily: "Nunito", letterSpacing: "0.06em",
+                animation: "ml-shimmer 1.4s ease-in-out infinite",
+              }}>
+                tap to skip text
+              </span>
+            )}
+            {done && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); advance(); }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "9px 20px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: current.accent,
+                  color: "#fff",
+                  fontFamily: "Nunito", fontWeight: 900, fontSize: 14,
+                  cursor: "pointer",
+                  boxShadow: `0 4px 0 rgba(0,0,0,0.22), 0 0 0 3px ${current.accent}33`,
+                  animation: "ml-btn-glow 2s ease-in-out infinite",
+                }}
+              >
+                {isLast ? (
+                  <><Lucide name="search" size={16} color="#fff" /> Start Investigating</>
+                ) : (
+                  <>Next <Lucide name="chevronRight" size={16} color="#fff" /></>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ===== Screen 1: Opening Story ===== */
 function OpeningScreen({ go }) {
@@ -27,7 +423,7 @@ function OpeningScreen({ go }) {
         flexDirection: "column",
       }}>
         {/* sky gradient */}
-        <div style={{
+        <div className="ml-opening-hero" style={{
           position: "relative",
           flex: 1,
           minHeight: 0,
@@ -49,7 +445,7 @@ function OpeningScreen({ go }) {
           {/* crime tape */}
           <CrimeTape angle={-3} top={110} text="CASE #001 · POND CONTAMINATION · " />
 
-          <div style={{
+          <div className="ml-opening-grid" style={{
             display: "grid",
             gridTemplateColumns: "1.1fr 1fr",
             gap: 28,
@@ -90,7 +486,7 @@ function OpeningScreen({ go }) {
                 The Mayor needs a junior science detective. You in?
               </p>
               <div className="row gap-3" style={{ marginTop: 18, alignItems: "center" }}>
-                <button className="btn lg" onClick={() => go("map")}>
+                <button className="btn lg" onClick={() => go("intro")}>
                   <Lucide name="search" size={18} />
                   Start Investigation
                 </button>
@@ -108,7 +504,7 @@ function OpeningScreen({ go }) {
             </div>
 
             {/* right: scene illustration */}
-            <div style={{ position: "relative", height: "100%", minHeight: 280 }}>
+            <div className="ml-opening-scene" style={{ position: "relative", height: "100%", minHeight: 280 }}>
               {/* mentor mascot */}
               <div className="float" style={{ position: "absolute", top: 10, right: 30, zIndex: 4 }}>
                 <DetectiveHoot size={110} speechSide="left" speech="Welcome, detective! Bring your magnifying glass — and your curiosity." />
@@ -138,7 +534,7 @@ function OpeningScreen({ go }) {
         </div>
 
         {/* case file footer */}
-        <div style={{
+        <div className="ml-opening-footer" style={{
           flexShrink: 0,
           display: "grid",
           gridTemplateColumns: "1fr 1fr 1fr",
@@ -210,8 +606,8 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
 
 
   return (
-    <div data-screen-label="02 Map" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, alignItems: "stretch", height: "100%", minHeight: 0 }}>
-      <div className="card" style={{
+    <div data-screen-label="02 Map" className="ml-map-grid" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, alignItems: "stretch", height: "100%", minHeight: 0 }}>
+      <div className="card ml-map-card" style={{
         padding: 0,
         overflow: "hidden",
         borderRadius: 20,
@@ -489,7 +885,7 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
       </div>
 
       {/* Objectives panel */}
-      <div className="col gap-3" style={{ minHeight: 0, overflow: "hidden" }}>
+      <div className="col gap-3 ml-map-sidebar" style={{ minHeight: 0, overflow: "hidden" }}>
         <div className="card" style={{ padding: 14 }}>
           <div className="row between" style={{ alignItems: "center" }}>
             <h3 className="title-lg" style={{ fontSize: 16 }}>Current Mission</h3>
@@ -600,4 +996,4 @@ function Objective({ done, text }) {
 
 }
 
-export { OpeningScreen, MapScreen };
+export { IntroScreen, OpeningScreen, MapScreen };

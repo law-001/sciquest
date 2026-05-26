@@ -144,7 +144,7 @@ const CLUE_POS = {
   deadFish:    { left: "60%", top: "70%", transform: "translate(-50%, -50%)", rx: 60, ry: 70 },
   murky:       { left: "56%", top: "49%", transform: "translate(-50%, -50%)", rx: 56, ry: 49 },
   temp:        { left: "74%", top: "54%", transform: "translate(-50%, -50%)", rx: 74, ry: 54 },
-  smell:       { left: "35%", top: "45%", transform: "translate(-50%, 0)",    rx: 35, ry: 45 },
+  smell:       { left: "40%", top: "45%", transform: "translate(-50%, 0)",    rx: 35, ry: 45 },
   factoryPipe: { top: 60,     right: 30,                                       rx: 92, ry: 14 },
   // Pond B
   healthyFish: { left: "60%", top: "70%", transform: "translate(-50%, -50%)", rx: 60, ry: 70 },
@@ -161,7 +161,9 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
   const clues = pond === "A" ? POND_A_CLUES : POND_B_CLUES;
   const sick = pond === "A";
   const allPondCluesDone = clues.every(c => observations.find(o => o.id === c.id));
-  const readyForHypothesis = allPondCluesDone && observations.length >= 4;
+  const allPondADone = POND_A_CLUES.every(c => observations.find(o => o.id === c.id));
+  const allPondBDone = POND_B_CLUES.every(c => observations.find(o => o.id === c.id));
+  const readyForHypothesis = allPondADone && allPondBDone;
   const [popText, setPopText] = useState(null);
   const [ripples, setRipples] = useState([]);
   const [hintActive, setHintActive] = useState(false);
@@ -215,18 +217,18 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
           </button>
           <button
             className="btn teal"
-            onClick={() => go(observations.length >= 4 ? "question" : "map")}
+            onClick={() => go(readyForHypothesis ? "question" : "map")}
             style={readyForHypothesis ? { animation: "ml-btn-glow 1.4s ease-in-out infinite" } : undefined}
           >
-            {observations.length >= 4 ? "Form hypothesis" : "Back to map"}
+            {readyForHypothesis ? "Form hypothesis" : "Back to map"}
             <Lucide name="chevronRight" size={16} />
           </button>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "stretch" }}>
+      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "stretch" }}>
         {/* Scene viewport */}
-        <div className="card" style={{
+        <div className="card ml-scene-card" style={{
           padding: 0, position: "relative", overflow: "hidden",
           height: 460,
           background: sick
@@ -389,7 +391,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
         </div>
 
         {/* Side: clue list + mentor */}
-        <div className="col gap-3">
+        <div className="col gap-3 ml-game-sidebar">
           <div className="card" style={{ padding: 16 }}>
             <div className="row between" style={{ alignItems: "center" }}>
               <h3 style={{ fontSize: 16 }}>Clues found</h3>
@@ -441,9 +443,11 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
                 </div>
                 <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 600, lineHeight: 1.45 }}>
                   {readyForHypothesis
-                    ? "You found every clue here! Hit \"Form hypothesis\" to make your educated guess about what's killing the fish."
+                    ? "Both ponds fully observed! Hit \"Form hypothesis\" to make your educated guess about what's killing the fish."
                     : allPondCluesDone
-                      ? "Good job on Pond B! Head to Pond A next — the sick pond has more to tell you."
+                      ? sick
+                        ? "Pond A complete! Switch to Pond B and observe the healthy control before forming a hypothesis."
+                        : "Pond B complete! Switch to Pond A and investigate the sick pond before forming a hypothesis."
                       : sick
                         ? observations.filter(o => o.pond === "A").length < 3
                           ? "Click everything that looks odd. Don't filter — observe first, think later."

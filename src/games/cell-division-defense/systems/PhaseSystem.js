@@ -1,4 +1,5 @@
 import { PHASES } from '../data/phases';
+import { GAME_XP } from '../../config/xp.js';
 
 const PHASE_ORDER = ['interphase', 'prophase', 'metaphase', 'anaphase', 'telophase', 'cytokinesis'];
 const INTERPHASE_DURATION = 30000;
@@ -148,7 +149,7 @@ class PhaseSystem {
 
   endRun() {
     const stars = this.mutationSystem.getStarRating();
-    const xpTable = [0, 40, 80, 120];
+    const xpTable = GAME_XP['cell-division-defense'].starsXp;
 
     this.scene.bus?.emit('runComplete', {
       stars,
