@@ -59,7 +59,7 @@ function DetectiveHoot({ size = 96, mood = "happy", speech, speechSide = "right"
 }
 
 /* ----- HUD: top bar ----- */
-function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2 }) {
+function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit }) {
   return (
     <div className="hud">
       <div className="brand">
@@ -85,12 +85,38 @@ function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2 }) {
         <span>{xp}</span>
         <span className="text-muted" style={{ fontSize: 11, fontWeight: 600, marginLeft: 2 }}>XP</span>
       </div>
-      <div className="stat" title="Case progress" style={{ paddingRight: 14 }}>
+      <div className="stat" title="Case progress">
         <div className="pip progress">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
         </div>
         <div className="bar" style={{ width: 80 }}><span style={{ width: `${progress * 100}%` }} /></div>
       </div>
+      {onExit && (
+        <button
+          type="button"
+          onClick={onExit}
+          aria-label="Exit Mystery Lab"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 14px",
+            borderRadius: 999,
+            border: "1.5px solid rgba(28,20,16,0.15)",
+            background: "rgba(255,255,255,0.94)",
+            fontFamily: "Nunito, system-ui, sans-serif",
+            fontWeight: 800,
+            fontSize: 13,
+            color: "#1c1410",
+            boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          <Lucide name="x" size={14} />
+          Exit
+        </button>
+      )}
     </div>
   );
 }
@@ -137,37 +163,6 @@ function Lucide({ name, size = 16, color = "currentColor", strokeWidth = 2 }) {
     trash: <><polyline points="3 6 5 6 21 6" /><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2" /></>,
   };
   return <svg {...common}>{paths[name]}</svg>;
-}
-
-/* ----- Screen jumper ----- */
-const SCREENS = [
-  { id: "opening",   label: "Opening",    icon: "play" },
-  { id: "map",       label: "Map",        icon: "map" },
-  { id: "observe",   label: "Observe",    icon: "search" },
-  { id: "question",  label: "Question",   icon: "lightbulb" },
-  { id: "notebook",  label: "Notebook",   icon: "book" },
-  { id: "lab",       label: "Lab",        icon: "flask" },
-  { id: "evidence",  label: "Evidence",   icon: "clipboard" },
-  { id: "conclude",  label: "Conclude",   icon: "target" },
-  { id: "victory",   label: "Solved",     icon: "award" },
-];
-
-function ScreenJumper({ current, onJump }) {
-  return (
-    <div className="jumper" role="navigation" aria-label="Screen jumper">
-      {SCREENS.map((s, i) => (
-        <button
-          key={s.id}
-          className={current === s.id ? "active" : ""}
-          onClick={() => onJump(s.id)}
-        >
-          <span className="num">{i + 1}</span>
-          <Lucide name={s.icon} size={13} />
-          {s.label}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 /* ----- Notebook badge that pops when observations are added ----- */
@@ -236,4 +231,4 @@ function CrimeTape({ angle = -2, top = 16, text = "MYSTERY · IN PROGRESS · MYS
   );
 }
 
-export { DetectiveHoot, HUD, Lucide, ScreenJumper, SCREENS, NotebookBadge, CrimeTape };
+export { DetectiveHoot, HUD, Lucide, NotebookBadge, CrimeTape };

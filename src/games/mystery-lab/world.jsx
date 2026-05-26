@@ -50,9 +50,6 @@ function Pond({ sick = false, size = 240, label, dead = 0 }) {
         </filter>
       </defs>
 
-      {/* Drop shadow under pond */}
-      <ellipse cx="120" cy="170" rx="106" ry="12" fill="rgba(28,20,16,0.22)" filter="url(#pondShadow)" />
-
       {/* Outer grass/mud bank */}
       <ellipse cx="120" cy="92" rx="112" ry="70" fill={sick ? "url(#bankS)" : "url(#bankH)"} />
       <ellipse cx="120" cy="90" rx="106" ry="64" fill={sick ? "#7c5a30" : "#84cc16"} />
@@ -447,6 +444,42 @@ function LabTent({ size = 200 }) {
   );
 }
 
+/* ---------- Animated sky elements ---------- */
+function Bird({ x = -100, y = 40, size = 20, duration = 10, delay = 0 }) {
+  return (
+    <svg
+      width={size * 1.2} height={size * 0.6}
+      viewBox="0 0 24 12"
+      style={{
+        position: "absolute", left: x, top: y, pointerEvents: "none",
+        animation: `ml-fly-across ${duration}s ${delay}s linear infinite`,
+        opacity: 0.65,
+      }}
+    >
+      <path d="M1 7 Q6 2 12 6 Q18 2 23 7"
+            stroke="#2a1f17" strokeWidth="1.5" fill="none"
+            strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function AnimatedCloud({ x = -200, y = 40, scale = 1, duration = 24, delay = 0 }) {
+  const w = Math.round(80 * scale);
+  const h = Math.round(40 * scale);
+  return (
+    <div style={{
+      position: "absolute", left: x, top: y, pointerEvents: "none",
+      animation: `ml-cloud-drift ${duration}s ${delay}s linear infinite`,
+    }}>
+      <svg width={w} height={h} viewBox="0 0 80 40">
+        <ellipse cx="20" cy="26" rx="18" ry="10" fill="rgba(255,253,245,0.88)" />
+        <ellipse cx="40" cy="20" rx="22" ry="14" fill="rgba(255,253,245,0.88)" />
+        <ellipse cx="60" cy="26" rx="16" ry="10" fill="rgba(255,253,245,0.88)" />
+      </svg>
+    </div>
+  );
+}
+
 /* ---------- Decorative props ---------- */
 function Rock({ x, y, size = 30 }) {
   return (
@@ -529,188 +562,197 @@ function EvidenceBoardIcon({ size = 200 }) {
   );
 }
 
-/* ---------- World terrain (geographically coherent) ----------
-   800×600 viewBox · zones laid out for narrative clarity:
-   - Top-left:    Pond B in lush meadow (fed by clean river)
-   - Top-right:   Factory perched on industrial ridge
-   - Right side:  Polluted drainage stream from factory down
-   - Bottom-right: Pond A in dead zone (downstream of factory)
-   - Center:      Lab Tent on a low knoll, packed dirt path
-   - Mid-left:    Evidence Board (mission HQ) near the lab
-   - River:       Top-left → past Pond B → curves to exit bottom-left
+/* ---------- World terrain
+   800×600 viewBox · geographic zones:
+   Left:         Healthy meadow — Pond B + Evidence Board (clean river feeds Pond B)
+   Upper-right:  Industrial Ridge — Maple Factory (smoke, rock, dead soil)
+   Right column: Pollution runoff channel — Factory drain → Pond A
+   Lower-right:  Dead/polluted marsh — Pond A (downstream contamination)
+   Center:       Transition knoll — Lab Tent (investigation checkpoint)
+   Paths:        One main dirt road: Evidence Board → Pond B → Lab Tent → Pond A
 */
 function BackdropLayer() {
   return (
     <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
       <defs>
-        {/* sky */}
         <linearGradient id="t-sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="#cfe8ff" />
           <stop offset="55%"  stopColor="#fef3c7" />
           <stop offset="100%" stopColor="#fef9c3" />
         </linearGradient>
-        {/* healthy meadow (top-left → center) */}
         <linearGradient id="t-meadow" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%"   stopColor="#a3d977" />
           <stop offset="100%" stopColor="#65a30d" />
         </linearGradient>
-        {/* mid neutral grass (near lab) */}
-        <linearGradient id="t-grass" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#86b94d" />
-          <stop offset="100%" stopColor="#5c8a31" />
+        <linearGradient id="t-ridge" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#9a8870" />
+          <stop offset="100%" stopColor="#5b4530" />
         </linearGradient>
-        {/* dead zone (right side / pond A area) */}
         <linearGradient id="t-dead" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%"   stopColor="#9a8050" />
           <stop offset="100%" stopColor="#5b4530" />
         </linearGradient>
-        {/* industrial ridge (under factory) */}
-        <linearGradient id="t-ridge" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#a89579" />
-          <stop offset="100%" stopColor="#5b4530" />
-        </linearGradient>
-        {/* river water */}
         <linearGradient id="t-river" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%"   stopColor="#7dd3fc" />
           <stop offset="100%" stopColor="#22d3ee" />
         </linearGradient>
-        {/* polluted runoff */}
-        <linearGradient id="t-runoff" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stopColor="#7a6238" />
+        <linearGradient id="t-runoff" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#6b5228" />
           <stop offset="100%" stopColor="#3d2e1a" />
         </linearGradient>
-        {/* path */}
         <linearGradient id="t-path" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="#d6c08a" />
-          <stop offset="100%" stopColor="#a88a4a" />
+          <stop offset="100%" stopColor="#b8994e" />
         </linearGradient>
-        {/* distant mountains */}
         <linearGradient id="t-mt" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="#9eb38d" />
           <stop offset="100%" stopColor="#6a8056" />
         </linearGradient>
-        {/* pollution haze */}
-        <radialGradient id="t-haze" cx="0.82" cy="0.22" r="0.35">
-          <stop offset="0%"   stopColor="rgba(80,55,30,0.45)" />
-          <stop offset="60%"  stopColor="rgba(120,90,60,0.18)" />
-          <stop offset="100%" stopColor="rgba(120,90,60,0)" />
+        {/* Factory-area haze anchored upper-right */}
+        <radialGradient id="t-haze" cx="0.82" cy="0.2" r="0.35">
+          <stop offset="0%"   stopColor="rgba(70,48,22,0.55)" />
+          <stop offset="65%"  stopColor="rgba(110,80,50,0.18)" />
+          <stop offset="100%" stopColor="rgba(110,80,50,0)" />
         </radialGradient>
-        {/* sun glow */}
-        <radialGradient id="t-sun" cx="0.18" cy="0.12" r="0.25">
-          <stop offset="0%"   stopColor="rgba(255,242,180,0.85)" />
+        <radialGradient id="t-sun" cx="0.16" cy="0.1" r="0.28">
+          <stop offset="0%"   stopColor="rgba(255,242,180,0.8)" />
           <stop offset="100%" stopColor="rgba(255,242,180,0)" />
         </radialGradient>
-        {/* grass speckle */}
         <pattern id="t-grassTex" patternUnits="userSpaceOnUse" width="22" height="22">
           <circle cx="4"  cy="8"  r="0.9" fill="rgba(0,0,0,0.05)" />
           <circle cx="14" cy="14" r="0.7" fill="rgba(0,0,0,0.05)" />
           <circle cx="18" cy="4"  r="0.6" fill="rgba(0,0,0,0.05)" />
         </pattern>
-        {/* mud speckle */}
         <pattern id="t-mudTex" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(15)">
-          <ellipse cx="6"  cy="6"  rx="2" ry="0.8" fill="rgba(40,28,16,0.18)" />
+          <ellipse cx="6"  cy="6"  rx="2"   ry="0.8" fill="rgba(40,28,16,0.18)" />
           <ellipse cx="14" cy="13" rx="1.5" ry="0.6" fill="rgba(40,28,16,0.15)" />
-          <circle  cx="3"  cy="14" r="0.6" fill="rgba(40,28,16,0.2)" />
+          <circle  cx="3"  cy="14" r="0.6"           fill="rgba(40,28,16,0.2)"  />
         </pattern>
       </defs>
 
-      {/* ===== SKY ===== */}
-      <rect width="800" height="180" fill="url(#t-sky)" />
+      {/* SKY */}
+      <rect width="800" height="600" fill="url(#t-sky)" />
       <rect width="800" height="600" fill="url(#t-sun)" />
 
-      {/* distant mountain range — pushed up, smaller */}
-      <path d="M0 140 L80 100 L160 130 L230 90 L310 125 L400 100 L490 135 L580 100 L680 130 L800 110 L800 190 L0 190 Z"
-            fill="url(#t-mt)" opacity="0.55" />
-      <path d="M0 175 L100 140 L200 175 L320 145 L440 180 L560 155 L680 185 L800 165 L800 215 L0 215 Z"
-            fill="url(#t-mt)" opacity="0.75" />
-      {/* clouds */}
-      <g opacity="0.85">
-        <ellipse cx="120" cy="55"  rx="40" ry="9" fill="white" />
-        <ellipse cx="140" cy="49"  rx="22" ry="10" fill="white" />
-        <ellipse cx="560" cy="44"  rx="32" ry="8" fill="white" />
-        <ellipse cx="580" cy="39"  rx="18" ry="9" fill="white" />
+      {/* Mountains */}
+      <path d="M0 148 L70 108 L148 138 L218 94 L296 128 L388 108 L478 138 L565 108 L660 134 L752 110 L800 124 L800 192 L0 192 Z"
+            fill="url(#t-mt)" opacity="0.52" />
+      <path d="M0 178 L100 148 L200 178 L318 150 L438 182 L555 158 L674 184 L800 166 L800 210 L0 210 Z"
+            fill="url(#t-mt)" opacity="0.74" />
+
+      {/* Clouds — healthy left side, clear right side is smokier */}
+      <g opacity="0.88">
+        <ellipse cx="118" cy="56" rx="40" ry="9"  fill="white" />
+        <ellipse cx="138" cy="49" rx="22" ry="10" fill="white" />
+        <ellipse cx="96"  cy="62" rx="17" ry="7"  fill="white" />
+        <ellipse cx="310" cy="52" rx="26" ry="7"  fill="white" />
+        <ellipse cx="328" cy="47" rx="14" ry="8"  fill="white" />
       </g>
 
-      {/* ===== GROUND BASE — healthy meadow (raised horizon) ===== */}
-      <path d="M0 160 Q200 140 400 160 T800 160 L800 600 L0 600 Z" fill="url(#t-meadow)" />
-      <rect x="0" y="160" width="800" height="440" fill="url(#t-grassTex)" />
+      {/* GROUND — full healthy meadow base */}
+      <path d="M0 162 Q200 146 400 162 T800 162 L800 600 L0 600 Z" fill="url(#t-meadow)" />
+      <rect x="0" y="162" width="800" height="438" fill="url(#t-grassTex)" opacity="0.35" />
 
-      {/* ===== INDUSTRIAL RIDGE (under factory, now larger & lower so factory sits on it) ===== */}
-      <path d="M460 280 Q560 200 720 195 Q800 200 800 240 L800 380 L520 380 Q470 340 460 280 Z"
+      {/* HEALTHY ZONE — strong green left 38%, around Pond B (176,204) + Evidence Board (112,360) */}
+      <path d="M0 162 Q80 155 200 168 Q305 185 340 285 Q335 405 272 472 Q178 542 0 562 Z"
+            fill="#a3d977" opacity="0.6" />
+      <path d="M0 162 Q60 158 140 172 Q205 192 225 285 Q215 385 165 452 Q82 512 0 532 Z"
+            fill="#b8e87a" opacity="0.38" />
+      {/* Mound under Pond B so it rests on terrain */}
+      <ellipse cx="176" cy="218" rx="112" ry="22" fill="#7aa54a" opacity="0.52" />
+      <ellipse cx="176" cy="210" rx="102" ry="17" fill="#a3d977" opacity="0.58" />
+
+      {/* INDUSTRIAL RIDGE — upper-right, barren rock (Factory at 640,132) */}
+      <path d="M438 162 Q538 155 678 158 Q768 162 800 186 L800 322 Q738 308 668 320 Q592 330 532 292 Q478 260 462 202 Q450 174 438 162 Z"
             fill="url(#t-ridge)" />
-      {/* ridge highlight */}
-      <path d="M480 270 Q580 220 720 215" stroke="rgba(255,255,255,0.3)" strokeWidth="3" fill="none" strokeLinecap="round" />
-      {/* ridge dark crevice */}
-      <path d="M480 300 Q540 320 600 320 Q680 330 770 312" stroke="rgba(28,20,16,0.35)" strokeWidth="2" fill="none" strokeLinecap="round" />
-      {/* small mound supporting Pond B (so it visually rests on terrain, not floats) */}
-      <ellipse cx="176" cy="240" rx="120" ry="22" fill="#7aa54a" opacity="0.55" />
-      <ellipse cx="176" cy="232" rx="110" ry="18" fill="#a3d977" opacity="0.6" />
-      {/* ===== DEAD ZONE — bottom-right around Pond A (lowered) ===== */}
-      <path d="M460 380 Q540 360 640 380 Q740 390 800 400 L800 600 L420 600 Q400 510 460 380 Z"
+      <path d="M452 178 Q558 168 698 170 Q758 174 800 186"
+            stroke="rgba(255,255,255,0.22)" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M468 222 Q568 237 678 230 Q738 226 800 218"
+            stroke="rgba(28,20,16,0.28)" strokeWidth="2" fill="none" strokeLinecap="round" />
+
+      {/* DEAD / POLLUTED ZONE — lower-right (Pond A at 608,432) */}
+      <path d="M446 320 Q538 300 658 324 Q758 344 800 382 L800 600 L398 600 Q382 522 416 430 Q430 372 446 320 Z"
             fill="url(#t-dead)" />
-      <path d="M460 380 Q540 360 640 380 Q740 390 800 400 L800 600 L420 600 Q400 510 460 380 Z"
-            fill="url(#t-mudTex)" />
-      {/* dead-zone transition feathering */}
-      <path d="M460 380 Q420 420 410 470 Q420 540 430 600" stroke="rgba(91,69,48,0.4)" strokeWidth="40" fill="none" opacity="0.4" />
+      <path d="M446 320 Q538 300 658 324 Q758 344 800 382 L800 600 L398 600 Q382 522 416 430 Q430 372 446 320 Z"
+            fill="url(#t-mudTex)" opacity="0.65" />
+      {/* Soft feathering toward center (gradual biome transition) */}
+      <path d="M446 320 Q418 368 410 430 Q402 502 414 572"
+            stroke="rgba(91,69,48,0.28)" strokeWidth="58" fill="none" opacity="0.3" />
 
-      {/* ===== POLLUTED RUNOFF — from factory drain down to Pond A ===== */}
-      <path d="M700 280 Q720 340 700 400 Q680 460 640 490"
-            stroke="url(#t-runoff)" strokeWidth="22" fill="none" strokeLinecap="round" opacity="0.95" />
-      <path d="M700 280 Q720 340 700 400 Q680 460 640 490"
-            stroke="#3d2e1a" strokeWidth="10" fill="none" strokeLinecap="round" opacity="0.6" />
-      {/* foam bubbles on runoff */}
-      <circle cx="708" cy="320" r="2.5" fill="#a87c4d" opacity="0.7" />
-      <circle cx="716" cy="360" r="2"   fill="#a87c4d" opacity="0.6" />
-      <circle cx="700" cy="400" r="2.2" fill="#a87c4d" opacity="0.7" />
-      <circle cx="680" cy="450" r="2.5" fill="#a87c4d" opacity="0.6" />
+      {/* POLLUTION RUNOFF — Factory drain (640,196) straight down to Pond A (608,435) */}
+      {/* Dark outer gutter */}
+      <path d="M643 196 Q658 282 656 368 Q653 408 628 442"
+            stroke="#2a1e0e" strokeWidth="34" fill="none" strokeLinecap="round" opacity="0.72" />
+      {/* Main channel */}
+      <path d="M643 196 Q658 282 656 368 Q653 408 628 442"
+            stroke="url(#t-runoff)" strokeWidth="24" fill="none" strokeLinecap="round" opacity="0.96" />
+      {/* Surface sheen */}
+      <path d="M646 196 Q660 280 658 366 Q655 406 630 440"
+            stroke="#7a6038" strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.5" />
+      {/* Directional waste bubbles — show contamination flowing DOWN */}
+      <circle cx="652" cy="238" r="3"   fill="#a87c4d" opacity="0.8" />
+      <circle cx="658" cy="298" r="2.5" fill="#a87c4d" opacity="0.72" />
+      <circle cx="656" cy="354" r="3"   fill="#a87c4d" opacity="0.78" />
+      <circle cx="646" cy="402" r="2.5" fill="#a87c4d" opacity="0.7" />
+      {/* Seep stain where runoff enters Pond A */}
+      <ellipse cx="622" cy="444" rx="24" ry="11" fill="#3d2e1a" opacity="0.62" />
+      <ellipse cx="618" cy="442" rx="15" ry="7"  fill="#7a6038" opacity="0.5"  />
 
-      {/* ===== RIVER — clean, top-left arc → past Pond B → exits bottom-left (lowered) ===== */}
-      <path d="M-30 270 Q 80 260 170 268 Q 250 280 280 360 Q 280 460 210 520 Q 140 560 -20 580"
-            stroke="#0e7490" strokeWidth="36" fill="none" strokeLinecap="round" opacity="0.85" />
-      <path d="M-30 270 Q 80 260 170 268 Q 250 280 280 360 Q 280 460 210 520 Q 140 560 -20 580"
+      {/* RIVER — clean water from mountains, flows along left edge past Pond B → exits south-west */}
+      <path d="M-22 188 Q58 180 136 192 Q162 202 180 218 Q202 240 216 314 Q228 394 196 460 Q156 520 -18 546"
+            stroke="#0e7490" strokeWidth="36" fill="none" strokeLinecap="round" opacity="0.82" />
+      <path d="M-22 188 Q58 180 136 192 Q162 202 180 218 Q202 240 216 314 Q228 394 196 460 Q156 520 -18 546"
             stroke="url(#t-river)" strokeWidth="28" fill="none" strokeLinecap="round" />
-      <path d="M-30 270 Q 80 260 170 268 Q 250 280 280 360 Q 280 460 210 520 Q 140 560 -20 580"
-            stroke="#bae6fd" strokeWidth="10" fill="none" strokeLinecap="round" opacity="0.6" />
-      {/* river sparkle highlights */}
-      <path d="M40 264 Q90 260 130 262" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <path d="M210 296 Q240 332 264 372" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <path d="M268 440 Q252 490 218 510" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M-22 188 Q58 180 136 192 Q162 202 180 218 Q202 240 216 314 Q228 394 196 460 Q156 520 -18 546"
+            stroke="#bae6fd" strokeWidth="10" fill="none" strokeLinecap="round" opacity="0.62" />
+      {/* River sparkles */}
+      <path d="M32 185 Q86 179 128 186" stroke="rgba(255,255,255,0.72)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M198 264 Q216 308 224 355"  stroke="rgba(255,255,255,0.62)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M220 412 Q206 450 186 474"  stroke="rgba(255,255,255,0.62)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-      {/* small wooden bridge where path crosses river */}
-      <g transform="translate(255 470) rotate(-22)">
-        <rect x="-32" y="-7" width="64" height="14" rx="2" fill="#7a5230" stroke="#3d2e22" strokeWidth="1.5" />
-        <rect x="-32" y="-5" width="64" height="2"  fill="#a88a4a" />
-        <line x1="-26" y1="-7" x2="-26" y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="-14" y1="-7" x2="-14" y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="0"   y1="-7" x2="0"   y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="14"  y1="-7" x2="14"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="26"  y1="-7" x2="26"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <rect x="-30" y="-12" width="3" height="5" fill="#3d2e22" />
-        <rect x="27"  y="-12" width="3" height="5" fill="#3d2e22" />
+      {/* Bridge — spans the river where path ① crosses (~x=196, y=275) */}
+      {/* River flows roughly north-south here, so bridge runs east-west with slight tilt */}
+      <g transform="translate(196 275) rotate(5)">
+        {/* Left bank anchor */}
+        <rect x="-52" y="-5" width="18" height="10" rx="1" fill="#7a5230" />
+        {/* Right bank anchor */}
+        <rect x="34"  y="-5" width="18" height="10" rx="1" fill="#7a5230" />
+        {/* Bridge deck spanning the river */}
+        <rect x="-34" y="-7" width="68" height="14" rx="2" fill="#7a5230" stroke="#3d2e22" strokeWidth="1.5" />
+        <rect x="-34" y="-5" width="68" height="2"  fill="#a88a4a" />
+        {/* Planks */}
+        <line x1="-28" y1="-7" x2="-28" y2="7" stroke="#3d2e22" strokeWidth="0.8" />
+        <line x1="-16" y1="-7" x2="-16" y2="7" stroke="#3d2e22" strokeWidth="0.8" />
+        <line x1="-4"  y1="-7" x2="-4"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
+        <line x1="8"   y1="-7" x2="8"   y2="7" stroke="#3d2e22" strokeWidth="0.8" />
+        <line x1="20"  y1="-7" x2="20"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
+        <line x1="32"  y1="-7" x2="32"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
+        {/* Railings */}
+        <rect x="-34" y="-12" width="4" height="6" fill="#3d2e22" />
+        <rect x="30"  y="-12" width="4" height="6" fill="#3d2e22" />
+        <line x1="-32" y1="-9" x2="32" y2="-9" stroke="#3d2e22" strokeWidth="1" opacity="0.6" />
       </g>
 
-      {/* ===== DIRT PATHS connecting locations (updated for new coords) ===== */}
-      {/* Lab(400,324) → Bulletin Board (176,384) */}
-      <path d="M380 340 Q300 360 196 380" stroke="url(#t-path)" strokeWidth="14" fill="none" strokeLinecap="round" opacity="0.9" />
-      {/* Lab → Pond B (176,228) */}
-      <path d="M390 306 Q290 270 196 244" stroke="url(#t-path)" strokeWidth="14" fill="none" strokeLinecap="round" opacity="0.9" />
-      {/* Lab → Pond A (624,468) */}
-      <path d="M420 340 Q500 400 604 456" stroke="url(#t-path)" strokeWidth="14" fill="none" strokeLinecap="round" opacity="0.9" />
-      {/* footprint dotted path Lab → Factory */}
-      <path d="M420 304 Q520 280 620 240" stroke="#5b4530" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="2 8" opacity="0.5" />
+      {/* MAIN INVESTIGATION PATH — one connected dirt road */}
+      {/* ① Lab Tent (400,300) → Pond A (608,432) */}
+      <path d="M412 306 Q476 352 542 392 Q578 414 606 430"
+            stroke="url(#t-path)" strokeWidth="16" fill="none" strokeLinecap="round" opacity="0.88" />
+      {/* ④ Lab Tent → Factory — dashed/forbidden, not a real path */}
+      <path d="M408 294 Q490 248 576 198 Q610 178 636 154"
+            stroke="#5b4530" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="3 9" opacity="0.4" />
 
-      {/* lab knoll: subtle bump under lab tent */}
-      <ellipse cx="400" cy="344" rx="120" ry="22" fill="rgba(28,20,16,0.12)" />
-      <ellipse cx="400" cy="340" rx="116" ry="20" fill="#86b94d" opacity="0.6" />
+      {/* Lab knoll — low mound under Lab Tent */}
+      <ellipse cx="400" cy="318" rx="110" ry="20" fill="rgba(28,20,16,0.1)"  />
+      <ellipse cx="400" cy="312" rx="106" ry="17" fill="#86b94d" opacity="0.58" />
 
-      {/* pollution haze over factory */}
+      {/* Pollution haze layered over factory area */}
       <rect width="800" height="600" fill="url(#t-haze)" />
 
-      {/* zone labels — etched into land like map cartography */}
-      <g opacity="0.5" style={{ fontFamily: "Caveat", fontWeight: 700 }}>
-        <text x="80"  y="320" fontSize="14" fill="#365e22" transform="rotate(-4 80 320)">~ Wildflower Meadow ~</text>
-        <text x="540" y="260" fontSize="14" fill="#3d2e22" transform="rotate(-5 540 260)">~ Industrial Ridge ~</text>
-        <text x="500" y="560" fontSize="14" fill="#5b4530" transform="rotate(-3 500 560)">~ Polluted Marsh ~</text>
+      {/* Cartographic zone labels */}
+      <g opacity="0.44" style={{ fontFamily: "Caveat, cursive", fontWeight: 700 }}>
+        <text x="38"  y="338" fontSize="13" fill="#365e22" transform="rotate(-5 38 338)">~ Wildflower Meadow ~</text>
+        <text x="546" y="232" fontSize="13" fill="#3d2e22" transform="rotate(-4 546 232)">~ Industrial Ridge ~</text>
+        <text x="464" y="550" fontSize="13" fill="#5b4530" transform="rotate(-3 464 550)">~ Polluted Marsh ~</text>
       </g>
     </svg>
   );
@@ -760,6 +802,39 @@ function Flower({ x, y, size = 18, color = "#f472b6" }) {
       <circle cx="6"  cy="12" r="3" fill={color} />
       <circle cx="12" cy="12" r="3" fill={color} />
       <circle cx="9"  cy="8"  r="2" fill="#fde047" />
+    </svg>
+  );
+}
+
+function DeadTree({ size = 56 }) {
+  return (
+    <svg width={size} height={size * 1.1} viewBox="0 0 56 62" style={{ display: "block" }}>
+      <ellipse cx="28" cy="59" rx="16" ry="3" fill="rgba(0,0,0,0.22)" />
+      <path d="M24 56 Q23 44 25 34 L31 34 Q33 44 32 56 Z" fill="#5b4530" />
+      <path d="M26 36 Q18 26 10 18" stroke="#5b4530" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M30 36 Q38 24 46 14" stroke="#5b4530" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M26 40 Q18 34 12 30" stroke="#5b4530" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M30 40 Q38 32 44 28" stroke="#5b4530" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M10 18 Q6 12 8 10" stroke="#3d2e22" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <path d="M10 18 Q14 12 12 8" stroke="#3d2e22" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <path d="M46 14 Q44 8 46 6" stroke="#3d2e22" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <path d="M46 14 Q50 10 48 6" stroke="#3d2e22" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <path d="M12 30 Q9 25 10 23" stroke="#3d2e22" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+      <path d="M12 30 Q14 24 12 22" stroke="#3d2e22" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+      <path d="M44 28 Q47 23 46 21" stroke="#3d2e22" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+      <path d="M44 28 Q42 23 44 21" stroke="#3d2e22" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DeadFlower({ x, y, size = 18 }) {
+  return (
+    <svg width={size} height={size * 1.4} viewBox="0 0 18 26" style={{ position: "absolute", left: x, top: y }}>
+      <path d="M9 26 Q9 18 7 14 Q5 10 4 7" stroke="#7c5a30" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M7 18 Q4 16 5 14" stroke="#5b4530" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <ellipse cx="4" cy="6" rx="4" ry="3" fill="#a87c4d" opacity="0.85" transform="rotate(-20 4 6)" />
+      <ellipse cx="6" cy="4" rx="3" ry="2" fill="#8a6040" opacity="0.7" transform="rotate(10 6 4)" />
+      <circle cx="5" cy="6" r="1.5" fill="#5b4530" />
     </svg>
   );
 }
@@ -884,8 +959,8 @@ function BulletinBoard({ size = 180 }) {
 }
 
 export {
-  Pond, Tree, Factory, LabTent, EvidenceBoardIcon, Reed,
+  Pond, Tree, DeadTree, Factory, LabTent, EvidenceBoardIcon, Reed,
   Rock, Bush, GrassPatch, Signpost, Cloud,
-  BackdropLayer, Butterfly, Dragonfly, Flower, DeadShrub, Cattail, MudPatch, Footprints,
-  BulletinBoard,
+  BackdropLayer, Butterfly, Dragonfly, Flower, DeadFlower, DeadShrub, Cattail, MudPatch, Footprints,
+  BulletinBoard, Bird, AnimatedCloud,
 };

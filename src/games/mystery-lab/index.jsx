@@ -2,9 +2,9 @@
    Mystery Lab — Episode 1: The Dying Pond Mystery
    GameComponent entry. Pure-React (no Phaser).
    ============================================================ */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./styles.css";
-import { HUD, ScreenJumper, Lucide } from "./shared.jsx";
+import { HUD, Lucide } from "./shared.jsx";
 import { OpeningScreen, MapScreen } from "./screens-a.jsx";
 import { ObservationScreen, QuestionScreen, NotebookScreen } from "./screens-b.jsx";
 import { LabScreen } from "./screens-c.jsx";
@@ -19,8 +19,6 @@ export default function MysteryLab({
   reducedMotion: _reducedMotion,
   deviceTier: _deviceTier,
 }) {
-  const rootRef = useRef(null);
-
   const [screen, setScreen] = useState("opening");
   const [observations, setObservations] = useState([]);
   const [pond, setPond] = useState("A");
@@ -86,7 +84,6 @@ export default function MysteryLab({
 
   const go = useCallback((id) => {
     setScreen(id);
-    rootRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
   }, []);
 
   // Report progress when player reaches victory
@@ -104,15 +101,13 @@ export default function MysteryLab({
 
   return (
     <div
-      ref={rootRef}
       className="mystery-lab-root"
       data-theme="light"
       data-palette="orange-heavy"
       style={{
         position: "absolute",
         inset: 0,
-        overflow: "auto",
-        WebkitOverflowScrolling: "touch",
+        overflow: "hidden",
         touchAction: "manipulation",
       }}
     >
@@ -124,16 +119,17 @@ export default function MysteryLab({
             energyMax={5}
             progress={progress}
             onJump={go}
+            onExit={onExit}
           />
         )}
 
-        {onExit && (
+        {screen === "opening" && onExit && (
           <button
             type="button"
             onClick={onExit}
             aria-label="Exit Mystery Lab"
             style={{
-              position: "fixed",
+              position: "absolute",
               top: 14,
               right: 16,
               zIndex: 60,
@@ -157,7 +153,7 @@ export default function MysteryLab({
           </button>
         )}
 
-        <main className="screen">
+        <main className={`screen${screen === "opening" || screen === "map" ? " no-scroll" : ""}`}>
           {screen === "opening"  && <OpeningScreen go={go} />}
           {screen === "map"      && (
             <MapScreen
@@ -239,8 +235,6 @@ export default function MysteryLab({
             />
           )}
         </main>
-
-        <ScreenJumper current={screen} onJump={go} />
       </div>
     </div>
   );

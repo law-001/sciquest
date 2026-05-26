@@ -114,7 +114,7 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
           position: "relative",
           overflow: "hidden",
           background: "linear-gradient(180deg, #fef3c7 0%, #fed7aa 70%, #f97316 100%)",
-          minHeight: 540,
+          minHeight: 460,
         }}>
           {/* Tent stripes background */}
           <svg style={{ position: "absolute", left: 0, top: 0, width: "100%", height: 80 }} viewBox="0 0 800 80" preserveAspectRatio="none">
