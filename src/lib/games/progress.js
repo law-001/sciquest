@@ -21,7 +21,7 @@ export async function getCompletedCount(supabase, { studentId }) {
 export async function recordCompletion(supabase, { studentId, gameId, challengeId, score, scoreUnit, metadata = {} }) {
   const { data: existing } = await supabase
     .from('game_progress')
-    .select('attempts, best_score')
+    .select('attempts, best_score, metadata')
     .eq('student_id', studentId)
     .eq('game_id', gameId)
     .eq('challenge_id', challengeId)
@@ -31,6 +31,11 @@ export async function recordCompletion(supabase, { studentId, gameId, challengeI
   const bestScore = existing?.best_score == null || score > existing.best_score
     ? score
     : existing.best_score;
+
+  // Preserve the best xpEarned across runs so the profile total is stable.
+  const incomingXp = metadata.xpEarned ?? 0;
+  const existingXp = existing?.metadata?.xpEarned ?? 0;
+  const bestXp = Math.max(incomingXp, existingXp);
 
   const { error } = await supabase
     .from('game_progress')
@@ -43,7 +48,7 @@ export async function recordCompletion(supabase, { studentId, gameId, challengeI
       best_score: bestScore,
       score_unit: scoreUnit,
       attempts,
-      metadata,
+      metadata: { ...metadata, xpEarned: bestXp },
       updated_at: new Date().toISOString(),
     }, { onConflict: 'student_id,game_id,challenge_id' });
 
@@ -76,6 +81,23 @@ export async function writeGameProgress(supabase, { userId, gameId, levelId, sta
     scoreUnit: 'stars',
     metadata: { xpEarned, completedAt, ...metadata },
   });
+}
+
+// Completed game rows for a student, with best xpEarned from metadata.
+// Called once on login alongside fetchProgress.
+export async function fetchCompletedGames(supabase, { studentId }) {
+  if (!studentId) return [];
+  const { data, error } = await supabase
+    .from('game_progress')
+    .select('game_id, challenge_id, metadata')
+    .eq('student_id', studentId)
+    .eq('completed', true);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    gameId: row.game_id,
+    challengeId: row.challenge_id,
+    xpEarned: row.metadata?.xpEarned ?? 0,
+  }));
 }
 
 export async function endSession(supabase, { sessionId, startedAt }) {

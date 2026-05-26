@@ -148,6 +148,17 @@
     background-image:
       radial-gradient(rgba(253,246,227,0.03) 1px, transparent 1.5px),
       radial-gradient(rgba(253,246,227,0.015) 1px, transparent 1.5px);
+
+    --orange-50:  rgba(249, 115, 22, 0.10);
+    --orange-100: rgba(249, 115, 22, 0.16);
+    --orange-200: rgba(249, 115, 22, 0.28);
+    --teal-50:    rgba(20, 184, 166, 0.10);
+    --teal-100:   rgba(20, 184, 166, 0.16);
+    --teal-200:   rgba(20, 184, 166, 0.28);
+    --teal-300:   rgba(20, 184, 166, 0.45);
+    --yellow-50:  rgba(234, 179, 8, 0.08);
+    --yellow-100: rgba(234, 179, 8, 0.15);
+    --yellow-200: rgba(234, 179, 8, 0.28);
   }
 
   &[data-palette="teal-heavy"] {
@@ -533,4 +544,52 @@
 
   .hide-scroll::-webkit-scrollbar { display: none; }
   .hide-scroll { scrollbar-width: none; }
+}
+
+/* ===== Mystery Lab — Responsive ===== */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mystery-lab-root .ml-map-grid { grid-template-columns: 1fr 220px !important; }
+  .mystery-lab-root .ml-2col-grid { grid-template-columns: 1fr 260px !important; }
+}
+
+@media (max-width: 767px) {
+  /* Compact HUD */
+  .mystery-lab-root .hud { padding: 6px 12px; gap: 8px; }
+  .mystery-lab-root .hud .brand .col { display: none; }
+  .mystery-lab-root .hud .brand .logo { width: 28px; height: 28px; font-size: 13px; }
+  .mystery-lab-root .hud .stat { padding: 4px 8px 4px 6px; font-size: 11px; gap: 4px; }
+  .mystery-lab-root .hud .stat .pip { width: 18px; height: 18px; font-size: 10px; }
+  .mystery-lab-root .hud .stat > .text-muted { display: none; }
+  .mystery-lab-root .hud .bar { width: 40px !important; }
+
+  .mystery-lab-root .screen { padding: 8px 10px; }
+  .mystery-lab-root .screen.no-scroll { overflow-y: auto !important; }
+
+  /* Opening screen */
+  .mystery-lab-root .ml-opening-hero { padding: 14px 16px !important; }
+  .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr !important; height: auto !important; }
+  .mystery-lab-root .ml-opening-scene { display: none !important; }
+  .mystery-lab-root .ml-opening-footer {
+    grid-template-columns: 1fr 1fr !important;
+    padding: 10px 14px !important;
+    gap: 10px !important;
+  }
+
+  /* Map screen */
+  .mystery-lab-root .ml-map-grid {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .mystery-lab-root .ml-map-card { height: clamp(200px, calc(100dvh - 130px), 300px) !important; }
+  .mystery-lab-root .ml-map-sidebar { overflow-y: auto; max-height: 260px; }
+
+  /* Observation / Lab / Evidence — 2-col → 1-col */
+  .mystery-lab-root .ml-2col-grid { grid-template-columns: 1fr !important; }
+  .mystery-lab-root .ml-scene-card {
+    height: clamp(220px, calc(100dvh - 160px), 380px) !important;
+    min-height: 0 !important;
+  }
+  .mystery-lab-root .ml-game-sidebar { max-height: 280px; overflow-y: auto; }
 }

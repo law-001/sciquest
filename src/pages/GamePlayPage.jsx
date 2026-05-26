@@ -12,7 +12,7 @@ function detectDeviceTier() {
   return 'low';
 }
 
-export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
+export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgressUpdate }) {
   const reducedMotion = useReducedMotion();
   // visualViewport.height is the true on-screen area; window.innerHeight on iOS
   // Safari landscape excludes the URL bar and overstates the usable height.
@@ -89,7 +89,7 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate }) {
             user={user}
             profile={profile}
             onExit={() => onNavigate('games')}
-            onProgressUpdate={() => {}}
+            onProgressUpdate={onProgressUpdate ?? (() => {})}
             initialChallengeId={null}
             reducedMotion={reducedMotion}
             deviceTier={deviceTier}

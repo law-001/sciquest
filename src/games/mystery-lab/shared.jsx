@@ -59,7 +59,7 @@ function DetectiveHoot({ size = 96, mood = "happy", speech, speechSide = "right"
 }
 
 /* ----- HUD: top bar ----- */
-function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit }) {
+function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDark = false, onToggleTheme }) {
   return (
     <div className="hud">
       <div className="brand">
@@ -91,6 +91,17 @@ function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit }) {
         </div>
         <div className="bar" style={{ width: 80 }}><span style={{ width: `${progress * 100}%` }} /></div>
       </div>
+      {onToggleTheme && (
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          className="btn icon ghost"
+          title={isDark ? "Light mode" : "Dark mode"}
+        >
+          <Lucide name={isDark ? "sun" : "moon"} size={16} />
+        </button>
+      )}
       {onExit && (
         <button
           type="button"

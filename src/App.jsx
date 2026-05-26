@@ -44,7 +44,9 @@ import {
 } from "./lib/quizSettings";
 import { lessonsPassedFromAttempts } from "./lib/lessonGating";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
-import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
+import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, MYSTERY_LAB_COMPLETE_KEY, CELL_DIVISION_COMPLETE_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
+import { supabase } from "./lib/supabase";
+import { writeGameProgress, fetchCompletedGames } from "./lib/games/progress";
 import { XpToast } from "./components/XpToast";
 import { NotificationBubble } from "./components/NotificationBubble";
 
@@ -128,6 +130,7 @@ function AppContent() {
   const [activeLessonId, setActiveLessonId] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [activeGameId, setActiveGameId] = useState(null);
+  const [completedGames, setCompletedGames] = useState([]);
   const [completedRows, setCompletedRows] = useState([]);
   const [quizAttempts, setQuizAttempts] = useState([]);
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
@@ -162,16 +165,17 @@ function AppContent() {
   const effectiveCompletedRows    = (user && isStudent) ? completedRows    : [];
   const effectiveQuizAttempts     = (user && isStudent) ? quizAttempts     : [];
   const effectiveUnlockedAchievements = (user && isStudent) ? unlockedAchievements : [];
+  const effectiveCompletedGames   = (user && isStudent) ? completedGames   : [];
 
   // Lesson + week gating now keys off submitted quiz attempts, not lesson reads.
   const lessonsPassed = lessonsPassedFromAttempts(effectiveQuizAttempts);
 
-  // Total XP = lesson + quiz XP plus the bonus from every unlocked
-  // achievement, so an unlock genuinely moves the student's total and
-  // can push them up a level.
+  // Total XP = lesson + quiz XP + game XP (best run per game) + achievement bonuses.
+  const gameXpTotal = effectiveCompletedGames.reduce((sum, g) => sum + (g.xpEarned ?? 0), 0);
   const totalXp =
     totalXpEarned(effectiveCompletedRows, effectiveQuizAttempts) +
-    totalAchievementXp(effectiveUnlockedAchievements);
+    totalAchievementXp(effectiveUnlockedAchievements) +
+    gameXpTotal;
   const currentLevel = levelFromXp(totalXp);
 
   // Submissions already made for the active lesson's quiz — drives the
@@ -185,12 +189,13 @@ function AppContent() {
   useEffect(() => {
     if (!user?.id || !isStudent) return;
     let cancelled = false;
-    Promise.all([fetchProgress(user.id), fetchAchievements(user.id)])
-      .then(async ([{ completedLessons: done, completedRows: rows, attempts }, unlocked]) => {
+    Promise.all([fetchProgress(user.id), fetchAchievements(user.id), fetchCompletedGames(supabase, { studentId: user.id })])
+      .then(async ([{ completedLessons: done, completedRows: rows, attempts }, unlocked, games]) => {
         if (cancelled) return;
         setCompletedLessons(done);
         setCompletedRows(rows);
         setQuizAttempts(attempts);
+        setCompletedGames(games);
         // Anything completed is also "reached" — keeps the lesson tab nav consistent.
         setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
 
@@ -761,6 +766,96 @@ function AppContent() {
     }
   };
 
+  // Maps game IDs to their completion achievement keys.
+  const GAME_ACHIEVEMENT_KEYS = {
+    'mystery-lab': MYSTERY_LAB_COMPLETE_KEY,
+    'cell-division-defense': CELL_DIVISION_COMPLETE_KEY,
+  };
+
+  // Human-readable names for XP toast detail text.
+  const GAME_NAMES = {
+    'mystery-lab': 'Mystery Lab',
+    'cell-division-defense': 'Cell Division Defense',
+  };
+
+  // Called by GamePlayPage → GameComponent when a game run ends.
+  // Mystery Lab payload: { gameId, challengeId, completed, xp, stars }
+  // Cell Division payload: { stars, mutations, hpLeft, xpEarned, levelId, reason? }
+  const handleGameProgressUpdate = (payload) => {
+    const gameId = payload.gameId ?? activeGameId;
+    if (!gameId) return;
+
+    const challengeId = payload.challengeId ?? payload.levelId ?? gameId;
+    const stars = payload.stars ?? 0;
+    const xpEarned = payload.xp ?? payload.xpEarned ?? 0;
+    // reason:'nucleusDestroyed' signals a loss for Cell Division; absence = win.
+    const isWin = payload.reason !== 'nucleusDestroyed';
+    const isCompleted = isWin && payload.completed !== false;
+
+    // Always persist to DB for attempt-tracking, even on losses.
+    if (user?.id && isStudent) {
+      writeGameProgress(supabase, {
+        userId: user.id,
+        gameId,
+        levelId: challengeId,
+        stars,
+        xpEarned: isCompleted ? xpEarned : 0,
+        completedAt: new Date().toISOString(),
+      }).catch((err) => console.error('Failed to save game progress:', err));
+    }
+
+    if (!isCompleted) return;
+
+    const existingEntry = completedGames.find(
+      (g) => g.gameId === gameId && g.challengeId === challengeId,
+    );
+    const isFirstCompletion = !existingEntry;
+    const isImprovedScore = existingEntry && xpEarned > existingEntry.xpEarned;
+
+    if (isFirstCompletion) {
+      setCompletedGames((prev) => [...prev, { gameId, challengeId, xpEarned }]);
+      if (xpEarned > 0) {
+        pushNotification({ kind: 'xp', amount: xpEarned, detail: GAME_NAMES[gameId] ?? gameId, source: 'game' });
+      }
+      const newLevel = levelFromXp(totalXp + xpEarned);
+      if (newLevel > currentLevel) {
+        pushNotification({ kind: 'level-up', level: newLevel });
+      }
+    } else if (isImprovedScore) {
+      setCompletedGames((prev) =>
+        prev.map((g) =>
+          g.gameId === gameId && g.challengeId === challengeId
+            ? { ...g, xpEarned }
+            : g,
+        ),
+      );
+      const diff = xpEarned - existingEntry.xpEarned;
+      if (diff > 0) {
+        pushNotification({ kind: 'xp', amount: diff, detail: GAME_NAMES[gameId] ?? gameId, source: 'game' });
+        const newLevel = levelFromXp(totalXp + diff);
+        if (newLevel > currentLevel) {
+          pushNotification({ kind: 'level-up', level: newLevel });
+        }
+      }
+    }
+
+    // Award completion achievement (idempotent — DB ignores duplicates).
+    const achievementKey = GAME_ACHIEVEMENT_KEYS[gameId];
+    if (achievementKey && user?.id && isStudent && !unlockedAchievements.includes(achievementKey)) {
+      setUnlockedAchievements((prev) => [...prev, achievementKey]);
+      awardAchievements(user.id, [achievementKey]).catch((err) =>
+        console.error('Failed to award game achievement:', err),
+      );
+      const achXp = achievementXp(achievementKey);
+      pushNotification({
+        kind: 'achievement',
+        label: achievementLabel(achievementKey),
+        amount: achXp,
+        achievementKey,
+      });
+    }
+  };
+
   // Called by the "Back to Lessons" button on the results screen. XP/persistence
   // already happened on submit; this only advances to the next lesson (or the
   // lessons list if this was the last one in the week).
@@ -898,6 +993,7 @@ function AppContent() {
             user={user}
             profile={profile}
             onNavigate={handleNavigate}
+            onProgressUpdate={handleGameProgressUpdate}
           />
         );
 
