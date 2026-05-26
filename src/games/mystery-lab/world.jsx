@@ -109,8 +109,6 @@ function Pond({ sick = false, size = 240, label, dead = 0, hideFish = false }) {
           <circle cx="86" cy="92" r="6" fill="#3d4f24" opacity="0.5" />
           <circle cx="162" cy="100" r="10" fill="#4a6a2f" opacity="0.4" />
           <circle cx="170" cy="106" r="6" fill="#3d4f24" opacity="0.5" />
-          {/* dirty foam */}
-          <ellipse cx="120" cy="76" rx="34" ry="3" fill="#a8966a" opacity="0.4" />
           {/* bubble cluster */}
           <circle cx="100" cy="120" r="2" fill="rgba(200,180,140,0.6)" />
           <circle cx="106" cy="124" r="1.4" fill="rgba(200,180,140,0.5)" />
@@ -153,7 +151,6 @@ function Pond({ sick = false, size = 240, label, dead = 0, hideFish = false }) {
           </g>
           {/* trash */}
           <g transform="translate(146 76)">
-            <rect x="-3" y="-2" width="6" height="4" fill="#a89579" />
             <rect x="-2" y="-3" width="4" height="2" fill="#5b4530" />
           </g>
         </g>

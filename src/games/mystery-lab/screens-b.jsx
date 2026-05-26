@@ -7,7 +7,7 @@ import { Pond, Factory, Reed, Tree, Cloud, Thermometer, SmellVapor } from "./wor
 
 /* ===== Screen 3: Observation Scene ===== */
 
-function ClueWrapper({ found, onClick, style, children }) {
+function ClueWrapper({ found, onClick, style, children, anim }) {
   return (
     <div style={{ position: "absolute", ...style }}>
       <button
@@ -20,7 +20,9 @@ function ClueWrapper({ found, onClick, style, children }) {
           transition: "opacity .3s ease",
         }}
       >
-        {children}
+        <div style={!found && anim ? { animation: anim } : undefined}>
+          {children}
+        </div>
         {found && (
           <div style={{
             position: "absolute", top: -6, right: -6,
@@ -70,7 +72,7 @@ function StandaloneFishie({ rot = 0, color = "#f97316", stroke = "#c2410c", scal
 
 function MurkyPatch() {
   return (
-    <svg width={120} height={52} viewBox="0 0 120 52" fill="none" style={{ display: "block" }}>
+    <svg width={120} height={52} viewBox="0 0 120 52" fill="none" overflow="visible" style={{ display: "block" }}>
       <ellipse cx="60" cy="36" rx="56" ry="15" fill="#2a1e0e" opacity="0.58" />
       <ellipse cx="42" cy="30" rx="22" ry="8"  fill="#4a3520" opacity="0.48" />
       <ellipse cx="78" cy="32" rx="18" ry="6"  fill="#5b4530" opacity="0.42" />
@@ -79,35 +81,81 @@ function MurkyPatch() {
       <circle cx="44" cy="26" r="2.5" fill="#a87c4d" opacity="0.55" />
       <circle cx="68" cy="28" r="2"   fill="#a87c4d" opacity="0.45" />
       <circle cx="82" cy="40" r="1.5" fill="#a87c4d" opacity="0.4" />
+      <circle cx="35" cy="46" r="6" fill="rgba(210,160,80,0.25)" stroke="rgba(220,170,90,0.95)" strokeWidth="1.8">
+        <animateTransform attributeName="transform" type="translate" values="0,0; -4,-110" dur="2.4s" repeatCount="indefinite" begin="0s" />
+        <animate attributeName="opacity" values="1; 0.6; 0" dur="2.4s" repeatCount="indefinite" begin="0s" />
+      </circle>
+      <circle cx="61" cy="49" r="4.5" fill="rgba(210,160,80,0.2)" stroke="rgba(220,170,90,0.9)" strokeWidth="1.5">
+        <animateTransform attributeName="transform" type="translate" values="0,0; 5,-115" dur="2s" repeatCount="indefinite" begin="0.85s" />
+        <animate attributeName="opacity" values="1; 0.5; 0" dur="2s" repeatCount="indefinite" begin="0.85s" />
+      </circle>
+      <circle cx="84" cy="46" r="5.5" fill="rgba(210,160,80,0.22)" stroke="rgba(220,170,90,0.9)" strokeWidth="1.6">
+        <animateTransform attributeName="transform" type="translate" values="0,0; -2,-108" dur="2.8s" repeatCount="indefinite" begin="1.5s" />
+        <animate attributeName="opacity" values="1; 0.55; 0" dur="2.8s" repeatCount="indefinite" begin="1.5s" />
+      </circle>
     </svg>
   );
 }
 
 function ClearWaterRipple() {
   return (
-    <svg width={100} height={44} viewBox="0 0 100 44" fill="none" style={{ display: "block" }}>
+    <svg width={100} height={44} viewBox="0 0 100 44" fill="none" overflow="visible" style={{ display: "block" }}>
       <ellipse cx="50" cy="30" rx="46" ry="13" fill="#22d3ee" opacity="0.22" />
       <path d="M12 26 Q50 16 88 26" stroke="rgba(255,255,255,0.75)" strokeWidth="1.8" fill="none" strokeLinecap="round" />
       <path d="M20 34 Q50 26 80 34" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
       <ellipse cx="62" cy="36" rx="7"  ry="1.8" fill="rgba(255,255,255,0.65)" />
       <ellipse cx="36" cy="30" rx="4.5" ry="1.2" fill="rgba(255,255,255,0.55)" />
       <ellipse cx="74" cy="22" rx="3"   ry="0.9" fill="rgba(255,255,255,0.5)" />
+      <circle cx="28" cy="40" r="6" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.95)" strokeWidth="1.8">
+        <animateTransform attributeName="transform" type="translate" values="0,0; -3,-100" dur="2.2s" repeatCount="indefinite" begin="0s" />
+        <animate attributeName="opacity" values="1; 0.55; 0" dur="2.2s" repeatCount="indefinite" begin="0s" />
+      </circle>
+      <circle cx="52" cy="42" r="4.5" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5">
+        <animateTransform attributeName="transform" type="translate" values="0,0; 4,-105" dur="1.9s" repeatCount="indefinite" begin="0.7s" />
+        <animate attributeName="opacity" values="1; 0.5; 0" dur="1.9s" repeatCount="indefinite" begin="0.7s" />
+      </circle>
+      <circle cx="72" cy="39" r="5" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6">
+        <animateTransform attributeName="transform" type="translate" values="0,0; -2,-102" dur="2.5s" repeatCount="indefinite" begin="1.4s" />
+        <animate attributeName="opacity" values="1; 0.5; 0" dur="2.5s" repeatCount="indefinite" begin="1.4s" />
+      </circle>
     </svg>
   );
 }
 
 const POND_A_CLUES = [
-  { id: "deadFish",    label: "Dead Fish",      icon: "fish",        x: 37, y: 44, obs: "Several fish are floating belly-up. They look untouched.",  xp: 8 },
-  { id: "murky",       label: "Murky Water",    icon: "droplet",     x: 56, y: 52, obs: "The water is brown and cloudy. Hard to see the bottom.",     xp: 6 },
-  { id: "temp",        label: "Temperature",    icon: "thermometer", x: 74, y: 60, obs: "Thermometer reads 34°C. Unusually warm for this season.",   xp: 6 },
-  { id: "smell",       label: "Strange Smell",  icon: "sparkles",    x: 32, y: 20, obs: "A sharp, chemical smell hangs over the pond.",               xp: 6 },
-  { id: "factoryPipe", label: "Drainage Pipe",  icon: "factory",     x: 84, y: 28, obs: "A pipe from the factory drips a grey-brown liquid into the soil.", xp: 10 },
+  { id: "deadFish",    label: "Dead Fish",      icon: "fish",        x: 37, y: 44, obs: "Several fish are floating belly-up. They look untouched.",  xp: 8,  hint: "The animals here seem like they're not moving..." },
+  { id: "murky",       label: "Murky Water",    icon: "droplet",     x: 56, y: 52, obs: "The water is brown and cloudy. Hard to see the bottom.",     xp: 6,  hint: "The water looks... strange. Almost like chocolate milk." },
+  { id: "temp",        label: "Temperature",    icon: "thermometer", x: 74, y: 60, obs: "Thermometer reads 34°C. Unusually warm for this season.",   xp: 6,  hint: "It feels warmer out here than it should be..." },
+  { id: "smell",       label: "Strange Smell",  icon: "sparkles",    x: 32, y: 20, obs: "A sharp, chemical smell hangs over the pond.",               xp: 6,  hint: "What was that smell? Something sharp is in the air." },
+  { id: "factoryPipe", label: "Drainage Pipe",  icon: "factory",     x: 84, y: 28, obs: "A pipe from the factory drips a grey-brown liquid into the soil.", xp: 10, hint: "Something over there seems to be dripping..." },
 ];
 const POND_B_CLUES = [
-  { id: "healthyFish", label: "Healthy Fish",   icon: "fish",        x: 44, y: 50, obs: "Fish swim actively. Bright orange scales — all looks normal.", xp: 4, control: true },
-  { id: "clearWater",  label: "Clear Water",    icon: "droplet",     x: 60, y: 42, obs: "You can see right to the bottom. No discoloration.",          xp: 4, control: true },
-  { id: "tempB",       label: "Temperature B",  icon: "thermometer", x: 74, y: 60, obs: "Thermometer reads 22°C. Normal seasonal value.",              xp: 4, control: true },
+  { id: "healthyFish", label: "Healthy Fish",   icon: "fish",        x: 44, y: 50, obs: "Fish swim actively. Bright orange scales — all looks normal.", xp: 4, control: true, hint: "How are the animals here doing?" },
+  { id: "clearWater",  label: "Clear Water",    icon: "droplet",     x: 60, y: 42, obs: "You can see right to the bottom. No discoloration.",          xp: 4, control: true, hint: "Notice anything about the water itself?" },
+  { id: "tempB",       label: "Temperature B",  icon: "thermometer", x: 74, y: 60, obs: "Thermometer reads 22°C. Normal seasonal value.",              xp: 4, control: true, hint: "Have you checked the temperature yet?" },
 ];
+
+// ─── Clue element positions ──────────────────────────────────────────────────
+// Edit left/top (% of scene) and transform to reposition any clue element.
+// factoryPipe uses top/right pixel offsets because it anchors to the corner.
+// rx/ry = ripple center in scene % — keep in sync with left/top when you move things.
+const CLUE_POS = {
+  // Pond A
+  deadFish:    { left: "60%", top: "70%", transform: "translate(-50%, -50%)", rx: 60, ry: 70 },
+  murky:       { left: "56%", top: "49%", transform: "translate(-50%, -50%)", rx: 56, ry: 49 },
+  temp:        { left: "74%", top: "54%", transform: "translate(-50%, -50%)", rx: 74, ry: 54 },
+  smell:       { left: "35%", top: "45%", transform: "translate(-50%, 0)",    rx: 35, ry: 45 },
+  factoryPipe: { top: 60,     right: 30,                                       rx: 92, ry: 14 },
+  // Pond B
+  healthyFish: { left: "60%", top: "70%", transform: "translate(-50%, -50%)", rx: 60, ry: 70 },
+  clearWater:  { left: "40%", top: "70%", transform: "translate(-50%, -50%)", rx: 40, ry: 70 },
+  tempB:       { left: "74%", top: "54%", transform: "translate(-50%, -50%)", rx: 74, ry: 54 },
+};
+// Strips rx/ry before spreading to style — they're not valid CSS props
+function cluePos(id) {
+  const { rx: _rx, ry: _ry, ...s } = CLUE_POS[id] ?? {};
+  return s;
+}
 
 function ObservationScreen({ go, pond, setPond, observations, addObservation }) {
   const clues = pond === "A" ? POND_A_CLUES : POND_B_CLUES;
@@ -116,6 +164,19 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
   const readyForHypothesis = allPondCluesDone && observations.length >= 4;
   const [popText, setPopText] = useState(null);
   const [ripples, setRipples] = useState([]);
+  const [hintActive, setHintActive] = useState(false);
+
+  const showHint = () => {
+    const unfound = clues.filter(c => !observations.find(o => o.id === c.id));
+    if (unfound.length === 0) return;
+    const pick = unfound[Math.floor(Math.random() * unfound.length)];
+    setHintActive(true);
+    setPopText({ ...pick, isHint: true });
+    setTimeout(() => {
+      setPopText(p => (p && p.id === pick.id ? null : p));
+      setHintActive(false);
+    }, 3000);
+  };
 
   const onClickClue = useCallback((c) => {
     if (observations.find(o => o.id === c.id)) return;
@@ -129,7 +190,12 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
 
   const obs = (id) => observations.find(o => o.id === id);
   const clue = (id) => clues.find(c => c.id === id);
-  const handleClue = (id) => () => { const c = clue(id); if (c) onClickClue(c); };
+  const handleClue = (id) => () => {
+    const c = clue(id);
+    if (!c) return;
+    const { rx = c.x, ry = c.y } = CLUE_POS[id] ?? {};
+    onClickClue({ ...c, x: rx, y: ry });
+  };
 
   return (
     <div data-screen-label="03 Observation" className="col gap-4">
@@ -142,6 +208,10 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
           <button className="btn ghost" onClick={() => setPond(pond === "A" ? "B" : "A")}>
             <Lucide name="refresh" size={14} />
             Switch to Pond {pond === "A" ? "B" : "A"}
+          </button>
+          <button className="btn ghost" onClick={showHint} disabled={hintActive}>
+            <Lucide name="lightbulb" size={14} />
+            Hint
           </button>
           <button
             className="btn teal"
@@ -182,7 +252,8 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
             <ClueWrapper
               found={!!obs("factoryPipe")}
               onClick={handleClue("factoryPipe")}
-              style={{ top: 60, right: 30 }}
+              style={cluePos("factoryPipe")}
+              anim="ml-shimmer 2.2s ease-in-out infinite"
             >
               <div style={{ transform: "scale(0.6)", transformOrigin: "top right" }}>
                 <Factory />
@@ -201,20 +272,12 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
           {sick && (
             <>
               {/* SMELL — green-yellow vapor rising above the pond */}
-              <ClueWrapper
-                found={!!obs("smell")}
-                onClick={handleClue("smell")}
-                style={{ left: "30%", top: "10%", transform: "translate(-50%, 0)" }}
-              >
+              <ClueWrapper found={!!obs("smell")} onClick={handleClue("smell")} style={cluePos("smell")} anim="ml-shimmer 3s ease-in-out infinite">
                 <SmellVapor width={120} height={86} />
               </ClueWrapper>
 
               {/* DEAD FISH — three fish floating belly-up */}
-              <ClueWrapper
-                found={!!obs("deadFish")}
-                onClick={handleClue("deadFish")}
-                style={{ left: "37%", top: "40%", transform: "translate(-50%, -50%)" }}
-              >
+              <ClueWrapper found={!!obs("deadFish")} onClick={handleClue("deadFish")} style={cluePos("deadFish")} anim="ml-float-y 2.8s ease-in-out infinite">
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
                   <StandaloneDeadFish rot={-28} scale={1.5} />
                   <div style={{ marginLeft: 22 }}><StandaloneDeadFish rot={18} scale={1.25} /></div>
@@ -223,20 +286,12 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
               </ClueWrapper>
 
               {/* MURKY WATER — dark pollution patch in the water */}
-              <ClueWrapper
-                found={!!obs("murky")}
-                onClick={handleClue("murky")}
-                style={{ left: "56%", top: "49%", transform: "translate(-50%, -50%)" }}
-              >
+              <ClueWrapper found={!!obs("murky")} onClick={handleClue("murky")} style={cluePos("murky")} anim="ml-shimmer 3.5s ease-in-out infinite">
                 <MurkyPatch />
               </ClueWrapper>
 
               {/* THERMOMETER — hot reading stuck in pond bank */}
-              <ClueWrapper
-                found={!!obs("temp")}
-                onClick={handleClue("temp")}
-                style={{ left: "74%", top: "54%", transform: "translate(-50%, -50%)" }}
-              >
+              <ClueWrapper found={!!obs("temp")} onClick={handleClue("temp")} style={cluePos("temp")} anim="ml-shimmer 2.5s ease-in-out infinite">
                 <Thermometer hot size={80} />
               </ClueWrapper>
             </>
@@ -246,11 +301,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
           {!sick && (
             <>
               {/* HEALTHY FISH — two fish swimming actively */}
-              <ClueWrapper
-                found={!!obs("healthyFish")}
-                onClick={handleClue("healthyFish")}
-                style={{ left: "43%", top: "46%", transform: "translate(-50%, -50%)" }}
-              >
+              <ClueWrapper found={!!obs("healthyFish")} onClick={handleClue("healthyFish")} style={cluePos("healthyFish")} anim="ml-float-y 2.2s ease-in-out infinite">
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
                   <StandaloneFishie rot={-8} color="#f97316" stroke="#c2410c" scale={1.5} />
                   <div style={{ marginLeft: 28 }}><StandaloneFishie rot={14} color="#fb923c" stroke="#c2410c" scale={1.2} /></div>
@@ -258,20 +309,12 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
               </ClueWrapper>
 
               {/* CLEAR WATER — light ripple patch in the water */}
-              <ClueWrapper
-                found={!!obs("clearWater")}
-                onClick={handleClue("clearWater")}
-                style={{ left: "60%", top: "40%", transform: "translate(-50%, -50%)" }}
-              >
+              <ClueWrapper found={!!obs("clearWater")} onClick={handleClue("clearWater")} style={cluePos("clearWater")} anim="ml-shimmer 3s ease-in-out infinite">
                 <ClearWaterRipple />
               </ClueWrapper>
 
               {/* THERMOMETER B — normal reading */}
-              <ClueWrapper
-                found={!!obs("tempB")}
-                onClick={handleClue("tempB")}
-                style={{ left: "74%", top: "54%", transform: "translate(-50%, -50%)" }}
-              >
+              <ClueWrapper found={!!obs("tempB")} onClick={handleClue("tempB")} style={cluePos("tempB")} anim="ml-shimmer 2.5s ease-in-out infinite">
                 <Thermometer hot={false} size={80} />
               </ClueWrapper>
             </>
@@ -282,7 +325,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
             <span key={r.id} className="ripple-fx" style={{ left: `${r.x}%`, top: `${r.y}%`, width: 40, height: 40, transform: "translate(-50%, -50%)" }} />
           ))}
 
-          {/* observation popup */}
+          {/* observation / hint popup */}
           {popText && (
             <div className="bounce-in" style={{
               position: "absolute",
@@ -296,22 +339,33 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
               boxShadow: "var(--shadow-pop)",
               zIndex: 6,
             }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 12,
-                background: "var(--orange-500)",
-                display: "grid", placeItems: "center", flexShrink: 0,
-              }}>
-                <Lucide name={popText.icon} size={20} color="white" />
-              </div>
-              <div className="grow">
-                <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 15 }}>{popText.label}</div>
-                <div style={{ fontSize: 13, fontWeight: 500, opacity: 0.9, fontFamily: "Kalam" }}>"{popText.obs}"</div>
-              </div>
-              <div style={{
-                background: "var(--yellow-400)", color: "#1c1410",
-                padding: "4px 10px", borderRadius: 999,
-                fontFamily: "Nunito", fontWeight: 900, fontSize: 13,
-              }}>+{popText.xp} XP</div>
+              {popText.isHint ? (
+                <>
+                  <DetectiveHoot size={40} />
+                  <div className="grow" style={{ fontFamily: "Kalam", fontSize: 15, fontWeight: 700, fontStyle: "italic", opacity: 0.95 }}>
+                    "{popText.hint}"
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 12,
+                    background: "var(--orange-500)",
+                    display: "grid", placeItems: "center", flexShrink: 0,
+                  }}>
+                    <Lucide name={popText.icon} size={20} color="white" />
+                  </div>
+                  <div className="grow">
+                    <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 15 }}>{popText.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, opacity: 0.9, fontFamily: "Kalam" }}>"{popText.obs}"</div>
+                  </div>
+                  <div style={{
+                    background: "var(--yellow-400)", color: "#1c1410",
+                    padding: "4px 10px", borderRadius: 999,
+                    fontFamily: "Nunito", fontWeight: 900, fontSize: 13,
+                  }}>+{popText.xp} XP</div>
+                </>
+              )}
             </div>
           )}
 

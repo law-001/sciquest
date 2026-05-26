@@ -35,6 +35,10 @@
   35%  { transform: translate(-50%, -50%) scale(1.35); }
   100% { transform: translate(-50%, -50%) scale(1); }
 }
+@keyframes ml-shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
 @keyframes ml-fly-across {
   from { transform: translateX(0); }
   to   { transform: translateX(1400px); }
