@@ -14,7 +14,7 @@ function Cloud({ style }) {
 }
 
 /* ---------- Healthy / sick pond ---------- */
-function Pond({ sick = false, size = 240, label, dead = 0 }) {
+function Pond({ sick = false, size = 240, label, dead = 0, hideFish = false }) {
   const w = size;
   const h = size * 0.78;
   return (
@@ -159,15 +159,15 @@ function Pond({ sick = false, size = 240, label, dead = 0 }) {
         </g>
       )}
 
-      {/* Fish */}
-      {!sick && (
+      {/* Fish — suppressed when hideFish=true so caller can render interactive fish */}
+      {!hideFish && !sick && (
         <g>
           <Fishie x={108} y={96} rot={-6} color="#f97316" stroke="#c2410c" />
           <Fishie x={146} y={108} rot={12} color="#fb923c" stroke="#c2410c" size={0.85} />
           <Fishie x={132} y={82}  rot={-18} color="#f59e0b" stroke="#92400e" size={0.7} />
         </g>
       )}
-      {sick && Array.from({ length: dead || 4 }).map((_, i) => {
+      {!hideFish && sick && Array.from({ length: dead || 4 }).map((_, i) => {
         const positions = [[80, 86], [104, 110], [142, 92], [162, 116], [124, 78]];
         const [x, y] = positions[i % positions.length];
         return <DeadFish key={i} x={x + (i * 4 % 12) - 6} y={y + (i % 2 ? 2 : -2)} rot={i * 47 - 30} />;
@@ -958,9 +958,56 @@ function BulletinBoard({ size = 180 }) {
   );
 }
 
+function Thermometer({ size = 70, hot = false }) {
+  const mercury = hot ? "#dc2626" : "#3b82f6";
+  const tempLabel = hot ? "34°C" : "22°C";
+  const fillTop = hot ? 12 : 22;
+  const fillH = hot ? 22 : 12;
+  return (
+    <svg width={Math.round(size * 0.4)} height={size} viewBox="0 0 18 58" style={{ display: "block" }}>
+      {/* temp badge */}
+      <rect x="0" y="0" width="18" height="9" rx="3" fill={mercury} />
+      <text x="9" y="6.5" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="5.5" fill="white">{tempLabel}</text>
+      {/* tube */}
+      <rect x="5" y="7" width="8" height="34" rx="4" fill="#fdf6e3" stroke="#a89579" strokeWidth="1.4" />
+      {/* mercury fill */}
+      <rect x="7.2" y={fillTop} width="3.6" height={fillH} rx="1.5" fill={mercury} />
+      {/* scale marks */}
+      {[13, 19, 25, 31].map(y => (
+        <line key={y} x1="13.5" y1={y} x2="15.5" y2={y} stroke="#a89579" strokeWidth="0.8" />
+      ))}
+      {/* bulb */}
+      <circle cx="9" cy="43" r="6" fill={mercury} stroke="#a89579" strokeWidth="1.4" />
+      <circle cx="7" cy="41" r="1.8" fill="rgba(255,255,255,0.45)" />
+      {/* ground stake */}
+      <rect x="8.2" y="48" width="1.6" height="10" fill="#5b4530" />
+    </svg>
+  );
+}
+
+function SmellVapor({ width = 110, height = 80 }) {
+  return (
+    <svg width={width} height={height} viewBox="0 0 110 80" fill="none" style={{ display: "block" }}>
+      {[
+        { d: "M18 78 Q24 60 16 44 Q8 28 16 10",  color: "#a3e635", dur: "2.1s", delay: "0s"   },
+        { d: "M40 80 Q50 62 42 46 Q34 30 44 12",  color: "#84cc16", dur: "2.5s", delay: "0.3s" },
+        { d: "M64 78 Q74 60 66 44 Q58 28 68 10",  color: "#bef264", dur: "2.3s", delay: "0.6s" },
+        { d: "M88 76 Q96 58 88 42 Q80 26 90 8",   color: "#a3e635", dur: "2.7s", delay: "0.15s"},
+      ].map((s, i) => (
+        <path key={i} d={s.d} stroke={s.color} strokeWidth="3" strokeLinecap="round" opacity="0.8"
+          style={{ animation: `ml-float-y ${s.dur} ${s.delay} ease-in-out infinite` }} />
+      ))}
+      <circle cx="30" cy="36" r="4"   fill="#a3e635" opacity="0.4" style={{ animation: "ml-float-y 2.8s 0.1s ease-in-out infinite" }} />
+      <circle cx="76" cy="30" r="3"   fill="#bef264" opacity="0.35" style={{ animation: "ml-float-y 3.0s 0.5s ease-in-out infinite" }} />
+      <circle cx="52" cy="22" r="2.5" fill="#84cc16" opacity="0.3"  style={{ animation: "ml-float-y 2.4s 0.8s ease-in-out infinite" }} />
+    </svg>
+  );
+}
+
 export {
   Pond, Tree, DeadTree, Factory, LabTent, EvidenceBoardIcon, Reed,
   Rock, Bush, GrassPatch, Signpost, Cloud,
   BackdropLayer, Butterfly, Dragonfly, Flower, DeadFlower, DeadShrub, Cattail, MudPatch, Footprints,
   BulletinBoard, Bird, AnimatedCloud,
+  Thermometer, SmellVapor,
 };

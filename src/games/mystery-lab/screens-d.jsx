@@ -71,7 +71,43 @@ const STORY_CLUES = [
     hint: "Pond B is your CONTROL — it shows what the story would be WITHOUT the factory. It's not part of the chain itself." },
 ];
 
-function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks }) {
+function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = [], experiments = [] }) {
+  const visitedPondA = observations.some(o => o.pond === "A");
+  const visitedPondB = observations.some(o => o.pond === "B");
+  const hasInvestigated = visitedPondA && visitedPondB && experiments.length > 0;
+
+  if (!hasInvestigated) {
+    return (
+      <div data-screen-label="07 Evidence Board" className="col gap-4">
+        <div className="row between head" style={{ alignItems: "center" }}>
+          <div>
+            <div className="uppercase-eyebrow">Phase 5 · Reconstruct the case</div>
+            <h2 className="title-xl">Tell the story of what happened</h2>
+          </div>
+        </div>
+        <div className="col gap-4" style={{ alignItems: "center", justifyContent: "center", minHeight: 340, textAlign: "center" }}>
+          <div className="card" style={{ maxWidth: 480, padding: 32, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <DetectiveHoot size={80} mood="stern" />
+            <div>
+              <div className="uppercase-eyebrow" style={{ color: "var(--orange-700)" }}>Not so fast, detective!</div>
+              <h3 style={{ margin: "8px 0 6px", fontSize: 20, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
+                {!visitedPondA || !visitedPondB ? "Visit both ponds first" : "Run your lab tests first"}
+              </h3>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.5, color: "var(--text-muted)" }}>
+                {!visitedPondA || !visitedPondB
+                  ? "You need clues from both Pond A and Pond B before the evidence board unlocks."
+                  : "Head to the Lab Tent and run your experiments — then come back to piece the story together."}
+              </p>
+            </div>
+            <button className="btn" onClick={() => go("map")} style={{ marginTop: 4 }}>
+              <Lucide name="map" size={16} /> Back to the map
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // evidenceLinks acts as ordered list of placed clue ids
   const placed = Array.isArray(evidenceLinks) ? evidenceLinks.filter(x => typeof x === "string") : [];
   const currentStepIdx = placed.length;

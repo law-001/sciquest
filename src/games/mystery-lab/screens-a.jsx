@@ -194,7 +194,7 @@ function CaseFileRow({ label, value, icon }) {
 }
 
 /* ===== Screen 2: Investigation Map ===== */
-function MapScreen({ go, mapStyle = "illustrated", visited, observations, pulse }) {
+function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observations, hypotheses = [], experiments = [], pulse }) {
   const stylePreset = {
     illustrated: { bg: "linear-gradient(180deg, #fef9c3 0%, #fbeaa3 50%, #d9f99d 100%)", paper: false, iso: false },
     paper: { bg: "#f8efd1", paper: true, iso: false },
@@ -439,7 +439,7 @@ function MapScreen({ go, mapStyle = "illustrated", visited, observations, pulse 
         {locs.map((l) =>
         <button
           key={l.id}
-          onClick={() => l.id === "pondA" || l.id === "pondB" ? go("observe") : l.id === "lab" ? go("lab") : l.id === "evidence" ? go("evidence") : null}
+          onClick={() => { if (l.id === "pondA") { setPond("A"); go("observe"); } else if (l.id === "pondB") { setPond("B"); go("observe"); } else if (l.id === "lab") { go("lab"); } else if (l.id === "evidence") { go("evidence"); } }}
           disabled={l.id === "factory"}
           style={{
             position: "absolute",
@@ -449,7 +449,8 @@ function MapScreen({ go, mapStyle = "illustrated", visited, observations, pulse 
             border: 0,
             padding: 0,
             cursor: l.id === "factory" ? "not-allowed" : "pointer",
-            opacity: l.id === "factory" ? 0.85 : 1
+            opacity: l.id === "factory" ? 0.85 : 1,
+            ...(l.id === "evidence" ? { width: 100, height: 95 } : {}),
           }}>
           
             <MapPin
@@ -498,19 +499,30 @@ function MapScreen({ go, mapStyle = "illustrated", visited, observations, pulse 
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 7 }}>
             <Objective done={visited.includes("pondA")} text="Investigate Pond A" />
             <Objective done={visited.includes("pondB")} text="Compare with Pond B" />
-            <Objective done={false} text="Form 1–2 hypotheses" />
-            <Objective done={false} text="Run experiments in the lab" />
-            <Objective done={false} text="Connect evidence + submit report" />
+            <Objective done={hypotheses.length > 0} text="Form 1–2 hypotheses" />
+            <Objective done={visited.includes("lab")} text="Run experiments in the lab" />
+            <Objective done={visited.includes("evidence")} text="Connect evidence + submit report" />
           </ul>
         </div>
 
-        <div className="card" style={{ padding: 12, background: "var(--orange-50)", borderColor: "var(--orange-200)" }}>
+        <div className="card" style={{
+          padding: 12,
+          background: hypotheses.length > 0 ? "var(--teal-50, #f0fdfa)" : "var(--orange-50)",
+          borderColor: hypotheses.length > 0 ? "var(--teal-300, #5eead4)" : "var(--orange-200)",
+          transition: "background .4s, border-color .4s",
+        }}>
           <div className="row gap-2" style={{ alignItems: "flex-start" }}>
-            <DetectiveHoot size={52} />
+            <DetectiveHoot size={52} mood={hypotheses.length > 0 ? "happy" : undefined} />
             <div>
-              <div className="uppercase-eyebrow" style={{ color: "var(--orange-700)" }}>Mentor tip</div>
+              <div className="uppercase-eyebrow" style={{ color: hypotheses.length > 0 ? "var(--teal-700, #0f766e)" : "var(--orange-700)" }}>
+                {hypotheses.length > 0 ? "Hoot says" : "Mentor tip"}
+              </div>
               <p style={{ margin: "4px 0 0", fontWeight: 600, fontSize: 12.5, lineHeight: 1.4 }}>
-                Start with <b>Pond A</b> — observe what's different. Healthy controls give you the comparison.
+                {experiments.length > 0
+                  ? <>Great lab work! Head to the <b>Evidence Board</b> and reconstruct the full story.</>
+                  : hypotheses.length > 0
+                    ? <>Good hypotheses! Now head to the <b>Lab Tent</b> to test them with real experiments.</>
+                    : <>Start with <b>Pond A</b> — observe what's different. Healthy controls give you the comparison.</>}
               </p>
             </div>
           </div>
