@@ -121,7 +121,7 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
         {/* clue pile + prompt */}
-        <div className="card" style={{ padding: 22, minHeight: 280 }}>
+        <div className="card" style={{ padding: 18, minHeight: 240 }}>
           {!isComplete ? (
             <>
               <div className="row gap-3" style={{ alignItems: "center", flexWrap: "wrap" }}>
@@ -618,7 +618,7 @@ function ConclusionScreen({ go, cause, setCause, supports, setSupports, written,
               placeholder="Start with: I think the fish in Pond A died because…"
               style={{
                 width: "100%",
-                minHeight: 120,
+                minHeight: 90,
                 padding: 14,
                 fontFamily: "Kalam",
                 fontSize: 17,
@@ -682,7 +682,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
   const xpAward = totalStars * 25 + observations.length * 4;
 
   return (
-    <div data-screen-label="09 Victory" className="col gap-4" style={{ position: "relative", paddingBottom: 80 }}>
+    <div data-screen-label="09 Victory" className="col gap-4" style={{ position: "relative" }}>
       {/* confetti */}
       <Confetti />
 
@@ -696,12 +696,12 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
         position: "relative",
         zIndex: 2,
       }}>
-        <div style={{ padding: "28px 40px 22px" }}>
+        <div style={{ padding: "20px 32px 18px" }}>
           {/* Masthead */}
           <div style={{ borderBottom: "4px double #1c1410", paddingBottom: 12, marginBottom: 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap" }}>
               <div style={{ fontFamily: "Caveat", fontSize: 16, fontWeight: 700 }}>Vol. I · No. 001</div>
-              <h1 className="h-display" style={{ fontSize: 44, fontFamily: "serif", fontWeight: 900, letterSpacing: "-0.01em" }}>
+              <h1 className="h-display" style={{ fontSize: 34, fontFamily: "serif", fontWeight: 900, letterSpacing: "-0.01em" }}>
                 THE MAPLE TIMES
               </h1>
               <div style={{ fontFamily: "Caveat", fontSize: 16, fontWeight: 700 }}>Friday · 50¢</div>
@@ -719,9 +719,9 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
             <h2 style={{
               fontFamily: "Nunito",
               fontWeight: 900,
-              fontSize: 64,
+              fontSize: 46,
               lineHeight: 1,
-              marginTop: 8,
+              marginTop: 6,
               color: "#1c1410",
               letterSpacing: "-0.02em",
             }}>

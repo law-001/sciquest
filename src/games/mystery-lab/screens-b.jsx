@@ -58,7 +58,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
         {/* Scene viewport */}
         <div className="card" style={{
           padding: 0, position: "relative", overflow: "hidden",
-          height: 540,
+          height: 460,
           background: sick
             ? "linear-gradient(180deg, #fcd6a3 0%, #f4a261 35%, #7c5a30 60%, #3d2e1a 100%)"
             : "linear-gradient(180deg, #d1fae5 0%, #6ee7b7 35%, #14b8a6 60%, #0d9488 100%)",
@@ -496,7 +496,7 @@ function NotebookScreen({ go, observations, question, hypotheses, experiments, c
         </div>
 
         {/* Notebook page */}
-        <div className="notebook" style={{ padding: "32px 32px 32px 56px", minHeight: 560 }}>
+        <div className="notebook" style={{ padding: "24px 28px 24px 52px", minHeight: 440 }}>
           {/* Spiral binding decorative */}
           <div style={{ position: "absolute", left: 12, top: 0, bottom: 0, width: 4, display: "flex", flexDirection: "column", justifyContent: "space-around", padding: "20px 0" }}>
             {Array.from({ length: 14 }).map((_, i) => (
