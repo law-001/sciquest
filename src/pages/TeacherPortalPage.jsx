@@ -606,7 +606,8 @@ function SectionsSlot({
                 </p>
               </div>
             )}
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
@@ -694,6 +695,67 @@ function SectionsSlot({
                   )}
                 </tbody>
               </table>
+            </div>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+              {rosterStudents.length > 0 ? (
+                rosterStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        {student.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                          {student.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-14 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-secondary-400 dark:bg-secondary-500"
+                              style={{ width: `${student.progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
+                            {student.progress}%
+                          </span>
+                          <span className="text-stone-300 dark:text-stone-600">·</span>
+                          <span
+                            className={cn(
+                              "text-xs font-black",
+                              student.avgScore >= 75
+                                ? "text-secondary-600"
+                                : student.avgScore >= 50
+                                  ? "text-accent-600"
+                                  : "text-red-600",
+                            )}
+                          >
+                            {student.avgScore}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="px-2 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 shrink-0"
+                      onClick={() => handleRemoveStudent(student.id)}
+                      isLoading={removingId === student.id}
+                      disabled={!!removingId}
+                      aria-label={`Remove ${student.name}`}
+                    >
+                      {removingId !== student.id && <Trash2 className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <p className="px-5 py-8 text-sm text-stone-400 text-center">
+                  No students in this section yet.
+                </p>
+              )}
             </div>
           </Card>
         </div>
@@ -1417,7 +1479,8 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
       ) : (
         /* All Submissions table */
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
@@ -1449,7 +1512,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
+                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                               {sub.student.charAt(0)}
                             </div>
                             <span className="text-sm font-bold text-stone-900 dark:text-white">
@@ -1542,6 +1605,86 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                 )}
               </tbody>
             </table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+            {allSubs.length > 0 ? (
+              allSubs.map((sub) => {
+                const types = getManualQuestionTypes(sub.lessonId);
+                return (
+                  <div key={sub.id} className="px-5 py-4 flex gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0 self-center">
+                      {sub.student.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <span className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                          {sub.student}
+                        </span>
+                        {sub.status === "graded" ? (
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            Graded
+                          </Badge>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onGrade(sub)}
+                            className="group inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300 text-amber-600 hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors shrink-0 cursor-pointer"
+                          >
+                            <span className="group-hover:hidden">Pending</span>
+                            <span className="hidden group-hover:inline whitespace-nowrap">Grade now</span>
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-xs text-stone-600 dark:text-stone-400 mb-1.5 leading-relaxed break-words">
+                        {sub.quiz}
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex gap-1 flex-wrap">
+                          {types.map((type) => {
+                            const meta = MANUAL_TYPE_META[type] ?? {};
+                            return (
+                              <span
+                                key={type}
+                                className={cn(
+                                  "px-1.5 py-0.5 rounded text-xs font-bold",
+                                  meta.className,
+                                )}
+                              >
+                                {meta.label ?? type}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 text-xs">
+                          {sub.status === "graded" ? (
+                            <span
+                              className={cn(
+                                "font-black",
+                                sub.score >= sub.total * 0.8
+                                  ? "text-secondary-600"
+                                  : sub.score >= sub.total * 0.6
+                                    ? "text-accent-600"
+                                    : "text-red-600",
+                              )}
+                            >
+                              {sub.score}/{sub.total}
+                            </span>
+                          ) : (
+                            <span className="text-stone-400">—</span>
+                          )}
+                          <span className="text-stone-400">{sub.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="px-5 py-8 text-sm text-stone-400 text-center">
+                No submissions yet.
+              </p>
+            )}
           </div>
         </Card>
       )}
@@ -2045,7 +2188,8 @@ function GradebookSlot({ data, sectionId }) {
       {/* Student roster table */}
       {sectionStudents.length > 0 ? (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
@@ -2160,6 +2304,83 @@ function GradebookSlot({ data, sectionId }) {
                 )}
               </tbody>
             </table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+            {displayed.length > 0 ? (
+              displayed.map((student) => {
+                const rank = rankMap.get(student.id) ?? "—";
+                const desc = gradeDescriptor(student.avgScore);
+                const hasPending = pendingNames.has(student.name);
+                return (
+                  <div
+                    key={student.id}
+                    onClick={() => setSelectedStudentId(student.id)}
+                    className="px-5 py-4 cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs font-black text-stone-400 dark:text-stone-500 w-5 shrink-0">
+                          {rank}
+                        </span>
+                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-[10px] shrink-0">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                            {student.name}
+                          </p>
+                          {hasPending && (
+                            <p className="text-xs font-bold text-amber-500 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Pending grade
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {student.best.size > 0 ? (
+                        <span className={cn("text-xs font-bold shrink-0", desc.color)}>
+                          {desc.short}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-stone-400 shrink-0">No data</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 pl-12">
+                      <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-secondary-400 dark:bg-secondary-500 transition-all"
+                          style={{ width: `${student.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-stone-600 dark:text-stone-400 whitespace-nowrap">
+                        {student.progress}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 pl-12 text-xs text-stone-500 dark:text-stone-400">
+                      <span>
+                        Quizzes:{" "}
+                        <span className="font-bold text-stone-700 dark:text-stone-300">
+                          {student.best.size}
+                        </span>
+                        <span className="text-stone-400"> / {quizColumns.length}</span>
+                      </span>
+                      {student.best.size > 0 && (
+                        <>
+                          <span className="text-stone-300 dark:text-stone-600">·</span>
+                          <span className={cn("font-black", desc.color)}>
+                            {student.avgScore}%
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="px-5 py-8 text-sm text-stone-400 text-center">
+                No students match your search.
+              </p>
+            )}
           </div>
         </Card>
       ) : (
@@ -2835,7 +3056,8 @@ function ProgressSlot({ data, sectionId }) {
       {/* Student table */}
       {sectionStudents.length > 0 ? (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
@@ -2961,6 +3183,88 @@ function ProgressSlot({ data, sectionId }) {
                 )}
               </tbody>
             </table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+            {displayed.length > 0 ? (
+              displayed.map((student) => {
+                const rank = progressRankMap.get(student.id) ?? "—";
+                const studentSubs = data.submissions.filter(
+                  (s) => s.student === student.name && s.section === sectionId,
+                );
+                const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
+                const status = engagementStatus(student, studentSubs.length > 0);
+                const desc =
+                  student.avgScore > 0 ? gradeDescriptor(student.avgScore) : null;
+                return (
+                  <div
+                    key={student.id}
+                    onClick={() => setSelectedStudentId(student.id)}
+                    className="px-5 py-4 cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs font-black text-stone-400 dark:text-stone-500 w-5 shrink-0">
+                          {rank}
+                        </span>
+                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-[10px] shrink-0">
+                          {student.name.charAt(0)}
+                        </div>
+                        <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                          {student.name}
+                        </p>
+                      </div>
+                      <span
+                        className={cn(
+                          "flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full shrink-0",
+                          status.bg,
+                          status.text,
+                        )}
+                      >
+                        <span className={cn("w-1.5 h-1.5 rounded-full", status.dot)} />
+                        {status.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 pl-12">
+                      <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-secondary-400 dark:bg-secondary-500 transition-all"
+                          style={{ width: `${student.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-stone-600 dark:text-stone-400 whitespace-nowrap">
+                        {student.progress}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 pl-12 text-xs text-stone-500 dark:text-stone-400 flex-wrap">
+                      <span>
+                        {studentSubs.length} attempt{studentSubs.length !== 1 ? "s" : ""}
+                      </span>
+                      <span className="text-stone-300 dark:text-stone-600">·</span>
+                      {desc ? (
+                        <span className={cn("font-black", desc.color)}>
+                          {student.avgScore}%
+                        </span>
+                      ) : (
+                        <span>—</span>
+                      )}
+                      <span className="text-stone-300 dark:text-stone-600">·</span>
+                      {gameLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <span>
+                          {gamesPlayed} / {ACTIVE_GAMES.length} games
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="px-5 py-8 text-sm text-stone-400 text-center">
+                No students match your search.
+              </p>
+            )}
           </div>
         </Card>
       ) : (
@@ -3482,6 +3786,100 @@ const QUIZ_TYPE_LABELS = {
   "case-study": "Case Study",
 };
 
+function LessonQuizCard({
+  lesson,
+  quiz,
+  types,
+  pct,
+  published,
+  currentLimit,
+  currentAttempts,
+  currentShow,
+  open,
+  onToggle,
+}) {
+  return (
+    <Card className="p-5" hoverable>
+      <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center mb-4">
+        <ClipboardCheck className="w-5 h-5 text-accent-500" />
+      </div>
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <h3 className="text-sm font-bold text-stone-900 dark:text-white leading-snug">
+          {quiz?.title ?? lesson.title}
+        </h3>
+        <Badge
+          variant={published ? "secondary" : "outline"}
+          className="text-xs shrink-0"
+        >
+          {published ? "Published" : "Hidden"}
+        </Badge>
+      </div>
+      {quiz?.description && (
+        <p className="text-xs text-stone-500 dark:text-stone-400 mb-2 leading-relaxed line-clamp-2">
+          {quiz.description}
+        </p>
+      )}
+      {types.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {types.map((type) => (
+            <span
+              key={type}
+              className="px-1.5 py-0.5 rounded text-xs font-bold bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300"
+            >
+              {QUIZ_TYPE_LABELS[type] ?? type}
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
+        {quiz?.questions?.length ?? 0}{" "}
+        {quiz?.questions?.length === 1 ? "question" : "questions"}
+      </p>
+      <div className="space-y-1.5 mb-3">
+        <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
+          <span>Completion</span>
+          <span>{pct}%</span>
+        </div>
+        <ProgressBar progress={pct} color="secondary" size="sm" />
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center justify-between w-full pt-3 border-t border-orange-100 dark:border-stone-700 text-xs font-bold text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+        aria-expanded={open}
+        aria-label="Toggle quiz settings"
+      >
+        <span className="flex items-center gap-1.5">
+          <Settings className="w-3 h-3" />
+          Settings
+        </span>
+        <ChevronDown
+          className={cn(
+            "w-3.5 h-3.5 transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+      {open && (
+        <>
+          <QuizTimerControl
+            lessonId={lesson.id}
+            currentSeconds={currentLimit}
+          />
+          <QuizAttemptsControl
+            lessonId={lesson.id}
+            currentAttempts={currentAttempts}
+          />
+          <QuizShowAnswersControl
+            lessonId={lesson.id}
+            currentShow={currentShow}
+          />
+        </>
+      )}
+    </Card>
+  );
+}
+
 function QuizzesManagementSlot({
   data,
   sectionId,
@@ -3491,6 +3889,11 @@ function QuizzesManagementSlot({
 }) {
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
+  const [openLessonId, setOpenLessonId] = useState(null);
+
+  function toggleLessonOpen(lessonId) {
+    setOpenLessonId((prev) => (prev === lessonId ? null : lessonId));
+  }
 
   function togglePublish(weekId) {
     const base = publishedQuizWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
@@ -3608,7 +4011,7 @@ function QuizzesManagementSlot({
           </div>
 
           {filteredLessons.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
               {filteredLessons.map((lesson) => {
                 const pct = getCompletion(lesson.id);
                 const quiz = getQuizByLesson(lesson.id);
@@ -3623,62 +4026,19 @@ function QuizzesManagementSlot({
                 const currentAttempts = getQuizMaxAttempts(quizSettings, lesson.id);
                 const currentShow = getQuizShowAnswers(quizSettings, lesson.id);
                 return (
-                  <Card key={lesson.id} className="p-5" hoverable>
-                    <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center mb-4">
-                      <ClipboardCheck className="w-5 h-5 text-accent-500" />
-                    </div>
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="text-sm font-bold text-stone-900 dark:text-white leading-snug">
-                        {quiz?.title ?? lesson.title}
-                      </h3>
-                      <Badge
-                        variant={published ? "secondary" : "outline"}
-                        className="text-xs shrink-0"
-                      >
-                        {published ? "Published" : "Hidden"}
-                      </Badge>
-                    </div>
-                    {quiz?.description && (
-                      <p className="text-xs text-stone-500 dark:text-stone-400 mb-2 leading-relaxed line-clamp-2">
-                        {quiz.description}
-                      </p>
-                    )}
-                    {types.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {types.map((type) => (
-                          <span
-                            key={type}
-                            className="px-1.5 py-0.5 rounded text-xs font-bold bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300"
-                          >
-                            {QUIZ_TYPE_LABELS[type] ?? type}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
-                      {quiz?.questions?.length ?? 0}{" "}
-                      {quiz?.questions?.length === 1 ? "question" : "questions"}
-                    </p>
-                    <div className="space-y-1.5 mb-3">
-                      <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
-                        <span>Completion</span>
-                        <span>{pct}%</span>
-                      </div>
-                      <ProgressBar progress={pct} color="secondary" size="sm" />
-                    </div>
-                    <QuizTimerControl
-                      lessonId={lesson.id}
-                      currentSeconds={currentLimit}
-                    />
-                    <QuizAttemptsControl
-                      lessonId={lesson.id}
-                      currentAttempts={currentAttempts}
-                    />
-                    <QuizShowAnswersControl
-                      lessonId={lesson.id}
-                      currentShow={currentShow}
-                    />
-                  </Card>
+                  <LessonQuizCard
+                    key={lesson.id}
+                    lesson={lesson}
+                    quiz={quiz}
+                    types={types}
+                    pct={pct}
+                    published={published}
+                    currentLimit={currentLimit}
+                    currentAttempts={currentAttempts}
+                    currentShow={currentShow}
+                    open={openLessonId === lesson.id}
+                    onToggle={() => toggleLessonOpen(lesson.id)}
+                  />
                 );
               })}
             </div>

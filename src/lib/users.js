@@ -126,6 +126,15 @@ export async function fetchSectionCounts() {
     .sort((a, b) => b.value - a.value)
 }
 
+export async function fetchStudents() {
+  const { data, error } = await supabase
+    .from('students')
+    .select(STUDENT_COLUMNS)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []).map((r) => toUserRow(r, 'student'))
+}
+
 // Updates the signed-in student's own editable fields. RLS
 // (own_student_update) restricts this to their own row.
 export async function updateStudentProfile(studentId, { firstName, lastName, avatar }) {
