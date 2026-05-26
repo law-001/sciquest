@@ -3,25 +3,117 @@
    ============================================================ */
 import React, { useState, useCallback } from "react";
 import { DetectiveHoot, Lucide, NotebookBadge } from "./shared.jsx";
-import { Pond, Factory, Reed, Tree, Cloud } from "./world.jsx";
+import { Pond, Factory, Reed, Tree, Cloud, Thermometer, SmellVapor } from "./world.jsx";
 
 /* ===== Screen 3: Observation Scene ===== */
+
+function ClueWrapper({ found, onClick, style, children }) {
+  return (
+    <div style={{ position: "absolute", ...style }}>
+      <button
+        onClick={found ? undefined : onClick}
+        style={{
+          background: "none", border: "none", padding: 0,
+          cursor: found ? "default" : "pointer",
+          display: "block", position: "relative",
+          opacity: found ? 0.4 : 1,
+          transition: "opacity .3s ease",
+        }}
+      >
+        {children}
+        {found && (
+          <div style={{
+            position: "absolute", top: -6, right: -6,
+            width: 22, height: 22,
+            background: "var(--teal-500)", borderRadius: "50%",
+            display: "grid", placeItems: "center",
+            border: "2.5px solid white", zIndex: 10,
+          }}>
+            <Lucide name="check" size={12} color="white" />
+          </div>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function StandaloneDeadFish({ rot = 0, scale = 1 }) {
+  const w = Math.round(30 * scale);
+  const h = Math.round(10 * scale);
+  return (
+    <svg width={w} height={h} viewBox="-15 -5 30 10" fill="none" style={{ display: "block", transform: `rotate(${rot}deg)` }}>
+      <ellipse cx="0" cy="2"  rx="8"  ry="1.5" fill="rgba(0,0,0,0.28)" />
+      <ellipse cx="0" cy="0"  rx="9"  ry="3.5" fill="#cbb999" />
+      <ellipse cx="0" cy="-1" rx="9"  ry="1.5" fill="#e6d6b9" />
+      <path d="M-9 0 L-13 -3 L-13 3 Z" fill="#cbb999" />
+      <line x1="3"  y1="-1.5" x2="5"  y2="0.5"  stroke="#1c1410" strokeWidth="1.1" strokeLinecap="round" />
+      <line x1="5"  y1="-1.5" x2="3"  y2="0.5"  stroke="#1c1410" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function StandaloneFishie({ rot = 0, color = "#f97316", stroke = "#c2410c", scale = 1 }) {
+  const w = Math.round(34 * scale);
+  const h = Math.round(14 * scale);
+  return (
+    <svg width={w} height={h} viewBox="-17 -7 34 14" fill="none" style={{ display: "block", transform: `rotate(${rot}deg)` }}>
+      <ellipse cx="0"   cy="2"    rx="10" ry="2"   fill="rgba(0,0,0,0.28)" />
+      <ellipse cx="0"   cy="0"    rx="11" ry="5"   fill={color} />
+      <ellipse cx="0"   cy="-1.5" rx="11" ry="2.5" fill="#fff7ed" opacity="0.35" />
+      <path d="M-10 0 L-16 -5 L-16 5 Z" fill={color} />
+      <path d="M-10 0 L-14 -3 L-14 3 Z" fill={stroke} opacity="0.5" />
+      <circle cx="6"   cy="-1" r="1.6" fill="white" />
+      <circle cx="6.5" cy="-1" r="0.9" fill="#1c1410" />
+    </svg>
+  );
+}
+
+function MurkyPatch() {
+  return (
+    <svg width={120} height={52} viewBox="0 0 120 52" fill="none" style={{ display: "block" }}>
+      <ellipse cx="60" cy="36" rx="56" ry="15" fill="#2a1e0e" opacity="0.58" />
+      <ellipse cx="42" cy="30" rx="22" ry="8"  fill="#4a3520" opacity="0.48" />
+      <ellipse cx="78" cy="32" rx="18" ry="6"  fill="#5b4530" opacity="0.42" />
+      <path d="M18 34 Q60 22 102 34" stroke="#7c5a30" strokeWidth="1.5" fill="none" opacity="0.7" strokeLinecap="round" />
+      <path d="M28 42 Q60 34 92 42" stroke="#7c5a30" strokeWidth="1"   fill="none" opacity="0.5" strokeLinecap="round" />
+      <circle cx="44" cy="26" r="2.5" fill="#a87c4d" opacity="0.55" />
+      <circle cx="68" cy="28" r="2"   fill="#a87c4d" opacity="0.45" />
+      <circle cx="82" cy="40" r="1.5" fill="#a87c4d" opacity="0.4" />
+    </svg>
+  );
+}
+
+function ClearWaterRipple() {
+  return (
+    <svg width={100} height={44} viewBox="0 0 100 44" fill="none" style={{ display: "block" }}>
+      <ellipse cx="50" cy="30" rx="46" ry="13" fill="#22d3ee" opacity="0.22" />
+      <path d="M12 26 Q50 16 88 26" stroke="rgba(255,255,255,0.75)" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <path d="M20 34 Q50 26 80 34" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <ellipse cx="62" cy="36" rx="7"  ry="1.8" fill="rgba(255,255,255,0.65)" />
+      <ellipse cx="36" cy="30" rx="4.5" ry="1.2" fill="rgba(255,255,255,0.55)" />
+      <ellipse cx="74" cy="22" rx="3"   ry="0.9" fill="rgba(255,255,255,0.5)" />
+    </svg>
+  );
+}
+
 const POND_A_CLUES = [
-  { id: "deadFish",    label: "Dead Fish",      icon: "fish",        x: 38, y: 60, obs: "Several fish are floating belly-up. They look untouched.",  xp: 8 },
+  { id: "deadFish",    label: "Dead Fish",      icon: "fish",        x: 37, y: 44, obs: "Several fish are floating belly-up. They look untouched.",  xp: 8 },
   { id: "murky",       label: "Murky Water",    icon: "droplet",     x: 56, y: 52, obs: "The water is brown and cloudy. Hard to see the bottom.",     xp: 6 },
-  { id: "temp",        label: "Temperature",    icon: "thermometer", x: 70, y: 70, obs: "Thermometer reads 34°C. Unusually warm for this season.",   xp: 6 },
-  { id: "smell",       label: "Strange Smell",  icon: "sparkles",    x: 26, y: 78, obs: "A sharp, chemical smell hangs over the pond.",               xp: 6 },
-  { id: "factoryPipe", label: "Drainage Pipe",  icon: "factory",     x: 84, y: 22, obs: "A pipe from the factory drips a grey-brown liquid into the soil.", xp: 10 },
+  { id: "temp",        label: "Temperature",    icon: "thermometer", x: 74, y: 60, obs: "Thermometer reads 34°C. Unusually warm for this season.",   xp: 6 },
+  { id: "smell",       label: "Strange Smell",  icon: "sparkles",    x: 32, y: 20, obs: "A sharp, chemical smell hangs over the pond.",               xp: 6 },
+  { id: "factoryPipe", label: "Drainage Pipe",  icon: "factory",     x: 84, y: 28, obs: "A pipe from the factory drips a grey-brown liquid into the soil.", xp: 10 },
 ];
 const POND_B_CLUES = [
-  { id: "healthyFish", label: "Healthy Fish",   icon: "fish",        x: 50, y: 60, obs: "Fish swim actively. Bright orange scales — all looks normal.", xp: 4, control: true },
-  { id: "clearWater",  label: "Clear Water",    icon: "droplet",     x: 30, y: 70, obs: "You can see right to the bottom. No discoloration.",          xp: 4, control: true },
-  { id: "tempB",       label: "Temperature B",  icon: "thermometer", x: 72, y: 76, obs: "Thermometer reads 22°C. Normal seasonal value.",              xp: 4, control: true },
+  { id: "healthyFish", label: "Healthy Fish",   icon: "fish",        x: 44, y: 50, obs: "Fish swim actively. Bright orange scales — all looks normal.", xp: 4, control: true },
+  { id: "clearWater",  label: "Clear Water",    icon: "droplet",     x: 60, y: 42, obs: "You can see right to the bottom. No discoloration.",          xp: 4, control: true },
+  { id: "tempB",       label: "Temperature B",  icon: "thermometer", x: 74, y: 60, obs: "Thermometer reads 22°C. Normal seasonal value.",              xp: 4, control: true },
 ];
 
 function ObservationScreen({ go, pond, setPond, observations, addObservation }) {
   const clues = pond === "A" ? POND_A_CLUES : POND_B_CLUES;
   const sick = pond === "A";
+  const allPondCluesDone = clues.every(c => observations.find(o => o.id === c.id));
+  const readyForHypothesis = allPondCluesDone && observations.length >= 4;
   const [popText, setPopText] = useState(null);
   const [ripples, setRipples] = useState([]);
 
@@ -35,6 +127,10 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
     setTimeout(() => setRipples(r => r.filter(rp => rp.id !== id)), 700);
   }, [pond, observations, addObservation]);
 
+  const obs = (id) => observations.find(o => o.id === id);
+  const clue = (id) => clues.find(c => c.id === id);
+  const handleClue = (id) => () => { const c = clue(id); if (c) onClickClue(c); };
+
   return (
     <div data-screen-label="03 Observation" className="col gap-4">
       <div className="row between head" style={{ alignItems: "center" }}>
@@ -47,7 +143,11 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
             <Lucide name="refresh" size={14} />
             Switch to Pond {pond === "A" ? "B" : "A"}
           </button>
-          <button className="btn teal" onClick={() => go(observations.length >= 4 ? "question" : "map")}>
+          <button
+            className="btn teal"
+            onClick={() => go(observations.length >= 4 ? "question" : "map")}
+            style={readyForHypothesis ? { animation: "ml-btn-glow 1.4s ease-in-out infinite" } : undefined}
+          >
             {observations.length >= 4 ? "Form hypothesis" : "Back to map"}
             <Lucide name="chevronRight" size={16} />
           </button>
@@ -67,9 +167,9 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
           <div style={{ position: "absolute", top: 18, left: 30 }}><Cloud /></div>
           <div style={{ position: "absolute", top: 36, right: 60, transform: "scale(0.7)" }}><Cloud /></div>
 
-          {/* Pond hero */}
+          {/* Pond — fish suppressed so interactive versions below are the only ones */}
           <div style={{ position: "absolute", left: "50%", bottom: 60, transform: "translateX(-50%) scale(1.8)" }}>
-            <Pond sick={sick} dead={sick ? 5 : 0} size={260} />
+            <Pond sick={sick} dead={sick ? 5 : 0} size={260} hideFish />
           </div>
 
           {/* Reeds */}
@@ -77,53 +177,105 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
           <Reed x={70} y={400} size={50} />
           <Reed x={680} y={380} size={45} />
 
-          {/* factory in distance if sick */}
+          {/* ── POND A: factory as clickable clue ── */}
           {sick && (
-            <div style={{ position: "absolute", top: 60, right: 30, transform: "scale(0.6)" }}>
-              <Factory />
-            </div>
+            <ClueWrapper
+              found={!!obs("factoryPipe")}
+              onClick={handleClue("factoryPipe")}
+              style={{ top: 60, right: 30 }}
+            >
+              <div style={{ transform: "scale(0.6)", transformOrigin: "top right" }}>
+                <Factory />
+              </div>
+            </ClueWrapper>
           )}
-          {/* tree */}
+
+          {/* ── POND B: tree (decoration, not a clue) ── */}
           {!sick && (
             <div style={{ position: "absolute", top: 30, right: 70 }}>
               <Tree size={70} variant={1} />
             </div>
           )}
 
-          {/* clue hotspots */}
-          {clues.map(c => {
-            const found = observations.find(o => o.id === c.id);
-            return (
-              <button
-                key={c.id}
-                onClick={(e) => onClickClue(c, e)}
-                style={{
-                  position: "absolute",
-                  left: `${c.x}%`, top: `${c.y}%`,
-                  transform: "translate(-50%, -50%)",
-                  background: found ? "var(--teal-500)" : "rgba(255,255,255,0.92)",
-                  color: found ? "white" : "var(--ink-900)",
-                  border: "3px solid #fdf6e3",
-                  borderRadius: 999,
-                  width: 50, height: 50,
-                  cursor: found ? "default" : "pointer",
-                  boxShadow: "0 4px 0 rgba(0,0,0,0.25), 0 12px 22px -4px rgba(0,0,0,0.3)",
-                  display: "grid", placeItems: "center",
-                  zIndex: 4,
-                }}
-                title={found ? "Already noted" : c.label}
+          {/* ── POND A: environmental clues ── */}
+          {sick && (
+            <>
+              {/* SMELL — green-yellow vapor rising above the pond */}
+              <ClueWrapper
+                found={!!obs("smell")}
+                onClick={handleClue("smell")}
+                style={{ left: "30%", top: "10%", transform: "translate(-50%, 0)" }}
               >
-                {!found && (
-                  <span style={{
-                    position: "absolute", inset: -6, borderRadius: 999,
-                    border: "3px solid white", opacity: 0.6,
-                    animation: "ml-pulse-ring 1.8s ease-out infinite",
-                  }} />
-                )}
-                <Lucide name={found ? "check" : c.icon} size={22} />
-              </button>
-            );
-          })}
+                <SmellVapor width={120} height={86} />
+              </ClueWrapper>
+
+              {/* DEAD FISH — three fish floating belly-up */}
+              <ClueWrapper
+                found={!!obs("deadFish")}
+                onClick={handleClue("deadFish")}
+                style={{ left: "37%", top: "40%", transform: "translate(-50%, -50%)" }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+                  <StandaloneDeadFish rot={-28} scale={1.5} />
+                  <div style={{ marginLeft: 22 }}><StandaloneDeadFish rot={18} scale={1.25} /></div>
+                  <div style={{ marginLeft: 10 }}><StandaloneDeadFish rot={-8} scale={1.1} /></div>
+                </div>
+              </ClueWrapper>
+
+              {/* MURKY WATER — dark pollution patch in the water */}
+              <ClueWrapper
+                found={!!obs("murky")}
+                onClick={handleClue("murky")}
+                style={{ left: "56%", top: "49%", transform: "translate(-50%, -50%)" }}
+              >
+                <MurkyPatch />
+              </ClueWrapper>
+
+              {/* THERMOMETER — hot reading stuck in pond bank */}
+              <ClueWrapper
+                found={!!obs("temp")}
+                onClick={handleClue("temp")}
+                style={{ left: "74%", top: "54%", transform: "translate(-50%, -50%)" }}
+              >
+                <Thermometer hot size={80} />
+              </ClueWrapper>
+            </>
+          )}
+
+          {/* ── POND B: environmental clues ── */}
+          {!sick && (
+            <>
+              {/* HEALTHY FISH — two fish swimming actively */}
+              <ClueWrapper
+                found={!!obs("healthyFish")}
+                onClick={handleClue("healthyFish")}
+                style={{ left: "43%", top: "46%", transform: "translate(-50%, -50%)" }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                  <StandaloneFishie rot={-8} color="#f97316" stroke="#c2410c" scale={1.5} />
+                  <div style={{ marginLeft: 28 }}><StandaloneFishie rot={14} color="#fb923c" stroke="#c2410c" scale={1.2} /></div>
+                </div>
+              </ClueWrapper>
+
+              {/* CLEAR WATER — light ripple patch in the water */}
+              <ClueWrapper
+                found={!!obs("clearWater")}
+                onClick={handleClue("clearWater")}
+                style={{ left: "60%", top: "40%", transform: "translate(-50%, -50%)" }}
+              >
+                <ClearWaterRipple />
+              </ClueWrapper>
+
+              {/* THERMOMETER B — normal reading */}
+              <ClueWrapper
+                found={!!obs("tempB")}
+                onClick={handleClue("tempB")}
+                style={{ left: "74%", top: "54%", transform: "translate(-50%, -50%)" }}
+              >
+                <Thermometer hot={false} size={80} />
+              </ClueWrapper>
+            </>
+          )}
 
           {/* ripples */}
           {ripples.map(r => (
@@ -221,17 +373,28 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
             </div>
           </div>
 
-          <div className="card" style={{ padding: 14, background: "var(--orange-50)", borderColor: "var(--orange-200)" }}>
+          <div className="card" style={{
+            padding: 14,
+            background: readyForHypothesis ? "var(--teal-50, #f0fdfa)" : "var(--orange-50)",
+            borderColor: readyForHypothesis ? "var(--teal-300, #5eead4)" : "var(--orange-200)",
+            transition: "background .4s, border-color .4s",
+          }}>
             <div className="row gap-3" style={{ alignItems: "flex-start" }}>
-              <DetectiveHoot size={56} />
+              <DetectiveHoot size={56} mood={readyForHypothesis ? "happy" : undefined} />
               <div>
-                <div className="uppercase-eyebrow" style={{ color: "var(--orange-700)" }}>Hoot says</div>
+                <div className="uppercase-eyebrow" style={{ color: readyForHypothesis ? "var(--teal-700, #0f766e)" : "var(--orange-700)" }}>
+                  {readyForHypothesis ? "Nice work!" : "Hoot says"}
+                </div>
                 <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 600, lineHeight: 1.45 }}>
-                  {sick
-                    ? observations.filter(o => o.pond === "A").length < 3
-                      ? "Click everything that looks odd. Don't filter — observe first, think later."
-                      : "Now compare with Pond B. What's different? That gap is your evidence."
-                    : "Healthy ponds are your reference. Note what's normal so the weird stuff stands out."}
+                  {readyForHypothesis
+                    ? "You found every clue here! Hit \"Form hypothesis\" to make your educated guess about what's killing the fish."
+                    : allPondCluesDone
+                      ? "Good job on Pond B! Head to Pond A next — the sick pond has more to tell you."
+                      : sick
+                        ? observations.filter(o => o.pond === "A").length < 3
+                          ? "Click everything that looks odd. Don't filter — observe first, think later."
+                          : "Now compare with Pond B. What's different? That gap is your evidence."
+                        : "Healthy ponds are your reference. Note what's normal so the weird stuff stands out."}
                 </p>
               </div>
             </div>
@@ -430,11 +593,11 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
         <button
           className="btn lg"
           disabled={hypotheses.length === 0 || !question}
-          onClick={() => go("lab")}
+          onClick={() => go("map")}
           style={{ opacity: hypotheses.length === 0 || !question ? 0.5 : 1 }}
         >
-          To the Lab Tent
-          <Lucide name="flask" size={18} />
+          Back to map
+          <Lucide name="map" size={18} />
         </button>
       </div>
     </div>

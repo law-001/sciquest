@@ -69,7 +69,37 @@ const TESTS = [
   },
 ];
 
-function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypotheses }) {
+function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypotheses, observations = [] }) {
+  if (observations.length === 0) {
+    return (
+      <div data-screen-label="06 Lab Tent" className="col gap-4">
+        <div className="row between head" style={{ alignItems: "center" }}>
+          <div>
+            <div className="uppercase-eyebrow">Phase 4 · Experiment</div>
+            <h2 className="title-xl">Lab Tent · run your tests</h2>
+          </div>
+        </div>
+        <div className="col gap-4" style={{ alignItems: "center", justifyContent: "center", minHeight: 340, textAlign: "center" }}>
+          <div className="card" style={{ maxWidth: 480, padding: 32, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <DetectiveHoot size={80} mood="stern" />
+            <div>
+              <div className="uppercase-eyebrow" style={{ color: "var(--orange-700)" }}>Not so fast, detective!</div>
+              <h3 style={{ margin: "8px 0 6px", fontSize: 20, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
+                You haven't visited the ponds yet
+              </h3>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.5, color: "var(--text-muted)" }}>
+                Head to the map and observe the ponds first. Gather clues from the field — then come back to run your lab tests.
+              </p>
+            </div>
+            <button className="btn" onClick={() => go("map")} style={{ marginTop: 4 }}>
+              <Lucide name="map" size={16} /> Back to the map
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const [active, setActive] = useState(null);   // currently-running test
   const [phase, setPhase] = useState("idle");   // idle | running | done
 
@@ -101,8 +131,8 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
         </div>
         <div className="row gap-2">
           <span className="chip teal"><Lucide name="battery" size={12} /> {energy} test point{energy === 1 ? "" : "s"} left</span>
-          <button className="btn" disabled={experiments.length < 2} onClick={() => go("evidence")} style={{ opacity: experiments.length < 2 ? 0.5 : 1 }}>
-            To Evidence Board <Lucide name="chevronRight" size={16} />
+          <button className="btn" disabled={experiments.length < 2} onClick={() => go("map")} style={{ opacity: experiments.length < 2 ? 0.5 : 1 }}>
+            Back to map <Lucide name="map" size={16} />
           </button>
         </div>
       </div>

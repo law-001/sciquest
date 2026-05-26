@@ -158,10 +158,17 @@ export default function MysteryLab({
           {screen === "map"      && (
             <MapScreen
               go={go}
+              setPond={setPond}
               mapStyle="illustrated"
               visited={visited}
               observations={observations}
-              pulse="pondA"
+              hypotheses={hypotheses}
+              experiments={experiments}
+              pulse={
+                hypotheses.length > 0 && experiments.length > 0 ? "evidence"
+                : hypotheses.length > 0 ? "lab"
+                : "pondA"
+              }
             />
           )}
           {screen === "observe"  && (
@@ -201,6 +208,7 @@ export default function MysteryLab({
               experiments={experiments}
               addExperiment={addExperiment}
               hypotheses={hypotheses}
+              observations={observations}
             />
           )}
           {screen === "evidence" && (
@@ -209,6 +217,8 @@ export default function MysteryLab({
               boardStyle="corkboard"
               evidenceLinks={evidenceLinks}
               setEvidenceLinks={setEvidenceLinks}
+              observations={observations}
+              experiments={experiments}
             />
           )}
           {screen === "conclude" && (

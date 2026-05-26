@@ -30,6 +30,11 @@
   0% { opacity: .7; transform: scale(.9); }
   100% { opacity: 0; transform: scale(1.5); }
 }
+@keyframes ml-clue-found {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  35%  { transform: translate(-50%, -50%) scale(1.35); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
 @keyframes ml-fly-across {
   from { transform: translateX(0); }
   to   { transform: translateX(1400px); }
@@ -37,6 +42,10 @@
 @keyframes ml-cloud-drift {
   from { transform: translateX(0); }
   to   { transform: translateX(1400px); }
+}
+@keyframes ml-btn-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(20,184,166,0.5), 0 4px 0 rgba(0,0,0,0.18); }
+  50%       { box-shadow: 0 0 0 8px rgba(20,184,166,0), 0 4px 0 rgba(0,0,0,0.18); }
 }
 
 .mystery-lab-root {
