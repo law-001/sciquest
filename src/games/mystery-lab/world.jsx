@@ -568,59 +568,60 @@ function EvidenceBoardIcon({ size = 200 }) {
    Center:       Transition knoll — Lab Tent (investigation checkpoint)
    Paths:        One main dirt road: Evidence Board → Pond B → Lab Tent → Pond A
 */
-function BackdropLayer() {
+function BackdropLayer({ isDark = false, style: extraStyle }) {
+  const n = isDark;
   return (
-    <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+    <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="none"
+         style={{ position: "absolute", inset: 0, pointerEvents: "none", ...extraStyle }}>
       <defs>
-        <linearGradient id="t-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#cfe8ff" />
-          <stop offset="55%"  stopColor="#fef3c7" />
-          <stop offset="100%" stopColor="#fef9c3" />
+        <linearGradient id={n ? "t-sky-d" : "t-sky"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={n ? "#030610" : "#cfe8ff"} />
+          <stop offset="55%"  stopColor={n ? "#07112a" : "#fef3c7"} />
+          <stop offset="100%" stopColor={n ? "#0d1a36" : "#fef9c3"} />
         </linearGradient>
-        <linearGradient id="t-meadow" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stopColor="#a3d977" />
-          <stop offset="100%" stopColor="#65a30d" />
+        <linearGradient id={n ? "t-meadow-d" : "t-meadow"} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stopColor={n ? "#182606" : "#a3d977"} />
+          <stop offset="100%" stopColor={n ? "#0d1804" : "#65a30d"} />
         </linearGradient>
-        <linearGradient id="t-ridge" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#9a8870" />
-          <stop offset="100%" stopColor="#5b4530" />
+        <linearGradient id={n ? "t-ridge-d" : "t-ridge"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={n ? "#14100a" : "#9a8870"} />
+          <stop offset="100%" stopColor={n ? "#0a0806" : "#5b4530"} />
         </linearGradient>
-        <linearGradient id="t-dead" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stopColor="#9a8050" />
-          <stop offset="100%" stopColor="#5b4530" />
+        <linearGradient id={n ? "t-dead-d" : "t-dead"} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stopColor={n ? "#120e06" : "#9a8050"} />
+          <stop offset="100%" stopColor={n ? "#0a0804" : "#5b4530"} />
         </linearGradient>
-        <linearGradient id="t-river" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#7dd3fc" />
-          <stop offset="100%" stopColor="#22d3ee" />
+        <linearGradient id={n ? "t-river-d" : "t-river"} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor={n ? "#0c2640" : "#7dd3fc"} />
+          <stop offset="100%" stopColor={n ? "#0e2e50" : "#22d3ee"} />
         </linearGradient>
-        <linearGradient id="t-runoff" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#6b5228" />
-          <stop offset="100%" stopColor="#3d2e1a" />
+        <linearGradient id={n ? "t-runoff-d" : "t-runoff"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={n ? "#100c06" : "#6b5228"} />
+          <stop offset="100%" stopColor={n ? "#080604" : "#3d2e1a"} />
         </linearGradient>
-        <linearGradient id="t-path" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#d6c08a" />
-          <stop offset="100%" stopColor="#b8994e" />
+        <linearGradient id={n ? "t-path-d" : "t-path"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={n ? "#28200e" : "#d6c08a"} />
+          <stop offset="100%" stopColor={n ? "#1a1408" : "#b8994e"} />
         </linearGradient>
-        <linearGradient id="t-mt" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#9eb38d" />
-          <stop offset="100%" stopColor="#6a8056" />
+        <linearGradient id={n ? "t-mt-d" : "t-mt"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={n ? "#182410" : "#9eb38d"} />
+          <stop offset="100%" stopColor={n ? "#0c1408" : "#6a8056"} />
         </linearGradient>
-        {/* Factory-area haze anchored upper-right */}
-        <radialGradient id="t-haze" cx="0.82" cy="0.2" r="0.35">
-          <stop offset="0%"   stopColor="rgba(70,48,22,0.55)" />
-          <stop offset="65%"  stopColor="rgba(110,80,50,0.18)" />
-          <stop offset="100%" stopColor="rgba(110,80,50,0)" />
+        <radialGradient id={n ? "t-haze-d" : "t-haze"} cx="0.82" cy="0.2" r="0.35">
+          <stop offset="0%"   stopColor={n ? "rgba(20,14,6,0.65)"  : "rgba(70,48,22,0.55)"} />
+          <stop offset="65%"  stopColor={n ? "rgba(10,8,4,0.2)"    : "rgba(110,80,50,0.18)"} />
+          <stop offset="100%" stopColor={n ? "rgba(10,8,4,0)"      : "rgba(110,80,50,0)"} />
         </radialGradient>
-        <radialGradient id="t-sun" cx="0.16" cy="0.1" r="0.28">
-          <stop offset="0%"   stopColor="rgba(255,242,180,0.8)" />
-          <stop offset="100%" stopColor="rgba(255,242,180,0)" />
+        <radialGradient id={n ? "t-glow-d" : "t-sun"} cx={n ? "0.84" : "0.16"} cy="0.1" r="0.28">
+          <stop offset="0%"   stopColor={n ? "rgba(180,200,240,0.14)" : "rgba(255,242,180,0.8)"} />
+          <stop offset="100%" stopColor={n ? "rgba(180,200,240,0)"    : "rgba(255,242,180,0)"} />
         </radialGradient>
-        <pattern id="t-grassTex" patternUnits="userSpaceOnUse" width="22" height="22">
+        <pattern id={n ? "t-grassTex-d" : "t-grassTex"} patternUnits="userSpaceOnUse" width="22" height="22">
           <circle cx="4"  cy="8"  r="0.9" fill="rgba(0,0,0,0.05)" />
           <circle cx="14" cy="14" r="0.7" fill="rgba(0,0,0,0.05)" />
           <circle cx="18" cy="4"  r="0.6" fill="rgba(0,0,0,0.05)" />
         </pattern>
-        <pattern id="t-mudTex" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(15)">
+        <pattern id={n ? "t-mudTex-d" : "t-mudTex"} patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(15)">
           <ellipse cx="6"  cy="6"  rx="2"   ry="0.8" fill="rgba(40,28,16,0.18)" />
           <ellipse cx="14" cy="13" rx="1.5" ry="0.6" fill="rgba(40,28,16,0.15)" />
           <circle  cx="3"  cy="14" r="0.6"           fill="rgba(40,28,16,0.2)"  />
@@ -628,128 +629,112 @@ function BackdropLayer() {
       </defs>
 
       {/* SKY */}
-      <rect width="800" height="600" fill="url(#t-sky)" />
-      <rect width="800" height="600" fill="url(#t-sun)" />
+      <rect width="800" height="600" fill={`url(#${n ? "t-sky-d" : "t-sky"})`} />
+      <rect width="800" height="600" fill={`url(#${n ? "t-glow-d" : "t-sun"})`} />
 
       {/* Mountains */}
       <path d="M0 148 L70 108 L148 138 L218 94 L296 128 L388 108 L478 138 L565 108 L660 134 L752 110 L800 124 L800 192 L0 192 Z"
-            fill="url(#t-mt)" opacity="0.52" />
+            fill={`url(#${n ? "t-mt-d" : "t-mt"})`} opacity="0.52" />
       <path d="M0 178 L100 148 L200 178 L318 150 L438 182 L555 158 L674 184 L800 166 L800 210 L0 210 Z"
-            fill="url(#t-mt)" opacity="0.74" />
+            fill={`url(#${n ? "t-mt-d" : "t-mt"})`} opacity="0.74" />
 
-      {/* Clouds — healthy left side, clear right side is smokier */}
-      <g opacity="0.88">
-        <ellipse cx="118" cy="56" rx="40" ry="9"  fill="white" />
-        <ellipse cx="138" cy="49" rx="22" ry="10" fill="white" />
-        <ellipse cx="96"  cy="62" rx="17" ry="7"  fill="white" />
-        <ellipse cx="310" cy="52" rx="26" ry="7"  fill="white" />
-        <ellipse cx="328" cy="47" rx="14" ry="8"  fill="white" />
+      {/* Clouds — hidden at night */}
+      <g opacity={n ? 0.06 : 0.88}>
+        <ellipse cx="118" cy="56" rx="40" ry="9"  fill={n ? "#3a4a60" : "white"} />
+        <ellipse cx="138" cy="49" rx="22" ry="10" fill={n ? "#3a4a60" : "white"} />
+        <ellipse cx="96"  cy="62" rx="17" ry="7"  fill={n ? "#2e3e54" : "white"} />
+        <ellipse cx="310" cy="52" rx="26" ry="7"  fill={n ? "#3a4a60" : "white"} />
+        <ellipse cx="328" cy="47" rx="14" ry="8"  fill={n ? "#2e3e54" : "white"} />
       </g>
 
       {/* GROUND — full healthy meadow base */}
-      <path d="M0 162 Q200 146 400 162 T800 162 L800 600 L0 600 Z" fill="url(#t-meadow)" />
-      <rect x="0" y="162" width="800" height="438" fill="url(#t-grassTex)" opacity="0.35" />
+      <path d="M0 162 Q200 146 400 162 T800 162 L800 600 L0 600 Z" fill={`url(#${n ? "t-meadow-d" : "t-meadow"})`} />
+      <rect x="0" y="162" width="800" height="438" fill={`url(#${n ? "t-grassTex-d" : "t-grassTex"})`} opacity="0.35" />
 
-      {/* HEALTHY ZONE — strong green left 38%, around Pond B (176,204) + Evidence Board (112,360) */}
+      {/* HEALTHY ZONE */}
       <path d="M0 162 Q80 155 200 168 Q305 185 340 285 Q335 405 272 472 Q178 542 0 562 Z"
-            fill="#a3d977" opacity="0.6" />
+            fill={n ? "#142206" : "#a3d977"} opacity={n ? 0.5 : 0.6} />
       <path d="M0 162 Q60 158 140 172 Q205 192 225 285 Q215 385 165 452 Q82 512 0 532 Z"
-            fill="#b8e87a" opacity="0.38" />
-      {/* Mound under Pond B so it rests on terrain */}
-      <ellipse cx="176" cy="218" rx="112" ry="22" fill="#7aa54a" opacity="0.52" />
-      <ellipse cx="176" cy="210" rx="102" ry="17" fill="#a3d977" opacity="0.58" />
+            fill={n ? "#0e1a04" : "#b8e87a"} opacity={n ? 0.3 : 0.38} />
+      <ellipse cx="176" cy="218" rx="112" ry="22" fill={n ? "#182206" : "#7aa54a"} opacity={n ? 0.45 : 0.52} />
+      <ellipse cx="176" cy="210" rx="102" ry="17" fill={n ? "#142206" : "#a3d977"} opacity={n ? 0.5 : 0.58} />
 
-      {/* INDUSTRIAL RIDGE — upper-right, barren rock (Factory at 640,132) */}
+      {/* INDUSTRIAL RIDGE */}
       <path d="M438 162 Q538 155 678 158 Q768 162 800 186 L800 322 Q738 308 668 320 Q592 330 532 292 Q478 260 462 202 Q450 174 438 162 Z"
-            fill="url(#t-ridge)" />
+            fill={`url(#${n ? "t-ridge-d" : "t-ridge"})`} />
       <path d="M452 178 Q558 168 698 170 Q758 174 800 186"
-            stroke="rgba(255,255,255,0.22)" strokeWidth="3" fill="none" strokeLinecap="round" />
+            stroke={n ? "rgba(180,200,220,0.14)" : "rgba(255,255,255,0.22)"} strokeWidth="3" fill="none" strokeLinecap="round" />
       <path d="M468 222 Q568 237 678 230 Q738 226 800 218"
-            stroke="rgba(28,20,16,0.28)" strokeWidth="2" fill="none" strokeLinecap="round" />
+            stroke={n ? "rgba(6,4,2,0.4)" : "rgba(28,20,16,0.28)"} strokeWidth="2" fill="none" strokeLinecap="round" />
 
-      {/* DEAD / POLLUTED ZONE — lower-right (Pond A at 608,432) */}
+      {/* DEAD / POLLUTED ZONE */}
       <path d="M446 320 Q538 300 658 324 Q758 344 800 382 L800 600 L398 600 Q382 522 416 430 Q430 372 446 320 Z"
-            fill="url(#t-dead)" />
+            fill={`url(#${n ? "t-dead-d" : "t-dead"})`} />
       <path d="M446 320 Q538 300 658 324 Q758 344 800 382 L800 600 L398 600 Q382 522 416 430 Q430 372 446 320 Z"
-            fill="url(#t-mudTex)" opacity="0.65" />
-      {/* Soft feathering toward center (gradual biome transition) */}
+            fill={`url(#${n ? "t-mudTex-d" : "t-mudTex"})`} opacity="0.65" />
       <path d="M446 320 Q418 368 410 430 Q402 502 414 572"
-            stroke="rgba(91,69,48,0.28)" strokeWidth="58" fill="none" opacity="0.3" />
+            stroke={n ? "rgba(20,14,8,0.25)" : "rgba(91,69,48,0.28)"} strokeWidth="58" fill="none" opacity="0.3" />
 
-      {/* POLLUTION RUNOFF — Factory drain (640,196) straight down to Pond A (608,435) */}
-      {/* Dark outer gutter */}
+      {/* POLLUTION RUNOFF */}
       <path d="M643 196 Q658 282 656 368 Q653 408 628 442"
-            stroke="#2a1e0e" strokeWidth="34" fill="none" strokeLinecap="round" opacity="0.72" />
-      {/* Main channel */}
+            stroke={n ? "#1a1008" : "#2a1e0e"} strokeWidth="34" fill="none" strokeLinecap="round" opacity="0.72" />
       <path d="M643 196 Q658 282 656 368 Q653 408 628 442"
-            stroke="url(#t-runoff)" strokeWidth="24" fill="none" strokeLinecap="round" opacity="0.96" />
-      {/* Surface sheen */}
+            stroke={`url(#${n ? "t-runoff-d" : "t-runoff"})`} strokeWidth="24" fill="none" strokeLinecap="round" opacity="0.96" />
       <path d="M646 196 Q660 280 658 366 Q655 406 630 440"
-            stroke="#7a6038" strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.5" />
-      {/* Directional waste bubbles — show contamination flowing DOWN */}
-      <circle cx="652" cy="238" r="3"   fill="#a87c4d" opacity="0.8" />
-      <circle cx="658" cy="298" r="2.5" fill="#a87c4d" opacity="0.72" />
-      <circle cx="656" cy="354" r="3"   fill="#a87c4d" opacity="0.78" />
-      <circle cx="646" cy="402" r="2.5" fill="#a87c4d" opacity="0.7" />
-      {/* Seep stain where runoff enters Pond A */}
-      <ellipse cx="622" cy="444" rx="24" ry="11" fill="#3d2e1a" opacity="0.62" />
-      <ellipse cx="618" cy="442" rx="15" ry="7"  fill="#7a6038" opacity="0.5"  />
+            stroke={n ? "#1a1408" : "#7a6038"} strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.5" />
+      <circle cx="652" cy="238" r="3"   fill={n ? "#2a1e0e" : "#a87c4d"} opacity="0.8" />
+      <circle cx="658" cy="298" r="2.5" fill={n ? "#2a1e0e" : "#a87c4d"} opacity="0.72" />
+      <circle cx="656" cy="354" r="3"   fill={n ? "#2a1e0e" : "#a87c4d"} opacity="0.78" />
+      <circle cx="646" cy="402" r="2.5" fill={n ? "#2a1e0e" : "#a87c4d"} opacity="0.7" />
+      <ellipse cx="622" cy="444" rx="24" ry="11" fill={n ? "#16100a" : "#3d2e1a"} opacity="0.62" />
+      <ellipse cx="618" cy="442" rx="15" ry="7"  fill={n ? "#1c1408" : "#7a6038"} opacity="0.5"  />
 
-      {/* RIVER — clean water from mountains, flows along left edge past Pond B → exits south-west */}
+      {/* RIVER */}
       <path d="M-22 188 Q58 180 136 192 Q162 202 180 218 Q202 240 216 314 Q228 394 196 460 Q156 520 -18 546"
-            stroke="#0e7490" strokeWidth="36" fill="none" strokeLinecap="round" opacity="0.82" />
+            stroke={n ? "#071828" : "#0e7490"} strokeWidth="36" fill="none" strokeLinecap="round" opacity="0.82" />
       <path d="M-22 188 Q58 180 136 192 Q162 202 180 218 Q202 240 216 314 Q228 394 196 460 Q156 520 -18 546"
-            stroke="url(#t-river)" strokeWidth="28" fill="none" strokeLinecap="round" />
+            stroke={`url(#${n ? "t-river-d" : "t-river"})`} strokeWidth="28" fill="none" strokeLinecap="round" />
       <path d="M-22 188 Q58 180 136 192 Q162 202 180 218 Q202 240 216 314 Q228 394 196 460 Q156 520 -18 546"
-            stroke="#bae6fd" strokeWidth="10" fill="none" strokeLinecap="round" opacity="0.62" />
-      {/* River sparkles */}
-      <path d="M32 185 Q86 179 128 186" stroke="rgba(255,255,255,0.72)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <path d="M198 264 Q216 308 224 355"  stroke="rgba(255,255,255,0.62)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <path d="M220 412 Q206 450 186 474"  stroke="rgba(255,255,255,0.62)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            stroke={n ? "rgba(120,160,200,0.35)" : "#bae6fd"} strokeWidth="10" fill="none" strokeLinecap="round" opacity="0.62" />
+      <path d="M32 185 Q86 179 128 186" stroke={n ? "rgba(160,200,240,0.45)" : "rgba(255,255,255,0.72)"} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M198 264 Q216 308 224 355"  stroke={n ? "rgba(160,200,240,0.38)" : "rgba(255,255,255,0.62)"} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M220 412 Q206 450 186 474"  stroke={n ? "rgba(160,200,240,0.38)" : "rgba(255,255,255,0.62)"} strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-      {/* Bridge — spans the river where path ① crosses (~x=196, y=275) */}
-      {/* River flows roughly north-south here, so bridge runs east-west with slight tilt */}
+      {/* Bridge */}
       <g transform="translate(196 275) rotate(5)">
-        {/* Left bank anchor */}
-        <rect x="-52" y="-5" width="18" height="10" rx="1" fill="#7a5230" />
-        {/* Right bank anchor */}
-        <rect x="34"  y="-5" width="18" height="10" rx="1" fill="#7a5230" />
-        {/* Bridge deck spanning the river */}
-        <rect x="-34" y="-7" width="68" height="14" rx="2" fill="#7a5230" stroke="#3d2e22" strokeWidth="1.5" />
-        <rect x="-34" y="-5" width="68" height="2"  fill="#a88a4a" />
-        {/* Planks */}
-        <line x1="-28" y1="-7" x2="-28" y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="-16" y1="-7" x2="-16" y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="-4"  y1="-7" x2="-4"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="8"   y1="-7" x2="8"   y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="20"  y1="-7" x2="20"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        <line x1="32"  y1="-7" x2="32"  y2="7" stroke="#3d2e22" strokeWidth="0.8" />
-        {/* Railings */}
-        <rect x="-34" y="-12" width="4" height="6" fill="#3d2e22" />
-        <rect x="30"  y="-12" width="4" height="6" fill="#3d2e22" />
-        <line x1="-32" y1="-9" x2="32" y2="-9" stroke="#3d2e22" strokeWidth="1" opacity="0.6" />
+        <rect x="-52" y="-5" width="18" height="10" rx="1" fill={n ? "#1c1208" : "#7a5230"} />
+        <rect x="34"  y="-5" width="18" height="10" rx="1" fill={n ? "#1c1208" : "#7a5230"} />
+        <rect x="-34" y="-7" width="68" height="14" rx="2" fill={n ? "#1c1208" : "#7a5230"} stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="1.5" />
+        <rect x="-34" y="-5" width="68" height="2"  fill={n ? "#16100a" : "#a88a4a"} />
+        <line x1="-28" y1="-7" x2="-28" y2="7" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="0.8" />
+        <line x1="-16" y1="-7" x2="-16" y2="7" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="0.8" />
+        <line x1="-4"  y1="-7" x2="-4"  y2="7" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="0.8" />
+        <line x1="8"   y1="-7" x2="8"   y2="7" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="0.8" />
+        <line x1="20"  y1="-7" x2="20"  y2="7" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="0.8" />
+        <line x1="32"  y1="-7" x2="32"  y2="7" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="0.8" />
+        <rect x="-34" y="-12" width="4" height="6" fill={n ? "#0e0a06" : "#3d2e22"} />
+        <rect x="30"  y="-12" width="4" height="6" fill={n ? "#0e0a06" : "#3d2e22"} />
+        <line x1="-32" y1="-9" x2="32" y2="-9" stroke={n ? "#0e0a06" : "#3d2e22"} strokeWidth="1" opacity="0.6" />
       </g>
 
-      {/* MAIN INVESTIGATION PATH — one connected dirt road */}
-      {/* ① Lab Tent (400,300) → Pond A (608,432) */}
+      {/* MAIN INVESTIGATION PATH */}
       <path d="M412 306 Q476 352 542 392 Q578 414 606 430"
-            stroke="url(#t-path)" strokeWidth="16" fill="none" strokeLinecap="round" opacity="0.88" />
-      {/* ④ Lab Tent → Factory — dashed/forbidden, not a real path */}
+            stroke={`url(#${n ? "t-path-d" : "t-path"})`} strokeWidth="16" fill="none" strokeLinecap="round" opacity="0.88" />
       <path d="M408 294 Q490 248 576 198 Q610 178 636 154"
-            stroke="#5b4530" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="3 9" opacity="0.4" />
+            stroke={n ? "#1a1408" : "#5b4530"} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="3 9" opacity="0.4" />
 
-      {/* Lab knoll — low mound under Lab Tent */}
+      {/* Lab knoll */}
       <ellipse cx="400" cy="318" rx="110" ry="20" fill="rgba(28,20,16,0.1)"  />
-      <ellipse cx="400" cy="312" rx="106" ry="17" fill="#86b94d" opacity="0.58" />
+      <ellipse cx="400" cy="312" rx="106" ry="17" fill={n ? "#142006" : "#86b94d"} opacity={n ? 0.5 : 0.58} />
 
-      {/* Pollution haze layered over factory area */}
-      <rect width="800" height="600" fill="url(#t-haze)" />
+      {/* Pollution haze */}
+      <rect width="800" height="600" fill={`url(#${n ? "t-haze-d" : "t-haze"})`} />
 
       {/* Cartographic zone labels */}
-      <g opacity="0.44" style={{ fontFamily: "Caveat, cursive", fontWeight: 700 }}>
-        <text x="38"  y="338" fontSize="13" fill="#365e22" transform="rotate(-5 38 338)">~ Wildflower Meadow ~</text>
-        <text x="546" y="232" fontSize="13" fill="#3d2e22" transform="rotate(-4 546 232)">~ Industrial Ridge ~</text>
-        <text x="464" y="550" fontSize="13" fill="#5b4530" transform="rotate(-3 464 550)">~ Polluted Marsh ~</text>
+      <g opacity={n ? 0.28 : 0.44} style={{ fontFamily: "Caveat, cursive", fontWeight: 700 }}>
+        <text x="38"  y="338" fontSize="13" fill={n ? "#1a2e10" : "#365e22"} transform="rotate(-5 38 338)">~ Wildflower Meadow ~</text>
+        <text x="546" y="232" fontSize="13" fill={n ? "#1c1410" : "#3d2e22"} transform="rotate(-4 546 232)">~ Industrial Ridge ~</text>
+        <text x="464" y="550" fontSize="13" fill={n ? "#241a10" : "#5b4530"} transform="rotate(-3 464 550)">~ Polluted Marsh ~</text>
       </g>
     </svg>
   );

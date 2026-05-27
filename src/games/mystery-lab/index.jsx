@@ -6,13 +6,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import "./styles.css";
 import { HUD, Lucide } from "./shared.jsx";
 import { useTheme } from "../../context/ThemeContext";
+import { supabase } from "../../lib/supabase";
+import { useGameProgress } from "../_shared/progress/useGameProgress";
 import { IntroScreen, OpeningScreen, MapScreen } from "./screens-a.jsx";
 import { ObservationScreen, QuestionScreen, NotebookScreen } from "./screens-b.jsx";
 import { LabScreen } from "./screens-c.jsx";
 import { EvidenceScreen, ConclusionScreen, VictoryScreen } from "./screens-d.jsx";
 
 export default function MysteryLab({
-  user: _user,
+  user,
   profile: _profile,
   onExit,
   onProgressUpdate,
@@ -35,6 +37,7 @@ export default function MysteryLab({
   const [victory, setVictory] = useState(null);
 
   const { isDark, toggle: toggleTheme } = useTheme();
+  const { recordCompletion } = useGameProgress(supabase, 'mystery-lab', user?.id);
 
   const [isPortrait, setIsPortrait] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -102,18 +105,27 @@ export default function MysteryLab({
     setScreen(id);
   }, []);
 
-  // Report progress when player reaches victory
-  useEffect(() => {
-    if (screen === "victory" && victory && onProgressUpdate) {
-      onProgressUpdate({
-        gameId: "mystery-lab",
-        challengeId: "ep01-dying-pond",
-        completed: true,
-        xp: xpEarned,
-        stars: victory.stars ?? 0,
-      });
-    }
-  }, [screen, victory, xpEarned, onProgressUpdate]);
+  // Called by ConclusionScreen on submit — fires synchronously on button click
+  // so recordCompletion is always the current version (correct user?.id).
+  const handleVictory = useCallback(({ stars, causeRight }) => {
+    const victoryData = { stars, causeRight };
+    setVictory(victoryData);
+    setScreen("victory");
+    const totalStars = (stars.accuracy ?? 0) + (stars.evidence ?? 0) + (stars.thinking ?? 0);
+    recordCompletion({
+      challengeId: 'ep01-dying-pond',
+      score: totalStars,
+      scoreUnit: 'stars',
+      metadata: { xpEarned },
+    }).catch(() => {});
+    onProgressUpdate?.({
+      gameId: "mystery-lab",
+      challengeId: "ep01-dying-pond",
+      completed: true,
+      xp: xpEarned,
+      stars: totalStars,
+    });
+  }, [recordCompletion, onProgressUpdate, xpEarned]);
 
   return (
     <div
@@ -240,6 +252,7 @@ export default function MysteryLab({
               observations={observations}
               hypotheses={hypotheses}
               experiments={experiments}
+              isDark={isDark}
               pulse={
                 hypotheses.length > 0 && experiments.length > 0 ? "evidence"
                 : hypotheses.length > 0 ? "lab"
@@ -299,7 +312,6 @@ export default function MysteryLab({
           )}
           {screen === "conclude" && (
             <ConclusionScreen
-              go={go}
               cause={cause}
               setCause={setCause}
               supports={supports}
@@ -307,7 +319,7 @@ export default function MysteryLab({
               written={written}
               setWritten={setWritten}
               setConclusion={setConclusion}
-              setVictory={setVictory}
+              onVictory={handleVictory}
             />
           )}
           {screen === "victory"  && (

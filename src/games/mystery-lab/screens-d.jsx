@@ -530,13 +530,12 @@ const SUPPORTS = [
   { id: "fishCount",    text: "Fish were not counted last week",     good: false },
 ];
 
-function ConclusionScreen({ go, cause, setCause, supports, setSupports, written, setWritten, setConclusion, setVictory }) {
+function ConclusionScreen({ cause, setCause, supports, setSupports, written, setWritten, setConclusion, onVictory }) {
   const toggleSupport = (id) => {
     setSupports(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   };
 
   const submit = () => {
-    // simple scoring
     const causeRight = CAUSES.find(c => c.id === cause)?.correct;
     const goodSupports = supports.filter(id => SUPPORTS.find(s => s.id === id)?.good).length;
     const wrongSupports = supports.filter(id => !SUPPORTS.find(s => s.id === id)?.good).length;
@@ -547,8 +546,7 @@ function ConclusionScreen({ go, cause, setCause, supports, setSupports, written,
       thinking: wordCount >= 30 ? 3 : wordCount >= 12 ? 2 : 1,
     };
     setConclusion(written);
-    setVictory({ stars, causeRight });
-    go("victory");
+    onVictory({ stars, causeRight });
   };
 
   return (
