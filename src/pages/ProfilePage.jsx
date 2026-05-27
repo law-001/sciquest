@@ -63,6 +63,9 @@ const ALL_ACHIEVEMENTS = [
   { key: "on-the-rise", Icon: TrendingUp, label: "On The Rise", bg: "bg-indigo-500/20", color: "text-indigo-500", req: "Gain 100 XP in a single day" },
   { key: "curious-explorer", Icon: Award, label: "Curious Explorer", bg: "bg-pink-500/20", color: "text-pink-500", req: "Explore the SciQuest landing page" },
   { key: "blacked", Icon: Star, label: "BLACKED", bg: "bg-stone-800/20", color: "text-stone-800 dark:text-stone-200", req: "Hidden — discover it for yourself" },
+  { key: "matter-state-sandbox-complete", Icon: Layers, label: "State Changer", bg: "bg-blue-500/20", color: "text-blue-500", req: "Complete all levels in Matter State Sandbox" },
+  { key: "mystery-lab-complete", Icon: FlaskConical, label: "Lab Detective", bg: "bg-teal-500/20", color: "text-teal-500", req: "Solve the Dying Pond mystery in Mystery Lab" },
+  { key: "cell-division-complete", Icon: Dna, label: "Cell Guardian", bg: "bg-emerald-500/20", color: "text-emerald-500", req: "Successfully defend the nucleus in Cell Division Defense" },
 ];
 
 // Icon + accent per lesson category. Categories come from

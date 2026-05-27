@@ -1,7 +1,8 @@
 /* ============================================================
    Mystery Lab — Screens part 4 (Evidence / Conclusion / Victory)
    ============================================================ */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { mlAudio } from "./audio.js";
 import { DetectiveHoot, Lucide, CrimeTape } from "./shared.jsx";
 import { Pond } from "./world.jsx";
 
@@ -121,11 +122,13 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
   const onPickClue = (clue) => {
     if (isComplete) return;
     if (clue.forStep === currentStep.id) {
+      mlAudio.correct();
       setEvidenceLinks([...placed, clue.id]);
       setJustPlaced(clue.id);
       setHint(null);
       setTimeout(() => setJustPlaced(null), 800);
     } else {
+      mlAudio.wrong();
       setShake(clue.id);
       setHint(clue.hint || "That clue doesn't fit this part of the story. Re-read the panel prompt.");
       setTimeout(() => setShake(null), 400);
@@ -713,6 +716,8 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
 function VictoryScreen({ victory, observations, experiments, evidenceLinks, restart }) {
   const v = victory || { stars: { accuracy: 1, evidence: 1, thinking: 1 }, causeRight: false };
   const totalStars = v.stars.accuracy + v.stars.evidence + v.stars.thinking;
+
+  useEffect(() => { mlAudio.victory(); }, []);
   const xpAward = totalStars * 25 + observations.length * 4;
 
   return (

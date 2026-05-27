@@ -137,7 +137,10 @@ export default function MatterStateSandbox({
       score: 1,
       scoreUnit: 'completion',
     }).catch(() => {});
-    onProgressUpdate?.({ challengeId: activeChallenge.id });
+    const lastLevel = LEVELS[LEVELS.length - 1];
+    const lastLevelChallenges = CHALLENGES.filter(c => c.levelId === lastLevel.id);
+    const isLastOfAllLevels = lastLevelChallenges[lastLevelChallenges.length - 1]?.id === activeChallenge.id;
+    if (isLastOfAllLevels) onProgressUpdate?.({ challengeId: activeChallenge.id });
   }, [isComplete]);
 
   useEffect(() => { completionFiredRef.current = false; }, [activeChallenge?.id]);

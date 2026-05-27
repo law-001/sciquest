@@ -29,6 +29,7 @@ export const CURIOUS_EXPLORER_KEY = 'curious-explorer'
 export const BLACKED_KEY = 'blacked'
 export const MYSTERY_LAB_COMPLETE_KEY = 'mystery-lab-complete'
 export const CELL_DIVISION_COMPLETE_KEY = 'cell-division-complete'
+export const MATTER_STATE_SANDBOX_COMPLETE_KEY = 'matter-state-sandbox-complete'
 
 // Local calendar day for a timestamp, as YYYY-MM-DD. Streaks and
 // "in a single day" are judged in the student's own timezone.
@@ -206,6 +207,13 @@ export const ACHIEVEMENTS = [
     // explicitly when a logged-in student watches the About page
     // portraits cross-fade light → dark (see App.handleBlackedUnlock).
     hidden: true,
+    criteria: NOT_YET_DERIVABLE,
+  },
+  {
+    key: MATTER_STATE_SANDBOX_COMPLETE_KEY,
+    label: 'State Changer',
+    req: 'Complete all levels in Matter State Sandbox',
+    xp: GAME_XP['matter-state-sandbox'].achievementXp,
     criteria: NOT_YET_DERIVABLE,
   },
   {

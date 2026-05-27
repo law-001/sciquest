@@ -5,6 +5,7 @@
    2. Investigation Map
    ============================================================ */
 import React, { useState, useEffect, useRef } from "react";
+import { mlAudio } from "./audio.js";
 import { DetectiveHoot, Lucide, NotebookBadge, CrimeTape } from "./shared.jsx";
 import {
   Pond, Tree, DeadTree, Factory, LabTent, Rock, Bush, GrassPatch, Signpost, Cloud,
@@ -216,6 +217,7 @@ function IntroScreen({ go }) {
     timerRef.current = setInterval(() => {
       i++;
       setDisplayed(full.slice(0, i));
+      if (i % 5 === 0) mlAudio.tick();
       if (i >= full.length) {
         clearInterval(timerRef.current);
         setDone(true);
@@ -225,6 +227,7 @@ function IntroScreen({ go }) {
   }, [panel]);
 
   const advance = () => {
+    mlAudio.click();
     if (!done) {
       clearInterval(timerRef.current);
       setDisplayed(current.speech);
@@ -409,6 +412,7 @@ function IntroScreen({ go }) {
 
 /* ===== Screen 1: Opening Story ===== */
 function OpeningScreen({ go }) {
+  useEffect(() => { mlAudio.startAmbient(); }, []);
   return (
     <div data-screen-label="01 Opening" style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
       {/* hero scene */}
@@ -630,6 +634,17 @@ const MAP_FIREFLIES = [
 ];
 
 function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observations, hypotheses = [], experiments = [], pulse, isDark = false }) {
+  const prevPulseRef = useRef(pulse);
+  useEffect(() => {
+    if (pulse && pulse !== prevPulseRef.current) mlAudio.mapPulse();
+    prevPulseRef.current = pulse;
+  }, [pulse]);
+
+  useEffect(() => {
+    mlAudio.startAmbient();
+    return () => mlAudio.stopAmbient();
+  }, []);
+
   const stylePreset = {
     illustrated: { bg: "linear-gradient(180deg, #fef9c3 0%, #fbeaa3 50%, #d9f99d 100%)", paper: false, iso: false },
     paper: { bg: "#f8efd1", paper: true, iso: false },
@@ -937,7 +952,7 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
         {locs.map((l) =>
         <button
           key={l.id}
-          onClick={() => { if (l.id === "pondA") { setPond("A"); go("observe"); } else if (l.id === "pondB") { setPond("B"); go("observe"); } else if (l.id === "lab") { go("lab"); } else if (l.id === "evidence") { go("evidence"); } }}
+          onClick={() => { mlAudio.mapPin(l.id); if (l.id === "pondA") { setPond("A"); go("observe"); } else if (l.id === "pondB") { setPond("B"); go("observe"); } else if (l.id === "lab") { go("lab"); } else if (l.id === "evidence") { go("evidence"); } }}
           disabled={l.id === "factory"}
           style={{
             position: "absolute",

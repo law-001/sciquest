@@ -2,6 +2,7 @@
    Mystery Lab — Screens part 2
    ============================================================ */
 import React, { useState, useCallback } from "react";
+import { mlAudio } from "./audio.js";
 import { DetectiveHoot, Lucide, NotebookBadge } from "./shared.jsx";
 import { Pond, Factory, Reed, Tree, Cloud, Thermometer, SmellVapor } from "./world.jsx";
 
@@ -182,6 +183,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
 
   const onClickClue = useCallback((c) => {
     if (observations.find(o => o.id === c.id)) return;
+    mlAudio.discover();
     addObservation({ ...c, pond });
     setPopText(c);
     setTimeout(() => setPopText(p => (p && p.id === c.id ? null : p)), 2400);

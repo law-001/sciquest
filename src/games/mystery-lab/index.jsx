@@ -12,6 +12,7 @@ import { IntroScreen, OpeningScreen, MapScreen } from "./screens-a.jsx";
 import { ObservationScreen, QuestionScreen, NotebookScreen } from "./screens-b.jsx";
 import { LabScreen } from "./screens-c.jsx";
 import { EvidenceScreen, ConclusionScreen, VictoryScreen } from "./screens-d.jsx";
+import { mlAudio } from "./audio.js";
 
 export default function MysteryLab({
   user,
@@ -102,6 +103,7 @@ export default function MysteryLab({
   }, []);
 
   const go = useCallback((id) => {
+    mlAudio.transition();
     setScreen(id);
   }, []);
 
