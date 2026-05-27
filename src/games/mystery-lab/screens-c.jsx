@@ -2,6 +2,7 @@
    Mystery Lab — Screens part 3 (Lab Tent)
    ============================================================ */
 import React, { useState, useEffect, useRef } from "react";
+import { mlAudio } from "./audio.js";
 import { DetectiveHoot, Lucide, NotebookBadge } from "./shared.jsx";
 import { HYPOTHESES } from "./screens-b.jsx";
 
@@ -104,8 +105,9 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
   const [phase, setPhase] = useState("idle");   // idle | running | done
 
   const startTest = (test) => {
-    if (energy < test.cost) return;
+    if (energy < test.cost) { mlAudio.error(); return; }
     if (experiments.find(e => e.id === test.id)) return;
+    mlAudio.labTest(test.id);
     setActive(test);
     setPhase("running");
   };
@@ -114,6 +116,7 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
     if (!active) return;
     setEnergy(e => e - active.cost);
     addExperiment(active);
+    mlAudio.result();
     setPhase("done");
   };
 
@@ -388,22 +391,29 @@ function TestMiniGame({ test, phase, onComplete, onClose }) {
       position: "fixed", inset: 0,
       background: "rgba(28,20,16,0.7)",
       backdropFilter: "blur(6px)",
-      display: "grid", placeItems: "center",
+      display: "flex", alignItems: "center", justifyContent: "center",
       zIndex: 100,
-      padding: 20,
+      padding: 16,
+      overflowY: "auto",
     }}>
-      <div className="card bounce-in" style={{ width: "min(640px, 100%)", padding: 0, overflow: "hidden" }}>
-        <div style={{ padding: "16px 22px", background: test.color, color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="card bounce-in" style={{
+        width: "min(640px, 100%)", padding: 0,
+        maxHeight: "calc(100vh - 32px)",
+        display: "flex", flexDirection: "column",
+        overflow: "hidden",
+        flexShrink: 0,
+      }}>
+        <div style={{ padding: "12px 18px", background: test.color, color: "white", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.85 }}>Mini-game</div>
-            <h3 style={{ fontSize: 22 }}>{test.label}</h3>
+            <h3 style={{ fontSize: 20, margin: 0 }}>{test.label}</h3>
           </div>
           <button onClick={onClose} className="btn icon ghost" style={{ background: "rgba(255,255,255,0.15)", border: 0, color: "white" }}>
             <Lucide name="x" size={18} />
           </button>
         </div>
 
-        <div style={{ padding: 24 }}>
+        <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>
           {phase === "running" && <MiniGameRunner test={test} onComplete={onComplete} />}
           {phase === "done" && <MiniGameResults test={test} onClose={onClose} />}
         </div>
@@ -456,9 +466,15 @@ function PHMiniGame({ onDone }) {
   const [isDipping, setIsDipping]     = useState(false);
   const [selected, setSelected]       = useState(null);
   const [isCorrect, setIsCorrect]     = useState(null);
+  const [isCompact, setIsCompact]     = useState(() => window.innerHeight < 500);
   const intervalRef                   = useRef(null);
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
+  useEffect(() => {
+    const calc = () => setIsCompact(window.innerHeight < 500);
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
 
   const PH_OPTIONS = [
     { value: 2,   label: "pH 2",   color: "#dc2626", desc: "Very acidic", correct: false },
@@ -469,6 +485,7 @@ function PHMiniGame({ onDone }) {
 
   const startDip = () => {
     if (isDipping) return;
+    mlAudio.click();
     setIsDipping(true);
     intervalRef.current = setInterval(() => {
       setDipProgress(prev => {
@@ -488,8 +505,10 @@ function PHMiniGame({ onDone }) {
     setSelected(opt.value);
     setIsCorrect(opt.correct);
     if (opt.correct) {
+      mlAudio.correct();
       setTimeout(onDone, 1000);
     } else {
+      mlAudio.wrong();
       setTimeout(() => { setSelected(null); setIsCorrect(null); }, 1000);
     }
   };
@@ -499,60 +518,81 @@ function PHMiniGame({ onDone }) {
 
   /* ── PHASE 1: DIP ── */
   if (phase === "dip") {
+    const jarH = isCompact ? "min(160px, 44vh)" : "min(270px, 38vh)";
+    const dipBtn = (
+      <button
+        className="btn lg"
+        onClick={startDip}
+        disabled={isDipping}
+        style={{
+          fontSize: isCompact ? 15 : 17,
+          padding: isCompact ? "10px 22px" : "13px 34px",
+          animation: !isDipping ? "ml-btn-glow 1.4s ease-in-out infinite" : undefined,
+        }}
+      >
+        {isDipping
+          ? (dipProgress < 100 ? "Dipping… 🔬" : "Reading… ⏳")
+          : "Dip the strip! 🧪"}
+      </button>
+    );
+    const progressMsg = isDipping && dipProgress < 100 && (
+      <div style={{ textAlign: "center", fontFamily: "Nunito", fontWeight: 700, fontSize: 13, color: "var(--text-soft)" }}>
+        {dipProgress < 50 ? "Going in…" : "The color is changing! 🎨"}
+      </div>
+    );
+
     return (
       <div style={{ padding: "8px 0" }}>
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 18, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
+        <div style={{ textAlign: "center", marginBottom: isCompact ? 6 : 16 }}>
+          <div style={{ fontSize: isCompact ? 15 : 18, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
             Dip the pH strip into Pond A water!
           </div>
-          <div style={{ fontSize: 13, color: "var(--text-soft)", fontWeight: 600, marginTop: 4 }}>
-            A pH strip changes color based on how acidic the water is.
-          </div>
+          {!isCompact && (
+            <div style={{ fontSize: 13, color: "var(--text-soft)", fontWeight: 600, marginTop: 4 }}>
+              A pH strip changes color based on how acidic the water is.
+            </div>
+          )}
         </div>
 
-        <div style={{ position: "relative", height: 270, display: "flex", justifyContent: "center" }}>
-          <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)" }}>
-            <PHBeakerSVG />
+        <div style={{ display: "flex", flexDirection: isCompact ? "row" : "column", alignItems: "center", gap: isCompact ? 16 : 0 }}>
+          {/* Jar + strip */}
+          <div style={{ position: "relative", height: jarH, width: isCompact ? 120 : "100%", flexShrink: 0, display: "flex", justifyContent: "center", overflow: "hidden" }}>
+            <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)" }}>
+              <PHBeakerSVG />
+            </div>
+            <div style={{
+              position: "absolute",
+              left: "50%",
+              top: `${stripTopPx}px`,
+              transform: "translateX(-50%)",
+              zIndex: 10,
+              pointerEvents: "none",
+            }}>
+              <svg width="28" height="88" viewBox="0 0 28 88">
+                <rect x="8" y="0" width="12" height="66" rx="2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.5" />
+                <rect x="10" y="42" width="8" height="22" style={{ fill: stripColor, transition: "fill 0.4s ease" }} />
+                <text x="14" y="16" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="7" fill="#475569">pH</text>
+                {[22, 30, 38].map(y => (
+                  <line key={y} x1="20" y1={y} x2="24" y2={y} stroke="#94a3b8" strokeWidth="1" />
+                ))}
+              </svg>
+            </div>
           </div>
-          <div style={{
-            position: "absolute",
-            left: "50%",
-            top: `${stripTopPx}px`,
-            transform: "translateX(-50%)",
-            zIndex: 10,
-            pointerEvents: "none",
-          }}>
-            <svg width="28" height="88" viewBox="0 0 28 88">
-              <rect x="8" y="0" width="12" height="66" rx="2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.5" />
-              <rect x="10" y="42" width="8" height="22" style={{ fill: stripColor, transition: "fill 0.4s ease" }} />
-              <text x="14" y="16" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="7" fill="#475569">pH</text>
-              {[22, 30, 38].map(y => (
-                <line key={y} x1="20" y1={y} x2="24" y2={y} stroke="#94a3b8" strokeWidth="1" />
-              ))}
-            </svg>
-          </div>
+
+          {/* Button beside jar in compact mode */}
+          {isCompact && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, flex: 1 }}>
+              {dipBtn}
+              {progressMsg}
+            </div>
+          )}
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 14 }}>
-          <button
-            className="btn lg"
-            onClick={startDip}
-            disabled={isDipping}
-            style={{
-              fontSize: 17,
-              padding: "13px 34px",
-              animation: !isDipping ? "ml-btn-glow 1.4s ease-in-out infinite" : undefined,
-            }}
-          >
-            {isDipping
-              ? (dipProgress < 100 ? "Dipping… 🔬" : "Reading… ⏳")
-              : "Dip the strip! 🧪"}
-          </button>
-        </div>
-
-        {isDipping && dipProgress < 100 && (
-          <div style={{ textAlign: "center", marginTop: 10, fontFamily: "Nunito", fontWeight: 700, fontSize: 13, color: "var(--text-soft)" }}>
-            {dipProgress < 50 ? "Going in…" : "The color is changing! 🎨"}
+        {/* Button below jar in normal mode */}
+        {!isCompact && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginTop: 14 }}>
+            {dipBtn}
+            {progressMsg}
           </div>
         )}
       </div>
@@ -672,6 +712,7 @@ function OxygenMiniGame({ onDone }) {
     const inZone = p > cfg.greenStart && p < cfg.greenEnd;
     setPaused(true);
     if (inZone) {
+      mlAudio.correct();
       setFlash("hit");
       setTimeout(() => {
         if (level < OXYGEN_LEVELS.length - 1) {
@@ -685,6 +726,7 @@ function OxygenMiniGame({ onDone }) {
         }
       }, 700);
     } else {
+      mlAudio.wrong();
       setFlash("miss");
       setTimeout(() => {
         posRef.current = 0;
@@ -699,8 +741,8 @@ function OxygenMiniGame({ onDone }) {
   const cfg = OXYGEN_LEVELS[level];
 
   return (
-    <div style={{ padding: "20px 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+    <div style={{ padding: "8px 0" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <p style={{ margin: 0, fontWeight: 600, color: "var(--text-soft)" }}>
           Tap when the needle lands in the green zone.
         </p>
@@ -764,9 +806,10 @@ const TEMP_CONTAINERS = [
   { id: "pondB", label: "Pond B", temp: 22, waterColor: "#7dd3fc", labelColor: "#0369a1" },
 ];
 
-function DragThermometer() {
+function DragThermometer({ scale = 1 }) {
+  const w = Math.round(32 * scale), h = Math.round(106 * scale);
   return (
-    <svg width="32" height="106" viewBox="0 0 32 106" style={{ display: "block" }}>
+    <svg width={w} height={h} viewBox="0 0 32 106" style={{ display: "block" }}>
       <rect x="10" y="0" width="12" height="70" rx="6" fill="#fef9f0" stroke="#1c1410" strokeWidth="2" />
       <rect x="13" y="28" width="6" height="42" fill="#ef4444" />
       {[6, 14, 22].map(y => (
@@ -781,9 +824,10 @@ function DragThermometer() {
   );
 }
 
-function ContainerBeaker({ id, waterColor, dipping, isDone }) {
+function ContainerBeaker({ id, waterColor, dipping, isDone, scale = 1 }) {
+  const w = Math.round(90 * scale), h = Math.round(122 * scale);
   return (
-    <svg width="90" height="122" viewBox="0 0 90 122" style={{ overflow: "visible", display: "block" }}>
+    <svg width={w} height={h} viewBox="0 0 90 122" style={{ overflow: "visible", display: "block" }}>
       <defs>
         <clipPath id={`bc2-${id}`}>
           <rect x="12" y="28" width="66" height="82" rx="4" />
@@ -830,6 +874,7 @@ function TempMiniGame({ onDone }) {
   const [phase, setPhase] = useState("measure");
   const [answer, setAnswer] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
+  const [bs, setBs] = useState(() => Math.min(1, window.innerHeight / 600));
 
   const areaRef = useRef(null);
   const containerRefs = useRef({});
@@ -858,6 +903,12 @@ function TempMiniGame({ onDone }) {
 
   useEffect(() => () => clearInterval(timerRef.current), []);
 
+  useEffect(() => {
+    const calc = () => setBs(Math.min(1, window.innerHeight / 600));
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+
   const getHome = () => ({
     x: areaRef.current ? areaRef.current.offsetWidth / 2 : 200,
     y: 16,
@@ -865,11 +916,12 @@ function TempMiniGame({ onDone }) {
 
   const startDip = (container) => {
     if (dippingRef.current || measuredRef.current[container.id] !== undefined) return;
+    mlAudio.click();
     const areaRect = areaRef.current?.getBoundingClientRect();
     const cEl = containerRefs.current[container.id];
     if (!areaRect || !cEl) return;
     const cRect = cEl.getBoundingClientRect();
-    setPos({ x: cRect.left - areaRect.left + cRect.width / 2, y: cRect.top - areaRect.top - 28 });
+    setPos({ x: cRect.left - areaRect.left + cRect.width / 2, y: cRect.top - areaRect.top - Math.round(28 * bs) });
     setDipping(container.id);
     dippingRef.current = container.id;
     setCountdown(3);
@@ -929,8 +981,8 @@ function TempMiniGame({ onDone }) {
     setAnswer(id);
     const correct = id === "pondA";
     setIsCorrect(correct);
-    if (correct) setTimeout(onDone, 900);
-    else setTimeout(() => { setAnswer(null); setIsCorrect(null); }, 1000);
+    if (correct) { mlAudio.correct(); setTimeout(onDone, 900); }
+    else { mlAudio.wrong(); setTimeout(() => { setAnswer(null); setIsCorrect(null); }, 1000); }
   };
 
   if (phase === "question") {
@@ -994,7 +1046,7 @@ function TempMiniGame({ onDone }) {
       <div
         ref={areaRef}
         style={{
-          position: "relative", height: 316,
+          position: "relative", height: "min(316px, 42vh)",
           background: "linear-gradient(180deg, #fef9c3 0%, #fde68a 100%)",
           borderRadius: 14, border: "2px solid var(--line)",
           touchAction: "none", userSelect: "none", overflow: "visible",
@@ -1011,7 +1063,7 @@ function TempMiniGame({ onDone }) {
             const isCurrentDip = dipping === c.id;
             return (
               <div key={c.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                <div style={{ height: 120, display: "flex", alignItems: "center" }}>
+                <div style={{ height: Math.round(120 * bs), display: "flex", alignItems: "center" }}>
                   {isCurrentDip && (
                     <div style={{
                       fontFamily: "Nunito", fontWeight: 900, fontSize: 22, color: "#ef4444",
@@ -1023,7 +1075,7 @@ function TempMiniGame({ onDone }) {
                   )}
                 </div>
                 <div ref={el => containerRefs.current[c.id] = el}>
-                  <ContainerBeaker id={c.id} waterColor={c.waterColor} dipping={isCurrentDip} isDone={isDone} />
+                  <ContainerBeaker id={c.id} waterColor={c.waterColor} dipping={isCurrentDip} isDone={isDone} scale={bs} />
                 </div>
                 <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 13, color: c.labelColor }}>
                   {c.label}
@@ -1057,7 +1109,7 @@ function TempMiniGame({ onDone }) {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
-            <DragThermometer />
+            <DragThermometer scale={bs} />
           </div>
         )}
 
@@ -1146,6 +1198,7 @@ function PollutionMiniGame({ onDone }) {
   const pick = (optId) => {
     if (flash) return;
     if (optId === currentStep.correct) {
+      mlAudio.correct();
       const isLastSeq = seqIdx >= cfg.sequence.length - 1;
       const isLastLevel = level >= POLLUTION_LEVELS.length - 1;
       setFlash("hit");
@@ -1164,6 +1217,7 @@ function PollutionMiniGame({ onDone }) {
         }
       }, 700);
     } else {
+      mlAudio.wrong();
       setPickedWrong(optId);
       setFlash("miss");
       setTimeout(() => {
@@ -1177,7 +1231,7 @@ function PollutionMiniGame({ onDone }) {
   };
 
   return (
-    <div style={{ padding: "20px 0" }}>
+    <div style={{ padding: "8px 0" }}>
       {/* Top row: instruction + level dots */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <p style={{ margin: 0, fontWeight: 600, color: "var(--text-soft)" }}>
@@ -1279,11 +1333,11 @@ const MICRO_TARGETS = [
   { x: 38, y: 68, vx: -0.46, vy: -0.32 },
 ];
 
-function MetallicVirus({ uid }) {
+function MetallicVirus({ uid, size = 44 }) {
   const bodyR = 11, spikeLen = 7, tipR = 2.5, numSpikes = 10;
   const cx = 22, dim = 44;
   return (
-    <svg width={dim} height={dim} viewBox={`0 0 ${dim} ${dim}`} style={{ display: "block" }}>
+    <svg width={size} height={size} viewBox={`0 0 ${dim} ${dim}`} style={{ display: "block" }}>
       <defs>
         <radialGradient id={`mvb-${uid}`} cx="38%" cy="32%" r="65%">
           <stop offset="0%" stopColor="#d0e4ee" />
@@ -1318,6 +1372,13 @@ function MicroMiniGame({ onDone }) {
   const [found, setFound] = useState([]);
   const stateRef = useRef(MICRO_TARGETS.map(t => ({ x: t.x, y: t.y, vx: t.vx, vy: t.vy })));
   const [positions, setPositions] = useState(MICRO_TARGETS.map(t => ({ x: t.x, y: t.y })));
+  const [vs, setVs] = useState(() => Math.min(1, window.innerHeight / 600));
+  useEffect(() => {
+    const calc = () => setVs(Math.min(1, window.innerHeight / 600));
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+  const vDim = Math.max(30, Math.round(44 * vs));
 
   useEffect(() => {
     if (found.length === MICRO_TARGETS.length) {
@@ -1345,14 +1406,15 @@ function MicroMiniGame({ onDone }) {
   }, [found]);
 
   return (
-    <div style={{ padding: "20px 0" }}>
-      <p style={{ marginTop: 0, fontWeight: 600, color: "var(--text-soft)" }}>
+    <div style={{ padding: "8px 0" }}>
+      <p style={{ marginTop: 0, marginBottom: 8, fontWeight: 600, color: "var(--text-soft)" }}>
         Click all {MICRO_TARGETS.length} metallic contaminants. Found: {found.length}/{MICRO_TARGETS.length}
       </p>
       <div style={{
         position: "relative",
         width: "100%",
         aspectRatio: "1.6",
+        maxHeight: "min(340px, 42vh)",
         borderRadius: 999,
         background: "radial-gradient(circle, rgba(20,184,166,0.3), rgba(20,184,166,0.05))",
         border: "8px solid #1c1410",
@@ -1375,12 +1437,12 @@ function MicroMiniGame({ onDone }) {
           return (
             <button
               key={i}
-              onClick={() => !got && setFound(f => [...f, i])}
+              onClick={() => { if (!got) { mlAudio.discover(); setFound(f => [...f, i]); } }}
               style={{
                 position: "absolute",
                 left: `${pos.x}%`, top: `${pos.y}%`,
                 transform: "translate(-50%, -50%)",
-                width: 44, height: 44,
+                width: vDim, height: vDim,
                 background: "none", border: "none", padding: 0,
                 cursor: got ? "default" : "pointer",
                 display: "grid", placeItems: "center",
@@ -1388,16 +1450,16 @@ function MicroMiniGame({ onDone }) {
             >
               {got ? (
                 <div style={{
-                  width: 30, height: 30, borderRadius: 999,
+                  width: Math.round(30 * vs), height: Math.round(30 * vs), borderRadius: 999,
                   background: "var(--teal-500)",
                   display: "grid", placeItems: "center",
                   border: "2.5px solid white",
                   boxShadow: "0 0 0 3px rgba(20,184,166,0.4)",
                 }}>
-                  <Lucide name="check" size={14} strokeWidth={3} color="white" />
+                  <Lucide name="check" size={Math.round(14 * vs)} strokeWidth={3} color="white" />
                 </div>
               ) : (
-                <MetallicVirus uid={i} />
+                <MetallicVirus uid={i} size={vDim} />
               )}
             </button>
           );

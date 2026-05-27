@@ -44,7 +44,7 @@ import {
 } from "./lib/quizSettings";
 import { lessonsPassedFromAttempts } from "./lib/lessonGating";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
-import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, MYSTERY_LAB_COMPLETE_KEY, CELL_DIVISION_COMPLETE_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
+import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, MYSTERY_LAB_COMPLETE_KEY, CELL_DIVISION_COMPLETE_KEY, MATTER_STATE_SANDBOX_COMPLETE_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { supabase } from "./lib/supabase";
 import { writeGameProgress, fetchCompletedGames } from "./lib/games/progress";
 import { XpToast } from "./components/XpToast";
@@ -770,12 +770,14 @@ function AppContent() {
   const GAME_ACHIEVEMENT_KEYS = {
     'mystery-lab': MYSTERY_LAB_COMPLETE_KEY,
     'cell-division-defense': CELL_DIVISION_COMPLETE_KEY,
+    'matter-state-sandbox': MATTER_STATE_SANDBOX_COMPLETE_KEY,
   };
 
   // Human-readable names for XP toast detail text.
   const GAME_NAMES = {
     'mystery-lab': 'Mystery Lab',
     'cell-division-defense': 'Cell Division Defense',
+    'matter-state-sandbox': 'Matter State Sandbox',
   };
 
   // Called by GamePlayPage → GameComponent when a game run ends.
@@ -811,13 +813,15 @@ function AppContent() {
     );
     const isFirstCompletion = !existingEntry;
     const isImprovedScore = existingEntry && xpEarned > existingEntry.xpEarned;
+    const achievementKey = GAME_ACHIEVEMENT_KEYS[gameId];
+    const alreadyHasAchievement = achievementKey ? unlockedAchievements.includes(achievementKey) : false;
 
     if (isFirstCompletion) {
       setCompletedGames((prev) => [...prev, { gameId, challengeId, xpEarned }]);
-      if (xpEarned > 0) {
+      if (xpEarned > 0 && !alreadyHasAchievement) {
         pushNotification({ kind: 'xp', amount: xpEarned, detail: GAME_NAMES[gameId] ?? gameId, source: 'game' });
       }
-      const newLevel = levelFromXp(totalXp + xpEarned);
+      const newLevel = levelFromXp(totalXp + (alreadyHasAchievement ? 0 : xpEarned));
       if (newLevel > currentLevel) {
         pushNotification({ kind: 'level-up', level: newLevel });
       }
@@ -830,7 +834,7 @@ function AppContent() {
         ),
       );
       const diff = xpEarned - existingEntry.xpEarned;
-      if (diff > 0) {
+      if (diff > 0 && !alreadyHasAchievement) {
         pushNotification({ kind: 'xp', amount: diff, detail: GAME_NAMES[gameId] ?? gameId, source: 'game' });
         const newLevel = levelFromXp(totalXp + diff);
         if (newLevel > currentLevel) {
@@ -840,7 +844,6 @@ function AppContent() {
     }
 
     // Award completion achievement (idempotent — DB ignores duplicates).
-    const achievementKey = GAME_ACHIEVEMENT_KEYS[gameId];
     if (achievementKey && user?.id && isStudent && !unlockedAchievements.includes(achievementKey)) {
       setUnlockedAchievements((prev) => [...prev, achievementKey]);
       awardAchievements(user.id, [achievementKey]).catch((err) =>

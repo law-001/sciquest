@@ -6,6 +6,10 @@ export const GAME_XP = {
     // The variable in-game XP (from observations + experiments) is the primary reward.
     achievementXp: 50,
   },
+  'matter-state-sandbox': {
+    // One-time achievement bonus XP awarded when all levels are first completed.
+    achievementXp: 60,
+  },
   'cell-division-defense': {
     // XP by star rating (index = stars earned: 0 = game over / failed,
     // 1 = bronze, 2 = silver, 3 = gold). Awarded each time the game is won;
