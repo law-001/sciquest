@@ -1,6 +1,7 @@
 /* Mystery Lab — procedural audio engine (Web Audio API, no external files) */
 
 let ctx = null;
+let _muted = false;
 
 function getCtx() {
   if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -12,6 +13,7 @@ function getCtx() {
 let _ambient = null;
 
 function tone(freq, dur, type = 'sine', vol = 0.2, delay = 0) {
+  if (_muted) return;
   try {
     const ac = getCtx();
     const osc = ac.createOscillator();
@@ -235,6 +237,20 @@ export const mlAudio = {
       setTimeout(() => { try { masterGain.disconnect(); } catch (_) {} }, 1400);
     } catch (_) {}
   },
+
+  setMuted(val) {
+    _muted = val;
+    if (_ambient?.masterGain) {
+      try {
+        const ac = getCtx();
+        _ambient.masterGain.gain.cancelScheduledValues(ac.currentTime);
+        _ambient.masterGain.gain.setValueAtTime(_ambient.masterGain.gain.value, ac.currentTime);
+        _ambient.masterGain.gain.linearRampToValueAtTime(val ? 0 : 0.13, ac.currentTime + 0.15);
+      } catch (_) {}
+    }
+  },
+
+  isMuted() { return _muted; },
 
   // Screen navigation whoosh
   transition() {
