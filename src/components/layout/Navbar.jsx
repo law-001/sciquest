@@ -141,7 +141,7 @@ export function Navbar({
                   onClick={() => setIsProfileOpen((o) => !o)}
                   aria-label="Profile menu"
                   aria-expanded={isProfileOpen}
-                  className={`flex items-center gap-1 p-2 rounded-xl transition-colors duration-500 ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-colors duration-500 ${
                     hero
                       ? isDark
                         ? "text-white/80 hover:bg-white/10"
@@ -149,20 +149,20 @@ export function Navbar({
                       : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
                   }`}
                 >
-                  <User className="w-5 h-5" />
+                  <span className="text-sm font-bold font-heading">{userFirstName ?? "Profile"}</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${isProfileOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-44 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-lg overflow-hidden z-50">
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-lg overflow-hidden z-50">
                     <button
                       onClick={() => { setIsProfileOpen(false); handleNavClick("profile"); }}
                       className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
                     >
                       <User className="w-4 h-4" />
-                      {userFirstName ?? "My Profile"}
+                      View My Profile
                     </button>
                     <div className="border-t border-stone-200 dark:border-stone-700" />
                     <button
@@ -253,7 +253,7 @@ export function Navbar({
                   }`}
                 >
                   <User className="w-4 h-4" />
-                  My Profile
+                  {userFirstName ?? "My Profile"}
                 </button>
               )}
 
