@@ -24,6 +24,21 @@ export const GAMES = {
     category: "Chemistry",
     loader: () => import("../../games/matter-state-sandbox/index.jsx"),
     minRole: "student",
+    totalLevels: 3,
+    // Challenges group into levels; count unique completed levels, not challenges.
+    countCompletedLevels: (progress) => {
+      const CHALLENGE_LEVEL = {
+        ch_01: 'l1', ch_02: 'l1',
+        ch_03: 'l2', ch_04: 'l2', ch_05: 'l2',
+        ch_06: 'l3', ch_07: 'l3', ch_08: 'l3',
+      };
+      const completedLevelIds = new Set(
+        progress
+          .filter((r) => r.completed && CHALLENGE_LEVEL[r.challenge_id])
+          .map((r) => CHALLENGE_LEVEL[r.challenge_id]),
+      );
+      return completedLevelIds.size;
+    },
   },
   "mystery-lab": {
     id: "mystery-lab",
@@ -39,6 +54,7 @@ export const GAMES = {
     category: "Scientific Method",
     loader: () => import("../../games/mystery-lab/index.jsx"),
     minRole: "student",
+    totalLevels: 1,
   },
   "cell-division-defense": {
     id: "cell-division-defense",
@@ -53,6 +69,7 @@ export const GAMES = {
     category: "Biology",
     loader: () => import("../../games/cell-division-defense/index.jsx"),
     minRole: "student",
+    totalLevels: 1,
   },
 };
 

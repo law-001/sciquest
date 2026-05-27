@@ -412,7 +412,7 @@ function OpeningScreen({ go }) {
   return (
     <div data-screen-label="01 Opening" style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
       {/* hero scene */}
-      <div className="card" style={{
+      <div className="card ml-opening-card" style={{
         position: "relative",
         padding: 0,
         overflow: "hidden",
@@ -590,7 +590,46 @@ function CaseFileRow({ label, value, icon }) {
 }
 
 /* ===== Screen 2: Investigation Map ===== */
-function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observations, hypotheses = [], experiments = [], pulse }) {
+const MAP_STARS = [
+  { x: 4,  y: 2,  s: 2, d: 2.1, o: 0   },
+  { x: 12, y: 5,  s: 3, d: 3.2, o: 0.5 },
+  { x: 22, y: 3,  s: 2, d: 1.8, o: 1.1 },
+  { x: 31, y: 7,  s: 2, d: 2.5, o: 0.3 },
+  { x: 43, y: 4,  s: 3, d: 3.0, o: 0.8 },
+  { x: 53, y: 2,  s: 2, d: 2.3, o: 1.4 },
+  { x: 62, y: 6,  s: 2, d: 1.9, o: 0.2 },
+  { x: 71, y: 3,  s: 3, d: 2.7, o: 0.9 },
+  { x: 82, y: 5,  s: 2, d: 2.4, o: 1.6 },
+  { x: 91, y: 2,  s: 3, d: 3.1, o: 0.4 },
+  { x: 7,  y: 11, s: 2, d: 1.7, o: 1.2 },
+  { x: 18, y: 13, s: 2, d: 2.8, o: 0.6 },
+  { x: 36, y: 9,  s: 3, d: 3.3, o: 1.0 },
+  { x: 49, y: 14, s: 2, d: 2.1, o: 0.7 },
+  { x: 58, y: 11, s: 2, d: 1.8, o: 1.5 },
+  { x: 74, y: 14, s: 3, d: 2.6, o: 0.1 },
+  { x: 86, y: 12, s: 2, d: 3.0, o: 1.3 },
+  { x: 94, y: 9,  s: 2, d: 2.2, o: 0.8 },
+  { x: 26, y: 16, s: 2, d: 1.9, o: 1.7 },
+  { x: 67, y: 18, s: 3, d: 2.5, o: 0.5 },
+  { x: 8,  y: 8,  s: 4, d: 4.0, o: 0   },
+  { x: 47, y: 6,  s: 4, d: 3.5, o: 1.0 },
+  { x: 78, y: 9,  s: 4, d: 4.2, o: 0.5 },
+];
+
+const MAP_FIREFLIES = [
+  { x: 95,  y: 215, d: 2.1, o: 0   },
+  { x: 162, y: 272, d: 1.8, o: 0.7 },
+  { x: 128, y: 334, d: 2.5, o: 1.3 },
+  { x: 62,  y: 358, d: 1.9, o: 0.4 },
+  { x: 204, y: 304, d: 2.3, o: 1.0 },
+  { x: 244, y: 346, d: 2.8, o: 0.6 },
+  { x: 108, y: 436, d: 2.0, o: 1.5 },
+  { x: 178, y: 482, d: 1.7, o: 0.2 },
+  { x: 292, y: 406, d: 2.4, o: 0.9 },
+  { x: 268, y: 464, d: 2.2, o: 1.4 },
+];
+
+function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observations, hypotheses = [], experiments = [], pulse, isDark = false }) {
   const stylePreset = {
     illustrated: { bg: "linear-gradient(180deg, #fef9c3 0%, #fbeaa3 50%, #d9f99d 100%)", paper: false, iso: false },
     paper: { bg: "#f8efd1", paper: true, iso: false },
@@ -614,15 +653,21 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
         position: "relative",
         height: "100%",
         minHeight: 0,
-        background: stylePreset.bg
+        background: isDark ? "#060d1e" : stylePreset.bg,
+        transition: "background 0.9s ease",
       }}>
         {stylePreset.paper &&
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(91,69,48,0.18) 1px, transparent 1.5px)", backgroundSize: "16px 16px", opacity: 0.6, pointerEvents: "none" }} />
         }
         {/* Map content */}
         <div style={{ position: "absolute", inset: 0 }}>
-          {/* Parallax backdrop layers — only in illustrated mode */}
-          {!stylePreset.paper && !stylePreset.iso && BackdropLayer && <BackdropLayer />}
+          {/* Backdrop — crossfade day ↔ night */}
+          {!stylePreset.paper && !stylePreset.iso && BackdropLayer && (
+            <>
+              <BackdropLayer isDark={false} style={{ opacity: isDark ? 0 : 1, transition: "opacity 0.9s ease" }} />
+              <BackdropLayer isDark={true}  style={{ opacity: isDark ? 1 : 0, transition: "opacity 0.9s ease" }} />
+            </>
+          )}
 
           {/* River — handled inside BackdropLayer for non-paper styles. Paper/iso get a flat river. */}
           {(stylePreset.paper || stylePreset.iso) && (
@@ -634,14 +679,19 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
             </svg>
           )}
 
-          {/* ===== SKY — animated birds + clouds ===== */}
-          <AnimatedCloud x={-200} y={30} scale={1}    duration={26} delay={-8}  />
-          <AnimatedCloud x={-200} y={52} scale={0.7}  duration={34} delay={-22} />
-          <AnimatedCloud x={-200} y={38} scale={0.55} duration={20} delay={-5}  />
-          <Bird x={-100} y={42} size={18} duration={10} delay={-2}  />
-          <Bird x={-100} y={58} size={14} duration={14} delay={-7}  />
-          <Bird x={-100} y={48} size={16} duration={12} delay={-5}  />
-          <Bird x={-100} y={74} size={20} duration={18} delay={-12} />
+          {/* ===== SKY — animated birds + clouds (hidden at night) ===== */}
+          <div style={{ opacity: isDark ? 0 : 1, transition: "opacity 0.7s ease" }}>
+            <AnimatedCloud x={-200} y={30} scale={1}    duration={26} delay={-8}  />
+            <AnimatedCloud x={-200} y={52} scale={0.7}  duration={34} delay={-22} />
+            <AnimatedCloud x={-200} y={38} scale={0.55} duration={20} delay={-5}  />
+            <Bird x={-100} y={42} size={18} duration={10} delay={-2}  />
+            <Bird x={-100} y={58} size={14} duration={14} delay={-7}  />
+            <Bird x={-100} y={48} size={16} duration={12} delay={-5}  />
+            <Bird x={-100} y={74} size={20} duration={18} delay={-12} />
+          </div>
+
+          {/* ===== TERRAIN OBJECTS — darken for night mode ===== */}
+          <div style={{ filter: isDark ? "brightness(0.38) saturate(0.68)" : "none", transition: "filter 0.9s ease" }}>
 
           {/* ===== HEALTHY MEADOW — left side, around Pond B ===== */}
           <div style={{ position: "absolute", top: 120, left: 28  }}><Tree size={50} variant={1} /></div>
@@ -807,27 +857,79 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
           <Cattail x={537} y={344} size={16} />
           <Cattail x={668} y={410} size={14} />
 
+          </div>{/* end terrain filter wrapper */}
 
           {/* Compass */}
           <div style={{
             position: "absolute", top: 18, right: 18,
             width: 64, height: 64,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.92)",
-            border: "2px solid #1c1410",
+            background: isDark ? "rgba(14,22,38,0.95)" : "rgba(255,255,255,0.92)",
+            border: isDark ? "2px solid #2a3e54" : "2px solid #1c1410",
             display: "grid", placeItems: "center",
             fontFamily: "Nunito", fontWeight: 900,
             boxShadow: "var(--shadow-card)",
             zIndex: 5,
+            transition: "background 0.9s ease, border-color 0.9s ease",
           }}>
             <svg width="50" height="50" viewBox="0 0 50 50">
-              <text x="25" y="11" textAnchor="middle" fontSize="9" fontWeight="900">N</text>
-              <text x="25" y="46" textAnchor="middle" fontSize="9" fontWeight="900">S</text>
-              <text x="6" y="28" textAnchor="middle" fontSize="9" fontWeight="900">W</text>
-              <text x="44" y="28" textAnchor="middle" fontSize="9" fontWeight="900">E</text>
+              <text x="25" y="11" textAnchor="middle" fontSize="9" fontWeight="900" fill={isDark ? "#8ab0d0" : "#1c1410"}>N</text>
+              <text x="25" y="46" textAnchor="middle" fontSize="9" fontWeight="900" fill={isDark ? "#8ab0d0" : "#1c1410"}>S</text>
+              <text x="6" y="28" textAnchor="middle" fontSize="9" fontWeight="900" fill={isDark ? "#8ab0d0" : "#1c1410"}>W</text>
+              <text x="44" y="28" textAnchor="middle" fontSize="9" fontWeight="900" fill={isDark ? "#8ab0d0" : "#1c1410"}>E</text>
               <path d="M25 14 L29 28 L25 24 L21 28 Z" fill="#dc2626" />
-              <path d="M25 36 L21 24 L25 28 L29 24 Z" fill="#1c1410" />
+              <path d="M25 36 L21 24 L25 28 L29 24 Z" fill={isDark ? "#4a6a8a" : "#1c1410"} />
             </svg>
+          </div>
+
+          {/* Stars */}
+          <div style={{ position: "absolute", inset: 0, opacity: isDark ? 1 : 0, transition: "opacity 1.1s ease", pointerEvents: "none" }}>
+            {MAP_STARS.map((s, i) => (
+              <div key={i} style={{
+                position: "absolute",
+                left: `${s.x}%`, top: `${s.y}%`,
+                width: s.s, height: s.s,
+                borderRadius: 999,
+                background: "#ffffff",
+                boxShadow: `0 0 ${s.s * 2}px rgba(255,255,255,0.9)`,
+                animation: `ml-twinkle ${s.d}s ease-in-out ${s.o}s infinite`,
+              }} />
+            ))}
+          </div>
+
+          {/* Moon */}
+          <div style={{
+            position: "absolute", top: 16, right: 98,
+            width: 52, height: 52,
+            borderRadius: 999,
+            background: "radial-gradient(circle at 38% 36%, #fef9c3 0%, #f5e08c 60%, #e8c96a 100%)",
+            boxShadow: "0 0 36px 14px rgba(253,246,227,0.22), 0 0 80px 32px rgba(253,246,227,0.08)",
+            opacity: isDark ? 1 : 0,
+            transition: "opacity 0.9s ease",
+            pointerEvents: "none",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              position: "absolute", top: -6, right: -6,
+              width: 46, height: 46,
+              borderRadius: 999,
+              background: "rgba(3,8,24,0.58)",
+            }} />
+          </div>
+
+          {/* Fireflies — healthy meadow, left side */}
+          <div style={{ position: "absolute", inset: 0, opacity: isDark ? 1 : 0, transition: "opacity 1.3s ease", pointerEvents: "none" }}>
+            {MAP_FIREFLIES.map((f, i) => (
+              <div key={i} style={{
+                position: "absolute",
+                left: f.x, top: f.y,
+                width: 5, height: 5,
+                borderRadius: 999,
+                background: "#d9f99d",
+                boxShadow: "0 0 8px 3px rgba(163,230,53,0.65)",
+                animation: `ml-shimmer ${f.d}s ease-in-out ${f.o}s infinite`,
+              }} />
+            ))}
           </div>
         </div>
 
@@ -856,30 +958,45 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
             pulse={pulse === l.id}
             completed={visited && visited.includes(l.id)}
             desc={l.desc}
-            locked={l.id === "factory"} />
+            locked={l.id === "factory"}
+            isDark={isDark} />
           
           </button>
         )}
 
+        {/* Ambient environment glow — dark mode only, tied to each location's character */}
+        <div style={{ position: "absolute", inset: 0, opacity: isDark ? 1 : 0, transition: "opacity 0.9s ease", pointerEvents: "none" }}>
+          {/* Lab Tent — soft lantern warmth */}
+          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(255,198,90,0.09) 0%, transparent 68%)" }} />
+          {/* Factory — warm window light from industrial ridge */}
+          <div style={{ position: "absolute", left: "80%", top: "22%", transform: "translate(-50%, -50%)", width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(255,178,60,0.08) 0%, transparent 68%)" }} />
+          {/* Pond A — faint contamination reflection, sickly green-amber */}
+          <div style={{ position: "absolute", left: "76%", top: "72%", transform: "translate(-50%, -50%)", width: 190, height: 190, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(130,195,70,0.07) 0%, transparent 68%)" }} />
+          {/* Evidence Board — small investigation lamp */}
+          <div style={{ position: "absolute", left: "36%", top: "77%", transform: "translate(-50%, -50%)", width: 165, height: 165, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(255,218,120,0.08) 0%, transparent 68%)" }} />
+          {/* Pond B — cool moonlit water reflection */}
+          <div style={{ position: "absolute", left: "10%", top: "45%", transform: "translate(-50%, -50%)", width: 175, height: 175, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(100,175,220,0.07) 0%, transparent 68%)" }} />
+        </div>
+
         {/* Illustration overlays — positions match pin coords in locs[] */}
-        {/* Pond B — left side, mid-height */}
-        <div style={{ position: "absolute", left: "10%", top: "45%", transform: "translate(-50%, -55%) scale(0.55)", pointerEvents: "none" }}>
+        {/* Pond B — healthy, cool blue; slightly brighter than terrain to stand out */}
+        <div style={{ position: "absolute", left: "10%", top: "45%", transform: "translate(-50%, -55%) scale(0.55)", pointerEvents: "none", filter: isDark ? "brightness(0.46) saturate(0.84)" : "none", transition: "filter 0.9s ease" }}>
           <Pond size={210} />
         </div>
-        {/* Maple Factory — upper-right, industrial ridge */}
-        <div style={{ position: "absolute", left: "80%", top: "22%", transform: "translate(-50%, -55%) scale(0.55)", pointerEvents: "none" }}>
+        {/* Maple Factory — warm sepia from glowing windows */}
+        <div style={{ position: "absolute", left: "80%", top: "22%", transform: "translate(-50%, -55%) scale(0.55)", pointerEvents: "none", filter: isDark ? "brightness(0.52) saturate(0.82) sepia(0.12)" : "none", transition: "filter 0.9s ease" }}>
           <Factory />
         </div>
-        {/* Lab Tent — center, transition zone */}
-        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -55%) scale(0.6)", pointerEvents: "none" }}>
+        {/* Lab Tent — most visible; lantern warmth lifts it above terrain */}
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -55%) scale(0.6)", pointerEvents: "none", filter: isDark ? "brightness(0.58) saturate(0.86) sepia(0.10)" : "none", transition: "filter 0.9s ease" }}>
           <LabTent />
         </div>
-        {/* Evidence Board — lower center */}
-        <div style={{ position: "absolute", left: "36%", top: "77%", transform: "translate(-50%, -55%) scale(0.7)", pointerEvents: "none" }}>
+        {/* Evidence Board — investigation lamp glow, warm neutral */}
+        <div style={{ position: "absolute", left: "36%", top: "77%", transform: "translate(-50%, -55%) scale(0.7)", pointerEvents: "none", filter: isDark ? "brightness(0.52) saturate(0.82)" : "none", transition: "filter 0.9s ease" }}>
           {BulletinBoard && <BulletinBoard size={180} />}
         </div>
-        {/* Pond A — lower-right, downstream from factory drain */}
-        <div style={{ position: "absolute", left: "76%", top: "72%", transform: "translate(-50%, -50%) scale(0.55)", pointerEvents: "none" }}>
+        {/* Pond A — contamination keeps its sickly color; slight saturation boost */}
+        <div style={{ position: "absolute", left: "76%", top: "72%", transform: "translate(-50%, -50%) scale(0.55)", pointerEvents: "none", filter: isDark ? "brightness(0.44) saturate(1.08)" : "none", transition: "filter 0.9s ease" }}>
           <Pond sick size={210} dead={4} />
         </div>
       </div>
@@ -930,7 +1047,13 @@ function MapScreen({ go, setPond, mapStyle = "illustrated", visited, observation
 
 }
 
-function MapPin({ label, icon, hot, pulse, completed, desc, locked }) {
+function MapPin({ label, icon, hot, pulse, completed, desc, locked, isDark = false }) {
+  const tagBg   = isDark ? "linear-gradient(180deg, #243650, #162234)" : "linear-gradient(180deg, #f5e1b8, #d4ad6b)";
+  const tagText = isDark ? "#cce5fa" : "#3d2e22";
+  const tagBdr  = isDark ? "#365472" : "#5b3a1f";
+  const tagBdrT = isDark ? "#4a6e90" : "#7a5230";
+  const tagSub  = isDark ? "#7898ba" : "#7a5230";
+  const nailClr = isDark ? "#365472" : "#5b3a1f";
   return (
     <div style={{ position: "relative" }}>
       {pulse &&
@@ -956,24 +1079,26 @@ function MapPin({ label, icon, hot, pulse, completed, desc, locked }) {
       </div>
       <div style={{
         position: "absolute", top: 64, left: "50%", transform: "translateX(-50%)",
-        background: "linear-gradient(180deg, #f5e1b8, #d4ad6b)",
-        color: "#3d2e22",
+        background: tagBg,
+        color: tagText,
         padding: "5px 12px 7px",
         borderRadius: 4,
-        border: "2px solid #5b3a1f",
-        borderTop: "2px solid #7a5230",
+        border: `2px solid ${tagBdr}`,
+        borderTop: `2px solid ${tagBdrT}`,
         whiteSpace: "nowrap",
         fontWeight: 900,
         fontSize: 12,
         fontFamily: "Nunito",
-        boxShadow: "0 4px 0 rgba(91,58,31,0.6), 0 8px 18px -4px rgba(0,0,0,0.4)",
-        textShadow: "0 1px 0 rgba(255,255,255,0.4)",
+        boxShadow: isDark
+          ? "0 4px 0 rgba(6,12,22,0.92), 0 8px 22px -4px rgba(0,0,0,0.75), 0 0 0 1px rgba(74,110,144,0.25)"
+          : "0 4px 0 rgba(91,58,31,0.6), 0 8px 18px -4px rgba(0,0,0,0.4)",
+        textShadow: isDark ? "none" : "0 1px 0 rgba(255,255,255,0.4)",
+        transition: "background 0.9s ease, color 0.9s ease, border-color 0.9s ease",
       }}>
-        {/* nail heads */}
-        <span style={{ position: "absolute", left: 4, top: 3, width: 4, height: 4, borderRadius: 999, background: "#5b3a1f", boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.3)" }} />
-        <span style={{ position: "absolute", right: 4, top: 3, width: 4, height: 4, borderRadius: 999, background: "#5b3a1f", boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.3)" }} />
+        <span style={{ position: "absolute", left: 4, top: 3, width: 4, height: 4, borderRadius: 999, background: nailClr, boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.3)" }} />
+        <span style={{ position: "absolute", right: 4, top: 3, width: 4, height: 4, borderRadius: 999, background: nailClr, boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.3)" }} />
         {label}
-        <div style={{ fontSize: 9, fontWeight: 700, color: "#7a5230", letterSpacing: "0.04em", textTransform: "uppercase", marginTop: 1 }}>{desc}</div>
+        <div style={{ fontSize: 9, fontWeight: 700, color: tagSub, letterSpacing: "0.04em", textTransform: "uppercase", marginTop: 1 }}>{desc}</div>
       </div>
     </div>);
 

@@ -39,6 +39,10 @@
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.5; }
 }
+@keyframes ml-twinkle {
+  0%, 100% { opacity: 0.9; }
+  50%      { opacity: 0.1; }
+}
 @keyframes ml-fly-across {
   from { transform: translateX(0); }
   to   { transform: translateX(1400px); }
@@ -567,13 +571,19 @@
   .mystery-lab-root .screen.no-scroll { overflow-y: auto !important; }
 
   /* Opening screen */
-  .mystery-lab-root .ml-opening-hero { padding: 14px 16px !important; }
+  .mystery-lab-root .ml-opening-card { overflow-y: auto !important; }
+  .mystery-lab-root .ml-opening-hero {
+    padding: 14px 16px !important;
+    flex: 0 0 auto !important;
+    min-height: 280px;
+  }
   .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr !important; height: auto !important; }
   .mystery-lab-root .ml-opening-scene { display: none !important; }
   .mystery-lab-root .ml-opening-footer {
     grid-template-columns: 1fr 1fr !important;
     padding: 10px 14px !important;
     gap: 10px !important;
+    flex-shrink: 0 !important;
   }
 
   /* Map screen */

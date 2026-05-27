@@ -125,8 +125,10 @@ function ProgressRow({ completed, total }) {
 // Unlocked game card
 function UnlockedCard({ game, userId, onPlay }) {
   const { progress } = useGameProgress(supabase, game.id, userId);
-  const completedLevels = progress.filter((r) => r.completed).length;
   const totalLevels = game.totalLevels ?? 3;
+  const completedLevels = game.countCompletedLevels
+    ? game.countCompletedLevels(progress)
+    : Math.min(progress.filter((r) => r.completed).length, totalLevels);
 
   return (
     <div className="group rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 hover:border-orange-300 dark:hover:border-orange-500/50 transition-all duration-300 ease-out flex flex-col">
