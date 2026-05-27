@@ -61,6 +61,7 @@ export function useChallengeTracker(challenge, bus, isGamePaused) {
     }
 
     bus.on('stateChanged', onStateChanged);
+    bus.emit('requestCurrentState');
     return () => bus.off('stateChanged', onStateChanged);
   }, [bus, challenge?.id]);
 

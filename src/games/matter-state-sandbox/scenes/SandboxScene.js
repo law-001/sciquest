@@ -119,6 +119,27 @@ export default class SandboxScene extends BaseGameScene {
       if (this.physics?.world) this.physics.resume();
     });
 
+    this.bus.on('requestCurrentState', () => {
+      if (this.currentState) {
+        this.bus.emit('stateChanged', {
+          state: this.currentState,
+          substance: SUBSTANCES[this.substanceId],
+          temp: this.currentTemp,
+          pressure: this.currentPressure,
+        });
+      }
+    });
+
+    // Re-emit initial state for React listeners registered before this point
+    if (this.currentState) {
+      this.bus.emit('stateChanged', {
+        state: this.currentState,
+        substance: SUBSTANCES[this.substanceId],
+        temp: this.currentTemp,
+        pressure: this.currentPressure,
+      });
+    }
+
     // emitted by SubstanceDisplay when animation completes
     this.bus.on('transitionComplete', () => {
       if (this._pendingState !== null) {
