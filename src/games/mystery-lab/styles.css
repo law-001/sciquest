@@ -570,25 +570,6 @@
   .mystery-lab-root .screen { padding: 8px 10px; }
   .mystery-lab-root .screen.no-scroll { overflow-y: auto !important; }
 
-  /* Opening screen */
-  .mystery-lab-root .ml-opening-card { overflow-y: auto !important; }
-  .mystery-lab-root .ml-opening-hero {
-    padding: 14px 16px !important;
-    flex: 0 0 auto !important;
-    min-height: 200px;
-  }
-  .mystery-lab-root .ml-opening-desc { display: none !important; }
-  .mystery-lab-root .ml-opening-pills { display: none !important; }
-  .mystery-lab-root .ml-opening-btns { margin-top: 10px !important; }
-  .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr !important; height: auto !important; }
-  .mystery-lab-root .ml-opening-scene { display: none !important; }
-  .mystery-lab-root .ml-opening-footer {
-    grid-template-columns: 1fr 1fr !important;
-    padding: 10px 14px !important;
-    gap: 10px !important;
-    flex-shrink: 0 !important;
-  }
-
   /* Map screen */
   .mystery-lab-root .ml-map-grid {
     grid-template-columns: 1fr !important;
@@ -605,4 +586,25 @@
     min-height: 0 !important;
   }
   .mystery-lab-root .ml-game-sidebar { max-height: 280px; overflow-y: auto; }
+}
+
+/* ===== Landscape phones — height is the constraint, not width ===== */
+@media (max-height: 520px) {
+  /* Opening screen: hide non-essential content so button is always visible */
+  .mystery-lab-root .ml-opening-card { overflow-y: auto !important; }
+  .mystery-lab-root .ml-opening-hero {
+    padding: 14px 20px !important;
+    flex: 0 0 auto !important;
+  }
+  .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr !important; height: auto !important; }
+  .mystery-lab-root .ml-opening-scene { display: none !important; }
+  .mystery-lab-root .ml-opening-desc { display: none !important; }
+  .mystery-lab-root .ml-opening-pills { display: none !important; }
+  .mystery-lab-root .ml-opening-btns { margin-top: 10px !important; }
+  .mystery-lab-root .ml-opening-footer {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    padding: 10px 20px !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+  }
 }
