@@ -480,12 +480,12 @@ function OpeningScreen({ go }) {
                 The Dying<br />
                 Pond Mystery
               </h1>
-              <p style={{ fontSize: 15, color: "#3d2e22", maxWidth: 460, marginTop: 10, lineHeight: 1.45, fontWeight: 500 }}>
+              <p className="ml-opening-desc" style={{ fontSize: 15, color: "#3d2e22", maxWidth: 460, marginTop: 10, lineHeight: 1.45, fontWeight: 500 }}>
                 Something's wrong at Maple Creek. The fish in <b>Pond A</b> are dying.
                 The fish in <b>Pond B</b>, just 200 metres away, are fine.
                 The Mayor needs a junior science detective. You in?
               </p>
-              <div className="row gap-3" style={{ marginTop: 18, alignItems: "center" }}>
+              <div className="row gap-3 ml-opening-btns" style={{ marginTop: 18, alignItems: "center" }}>
                 <button className="btn lg" onClick={() => go("intro")}>
                   <Lucide name="search" size={18} />
                   Start Investigation
@@ -495,7 +495,7 @@ function OpeningScreen({ go }) {
                   Case briefing
                 </button>
               </div>
-              <div className="row gap-2" style={{ marginTop: 16, flexWrap: "wrap" }}>
+              <div className="row gap-2 ml-opening-pills" style={{ marginTop: 16, flexWrap: "wrap" }}>
                 <MissionPill icon="search" text="Observe" />
                 <MissionPill icon="lightbulb" text="Hypothesise" />
                 <MissionPill icon="flask" text="Test" />

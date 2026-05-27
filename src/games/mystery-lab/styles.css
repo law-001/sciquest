@@ -575,8 +575,11 @@
   .mystery-lab-root .ml-opening-hero {
     padding: 14px 16px !important;
     flex: 0 0 auto !important;
-    min-height: 280px;
+    min-height: 200px;
   }
+  .mystery-lab-root .ml-opening-desc { display: none !important; }
+  .mystery-lab-root .ml-opening-pills { display: none !important; }
+  .mystery-lab-root .ml-opening-btns { margin-top: 10px !important; }
   .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr !important; height: auto !important; }
   .mystery-lab-root .ml-opening-scene { display: none !important; }
   .mystery-lab-root .ml-opening-footer {
