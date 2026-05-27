@@ -82,15 +82,19 @@ function saveUnseenCount(uid, n) {
 
 // QuizContainer auto-saves answers to `quiz-answers-<lessonId>` and clears the
 // key on submit, so a lesson with a non-empty entry has an in-progress quiz.
-// Returns the lesson id of the first such lesson in the week, or null.
-function findOngoingQuizLessonId(week) {
+// Iterates in reverse so the most-advanced in-progress quiz wins when multiple
+// lessons have stale data. Already-submitted lessons (in lessonsPassed) are
+// skipped so cleared-but-not-removed entries don't cause false positives.
+function findOngoingQuizLessonId(week, lessonsPassed = []) {
   if (!week?.lessons) return null;
-  for (const lesson of week.lessons) {
+  for (let i = week.lessons.length - 1; i >= 0; i--) {
+    const lesson = week.lessons[i];
+    if (lessonsPassed.includes(lesson.id)) continue;
     try {
       const raw = localStorage.getItem(`quiz-answers-${lesson.id}`);
       if (!raw) continue;
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+      if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
         return lesson.id;
       }
     } catch {
@@ -544,7 +548,7 @@ function AppContent() {
 
     // If the student left a quiz mid-attempt (saved answers in localStorage),
     // jump straight into that quiz so they don't lose the in-progress work.
-    const ongoingQuizLessonId = findOngoingQuizLessonId(week);
+    const ongoingQuizLessonId = findOngoingQuizLessonId(week, lessonsPassed);
     if (ongoingQuizLessonId && !isQuizLockedForWeek(weekId)) {
       setActiveWeekId(weekId);
       setActiveLessonId(ongoingQuizLessonId);

@@ -12,6 +12,7 @@ import { ParticleView } from './ui/ParticleView';
 import { ObjectView } from './ui/ObjectView';
 import { SuccessModal } from './ui/SuccessModal';
 import { GameMusic } from './audio/GameMusic';
+import { GameSounds } from './audio/GameSounds';
 import BootScene from './scenes/BootScene';
 import SandboxScene from './scenes/SandboxScene';
 import { LEVELS } from './data/levels';
@@ -52,6 +53,7 @@ export default function MatterStateSandbox({
   const [particleSnapshot, setParticleSnapshot] = useState({ temp: 20, pressure: 1 });
   const [muted, setMuted] = useState(false);
   const musicRef = useRef(null);
+  const soundsRef = useRef(null);
   const lastSimStateRef = useRef({ temp: 20, pressure: 1 });
 
   // Background music — starts on mount, resumes after first user interaction
@@ -59,12 +61,31 @@ export default function MatterStateSandbox({
     const music = new GameMusic();
     musicRef.current = music;
     music.start();
-    return () => { music.destroy(); musicRef.current = null; };
+    const sfx = new GameSounds();
+    soundsRef.current = sfx;
+    return () => {
+      music.destroy(); musicRef.current = null;
+      sfx.destroy(); soundsRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
     musicRef.current?.setMuted(muted);
+    soundsRef.current?.setMuted(muted);
   }, [muted]);
+
+  // SFX — transition sounds and success chime
+  useEffect(() => {
+    if (!bus) return;
+    const onTransition = ({ fromState, toState }) => soundsRef.current?.playTransition(fromState, toState);
+    const onReset = () => soundsRef.current?.playReset();
+    bus.on('transitionStart', onTransition);
+    bus.on('reset', onReset);
+    return () => {
+      bus.off('transitionStart', onTransition);
+      bus.off('reset', onReset);
+    };
+  }, [bus]);
 
 
   useEffect(() => {
@@ -108,6 +129,7 @@ export default function MatterStateSandbox({
       lastSimStateRef.current = { temp: data.temp, pressure: data.pressure };
     }
     bus.on('stateChanged', onStateChanged);
+    bus.emit('requestCurrentState');
     return () => bus.off('stateChanged', onStateChanged);
   }, [bus]);
 
@@ -128,6 +150,7 @@ export default function MatterStateSandbox({
     if (!isComplete || !activeChallenge || completionFiredRef.current) return;
     if (completedIdsRef.current.includes(activeChallenge.id)) return;
     completionFiredRef.current = true;
+    soundsRef.current?.playSuccess();
     /* eslint-disable react-hooks/set-state-in-effect */
     setCompletedIds(prev => [...new Set([...prev, activeChallenge.id])]);
     setShowSuccessModal(true);

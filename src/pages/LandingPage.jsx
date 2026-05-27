@@ -185,20 +185,20 @@ const SUBJECTS = [
     tagline: "Dive into living systems",
   },
   {
-    key: "physics",
-    label: "Physics",
-    icon: Atom,
-    accent: "#38bdf8",
-    accentSoft: "rgba(56, 189, 248, 0.20)",
-    tagline: "Bend space, time, and motion",
-  },
-  {
     key: "earth",
     label: "Earth Science",
     icon: Globe2,
     accent: "#f59e0b",
     accentSoft: "rgba(245, 158, 11, 0.20)",
     tagline: "Explore our planet and beyond",
+  },
+  {
+    key: "physics",
+    label: "Physics",
+    icon: Atom,
+    accent: "#38bdf8",
+    accentSoft: "rgba(56, 189, 248, 0.20)",
+    tagline: "Bend space, time, and motion",
   },
 ];
 
