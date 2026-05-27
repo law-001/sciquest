@@ -59,7 +59,7 @@ function DetectiveHoot({ size = 96, mood = "happy", speech, speechSide = "right"
 }
 
 /* ----- HUD: top bar ----- */
-function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDark = false, onToggleTheme }) {
+function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDark = false, onToggleTheme, isMuted = false, onToggleMute }) {
   return (
     <div className="hud">
       <div className="brand">
@@ -91,6 +91,18 @@ function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDar
         </div>
         <div className="bar" style={{ width: 80 }}><span style={{ width: `${progress * 100}%` }} /></div>
       </div>
+      {onToggleMute && (
+        <button
+          type="button"
+          onClick={onToggleMute}
+          aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+          aria-pressed={isMuted}
+          className="btn icon ghost"
+          title={isMuted ? "Unmute" : "Mute"}
+        >
+          <Lucide name={isMuted ? "volumeX" : "volume2"} size={16} />
+        </button>
+      )}
       {onToggleTheme && (
         <button
           type="button"
@@ -162,6 +174,8 @@ function Lucide({ name, size = 16, color = "currentColor", strokeWidth = 2 }) {
     helix: <><path d="M4 4c4 0 4 16 16 16" /><path d="M4 20c4 0 4-16 16-16" /></>,
     clipboard: <><rect x="6" y="4" width="12" height="18" rx="2" /><rect x="9" y="2" width="6" height="4" rx="1" /></>,
     lightbulb: <><path d="M9 18h6" /><path d="M10 22h4" /><path d="M6 12a6 6 0 1112 0c0 2.5-1.5 4-3 5v1H9v-1c-1.5-1-3-2.5-3-5z" /></>,
+    volume2: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" /></>,
+    volumeX: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></>,
     moon: <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />,
     sun: <><circle cx="12" cy="12" r="4" /><line x1="12" y1="2" x2="12" y2="4" /><line x1="12" y1="20" x2="12" y2="22" /><line x1="2" y1="12" x2="4" y2="12" /><line x1="20" y1="12" x2="22" y2="12" /><line x1="4.93" y1="4.93" x2="6.34" y2="6.34" /><line x1="17.66" y1="17.66" x2="19.07" y2="19.07" /><line x1="4.93" y1="19.07" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.07" y2="4.93" /></>,
     settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 005 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 5a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019 9c.36.15.69.36 1 .6" /></>,

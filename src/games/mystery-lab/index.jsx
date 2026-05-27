@@ -38,6 +38,14 @@ export default function MysteryLab({
   const [victory, setVictory] = useState(null);
 
   const { isDark, toggle: toggleTheme } = useTheme();
+  const [isMuted, setIsMuted] = useState(false);
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const next = !prev;
+      mlAudio.setMuted(next);
+      return next;
+    });
+  }, []);
   const { recordCompletion } = useGameProgress(supabase, 'mystery-lab', user?.id);
 
   const [isPortrait, setIsPortrait] = useState(() => {
@@ -189,6 +197,8 @@ export default function MysteryLab({
             onExit={onExit}
             isDark={isDark}
             onToggleTheme={toggleTheme}
+            isMuted={isMuted}
+            onToggleMute={toggleMute}
           />
         )}
 
@@ -197,6 +207,24 @@ export default function MysteryLab({
             position: "absolute", top: 14, right: 16, zIndex: 60,
             display: "inline-flex", alignItems: "center", gap: 8,
           }}>
+            <button
+              type="button"
+              onClick={toggleMute}
+              aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+              aria-pressed={isMuted}
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 36, height: 36,
+                borderRadius: 999,
+                border: "1.5px solid rgba(28,20,16,0.15)",
+                background: "rgba(255,255,255,0.94)",
+                color: "#1c1410",
+                boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
+                cursor: "pointer",
+              }}
+            >
+              <Lucide name={isMuted ? "volumeX" : "volume2"} size={16} />
+            </button>
             <button
               type="button"
               onClick={toggleTheme}
