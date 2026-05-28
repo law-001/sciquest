@@ -47,7 +47,7 @@ import { fetchAllSections, createSection } from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
 import { useLessonsData } from "../context/LessonsDataContext";
-import { deleteLesson, upsertLesson, restoreStaticLesson } from "../lib/lessons";
+import { deleteLesson, upsertLesson, restoreStaticLesson, setLessonHidden } from "../lib/lessons";
 import { deleteQuiz } from "../lib/quizzes";
 import {
   getPublishedWeekIds,
@@ -1016,6 +1016,84 @@ function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
   );
 }
 
+// ── Lesson visibility toggle confirmation modal ───────────────────────────────
+// Gates the eye-icon toggle behind an explicit confirm. The icon is hover-only
+// and the lesson list re-renders on every Realtime push from concurrent teacher
+// sessions, so a click without confirmation is too easy to fire accidentally.
+
+function ToggleLessonVisibilityModal({ lesson, isCurrentlyHidden, onConfirm, onClose, isLoading }) {
+  const willHide = !isCurrentlyHidden;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+              willHide
+                ? "bg-amber-100 dark:bg-amber-900/30"
+                : "bg-secondary-100 dark:bg-secondary-900/30",
+            )}
+          >
+            {willHide ? (
+              <EyeOff className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            ) : (
+              <Eye className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+            )}
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-stone-900 dark:text-white">
+              {willHide ? "Hide Lesson" : "Publish Lesson"}
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {willHide ? "Students won't see this lesson" : "Students will see this lesson"}
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+          {willHide ? (
+            <>
+              Hide{" "}
+              <strong className="text-stone-900 dark:text-white">{lesson.title}</strong>{" "}
+              from students? You can publish it again from this page at any time.
+            </>
+          ) : (
+            <>
+              Publish{" "}
+              <strong className="text-stone-900 dark:text-white">{lesson.title}</strong>{" "}
+              to students?
+            </>
+          )}
+        </p>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <button
+            onClick={() => onConfirm(lesson)}
+            disabled={isLoading}
+            className={cn(
+              "flex-1 px-4 py-2.5 rounded-2xl disabled:opacity-60 text-white font-bold text-sm transition-colors",
+              willHide
+                ? "bg-amber-500 hover:bg-amber-600"
+                : "bg-secondary-500 hover:bg-secondary-600",
+            )}
+          >
+            {isLoading ? "Saving…" : willHide ? "Hide Lesson" : "Publish Lesson"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Search bar that collapses to an icon-only button when closed and expands
 // into an input when the user clicks the icon. Auto-focuses on open and
 // returns to the icon view when blurred with an empty value (or via Escape).
@@ -1109,9 +1187,16 @@ function LessonsSlot({
   const [restoreLoading, setRestoreLoading] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
   const [togglingLessonId, setTogglingLessonId] = useState(null);
+  // Tracked separately from togglingLessonId so the spinner only appears
+  // while the actual UPDATE is in flight, not while the confirm dialog is open.
+  const [pendingVisibilityLesson, setPendingVisibilityLesson] = useState(null);
 
-  // Per-lesson publish/hide toggle. For static lessons without a DB row yet,
-  // we upsert one with the current snapshot before flipping is_hidden.
+  // Per-lesson publish/hide toggle.
+  // For an existing DB row we do a partial UPDATE so a stale local snapshot
+  // (e.g. before another teacher's save has been pushed via Realtime) can't
+  // overwrite their edits — only is_hidden changes.
+  // For a static lesson with no DB row yet, we seed one with the static
+  // content; once the row exists, future toggles take the UPDATE path.
   async function handleToggleLessonHidden(lesson) {
     if (togglingLessonId) return;
     setTogglingLessonId(lesson.id);
@@ -1119,7 +1204,7 @@ function LessonsSlot({
       const dbRow = dbLessons.get(lesson.id);
       const nextHidden = !(dbRow ? dbRow.is_hidden : lesson.isHidden);
       if (dbRow) {
-        await upsertLesson({ ...dbRow, is_hidden: nextHidden });
+        await setLessonHidden(lesson.id, nextHidden);
       } else {
         await upsertLesson({
           id: lesson.id,
@@ -1340,7 +1425,7 @@ function LessonsSlot({
                       {onEditLesson && (
                         <div className="flex items-center gap-0.5 opacity-0 group-hover/lesson-card:opacity-100 focus-within:opacity-100 transition-opacity duration-150">
                           <button
-                            onClick={() => handleToggleLessonHidden(lesson)}
+                            onClick={() => setPendingVisibilityLesson(lesson)}
                             disabled={isToggling}
                             title={isHidden ? "Publish lesson" : "Hide lesson"}
                             aria-label={isHidden ? "Publish lesson" : "Hide lesson"}
@@ -1598,6 +1683,24 @@ function LessonsSlot({
           error={restoreError}
         />
       )}
+
+      {pendingVisibilityLesson && (() => {
+        const lesson = pendingVisibilityLesson;
+        const dbRow = dbLessons.get(lesson.id);
+        const isCurrentlyHidden = dbRow ? !!dbRow.is_hidden : !!lesson.isHidden;
+        return (
+          <ToggleLessonVisibilityModal
+            lesson={lesson}
+            isCurrentlyHidden={isCurrentlyHidden}
+            isLoading={togglingLessonId === lesson.id}
+            onClose={() => setPendingVisibilityLesson(null)}
+            onConfirm={async () => {
+              await handleToggleLessonHidden(lesson);
+              setPendingVisibilityLesson(null);
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }

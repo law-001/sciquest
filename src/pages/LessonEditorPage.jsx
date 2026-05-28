@@ -235,7 +235,10 @@ function EmptyCanvas({ onAdd }) {
 // ── LessonEditorPage ──────────────────────────────────────────────────────────
 
 export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
-  const { weeks, loading, applyLessonRow } = useLessonsData()
+  // Use weeksWithHidden so a hidden lesson can be re-opened in the editor.
+  // The student-facing `weeks` filters out is_hidden rows, which would cause
+  // this lookup to miss and silently fork the lesson into a new UUID via blankDraft.
+  const { weeksWithHidden: weeks, loading, applyLessonRow } = useLessonsData()
   const { user } = useAuth()
 
   // draft is null only while waiting for a custom lesson's DB row to arrive.

@@ -66,6 +66,18 @@ export async function upsertLesson(lesson) {
   return data
 }
 
+// Partial UPDATE of is_hidden for an existing row. Use this instead of
+// upsert({ ...dbRow, is_hidden }) so a stale local snapshot can't stomp
+// concurrent writes by another teacher session.
+export async function setLessonHidden(lessonId, isHidden) {
+  if (!supabase) throw new Error('[lessons] Supabase not configured')
+  const { error } = await supabase
+    .from('lessons')
+    .update({ is_hidden: isHidden })
+    .eq('id', lessonId)
+  if (error) throw error
+}
+
 // isStatic=true → soft-delete (sets is_hidden). Assumes the row already exists
 // (fork-on-edit in Phase 3 creates it before delete is possible in Phase 4).
 // isStatic=false → hard-delete custom lesson row.

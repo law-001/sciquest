@@ -269,7 +269,10 @@ function LessonPickerField({ week, value, onChange, disabled, getQuiz, originalL
 // ── QuizEditorPage ────────────────────────────────────────────────────────────
 
 export function QuizEditorPage({ lessonId, weekId, onSave, onCancel }) {
-  const { getQuiz, weeks, dbLessons, dbQuizzes, loading, applyQuizRow } = useLessonsData()
+  // Use weeksWithHidden so quizzes attached to a hidden lesson can still be
+  // located and re-edited; otherwise the lesson lookup misses and the editor
+  // can't initialize against the correct row.
+  const { getQuiz, weeksWithHidden: weeks, dbLessons, dbQuizzes, loading, applyQuizRow } = useLessonsData()
 
   const isNewQuiz = !lessonId
 
