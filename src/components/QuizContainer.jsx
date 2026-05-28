@@ -24,45 +24,7 @@ import {
   MAX_QUIZ_ATTEMPTS,
   attemptXpFactor,
 } from "../lib/xp-config";
-import {
-  MultipleChoiceQuestion,
-  TrueFalseQuestion,
-  FillInTheBlanks,
-  ShortAnswer,
-  EssayQuestion,
-  MatchingQuestion,
-  IdentificationQuestion,
-  OrderingQuestion,
-  PictureBasedQuestion,
-  CaseStudyQuestion,
-} from "./quiz-slots";
-
-// ── SLOT MAP ──────────────────────────────────────────────────────────────────
-const QUESTION_MAP = {
-  "multiple-choice": MultipleChoiceQuestion,
-  "true-false": TrueFalseQuestion,
-  "fill-blanks": FillInTheBlanks,
-  "short-answer": ShortAnswer,
-  essay: EssayQuestion,
-  matching: MatchingQuestion,
-  identification: IdentificationQuestion,
-  ordering: OrderingQuestion,
-  "picture-based": PictureBasedQuestion,
-  "case-study": CaseStudyQuestion,
-};
-
-const TYPE_LABELS = {
-  "multiple-choice": "Multiple Choice",
-  "true-false": "True / False",
-  "fill-blanks": "Fill in the Blanks",
-  "short-answer": "Short Answer",
-  essay: "Essay",
-  matching: "Matching",
-  identification: "Identification",
-  ordering: "Ordering",
-  "picture-based": "Picture-Based",
-  "case-study": "Case Study",
-};
+import { QUESTION_MAP, TYPE_LABELS } from "./questionMap";
 
 // ── Scoring helpers ───────────────────────────────────────────────────────────
 // Essay / short-answer return 0 here — they need a teacher to grade them.

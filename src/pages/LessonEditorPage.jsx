@@ -180,6 +180,31 @@ function MetaField({ label, value, onChange, type = 'text', placeholder, classNa
   )
 }
 
+// ── EditorSkeleton ────────────────────────────────────────────────────────────
+
+function EditorSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
+      <div className="sticky top-0 z-30 bg-[#fdf6e3]/95 dark:bg-stone-900/95 border-b border-orange-200/60 dark:border-stone-700 h-14" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-pulse">
+        <div className="bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 p-6 space-y-4">
+          <div className="h-3 w-28 bg-stone-200 dark:bg-stone-700 rounded" />
+          <div className="h-12 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+          <div className="h-16 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-10 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+            ))}
+          </div>
+          <div className="h-32 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+        </div>
+        <div className="h-3 w-32 bg-stone-200 dark:bg-stone-700 rounded mx-1" />
+        <div className="h-52 bg-stone-100 dark:bg-stone-800 rounded-2xl border-2 border-dashed border-stone-200 dark:border-stone-700" />
+      </div>
+    </div>
+  )
+}
+
 // ── EmptyCanvas ───────────────────────────────────────────────────────────────
 
 function EmptyCanvas({ onAdd }) {
@@ -205,18 +230,30 @@ function EmptyCanvas({ onAdd }) {
 // ── LessonEditorPage ──────────────────────────────────────────────────────────
 
 export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
-  const { weeks } = useLessonsData()
+  const { weeks, loading } = useLessonsData()
   const { user } = useAuth()
 
+  // draft is null only while waiting for a custom lesson's DB row to arrive.
+  // Static/cached lessons are found immediately in weeks from useState init.
   const [draft, setDraft] = useState(() => {
-    if (lessonId) {
-      for (const w of weeks) {
-        const lesson = w.lessons.find((l) => l.id === lessonId)
-        if (lesson) return lessonToEditorDraft(lesson)
-      }
+    if (!lessonId) return blankDraft(weekId)
+    for (const w of weeks) {
+      const lesson = w.lessons.find((l) => l.id === lessonId)
+      if (lesson) return lessonToEditorDraft(lesson)
     }
-    return blankDraft(weekId)
+    return null
   })
+
+  // React-idiomatic derived state: once loading finishes and draft is still null,
+  // update it synchronously during render so React re-renders with the real data.
+  if (draft === null && !loading) {
+    let resolved = null
+    for (const w of weeks) {
+      const lesson = w.lessons.find((l) => l.id === lessonId)
+      if (lesson) { resolved = lessonToEditorDraft(lesson); break }
+    }
+    setDraft(resolved ?? blankDraft(weekId))
+  }
 
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -293,6 +330,9 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
       setSaving(false)
     }
   }
+
+  // ── Loading skeleton ──
+  if (draft === null) return <EditorSkeleton />
 
   // ── Preview mode ──
   if (previewMode) {

@@ -432,7 +432,7 @@ export default function CellDivisionDefense({
     setTutorialDone(true);
     busRef.current?.emit('resume');
     busRef.current?.emit('tutorialComplete');
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   function handleCellSplitComplete() {
     showCellSplitRef.current = false;

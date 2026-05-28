@@ -1,4 +1,5 @@
 /* Mystery Lab — procedural audio engine (Web Audio API, no external files) */
+/* eslint-disable no-empty */
 
 let ctx = null;
 let _muted = false;

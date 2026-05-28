@@ -6,12 +6,10 @@ import miguelPhoto from "../assets/MIGUEL.png";
 import aezenPhoto from "../assets/AEZEN.png";
 import cheskaPhoto from "../assets/CHESKA.jpg";
 import markPhoto from "../assets/MARK.jpg";
-import ariesPhoto from "../assets/ARIES.jpg";
 import miguelPhotoDark from "../assets/MIGUELDARKMODE.jpg";
 import aezenPhotoDark from "../assets/AEZENDARKMODE.jpg";
 import cheskaPhotoDark from "../assets/CHESKADARKMODE.jpg";
 import markPhotoDark from "../assets/MARKDARKMODE.jpg";
-import ariesPhotoDark from "../assets/ARIESDARKMODE.jpg";
 
 // Toggle the light/dark portrait cross-fade. When false, portraits stay in
 // light mode regardless of theme (light mode is the default).
