@@ -16,18 +16,8 @@ import ProgressBar from "./ProgressBar";
 import { cn } from "../lib/utils";
 
 // ── Slot imports ──
-import {
-  IntroSection,
-  KeyTermsSection,
-  ReasonCardsSection,
-  ImageCardsSection,
-  ConceptListSection,
-  ApplicationsSection,
-  TimelineSection,
-  ComparisonSection,
-  ScenarioSection,
-  DiagramSection,
-} from "./lesson-slots";
+import { SLOT_MAP } from './slotMap'
+export { SLOT_MAP }
 
 function ReferencesSection({ references }) {
   const ref = useRef(null);
@@ -98,19 +88,6 @@ function ReferencesSection({ references }) {
   );
 }
 
-// ── SLOT_MAP: maps type strings → components ──
-const SLOT_MAP = {
-  intro: IntroSection,
-  keyTerms: KeyTermsSection,
-  reasonCards: ReasonCardsSection,
-  imageCards: ImageCardsSection,
-  conceptList: ConceptListSection,
-  applications: ApplicationsSection,
-  timeline: TimelineSection,
-  comparison: ComparisonSection,
-  scenario: ScenarioSection,
-  diagram: DiagramSection,
-};
 
 export function LessonTemplate({
   lesson,

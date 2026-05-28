@@ -15,6 +15,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { GamesHubPage } from "./pages/GamesHubPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
+import { LessonEditorPage } from "./pages/LessonEditorPage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 import {
   fetchProgress,
@@ -144,6 +145,8 @@ function AppContent() {
   const [highlightedAchievement, setHighlightedAchievement] = useState(null);
   const [profileScrollTarget, setProfileScrollTarget] = useState(null);
   const [highlightedActivity, setHighlightedActivity] = useState(null);
+  const [editingLessonId, setEditingLessonId] = useState(null);
+  const [editingWeekId, setEditingWeekId] = useState(null);
   const [publishedWeekIds, setPublishedWeekIds] = useState(() =>
     getPublishedWeekIds(),
   );
@@ -156,7 +159,7 @@ function AppContent() {
   // Stable refs so interval callbacks always see the latest values without
   // being listed as effect deps (which would reset the interval constantly).
   const quizAttemptsRef = useRef(quizAttempts);
-  // eslint-disable-next-line react-hooks/refs
+   
   quizAttemptsRef.current = quizAttempts;
   const pushNotificationRef = useRef(null);
 
@@ -435,7 +438,7 @@ function AppContent() {
       return next;
     });
   };
-  // eslint-disable-next-line react-hooks/refs
+   
   pushNotificationRef.current = pushNotification;
   const dismissNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -490,11 +493,11 @@ function AppContent() {
     if (isInviteFlow.current) return;
     if (!user) return;
     const role = profile?.role ?? 'student';
-    /* eslint-disable react-hooks/set-state-in-effect */
+     
     if (role === 'admin') setCurrentView('admin');
     else if (role === 'teacher') setCurrentView('teacher-portal');
     else setCurrentView('lessons');
-    /* eslint-enable react-hooks/set-state-in-effect */
+     
   }, [loading, user, profile?.role]);
 
   const handleNavigate = (view, payload) => {
@@ -894,7 +897,8 @@ function AppContent() {
     currentView === "admin" ||
     currentView === "teacher-portal" ||
     currentView === "game-play" ||
-    currentView === "teacher-setup";
+    currentView === "teacher-setup" ||
+    currentView === "teacher-edit-lesson";
 
   const renderView = () => {
     switch (currentView) {
@@ -966,7 +970,26 @@ function AppContent() {
         return <AdminDashboardPage onNavigate={handleNavigate} />;
 
       case "teacher-portal":
-        return <TeacherPortalPage onBack={() => handleNavigate("home")} />;
+        return (
+          <TeacherPortalPage
+            onBack={() => handleNavigate("home")}
+            onEditLesson={(lessonId, weekId) => {
+              setEditingLessonId(lessonId ?? null);
+              setEditingWeekId(weekId ?? null);
+              handleNavigate("teacher-edit-lesson");
+            }}
+          />
+        );
+
+      case "teacher-edit-lesson":
+        return (
+          <LessonEditorPage
+            lessonId={editingLessonId}
+            weekId={editingWeekId}
+            onSave={() => handleNavigate("teacher-portal")}
+            onCancel={() => handleNavigate("teacher-portal")}
+          />
+        );
 
       case "profile":
         return (
