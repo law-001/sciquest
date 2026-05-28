@@ -1,30 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { useViewportBp } from '../useViewportBp';
 
 const STRAND_COUNT = 4;
 const HIT_WINDOW_MS = 1500;
 const MONO = '"Courier New", Courier, monospace';
 
-function useViewportBp() {
-  const [bp, setBp] = useState(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    return (w < 560 || h < 380) ? 'xs' : (w < 768 || h < 460) ? 'sm' : 'md';
-  });
-  useEffect(() => {
-    const sync = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      setBp((w < 560 || h < 380) ? 'xs' : (w < 768 || h < 460) ? 'sm' : 'md');
-    };
-    window.addEventListener('resize', sync);
-    return () => window.removeEventListener('resize', sync);
-  }, []);
-  return bp;
-}
-
-function StrandSVG({ color, strokeWidth }) {
+function StrandSVG({ color, strokeWidth, size = 88 }) {
+  const h = size / 2;
   return (
-    <svg width="88" height="44" viewBox="0 0 88 44" aria-hidden="true">
+    <svg width={size} height={h} viewBox="0 0 88 44" aria-hidden="true">
       <path
         d="M4,22 Q16,6 28,22 Q40,38 52,22 Q64,6 76,22 Q82,30 88,22"
         fill="none"
@@ -36,14 +20,14 @@ function StrandSVG({ color, strokeWidth }) {
   );
 }
 
-function ChromosomeX() {
+function ChromosomeX({ size = 44 }) {
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 44 44" aria-hidden="true">
       <rect x="9"  y="3"  width="10" height="17" rx="5" fill="#9B59B6" transform="rotate(-15 14 11)" />
       <rect x="25" y="3"  width="10" height="17" rx="5" fill="#9B59B6" transform="rotate(15 30 11)" />
       <rect x="9"  y="24" width="10" height="17" rx="5" fill="#9B59B6" transform="rotate(15 14 33)" />
       <rect x="25" y="24" width="10" height="17" rx="5" fill="#9B59B6" transform="rotate(-15 30 33)" />
-      <circle cx="22" cy="22" r="5" fill="#9B59B6" />
+      <circle cx="22" cy="22" r="5" fill={"#9B59B6"} />
     </svg>
   );
 }
@@ -54,9 +38,13 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
   const bp = useViewportBp();
   const isXS = bp === 'xs';
   const isSM = bp === 'sm';
-  const btnHeight = isXS ? 52 : isSM ? 64 : 82;
+  const btnHeight = isXS ? 50 : isSM ? 62 : 82;
   const gridGap = isXS ? 8 : isSM ? 10 : 14;
-  const gridMaxW = isXS ? 280 : isSM ? 320 : 360;
+  const gridMaxW = isXS ? 240 : isSM ? 300 : 360;
+  const strandSize = isXS ? 56 : isSM ? 70 : 88;
+  const strandStroke = isXS ? 2 : isSM ? 2.5 : 2.5;
+  const strandActiveStroke = isXS ? 2.8 : isSM ? 3.2 : 3.5;
+  const chrSize = isXS ? 28 : isSM ? 36 : 44;
   const [activeIndex, setActiveIndex] = useState(0);
   const [condensed, setCondensed] = useState(() => Array(STRAND_COUNT).fill(false));
   const [missCount, setMissCount] = useState(0);
@@ -205,7 +193,7 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
             >
               {isCond ? (
                 <div style={{ animation: 'cdd-condense-pop 0.35s ease-out forwards' }}>
-                  <ChromosomeX />
+                  <ChromosomeX size={chrSize} />
                 </div>
               ) : (
                 <div style={{
@@ -217,7 +205,8 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
                 }}>
                   <StrandSVG
                     color={isActive ? '#3BAFA9' : STRAND_BASE_COLORS[i]}
-                    strokeWidth={isActive ? 3.5 : 2.5}
+                    strokeWidth={isActive ? strandActiveStroke : strandStroke}
+                    size={strandSize}
                   />
                 </div>
               )}
