@@ -899,6 +899,7 @@ function LessonsSlot({
   onPublishedWeekIdsChange,
   openWeekIds,
   onOpenWeekIdsChange,
+  onEditLesson,
 }) {
   const { weeks } = useLessonsData();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
@@ -995,6 +996,15 @@ function LessonsSlot({
               </p>
             </div>
             <div className="ml-auto flex items-center gap-2">
+              {onEditLesson && (
+                <button
+                  onClick={() => onEditLesson(null, expandedWeek.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white font-bold text-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  New Lesson
+                </button>
+              )}
               <div className="relative">
                 <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
@@ -4219,7 +4229,7 @@ const SIDEBAR_TABS = [
 
 // --- Main page ---
 
-export function TeacherPortalPage({ onBack }) {
+export function TeacherPortalPage({ onBack, onEditLesson }) {
   const { signOut, profile, user } = useAuth();
   const { isDark, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("overview");
@@ -4563,6 +4573,7 @@ export function TeacherPortalPage({ onBack }) {
                 publishedQuizWeekIds={publishedQuizWeekIds}
                 onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
                 quizSettings={quizSettings}
+                onEditLesson={onEditLesson}
               />
             )}
           </div>
