@@ -202,9 +202,14 @@ function EmptyCanvas({ onAdd }) {
 // ── QuizEditorPage ────────────────────────────────────────────────────────────
 
 export function QuizEditorPage({ lessonId, onSave, onCancel }) {
-  const { getQuiz, weeks } = useLessonsData()
+  const { getQuiz, weeks, dbLessons, dbQuizzes } = useLessonsData()
 
   const lesson = weeks.flatMap(w => w.lessons).find(l => l.id === lessonId) ?? null
+
+  // A quiz is custom if its lesson is a teacher-created lesson, or if the
+  // existing DB quiz row was already marked custom (e.g. after a previous save).
+  const isCustomQuiz = !!(dbLessons?.get(lessonId)?.is_custom) ||
+                       !!(dbQuizzes?.get(lessonId)?.is_custom)
 
   const [draft, setDraft] = useState(() => {
     if (lessonId) {
@@ -233,31 +238,42 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
   function handleTypeChosen(type) {
     setPickingType(false)
     const newQ = { id: genId(), type, ...JSON.parse(JSON.stringify(DEFAULT_QUESTION_DATA[type] ?? {})) }
-    const newQs = [...draft.questions]
-    newQs.splice(insertAt, 0, newQ)
-    setDraft(d => ({ ...d, questions: newQs }))
-    setEditIdx(insertAt)
+    // Use captured at so the functional updater stays pure (no stale closure on insertAt)
+    const at = insertAt
+    setDraft(d => {
+      const newQs = [...d.questions]
+      newQs.splice(at, 0, newQ)
+      return { ...d, questions: newQs }
+    })
+    setEditIdx(at)
   }
 
   function handleQuestionSave(data) {
-    const newQs = [...draft.questions]
-    newQs[editIdx] = { id: newQs[editIdx].id, type: newQs[editIdx].type, ...data }
-    setDraft(d => ({ ...d, questions: newQs }))
+    const idx = editIdx
+    setDraft(d => {
+      const newQs = [...d.questions]
+      newQs[idx] = { id: newQs[idx].id, type: newQs[idx].type, ...data }
+      return { ...d, questions: newQs }
+    })
     setEditIdx(null)
   }
 
   function moveUp(i) {
     if (i === 0) return
-    const nq = [...draft.questions];
-    [nq[i - 1], nq[i]] = [nq[i], nq[i - 1]]
-    setDraft(d => ({ ...d, questions: nq }))
+    setDraft(d => {
+      const nq = [...d.questions];
+      [nq[i - 1], nq[i]] = [nq[i], nq[i - 1]]
+      return { ...d, questions: nq }
+    })
   }
 
   function moveDown(i) {
-    if (i >= draft.questions.length - 1) return
-    const nq = [...draft.questions];
-    [nq[i], nq[i + 1]] = [nq[i + 1], nq[i]]
-    setDraft(d => ({ ...d, questions: nq }))
+    setDraft(d => {
+      if (i >= d.questions.length - 1) return d
+      const nq = [...d.questions];
+      [nq[i], nq[i + 1]] = [nq[i + 1], nq[i]]
+      return { ...d, questions: nq }
+    })
   }
 
   function deleteQuestion(i) {
@@ -270,7 +286,7 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
     if (draft.questions.length === 0) { setSaveError('Add at least one question before saving.'); return }
     setSaving(true)
     try {
-      await upsertQuiz(draftToDbRow(draft))
+      await upsertQuiz({ ...draftToDbRow(draft), is_custom: isCustomQuiz })
       onSave()
     } catch (err) {
       setSaveError(err.message || 'Failed to save quiz.')
