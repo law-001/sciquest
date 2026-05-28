@@ -1016,6 +1016,78 @@ function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
   );
 }
 
+// Search bar that collapses to an icon-only button when closed and expands
+// into an input when the user clicks the icon. Auto-focuses on open and
+// returns to the icon view when blurred with an empty value (or via Escape).
+function CollapsibleSearch({
+  value,
+  onChange,
+  open,
+  onOpenChange,
+  placeholder = "Search…",
+  ariaLabel = "Search",
+  inputWidth = "w-44",
+}) {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => onOpenChange(true)}
+        title={ariaLabel}
+        aria-label={ariaLabel}
+        className="p-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-orange-50 dark:hover:bg-stone-700 transition-colors"
+      >
+        <Search className="w-4 h-4" />
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative flex items-center">
+      <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      <input
+        ref={inputRef}
+        type="text"
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            onChange("");
+            onOpenChange(false);
+          }
+        }}
+        onBlur={() => {
+          if (!value) onOpenChange(false);
+        }}
+        className={cn(
+          "pl-8 pr-8 py-1.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600",
+          inputWidth,
+        )}
+      />
+      <button
+        type="button"
+        onClick={() => {
+          onChange("");
+          onOpenChange(false);
+        }}
+        title="Close search"
+        aria-label="Close search"
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
 function LessonsSlot({
   data,
   sectionId,
@@ -1025,16 +1097,55 @@ function LessonsSlot({
   onOpenWeekIdsChange,
   onEditLesson,
 }) {
-  const { weeks, dbLessons } = useLessonsData();
+  const { weeksWithHidden: weeks, dbLessons } = useLessonsData();
   const { user } = useAuth();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [deletingLesson, setDeletingLesson] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [restoringLesson, setRestoringLesson] = useState(null);
   const [restoreLoading, setRestoreLoading] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
+  const [togglingLessonId, setTogglingLessonId] = useState(null);
+
+  // Per-lesson publish/hide toggle. For static lessons without a DB row yet,
+  // we upsert one with the current snapshot before flipping is_hidden.
+  async function handleToggleLessonHidden(lesson) {
+    if (togglingLessonId) return;
+    setTogglingLessonId(lesson.id);
+    try {
+      const dbRow = dbLessons.get(lesson.id);
+      const nextHidden = !(dbRow ? dbRow.is_hidden : lesson.isHidden);
+      if (dbRow) {
+        await upsertLesson({ ...dbRow, is_hidden: nextHidden });
+      } else {
+        await upsertLesson({
+          id: lesson.id,
+          week_id: lesson.weekId,
+          lesson_number: lesson.lessonNumber,
+          title: lesson.title,
+          badge: lesson.badge || null,
+          subtitle: lesson.subtitle || null,
+          read_time: lesson.readTime || "~15 min read",
+          xp: lesson.xp || 50,
+          hero_image_url: lesson.heroImage || null,
+          hero_image_alt: lesson.heroImageAlt || null,
+          sections: lesson.sections || [],
+          references: lesson.references || [],
+          layout: lesson.layout || [],
+          is_custom: false,
+          is_hidden: nextHidden,
+          created_by: user?.id || null,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to toggle lesson visibility:", err);
+    } finally {
+      setTogglingLessonId(null);
+    }
+  }
 
   async function handleDeleteConfirm(lesson) {
     setDeleteLoading(true);
@@ -1180,6 +1291,15 @@ function LessonsSlot({
               </p>
             </div>
             <div className="ml-auto flex items-center gap-2">
+              <CollapsibleSearch
+                value={search}
+                onChange={setSearch}
+                open={searchOpen}
+                onOpenChange={setSearchOpen}
+                placeholder="Search lessons…"
+                ariaLabel="Search lessons"
+                inputWidth="w-40"
+              />
               {onEditLesson && (
                 <button
                   onClick={() => onEditLesson(null, expandedWeek.id)}
@@ -1189,53 +1309,6 @@ function LessonsSlot({
                   New Lesson
                 </button>
               )}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search lessons…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 w-40"
-                />
-              </div>
-              {(() => {
-                const state = getWeekState(expandedWeek.id);
-                const meta =
-                  state === "open"
-                    ? {
-                        cls: "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-700 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
-                        Icon: Eye,
-                        label: "No Pre-requisites",
-                        nextLabel: "Click to hide",
-                      }
-                    : state === "published"
-                      ? {
-                          cls: "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200",
-                          Icon: Eye,
-                          label: "Published",
-                          nextLabel: "Click to open for all",
-                        }
-                      : {
-                          cls: "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
-                          Icon: EyeOff,
-                          label: "Hidden",
-                          nextLabel: "Click to publish",
-                        };
-                return (
-                  <button
-                    onClick={() => cycleWeekState(expandedWeek.id)}
-                    title={meta.nextLabel}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-colors",
-                      meta.cls,
-                    )}
-                  >
-                    <meta.Icon className="w-4 h-4" />
-                    {meta.label}
-                  </button>
-                );
-              })()}
             </div>
           </div>
 
@@ -1246,10 +1319,17 @@ function LessonsSlot({
                 const dbRow = dbLessons.get(lesson.id);
                 const isCustomLesson = !!dbRow?.is_custom;
                 const isEdited = !!dbRow && !dbRow.is_custom;
+                const isHidden = dbRow
+                  ? !!dbRow.is_hidden
+                  : !!lesson.isHidden;
+                const isToggling = togglingLessonId === lesson.id;
                 return (
                   <Card
                     key={lesson.id}
-                    className="p-5 group/lesson-card"
+                    className={cn(
+                      "p-5 group/lesson-card transition-opacity",
+                      isHidden && "opacity-60",
+                    )}
                     hoverable
                   >
                     {/* Card header: icon + action buttons */}
@@ -1258,7 +1338,27 @@ function LessonsSlot({
                         <BookOpen className="w-5 h-5 text-secondary-500" />
                       </div>
                       {onEditLesson && (
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover/lesson-card:opacity-100 transition-opacity duration-150">
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover/lesson-card:opacity-100 focus-within:opacity-100 transition-opacity duration-150">
+                          <button
+                            onClick={() => handleToggleLessonHidden(lesson)}
+                            disabled={isToggling}
+                            title={isHidden ? "Publish lesson" : "Hide lesson"}
+                            aria-label={isHidden ? "Publish lesson" : "Hide lesson"}
+                            aria-pressed={!isHidden}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-colors",
+                              isHidden
+                                ? "text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                : "text-secondary-500 hover:text-secondary-600 dark:text-secondary-400 dark:hover:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-900/20",
+                              isToggling && "opacity-60 cursor-not-allowed",
+                            )}
+                          >
+                            {isHidden ? (
+                              <EyeOff className="w-3.5 h-3.5" />
+                            ) : (
+                              <Eye className="w-3.5 h-3.5" />
+                            )}
+                          </button>
                           {isEdited && (
                             <button
                               onClick={() => {
@@ -1353,16 +1453,15 @@ function LessonsSlot({
                 All weeks · click a week to see its lessons
               </p>
             </div>
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search weeks or lessons…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 pr-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 w-52"
-              />
-            </div>
+            <CollapsibleSearch
+              value={search}
+              onChange={setSearch}
+              open={searchOpen}
+              onOpenChange={setSearchOpen}
+              placeholder="Search weeks or lessons…"
+              ariaLabel="Search weeks or lessons"
+              inputWidth="w-52"
+            />
           </div>
 
           {filteredWeeks.length > 0 ? (
@@ -1412,6 +1511,7 @@ function LessonsSlot({
                         ? () => {
                             setExpandedWeekId(week.id);
                             setSearch("");
+                            setSearchOpen(false);
                           }
                         : undefined
                     }
@@ -4257,6 +4357,7 @@ function QuizzesManagementSlot({
   const { weeks, getQuiz, dbQuizzes } = useLessonsData();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [openLessonId, setOpenLessonId] = useState(null);
   const [deletingQuizLesson, setDeletingQuizLesson] = useState(null);
   const [deleteQuizLoading, setDeleteQuizLoading] = useState(false);
@@ -4351,6 +4452,7 @@ function QuizzesManagementSlot({
               onClick={() => {
                 setExpandedWeekId(null);
                 setSearch("");
+                setSearchOpen(false);
               }}
               aria-label="Back to weeks"
               className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
@@ -4367,37 +4469,24 @@ function QuizzesManagementSlot({
               </p>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search quizzes…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 w-40"
-                />
-              </div>
-              <button
-                onClick={() => togglePublish(expandedWeek.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-colors",
-                  isWeekPublished(expandedWeek.id, publishedQuizWeekIds)
-                    ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                    : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
-                )}
-              >
-                {isWeekPublished(expandedWeek.id, publishedQuizWeekIds) ? (
-                  <>
-                    <Eye className="w-4 h-4" />
-                    Published
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-4 h-4" />
-                    Hidden
-                  </>
-                )}
-              </button>
+              <CollapsibleSearch
+                value={search}
+                onChange={setSearch}
+                open={searchOpen}
+                onOpenChange={setSearchOpen}
+                placeholder="Search quizzes…"
+                ariaLabel="Search quizzes"
+                inputWidth="w-40"
+              />
+              {onEditQuiz && (
+                <button
+                  onClick={() => onEditQuiz(null, expandedWeek.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white font-bold text-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  New Quiz
+                </button>
+              )}
             </div>
           </div>
 
@@ -4432,7 +4521,7 @@ function QuizzesManagementSlot({
                     currentShow={currentShow}
                     open={openLessonId === lesson.id}
                     onToggle={() => toggleLessonOpen(lesson.id)}
-                    onEdit={() => onEditQuiz?.(lesson.id)}
+                    onEdit={() => onEditQuiz?.(lesson.id, expandedWeek.id)}
                     onDelete={() => {
                       setDeleteQuizError(null);
                       setDeletingQuizLesson(lesson);
@@ -4463,16 +4552,15 @@ function QuizzesManagementSlot({
                 All weeks · click a week to manage its quizzes
               </p>
             </div>
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search weeks or quizzes…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 pr-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 w-52"
-              />
-            </div>
+            <CollapsibleSearch
+              value={search}
+              onChange={setSearch}
+              open={searchOpen}
+              onOpenChange={setSearchOpen}
+              placeholder="Search weeks or quizzes…"
+              ariaLabel="Search weeks or quizzes"
+              inputWidth="w-52"
+            />
           </div>
 
           {filteredWeeks.length > 0 ? (
@@ -4503,6 +4591,7 @@ function QuizzesManagementSlot({
                         ? () => {
                             setExpandedWeekId(week.id);
                             setSearch("");
+                            setSearchOpen(false);
                           }
                         : undefined
                     }
@@ -4633,10 +4722,12 @@ const SIDEBAR_TABS = [
 
 // --- Main page ---
 
-export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz }) {
+export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz, activeTab: activeTabProp, onActiveTabChange }) {
   const { signOut, profile, user } = useAuth();
   const { isDark, toggle } = useTheme();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTabLocal, setActiveTabLocal] = useState("overview");
+  const activeTab = activeTabProp ?? activeTabLocal;
+  const setActiveTab = onActiveTabChange ?? setActiveTabLocal;
   const [selectedSectionId, setSelectedSectionId] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [data, setData] = useState(null);

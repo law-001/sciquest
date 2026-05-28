@@ -11,7 +11,7 @@ CREATE TABLE lessons (
   hero_image_url text,                  -- Supabase Storage URL or external
   hero_image_alt text,
   sections jsonb NOT NULL DEFAULT '[]'::jsonb,    -- ["Overview", "Breakdown", ...]
-  references jsonb NOT NULL DEFAULT '[]'::jsonb,  -- [{label, url}]
+  "references" jsonb NOT NULL DEFAULT '[]'::jsonb,  -- [{label, url}]
   layout jsonb NOT NULL DEFAULT '[]'::jsonb,      -- [{type, heading, data}, ...]
   is_custom boolean NOT NULL DEFAULT false,       -- true = no static counterpart
   is_hidden boolean NOT NULL DEFAULT false,       -- soft-delete for static IDs
@@ -50,16 +50,16 @@ CREATE POLICY quizzes_select_all ON quizzes FOR SELECT
 -- Only teachers/admins can INSERT / UPDATE / DELETE
 CREATE POLICY lessons_write_teacher ON lessons FOR ALL
   TO authenticated USING (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher','admin'))
+    EXISTS (SELECT 1 FROM staff s WHERE s.id = auth.uid() AND s.role IN ('teacher','admin'))
   ) WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher','admin'))
+    EXISTS (SELECT 1 FROM staff s WHERE s.id = auth.uid() AND s.role IN ('teacher','admin'))
   );
 
 CREATE POLICY quizzes_write_teacher ON quizzes FOR ALL
   TO authenticated USING (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher','admin'))
+    EXISTS (SELECT 1 FROM staff s WHERE s.id = auth.uid() AND s.role IN ('teacher','admin'))
   ) WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher','admin'))
+    EXISTS (SELECT 1 FROM staff s WHERE s.id = auth.uid() AND s.role IN ('teacher','admin'))
   );
 
 -- ── Auto-bump updated_at ─────────────────────────────────────────────

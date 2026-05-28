@@ -150,6 +150,8 @@ function AppContent() {
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editingWeekId, setEditingWeekId] = useState(null);
   const [editingQuizLessonId, setEditingQuizLessonId] = useState(null);
+  const [editingQuizWeekId, setEditingQuizWeekId] = useState(null);
+  const [teacherPortalTab, setTeacherPortalTab] = useState("overview");
   const [publishedWeekIds, setPublishedWeekIds] = useState(() =>
     getPublishedWeekIds(),
   );
@@ -981,13 +983,18 @@ function AppContent() {
         return (
           <TeacherPortalPage
             onBack={() => handleNavigate("home")}
+            activeTab={teacherPortalTab}
+            onActiveTabChange={setTeacherPortalTab}
             onEditLesson={(lessonId, weekId) => {
               setEditingLessonId(lessonId ?? null);
               setEditingWeekId(weekId ?? null);
+              setTeacherPortalTab("lessons");
               handleNavigate("teacher-edit-lesson");
             }}
-            onEditQuiz={(lessonId) => {
+            onEditQuiz={(lessonId, weekId) => {
               setEditingQuizLessonId(lessonId ?? null);
+              setEditingQuizWeekId(weekId ?? null);
+              setTeacherPortalTab("quiz-management");
               handleNavigate("teacher-edit-quiz");
             }}
           />
@@ -1007,6 +1014,7 @@ function AppContent() {
         return (
           <QuizEditorPage
             lessonId={editingQuizLessonId}
+            weekId={editingQuizWeekId}
             onSave={() => handleNavigate("teacher-portal")}
             onCancel={() => handleNavigate("teacher-portal")}
           />
