@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { useLessonsData } from '../context/LessonsDataContext'
 import { upsertQuiz } from '../lib/quizzes'
-import { QUESTION_MAP, TYPE_LABELS } from '../components/QuizContainer'
+import { TYPE_LABELS } from '../components/questionMap'
 import EditableSlotFrame from '../components/EditableSlotFrame'
 import QuestionPickerModal from '../components/QuestionPickerModal'
 import { QUESTION_FORM_MAP, QUESTION_META, DEFAULT_QUESTION_DATA } from '../components/quiz-slot-forms'

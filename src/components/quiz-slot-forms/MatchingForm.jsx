@@ -50,7 +50,13 @@ export default function MatchingForm({ initialData, onSubmit, onCancel }) {
   function removeRight(i) {
     if (rightItems.length <= 2) return
     setRightItems(rightItems.filter((_, idx) => idx !== i))
-    setPairings(pairings.map(p => (p === String(i) ? '' : p > String(i) ? String(Number(p) - 1) : p)))
+    setPairings(pairings.map(p => {
+      if (p === '') return ''
+      const n = Number(p)
+      if (n === i) return ''
+      if (n > i) return String(n - 1)
+      return p
+    }))
   }
 
   function handleSubmit(e) {
