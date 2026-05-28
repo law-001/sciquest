@@ -180,6 +180,29 @@ function MetaField({ label, value, onChange, type = 'text', placeholder, classNa
   )
 }
 
+// ── QuizEditorSkeleton ────────────────────────────────────────────────────────
+
+function QuizEditorSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
+      <div className="sticky top-0 z-30 bg-[#fdf6e3]/95 dark:bg-stone-900/95 border-b border-orange-200/60 dark:border-stone-700 h-14" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-pulse">
+        <div className="bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 p-6 space-y-4">
+          <div className="h-3 w-24 bg-stone-200 dark:bg-stone-700 rounded" />
+          <div className="h-12 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+          <div className="h-16 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-10 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+            <div className="h-10 bg-stone-200 dark:bg-stone-700 rounded-xl" />
+          </div>
+        </div>
+        <div className="h-3 w-24 bg-stone-200 dark:bg-stone-700 rounded mx-1" />
+        <div className="h-52 bg-stone-100 dark:bg-stone-800 rounded-2xl border-2 border-dashed border-stone-200 dark:border-stone-700" />
+      </div>
+    </div>
+  )
+}
+
 // ── EmptyCanvas ───────────────────────────────────────────────────────────────
 
 function EmptyCanvas({ onAdd }) {
@@ -189,7 +212,7 @@ function EmptyCanvas({ onAdd }) {
         <Plus className="w-7 h-7 text-primary-500" />
       </div>
       <h3 className="text-base font-bold text-stone-700 dark:text-stone-300 mb-1">No questions yet</h3>
-      <p className="text-sm text-stone-400 dark:text-stone-500 mb-5">Add your first question to get started</p>
+      <p className="text-sm text-stone-400 dark:text-stone-500 mb-5">Add your first question to build the quiz</p>
       <button type="button" onClick={onAdd}
         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm transition-colors">
         <Plus className="w-4 h-4" />
@@ -202,7 +225,7 @@ function EmptyCanvas({ onAdd }) {
 // ── QuizEditorPage ────────────────────────────────────────────────────────────
 
 export function QuizEditorPage({ lessonId, onSave, onCancel }) {
-  const { getQuiz, weeks, dbLessons, dbQuizzes } = useLessonsData()
+  const { getQuiz, weeks, dbLessons, dbQuizzes, loading } = useLessonsData()
 
   const lesson = weeks.flatMap(w => w.lessons).find(l => l.id === lessonId) ?? null
 
@@ -211,13 +234,20 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
   const isCustomQuiz = !!(dbLessons?.get(lessonId)?.is_custom) ||
                        !!(dbQuizzes?.get(lessonId)?.is_custom)
 
+  // draft is null only while waiting for a custom quiz's DB row to arrive.
   const [draft, setDraft] = useState(() => {
-    if (lessonId) {
-      const existing = getQuiz(lessonId)
-      if (existing) return quizToEditorDraft(existing, lessonId)
-    }
-    return blankDraft(lessonId)
+    if (!lessonId) return blankDraft(lessonId)
+    const existing = getQuiz(lessonId)
+    if (existing) return quizToEditorDraft(existing, lessonId)
+    return null
   })
+
+  // React-idiomatic derived state: update synchronously during render once
+  // loading completes so the skeleton resolves to the real data on next render.
+  if (draft === null && !loading) {
+    const existing = getQuiz(lessonId)
+    setDraft(existing ? quizToEditorDraft(existing, lessonId) : blankDraft(lessonId))
+  }
 
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -279,6 +309,8 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
   function deleteQuestion(i) {
     setDraft(d => ({ ...d, questions: d.questions.filter((_, idx) => idx !== i) }))
   }
+
+  if (draft === null) return <QuizEditorSkeleton />
 
   async function handleSave() {
     setSaveError(null)

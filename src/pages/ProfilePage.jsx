@@ -733,7 +733,7 @@ export function ProfilePage({
   useEffect(() => {
     const key = highlightAchievement?.key;
     if (!key) return;
-    setActiveHighlight(key);
+    const highlightId = setTimeout(() => setActiveHighlight(key), 0);
     const scrollId = setTimeout(() => {
       achievementsRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -742,6 +742,7 @@ export function ProfilePage({
     }, 250);
     const clearId = setTimeout(() => setActiveHighlight(null), 3500);
     return () => {
+      clearTimeout(highlightId);
       clearTimeout(scrollId);
       clearTimeout(clearId);
     };
@@ -752,9 +753,9 @@ export function ProfilePage({
   useEffect(() => {
     const lessonId = highlightActivity?.lessonId;
     if (!lessonId) return;
-    setActiveActivityHighlight(lessonId);
+    const startId = setTimeout(() => setActiveActivityHighlight(lessonId), 0);
     const id = setTimeout(() => setActiveActivityHighlight(null), 3500);
-    return () => clearTimeout(id);
+    return () => { clearTimeout(startId); clearTimeout(id); };
   }, [highlightActivity?.lessonId, highlightActivity?.token]);
 
   // Scroll target — when arriving here from a notification (e.g. a

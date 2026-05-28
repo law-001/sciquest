@@ -47,7 +47,7 @@ import { fetchAllSections, createSection } from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
 import { useLessonsData } from "../context/LessonsDataContext";
-import { deleteLesson, upsertLesson } from "../lib/lessons";
+import { deleteLesson, upsertLesson, restoreStaticLesson } from "../lib/lessons";
 import { deleteQuiz } from "../lib/quizzes";
 import {
   getPublishedWeekIds,
@@ -81,7 +81,7 @@ import {
 
 function OverviewSlot({ data, sectionId, onGrade, publishedWeekIds }) {
   const { weeks } = useLessonsData();
-  const { sections, lessons, submissions } = data;
+  const { sections, submissions } = data;
   const filteredSubs = sectionId
     ? submissions.filter((s) => s.section === sectionId)
     : submissions;
@@ -969,6 +969,53 @@ function DeleteLessonModal({ lesson, isCustom, onConfirm, onClose, isLoading, er
   );
 }
 
+// ── Restore default confirmation modal ────────────────────────────────────────
+
+function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+            <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-stone-900 dark:text-white">Restore Default</h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">Your edits will be removed</p>
+          </div>
+        </div>
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+          Restore{" "}
+          <strong className="text-stone-900 dark:text-white">{lesson.title}</strong>{" "}
+          to its original content? All your edits will be discarded and students will see the default version.
+        </p>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <button
+            onClick={() => onConfirm(lesson)}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white font-bold text-sm transition-colors"
+          >
+            {isLoading ? "Restoring…" : "Restore Default"}
+          </button>
+        </div>
+        {error && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function LessonsSlot({
   data,
   sectionId,
@@ -985,6 +1032,9 @@ function LessonsSlot({
   const [deletingLesson, setDeletingLesson] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [restoringLesson, setRestoringLesson] = useState(null);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+  const [restoreError, setRestoreError] = useState(null);
 
   async function handleDeleteConfirm(lesson) {
     setDeleteLoading(true);
@@ -1023,6 +1073,19 @@ function LessonsSlot({
       setDeleteError(err.message || "Failed to delete lesson.");
     } finally {
       setDeleteLoading(false);
+    }
+  }
+
+  async function handleRestoreConfirm(lesson) {
+    setRestoreLoading(true);
+    setRestoreError(null);
+    try {
+      await restoreStaticLesson(lesson.id);
+      setRestoringLesson(null);
+    } catch (err) {
+      setRestoreError(err.message || "Failed to restore lesson.");
+    } finally {
+      setRestoreLoading(false);
     }
   }
 
@@ -1196,6 +1259,19 @@ function LessonsSlot({
                       </div>
                       {onEditLesson && (
                         <div className="flex items-center gap-0.5 opacity-0 group-hover/lesson-card:opacity-100 transition-opacity duration-150">
+                          {isEdited && (
+                            <button
+                              onClick={() => {
+                                setRestoreError(null);
+                                setRestoringLesson(lesson);
+                              }}
+                              title="Restore default"
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                              aria-label="Restore default"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={() =>
                               onEditLesson(lesson.id, expandedWeek.id)
@@ -1407,6 +1483,19 @@ function LessonsSlot({
           }}
           isLoading={deleteLoading}
           error={deleteError}
+        />
+      )}
+
+      {restoringLesson && (
+        <RestoreDefaultModal
+          lesson={restoringLesson}
+          onConfirm={handleRestoreConfirm}
+          onClose={() => {
+            setRestoringLesson(null);
+            setRestoreError(null);
+          }}
+          isLoading={restoreLoading}
+          error={restoreError}
         />
       )}
     </div>
@@ -3507,7 +3596,7 @@ function GradeModal({ submission, onClose, onSaved }) {
   const [error, setError] = useState(null);
 
   const hasValue = percent !== "" && !Number.isNaN(Number(percent));
-  const { pct, score, xp } = previewGrade(percent, maxScore);
+  const { pct, xp } = previewGrade(percent, maxScore);
 
   async function handleSave() {
     setSaving(true);

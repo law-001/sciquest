@@ -102,15 +102,24 @@ function mergeQuiz(staticQuiz, dbRow) {
 export function LessonsDataProvider({ children }) {
   const [dbLessons, setDbLessons] = useState(() => getCachedLessons())
   const [dbQuizzes, setDbQuizzes] = useState(() => getCachedQuizzes())
+  // loading is true until the first DB fetch completes (cache gives an immediate
+  // first paint but custom-lesson editors need the real data before initializing)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAllLessons().then(setDbLessons)
-    fetchAllQuizzes().then(setDbQuizzes)
+    let active = true
+    Promise.all([fetchAllLessons(), fetchAllQuizzes()]).then(([l, q]) => {
+      if (!active) return
+      setDbLessons(l)
+      setDbQuizzes(q)
+      setLoading(false)
+    })
 
     const unsubLessons = subscribeToLessonChanges(setDbLessons)
     const unsubQuizzes = subscribeToQuizChanges(setDbQuizzes)
 
     return () => {
+      active = false
       unsubLessons()
       unsubQuizzes()
     }
@@ -124,8 +133,8 @@ export function LessonsDataProvider({ children }) {
   )
 
   const value = useMemo(
-    () => ({ weeks, getQuiz, dbLessons, dbQuizzes }),
-    [weeks, getQuiz, dbLessons, dbQuizzes],
+    () => ({ weeks, getQuiz, dbLessons, dbQuizzes, loading }),
+    [weeks, getQuiz, dbLessons, dbQuizzes, loading],
   )
 
   return <LessonsDataCtx.Provider value={value}>{children}</LessonsDataCtx.Provider>

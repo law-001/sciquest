@@ -71,6 +71,9 @@ const TESTS = [
 ];
 
 function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypotheses, observations = [] }) {
+  const [active, setActive] = useState(null);
+  const [phase, setPhase] = useState("idle");
+
   if (observations.length === 0) {
     return (
       <div data-screen-label="06 Lab Tent" className="col gap-4">
@@ -100,9 +103,6 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
       </div>
     );
   }
-
-  const [active, setActive] = useState(null);   // currently-running test
-  const [phase, setPhase] = useState("idle");   // idle | running | done
 
   const startTest = (test) => {
     if (energy < test.cost) { mlAudio.error(); return; }

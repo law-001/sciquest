@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
@@ -116,19 +116,20 @@ function AppContent() {
   //   3. Expired/used invite: ?error=access_denied&error_code=otp_expired
   const _urlParams  = new URLSearchParams(window.location.search);
   const _hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-  const isInviteFlow = useRef(
+  // Plain variables — read once at mount from URL params (never change after load).
+  const _isOnInvite = (
     _urlParams.get('type') === 'invite' ||
     _hashParams.get('type') === 'invite' ||
     _urlParams.get('error_code') === 'otp_expired' ||
     _hashParams.get('error_code') === 'otp_expired'
   );
-  const isExpiredInvite = useRef(
+  const _isExpiredInvite = (
     _urlParams.get('error_code') === 'otp_expired' ||
     _hashParams.get('error_code') === 'otp_expired'
   );
-  const [currentView, setCurrentView] = useState(
-    () => isInviteFlow.current ? 'teacher-setup' : 'home'
-  );
+  // Ref so the onComplete handler can clear it without a re-render.
+  const isInviteFlow = useRef(_isOnInvite);
+  const [currentView, setCurrentView] = useState(_isOnInvite ? 'teacher-setup' : 'home');
   const initialRedirectDone = useRef(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
@@ -161,9 +162,11 @@ function AppContent() {
   // Stable refs so interval callbacks always see the latest values without
   // being listed as effect deps (which would reset the interval constantly).
   const quizAttemptsRef = useRef(quizAttempts);
-   
-  quizAttemptsRef.current = quizAttempts;
   const pushNotificationRef = useRef(null);
+  // Keep refs in sync with their latest values after each render.
+  // useLayoutEffect ensures callbacks always see fresh state without
+  // needing to list every state variable as an effect dependency.
+  useLayoutEffect(() => { quizAttemptsRef.current = quizAttempts; }, [quizAttempts]);
 
   const isLoggedIn = !!user;
   const isStudent = profile?.role === "student";
@@ -413,6 +416,7 @@ function AppContent() {
   // any leftover state from a previous account before loading this user's
   // own history. Non-students get an empty list (no bubble is rendered).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotifications([]);
     if (!user?.id || !isStudent) {
       setNotifHistory([]);
@@ -441,7 +445,7 @@ function AppContent() {
     });
   };
    
-  pushNotificationRef.current = pushNotification;
+  useLayoutEffect(() => { pushNotificationRef.current = pushNotification; });
   const dismissNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
@@ -473,7 +477,7 @@ function AppContent() {
     setUnlockedAchievements((prev) =>
       prev.includes(BLACKED_KEY) ? prev : [...prev, BLACKED_KEY],
     );
-    pushNotification({
+    pushNotificationRef.current?.({
       kind: "achievement",
       label: achievementLabel(BLACKED_KEY),
       amount: achievementXp(BLACKED_KEY),
@@ -496,19 +500,20 @@ function AppContent() {
     if (!user) return;
     const role = profile?.role ?? 'student';
      
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (role === 'admin') setCurrentView('admin');
     else if (role === 'teacher') setCurrentView('teacher-portal');
     else setCurrentView('lessons');
      
   }, [loading, user, profile?.role]);
 
-  const handleNavigate = (view, payload) => {
+  const handleNavigate = useCallback((view, payload) => {
     if (view === 'game-play' && payload?.gameId) {
       setActiveGameId(payload.gameId);
     }
     if (view === 'profile' && payload?.achievementKey) {
-      // Use a fresh token so re-clicking the same achievement notification
-      // re-triggers the highlight effect on ProfilePage.
+      // Fresh token so re-clicking the same achievement notification re-triggers
+      // the highlight effect on ProfilePage.
       setHighlightedAchievement({ key: payload.achievementKey, token: Date.now() });
     } else if (view !== 'profile') {
       setHighlightedAchievement(null);
@@ -525,7 +530,7 @@ function AppContent() {
     }
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, []);
 
   // Called by AuthModal after successful login — navigates by role
   const handleLogin = (role) => {
@@ -1046,7 +1051,7 @@ function AppContent() {
       case "teacher-setup":
         return (
           <TeacherSetupPage
-            expired={isExpiredInvite.current}
+            expired={_isExpiredInvite}
             onComplete={() => {
               isInviteFlow.current = false;
               handleNavigate("teacher-portal");

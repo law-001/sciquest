@@ -1,7 +1,6 @@
 // Week 2: Particle Model of Matter — Grade 7 Science
 
 import matter from "../assets/week2/matter.webp";
-import lesson5hero from "../assets/week2/lesson5hero.jpg";
 import solid from "../assets/week2/solid.webp";
 import liquid from "../assets/week2/liquid.jpg";
 import gas from "../assets/week2/gas.jpg";
