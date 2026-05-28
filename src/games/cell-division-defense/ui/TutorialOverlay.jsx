@@ -115,10 +115,10 @@ function Card({ children, style }) {
       background: 'rgba(4,12,24,0.97)',
       border: '1.5px solid rgba(59,175,169,0.4)',
       borderRadius: 18,
-      padding: 'clamp(18px,3vh,26px) clamp(18px,3vw,26px)',
+      padding: 'clamp(12px,2.5vh,26px) clamp(14px,3vw,26px)',
       fontFamily: MONO,
       boxShadow: '0 0 50px rgba(59,175,169,0.12), 0 20px 50px rgba(0,0,0,0.7)',
-      width: 'min(440px, calc(100vw - 48px))',
+      width: 'min(440px, calc(100vw - 24px))',
       ...style,
     }}>
       {children}
@@ -140,16 +140,16 @@ function STitle({ children }) {
 
 function EntityRow({ item }) {
   return (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
       <Dot color={item.color} />
-      <div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: item.color, letterSpacing: '0.07em' }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 'clamp(11px,1.6vw,12px)', fontWeight: 700, color: item.color, letterSpacing: '0.07em' }}>
             {item.name}
           </span>
           <Badge label={item.role} color={item.color} />
         </div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.58)', lineHeight: 1.55 }}>
+        <div style={{ fontSize: 'clamp(10px,1.5vw,11px)', color: 'rgba(255,255,255,0.58)', lineHeight: 1.5 }}>
           {item.desc}
         </div>
       </div>
@@ -164,19 +164,20 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
   const isModal = MODAL_STEPS.has(step);
   const key = STEPS[step];
 
-  // Pause on mount, resume on unmount (cleanup)
+  // Keep the underlying scene paused for the whole tutorial — including the
+  // non-modal banner steps (place / atp). Otherwise the interphase timer keeps
+  // ticking and the cell + ATP pickup animations play while the user is still
+  // reading the prompt, which can auto-advance the game before they're ready.
+  // Resume happens on unmount when the tutorial actually completes.
   useEffect(() => {
     onBusEmit('pause');
     return () => onBusEmit('resume');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pause or resume as step changes
+  // Re-assert pause on every step transition so any external resume (e.g. the
+  // parent's blocking-modal effect after tutorialDone flips) can't leak in.
   useEffect(() => {
-    if (MODAL_STEPS.has(step)) {
-      onBusEmit('pause');
-      return () => onBusEmit('resume');
-    }
-    onBusEmit('resume');
+    onBusEmit('pause');
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Per-step side effects
@@ -354,7 +355,7 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
             {/* ── TOWERS ────────────────────────────────── */}
             {key === 'towers' && <>
               <STitle>YOUR DEFENDERS</STitle>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {TOWERS.map(t => <EntityRow key={t.name} item={t} />)}
               </div>
               <div style={{ marginTop: 18 }}>
@@ -365,7 +366,7 @@ export function TutorialOverlay({ atp, onBusEmit, onComplete }) {
             {/* ── ENEMIES ───────────────────────────────── */}
             {key === 'enemies' && <>
               <STitle>KNOW YOUR ENEMIES</STitle>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {ENEMIES.map(e => <EntityRow key={e.name} item={e} />)}
               </div>
               <div style={{ marginTop: 18 }}>
