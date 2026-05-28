@@ -47,6 +47,7 @@ import { fetchAllSections, createSection } from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
 import { useLessonsData } from "../context/LessonsDataContext";
+import { deleteLesson, upsertLesson } from "../lib/lessons";
 import {
   getPublishedWeekIds,
   savePublishedWeekIds,
@@ -892,6 +893,81 @@ function SectionsSlot({
   );
 }
 
+// ── Delete lesson confirmation modal ─────────────────────────────────────────
+
+function DeleteLessonModal({ lesson, isCustom, onConfirm, onClose, isLoading, error }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+            <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-stone-900 dark:text-white">
+              {isCustom ? "Delete Lesson" : "Hide Lesson"}
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {isCustom ? "This cannot be undone" : "Can be restored later"}
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+          {isCustom ? (
+            <>
+              Permanently delete{" "}
+              <strong className="text-stone-900 dark:text-white">
+                {lesson.title}
+              </strong>
+              ? It will be removed from all student views immediately.
+            </>
+          ) : (
+            <>
+              Hide{" "}
+              <strong className="text-stone-900 dark:text-white">
+                {lesson.title}
+              </strong>{" "}
+              from students? The original content is preserved — you can restore
+              it from the Lesson Editor later.
+            </>
+          )}
+        </p>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <button
+            onClick={() => onConfirm(lesson)}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold text-sm transition-colors"
+          >
+            {isLoading
+              ? "Deleting…"
+              : isCustom
+                ? "Delete Permanently"
+                : "Hide Lesson"}
+          </button>
+        </div>
+        {error && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function LessonsSlot({
   data,
   sectionId,
@@ -901,9 +977,53 @@ function LessonsSlot({
   onOpenWeekIdsChange,
   onEditLesson,
 }) {
-  const { weeks } = useLessonsData();
+  const { weeks, dbLessons } = useLessonsData();
+  const { user } = useAuth();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
+  const [deletingLesson, setDeletingLesson] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
+  async function handleDeleteConfirm(lesson) {
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      const dbRow = dbLessons.get(lesson.id);
+      if (dbRow?.is_custom) {
+        // Custom lesson — hard delete
+        await deleteLesson(lesson.id, { isStatic: false });
+      } else if (dbRow) {
+        // Forked static lesson (has DB row but not custom) — soft-delete via UPDATE
+        await deleteLesson(lesson.id, { isStatic: true });
+      } else {
+        // Pure static lesson — no DB row yet; upsert with is_hidden=true
+        await upsertLesson({
+          id: lesson.id,
+          week_id: lesson.weekId,
+          lesson_number: lesson.lessonNumber,
+          title: lesson.title,
+          badge: lesson.badge || null,
+          subtitle: lesson.subtitle || null,
+          read_time: lesson.readTime || "~15 min read",
+          xp: lesson.xp || 50,
+          hero_image_url: lesson.heroImage || null,
+          hero_image_alt: lesson.heroImageAlt || null,
+          sections: lesson.sections || [],
+          references: lesson.references || [],
+          layout: lesson.layout || [],
+          is_custom: false,
+          is_hidden: true,
+          created_by: user?.id || null,
+        });
+      }
+      setDeletingLesson(null);
+    } catch (err) {
+      setDeleteError(err.message || "Failed to delete lesson.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
 
   // Weeks have three states a teacher can cycle through:
   //   hidden    → not in publish set, not in open set        (locked for everyone)
@@ -1059,22 +1179,71 @@ function LessonsSlot({
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredLessons.map((lesson) => {
                 const pct = getCompletion(lesson.id);
+                const dbRow = dbLessons.get(lesson.id);
+                const isCustomLesson = !!dbRow?.is_custom;
+                const isEdited = !!dbRow && !dbRow.is_custom;
                 return (
-                  <Card key={lesson.id} className="p-5" hoverable>
-                    <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 flex items-center justify-center mb-4">
-                      <BookOpen className="w-5 h-5 text-secondary-500" />
+                  <Card
+                    key={lesson.id}
+                    className="p-5 group/lesson-card"
+                    hoverable
+                  >
+                    {/* Card header: icon + action buttons */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-secondary-500" />
+                      </div>
+                      {onEditLesson && (
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover/lesson-card:opacity-100 transition-opacity duration-150">
+                          <button
+                            onClick={() =>
+                              onEditLesson(lesson.id, expandedWeek.id)
+                            }
+                            title="Edit lesson"
+                            className="p-1.5 rounded-lg text-stone-400 hover:text-secondary-600 dark:hover:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
+                            aria-label="Edit lesson"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteError(null);
+                              setDeletingLesson(lesson);
+                            }}
+                            title={isCustomLesson ? "Delete lesson" : "Hide lesson"}
+                            className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            aria-label={isCustomLesson ? "Delete lesson" : "Hide lesson"}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Title + source badge */}
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h3 className="text-sm font-bold text-stone-900 dark:text-white leading-snug">
                         {lesson.title}
                       </h3>
-                      <Badge variant="secondary" className="text-xs shrink-0">
-                        Published
-                      </Badge>
+                      {isCustomLesson ? (
+                        <span className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border border-secondary-200 dark:border-secondary-700/50">
+                          Custom
+                        </span>
+                      ) : isEdited ? (
+                        <span className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                          Edited
+                        </span>
+                      ) : (
+                        <span className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400">
+                          Static
+                        </span>
+                      )}
                     </div>
+
                     <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
-                      {expandedWeek.category}
+                      {lesson.badge || expandedWeek.category}
                     </p>
+
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
                         <span>Completion</span>
@@ -1224,6 +1393,20 @@ function LessonsSlot({
             </div>
           )}
         </>
+      )}
+
+      {deletingLesson && (
+        <DeleteLessonModal
+          lesson={deletingLesson}
+          isCustom={!!dbLessons.get(deletingLesson.id)?.is_custom}
+          onConfirm={handleDeleteConfirm}
+          onClose={() => {
+            setDeletingLesson(null);
+            setDeleteError(null);
+          }}
+          isLoading={deleteLoading}
+          error={deleteError}
+        />
       )}
     </div>
   );
