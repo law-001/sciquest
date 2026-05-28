@@ -1,0 +1,432 @@
+import React, { useState } from 'react'
+import {
+  ArrowLeft,
+  Save,
+  Plus,
+  AlertCircle,
+  Loader2,
+  Clock,
+  Hash,
+} from 'lucide-react'
+import { useLessonsData } from '../context/LessonsDataContext'
+import { upsertQuiz } from '../lib/quizzes'
+import { QUESTION_MAP, TYPE_LABELS } from '../components/QuizContainer'
+import EditableSlotFrame from '../components/EditableSlotFrame'
+import QuestionPickerModal from '../components/QuestionPickerModal'
+import { QUESTION_FORM_MAP, QUESTION_META, DEFAULT_QUESTION_DATA } from '../components/quiz-slot-forms'
+import Badge from '../components/Badge'
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function blankDraft(lessonId) {
+  return {
+    lessonId: lessonId || '',
+    title: '',
+    description: '',
+    timeLimit: 900,
+    questions: [],
+  }
+}
+
+function quizToEditorDraft(quiz, lessonId) {
+  return {
+    lessonId: lessonId || quiz.lessonId || '',
+    title: quiz.title || '',
+    description: quiz.description || '',
+    timeLimit: quiz.timeLimit ?? 900,
+    questions: JSON.parse(JSON.stringify(quiz.questions || [])),
+  }
+}
+
+function draftToDbRow(draft) {
+  return {
+    lesson_id: draft.lessonId,
+    title: draft.title,
+    description: draft.description || null,
+    time_limit: Number(draft.timeLimit) || 900,
+    questions: draft.questions,
+    is_custom: false,
+    is_hidden: false,
+  }
+}
+
+function genId() {
+  try { return crypto.randomUUID() } catch { return `q-${Date.now()}-${Math.random().toString(36).slice(2)}` }
+}
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return s ? `${m}m ${s}s` : `${m} min`
+}
+
+function getQuestionSummary(q) {
+  switch (q.type) {
+    case 'multiple-choice':
+    case 'picture-based':
+      return `${(q.options || []).filter(o => o).length} options`
+    case 'true-false':
+      return `Answer: ${q.correctAnswer ? 'True' : 'False'}`
+    case 'fill-blanks':
+      return `${(q.blanks || []).length} blank${(q.blanks || []).length !== 1 ? 's' : ''}`
+    case 'matching':
+      return `${(q.leftItems || []).filter(i => i).length} pairs`
+    case 'ordering':
+      return `${(q.items || []).filter(i => i).length} items to order`
+    case 'identification':
+      return q.correctAnswer ? `Answer: "${q.correctAnswer}"` : 'No answer set'
+    case 'case-study':
+      return `${(q.subQuestions || []).length} sub-question${(q.subQuestions || []).length !== 1 ? 's' : ''}`
+    default:
+      return ''
+  }
+}
+
+// ── QuestionPreviewCard ───────────────────────────────────────────────────────
+
+function QuestionPreviewCard({ question, index }) {
+  const summary = getQuestionSummary(question)
+  return (
+    <div className="p-4 bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700">
+      <div className="flex items-start gap-3">
+        <div className="w-8 h-8 shrink-0 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-black text-sm flex items-center justify-center">
+          {index + 1}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <Badge variant="outline" className="text-xs shrink-0">
+              {TYPE_LABELS[question.type] ?? question.type}
+            </Badge>
+          </div>
+          <p className="text-sm font-bold text-stone-900 dark:text-white line-clamp-3">
+            {question.question
+              ? question.type === 'fill-blanks'
+                ? question.question.replace(/___/g, '___')
+                : question.question
+              : <span className="text-stone-400 italic">(No question text)</span>}
+          </p>
+          {summary && (
+            <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{summary}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── QuestionEditModal ─────────────────────────────────────────────────────────
+
+function QuestionEditModal({ question, onSubmit, onCancel, lessonId }) {
+  const FormComponent = QUESTION_FORM_MAP[question.type]
+  if (!FormComponent) return null
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <div
+        className="relative w-full max-w-2xl bg-[#fdf6e3] dark:bg-stone-900 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 flex flex-col max-h-[90vh]"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="px-6 py-5 border-b border-orange-100 dark:border-stone-700 shrink-0">
+          <h2 className="text-lg font-black text-stone-900 dark:text-white">
+            Edit — {QUESTION_META[question.type]?.label ?? question.type}
+          </h2>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+            {QUESTION_META[question.type]?.desc}
+          </p>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <FormComponent
+            initialData={question}
+            onSubmit={onSubmit}
+            onCancel={onCancel}
+            lessonId={lessonId}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── InsertButton ──────────────────────────────────────────────────────────────
+
+function InsertButton({ onClick }) {
+  return (
+    <div className="flex items-center gap-3 py-1 group/insert">
+      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 group-hover/insert:bg-primary-200 dark:group-hover/insert:bg-stone-600 transition-colors" />
+      <button type="button" onClick={onClick}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-xs font-bold shadow-sm opacity-0 group-hover/insert:opacity-100 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-300 dark:hover:bg-stone-700 dark:hover:text-primary-400 transition-all duration-150">
+        <Plus className="w-3.5 h-3.5" />
+        Add Question
+      </button>
+      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 group-hover/insert:bg-primary-200 dark:group-hover/insert:bg-stone-600 transition-colors" />
+    </div>
+  )
+}
+
+// ── MetaField ─────────────────────────────────────────────────────────────────
+
+function MetaField({ label, value, onChange, type = 'text', placeholder, className = '' }) {
+  return (
+    <div className={className}>
+      <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">{label}</label>
+      <input type={type}
+        className="w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors"
+        value={value}
+        onChange={e => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
+        placeholder={placeholder} />
+    </div>
+  )
+}
+
+// ── EmptyCanvas ───────────────────────────────────────────────────────────────
+
+function EmptyCanvas({ onAdd }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-orange-200 dark:border-stone-700 rounded-2xl">
+      <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-4">
+        <Plus className="w-7 h-7 text-primary-500" />
+      </div>
+      <h3 className="text-base font-bold text-stone-700 dark:text-stone-300 mb-1">No questions yet</h3>
+      <p className="text-sm text-stone-400 dark:text-stone-500 mb-5">Add your first question to get started</p>
+      <button type="button" onClick={onAdd}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm transition-colors">
+        <Plus className="w-4 h-4" />
+        Add First Question
+      </button>
+    </div>
+  )
+}
+
+// ── QuizEditorPage ────────────────────────────────────────────────────────────
+
+export function QuizEditorPage({ lessonId, onSave, onCancel }) {
+  const { getQuiz, weeks } = useLessonsData()
+
+  const lesson = weeks.flatMap(w => w.lessons).find(l => l.id === lessonId) ?? null
+
+  const [draft, setDraft] = useState(() => {
+    if (lessonId) {
+      const existing = getQuiz(lessonId)
+      if (existing) return quizToEditorDraft(existing, lessonId)
+    }
+    return blankDraft(lessonId)
+  })
+
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+
+  const [insertAt, setInsertAt] = useState(null)
+  const [editIdx, setEditIdx] = useState(null)
+  const [pickingType, setPickingType] = useState(false)
+
+  function updateDraft(field, value) {
+    setDraft(d => ({ ...d, [field]: value }))
+  }
+
+  function openPicker(atIndex) {
+    setInsertAt(atIndex)
+    setPickingType(true)
+  }
+
+  function handleTypeChosen(type) {
+    setPickingType(false)
+    const newQ = { id: genId(), type, ...JSON.parse(JSON.stringify(DEFAULT_QUESTION_DATA[type] ?? {})) }
+    const newQs = [...draft.questions]
+    newQs.splice(insertAt, 0, newQ)
+    setDraft(d => ({ ...d, questions: newQs }))
+    setEditIdx(insertAt)
+  }
+
+  function handleQuestionSave(data) {
+    const newQs = [...draft.questions]
+    newQs[editIdx] = { id: newQs[editIdx].id, type: newQs[editIdx].type, ...data }
+    setDraft(d => ({ ...d, questions: newQs }))
+    setEditIdx(null)
+  }
+
+  function moveUp(i) {
+    if (i === 0) return
+    const nq = [...draft.questions];
+    [nq[i - 1], nq[i]] = [nq[i], nq[i - 1]]
+    setDraft(d => ({ ...d, questions: nq }))
+  }
+
+  function moveDown(i) {
+    if (i >= draft.questions.length - 1) return
+    const nq = [...draft.questions];
+    [nq[i], nq[i + 1]] = [nq[i + 1], nq[i]]
+    setDraft(d => ({ ...d, questions: nq }))
+  }
+
+  function deleteQuestion(i) {
+    setDraft(d => ({ ...d, questions: d.questions.filter((_, idx) => idx !== i) }))
+  }
+
+  async function handleSave() {
+    setSaveError(null)
+    if (!draft.title.trim()) { setSaveError('Quiz title is required.'); return }
+    if (draft.questions.length === 0) { setSaveError('Add at least one question before saving.'); return }
+    setSaving(true)
+    try {
+      await upsertQuiz(draftToDbRow(draft))
+      onSave()
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save quiz.')
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-900">
+
+      {/* ── Sticky top bar ── */}
+      <div className="sticky top-0 z-30 bg-[#fdf6e3]/95 dark:bg-stone-900/95 backdrop-blur-md border-b border-orange-200/60 dark:border-stone-700">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
+          <button onClick={onCancel}
+            className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 font-bold text-sm transition-colors shrink-0">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Cancel</span>
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-stone-400 uppercase tracking-wider">Quiz Editor</p>
+            <p className="text-sm font-black text-stone-700 dark:text-stone-200 truncate">
+              {draft.title || lesson?.title || 'Untitled Quiz'}
+            </p>
+          </div>
+
+          <button onClick={handleSave} disabled={saving}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-bold text-sm transition-colors shrink-0">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save
+          </button>
+        </div>
+      </div>
+
+      {/* ── Error banner ── */}
+      {saveError && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-400 text-sm font-bold">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {saveError}
+          </div>
+        </div>
+      )}
+
+      {/* ── Main content ── */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24">
+
+        {/* ── Lesson context badge ── */}
+        {lesson && (
+          <div className="mb-6 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700 w-fit shadow-sm">
+            <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">Quiz for</span>
+            <span className="text-sm font-black text-stone-700 dark:text-stone-200">{lesson.title}</span>
+          </div>
+        )}
+
+        {/* ── Metadata section ── */}
+        <section className="bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 p-6 mb-10 space-y-5 shadow-sm">
+          <h2 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Quiz Details</h2>
+
+          <div>
+            <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
+              Title <span className="text-red-400">*</span>
+            </label>
+            <input type="text" value={draft.title}
+              onChange={e => updateDraft('title', e.target.value)}
+              placeholder={lesson ? `Quiz: ${lesson.title}` : 'e.g. Quiz: Uses of Scientific Models'}
+              className="w-full px-4 py-3 rounded-xl border border-orange-200 dark:border-stone-600 bg-[#fdf6e3] dark:bg-stone-900 text-stone-900 dark:text-white text-xl font-black focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">Description</label>
+            <textarea value={draft.description}
+              onChange={e => updateDraft('description', e.target.value)}
+              placeholder="Brief instructions for students taking this quiz"
+              rows={2}
+              className="w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none transition-colors"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
+                <Clock className="w-3 h-3 inline mr-1" />Time Limit (sec)
+              </label>
+              <input type="number" min={60} max={7200} step={60}
+                value={draft.timeLimit}
+                onChange={e => updateDraft('timeLimit', Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors"
+              />
+              <p className="text-xs text-stone-400 mt-1">{formatTime(draft.timeLimit || 900)}</p>
+            </div>
+
+            <div className="flex items-end pb-1">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-700 border border-orange-100 dark:border-stone-600">
+                <Hash className="w-4 h-4 text-stone-400 shrink-0" />
+                <span className="text-sm font-black text-stone-700 dark:text-stone-200">
+                  {draft.questions.length} question{draft.questions.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Questions canvas ── */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+              Questions <span className="ml-2 text-primary-500">{draft.questions.length}</span>
+            </h2>
+            {draft.questions.length > 0 && (
+              <button type="button" onClick={() => openPicker(draft.questions.length)}
+                className="flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+                Add Question
+              </button>
+            )}
+          </div>
+
+          {draft.questions.length === 0 ? (
+            <EmptyCanvas onAdd={() => openPicker(0)} />
+          ) : (
+            <div className="space-y-2">
+              <InsertButton onClick={() => openPicker(0)} />
+              {draft.questions.map((q, i) => (
+                <React.Fragment key={q.id || i}>
+                  <EditableSlotFrame
+                    onEdit={() => setEditIdx(i)}
+                    onMoveUp={() => moveUp(i)}
+                    onMoveDown={() => moveDown(i)}
+                    onDelete={() => deleteQuestion(i)}
+                    isFirst={i === 0}
+                    isLast={i === draft.questions.length - 1}
+                  >
+                    <QuestionPreviewCard question={q} index={i} />
+                  </EditableSlotFrame>
+                  <InsertButton onClick={() => openPicker(i + 1)} />
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Modals ── */}
+      {pickingType && (
+        <QuestionPickerModal onSelect={handleTypeChosen} onClose={() => setPickingType(false)} />
+      )}
+      {editIdx !== null && draft.questions[editIdx] && (
+        <QuestionEditModal
+          question={draft.questions[editIdx]}
+          onSubmit={handleQuestionSave}
+          onCancel={() => setEditIdx(null)}
+          lessonId={lessonId}
+        />
+      )}
+    </div>
+  )
+}

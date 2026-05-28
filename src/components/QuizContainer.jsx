@@ -38,7 +38,7 @@ import {
 } from "./quiz-slots";
 
 // ── SLOT MAP ──────────────────────────────────────────────────────────────────
-const QUESTION_MAP = {
+export const QUESTION_MAP = {
   "multiple-choice": MultipleChoiceQuestion,
   "true-false": TrueFalseQuestion,
   "fill-blanks": FillInTheBlanks,
@@ -51,7 +51,7 @@ const QUESTION_MAP = {
   "case-study": CaseStudyQuestion,
 };
 
-const TYPE_LABELS = {
+export const TYPE_LABELS = {
   "multiple-choice": "Multiple Choice",
   "true-false": "True / False",
   "fill-blanks": "Fill in the Blanks",

@@ -66,14 +66,24 @@ export async function upsertQuiz(quiz) {
   return data
 }
 
-// isStatic=true → soft-delete (sets is_hidden). isStatic=false → hard-delete.
-export async function deleteQuiz(lessonId, { isStatic = false } = {}) {
+// isStatic=true → soft-delete via upsert (creates row if needed, sets is_hidden).
+// quizSnapshot is the current quiz data used to populate required fields on insert.
+// isStatic=false → hard-delete the custom quiz row.
+export async function deleteQuiz(lessonId, { isStatic = false, quizSnapshot = null } = {}) {
   if (!supabase) throw new Error('[quizzes] Supabase not configured')
   if (isStatic) {
+    const row = {
+      lesson_id: lessonId,
+      title: quizSnapshot?.title ?? '',
+      description: quizSnapshot?.description ?? null,
+      time_limit: quizSnapshot?.timeLimit ?? 900,
+      questions: quizSnapshot?.questions ?? [],
+      is_custom: false,
+      is_hidden: true,
+    }
     const { error } = await supabase
       .from('quizzes')
-      .update({ is_hidden: true })
-      .eq('lesson_id', lessonId)
+      .upsert(row, { onConflict: 'lesson_id' })
     if (error) throw error
   } else {
     const { error } = await supabase

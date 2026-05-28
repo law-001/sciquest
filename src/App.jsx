@@ -16,6 +16,7 @@ import { GamesHubPage } from "./pages/GamesHubPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
 import { LessonEditorPage } from "./pages/LessonEditorPage";
+import { QuizEditorPage } from "./pages/QuizEditorPage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
 import {
   fetchProgress,
@@ -147,6 +148,7 @@ function AppContent() {
   const [highlightedActivity, setHighlightedActivity] = useState(null);
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editingWeekId, setEditingWeekId] = useState(null);
+  const [editingQuizLessonId, setEditingQuizLessonId] = useState(null);
   const [publishedWeekIds, setPublishedWeekIds] = useState(() =>
     getPublishedWeekIds(),
   );
@@ -898,7 +900,8 @@ function AppContent() {
     currentView === "teacher-portal" ||
     currentView === "game-play" ||
     currentView === "teacher-setup" ||
-    currentView === "teacher-edit-lesson";
+    currentView === "teacher-edit-lesson" ||
+    currentView === "teacher-edit-quiz";
 
   const renderView = () => {
     switch (currentView) {
@@ -978,6 +981,10 @@ function AppContent() {
               setEditingWeekId(weekId ?? null);
               handleNavigate("teacher-edit-lesson");
             }}
+            onEditQuiz={(lessonId) => {
+              setEditingQuizLessonId(lessonId ?? null);
+              handleNavigate("teacher-edit-quiz");
+            }}
           />
         );
 
@@ -986,6 +993,15 @@ function AppContent() {
           <LessonEditorPage
             lessonId={editingLessonId}
             weekId={editingWeekId}
+            onSave={() => handleNavigate("teacher-portal")}
+            onCancel={() => handleNavigate("teacher-portal")}
+          />
+        );
+
+      case "teacher-edit-quiz":
+        return (
+          <QuizEditorPage
+            lessonId={editingQuizLessonId}
             onSave={() => handleNavigate("teacher-portal")}
             onCancel={() => handleNavigate("teacher-portal")}
           />

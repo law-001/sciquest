@@ -48,6 +48,7 @@ import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
 import { useLessonsData } from "../context/LessonsDataContext";
 import { deleteLesson, upsertLesson } from "../lib/lessons";
+import { deleteQuiz } from "../lib/quizzes";
 import {
   getPublishedWeekIds,
   savePublishedWeekIds,
@@ -3967,6 +3968,52 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
   );
 }
 
+function DeleteQuizModal({ lesson, quiz, isCustom, onConfirm, onClose, isLoading, error }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={!isLoading ? onClose : undefined}
+    >
+      <div
+        className="w-full max-w-md bg-[#fdf6e3] dark:bg-stone-900 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-black text-stone-900 dark:text-white mb-2">
+          {isCustom ? "Delete Quiz" : "Hide Quiz from Students"}
+        </h2>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mb-5">
+          {isCustom
+            ? `Permanently delete the quiz for "${quiz?.title ?? lesson.title}"? This cannot be undone.`
+            : `Hide the quiz for "${quiz?.title ?? lesson.title}" from students? The original quiz will be preserved and can be restored by editing the quiz again.`}
+        </p>
+        {error && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 dark:text-red-400 text-sm font-bold">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
+        )}
+        <div className="flex gap-3">
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-bold text-sm transition-colors"
+          >
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isCustom ? "Delete permanently" : "Hide from students"}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 text-stone-600 dark:text-stone-300 font-bold text-sm hover:bg-orange-50 dark:hover:bg-stone-700 disabled:opacity-60 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const QUIZ_TYPE_LABELS = {
   "multiple-choice": "Multiple Choice",
   "true-false": "True/False",
@@ -3991,11 +4038,47 @@ function LessonQuizCard({
   currentShow,
   open,
   onToggle,
+  onEdit,
+  onDelete,
+  isCustomQuiz,
+  isEdited,
 }) {
   return (
-    <Card className="p-5" hoverable>
-      <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center mb-4">
-        <ClipboardCheck className="w-5 h-5 text-accent-500" />
+    <Card className="p-5">
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center">
+          <ClipboardCheck className="w-5 h-5 text-accent-500" />
+        </div>
+        <div className="flex items-center gap-1">
+          {isCustomQuiz && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border border-secondary-200 dark:border-secondary-700/50">
+              Custom
+            </span>
+          )}
+          {isEdited && !isCustomQuiz && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+              Edited
+            </span>
+          )}
+          <button
+            onClick={onEdit}
+            title="Edit quiz"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-secondary-600 dark:hover:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
+            aria-label="Edit quiz"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+          </button>
+          {(quiz || isCustomQuiz) && (
+            <button
+              onClick={onDelete}
+              title={isCustomQuiz ? "Delete quiz" : "Hide quiz"}
+              className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              aria-label={isCustomQuiz ? "Delete quiz" : "Hide quiz"}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
       <div className="flex items-start justify-between gap-2 mb-1">
         <h3 className="text-sm font-bold text-stone-900 dark:text-white leading-snug">
@@ -4080,14 +4163,38 @@ function QuizzesManagementSlot({
   publishedQuizWeekIds,
   onPublishedQuizWeekIdsChange,
   quizSettings,
+  onEditQuiz,
 }) {
-  const { weeks, getQuiz } = useLessonsData();
+  const { weeks, getQuiz, dbQuizzes } = useLessonsData();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
   const [openLessonId, setOpenLessonId] = useState(null);
+  const [deletingQuizLesson, setDeletingQuizLesson] = useState(null);
+  const [deleteQuizLoading, setDeleteQuizLoading] = useState(false);
+  const [deleteQuizError, setDeleteQuizError] = useState(null);
 
   function toggleLessonOpen(lessonId) {
     setOpenLessonId((prev) => (prev === lessonId ? null : lessonId));
+  }
+
+  async function handleDeleteQuizConfirm() {
+    if (!deletingQuizLesson) return;
+    setDeleteQuizError(null);
+    setDeleteQuizLoading(true);
+    const dbRow = dbQuizzes.get(deletingQuizLesson.id);
+    const isCustom = !!dbRow?.is_custom;
+    try {
+      const currentQuiz = getQuiz(deletingQuizLesson.id);
+      await deleteQuiz(deletingQuizLesson.id, {
+        isStatic: !isCustom,
+        quizSnapshot: currentQuiz,
+      });
+      setDeletingQuizLesson(null);
+    } catch (err) {
+      setDeleteQuizError(err.message || "Failed to delete quiz.");
+    } finally {
+      setDeleteQuizLoading(false);
+    }
   }
 
   function togglePublish(weekId) {
@@ -4220,6 +4327,9 @@ function QuizzesManagementSlot({
                 const currentLimit = getQuizTimeLimit(quizSettings, lesson.id);
                 const currentAttempts = getQuizMaxAttempts(quizSettings, lesson.id);
                 const currentShow = getQuizShowAnswers(quizSettings, lesson.id);
+                const dbRow = dbQuizzes.get(lesson.id);
+                const isCustomQuiz = !!dbRow?.is_custom;
+                const isEdited = !!dbRow && !isCustomQuiz;
                 return (
                   <LessonQuizCard
                     key={lesson.id}
@@ -4233,6 +4343,13 @@ function QuizzesManagementSlot({
                     currentShow={currentShow}
                     open={openLessonId === lesson.id}
                     onToggle={() => toggleLessonOpen(lesson.id)}
+                    onEdit={() => onEditQuiz?.(lesson.id)}
+                    onDelete={() => {
+                      setDeleteQuizError(null);
+                      setDeletingQuizLesson(lesson);
+                    }}
+                    isCustomQuiz={isCustomQuiz}
+                    isEdited={isEdited}
                   />
                 );
               })}
@@ -4366,6 +4483,21 @@ function QuizzesManagementSlot({
           )}
         </>
       )}
+
+      {deletingQuizLesson && (
+        <DeleteQuizModal
+          lesson={deletingQuizLesson}
+          quiz={getQuiz(deletingQuizLesson.id)}
+          isCustom={!!dbQuizzes.get(deletingQuizLesson.id)?.is_custom}
+          onConfirm={handleDeleteQuizConfirm}
+          onClose={() => {
+            setDeletingQuizLesson(null);
+            setDeleteQuizError(null);
+          }}
+          isLoading={deleteQuizLoading}
+          error={deleteQuizError}
+        />
+      )}
     </div>
   );
 }
@@ -4412,7 +4544,7 @@ const SIDEBAR_TABS = [
 
 // --- Main page ---
 
-export function TeacherPortalPage({ onBack, onEditLesson }) {
+export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz }) {
   const { signOut, profile, user } = useAuth();
   const { isDark, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("overview");
@@ -4757,6 +4889,7 @@ export function TeacherPortalPage({ onBack, onEditLesson }) {
                 onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
                 quizSettings={quizSettings}
                 onEditLesson={onEditLesson}
+                onEditQuiz={onEditQuiz}
               />
             )}
           </div>
