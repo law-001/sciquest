@@ -5,8 +5,8 @@ import {
   Plus,
   AlertCircle,
   Loader2,
-  Clock,
   Hash,
+  BookOpen,
 } from 'lucide-react'
 import { useLessonsData } from '../context/LessonsDataContext'
 import { upsertQuiz } from '../lib/quizzes'
@@ -52,12 +52,6 @@ function draftToDbRow(draft) {
 
 function genId() {
   try { return crypto.randomUUID() } catch { return `q-${Date.now()}-${Math.random().toString(36).slice(2)}` }
-}
-
-function formatTime(sec) {
-  const m = Math.floor(sec / 60)
-  const s = sec % 60
-  return s ? `${m}m ${s}s` : `${m} min`
 }
 
 function getQuestionSummary(q) {
@@ -136,7 +130,7 @@ function QuestionEditModal({ question, onSubmit, onCancel, lessonId }) {
             {QUESTION_META[question.type]?.desc}
           </p>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto themed-scrollbar px-6 py-5">
           <FormComponent
             initialData={question}
             onSubmit={onSubmit}
@@ -153,14 +147,14 @@ function QuestionEditModal({ question, onSubmit, onCancel, lessonId }) {
 
 function InsertButton({ onClick }) {
   return (
-    <div className="flex items-center gap-3 py-1 group/insert">
-      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 group-hover/insert:bg-primary-200 dark:group-hover/insert:bg-stone-600 transition-colors" />
+    <div className="flex items-center gap-3 py-1">
+      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 transition-colors" />
       <button type="button" onClick={onClick}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-xs font-bold shadow-sm opacity-0 group-hover/insert:opacity-100 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-300 dark:hover:bg-stone-700 dark:hover:text-primary-400 transition-all duration-150">
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-xs font-bold shadow-sm hover:bg-primary-50 hover:text-primary-600 hover:border-primary-300 dark:hover:bg-stone-700 dark:hover:text-primary-400 transition-all duration-150">
         <Plus className="w-3.5 h-3.5" />
         Add Question
       </button>
-      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 group-hover/insert:bg-primary-200 dark:group-hover/insert:bg-stone-600 transition-colors" />
+      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 transition-colors" />
     </div>
   )
 }
@@ -222,17 +216,76 @@ function EmptyCanvas({ onAdd }) {
   )
 }
 
+// ── LessonPickerField ─────────────────────────────────────────────────────────
+//
+// Pairs a quiz to a lesson within a week. When creating a new quiz we need a
+// teacher decision; when editing an existing quiz the pairing is shown but
+// fixed (re-keying a saved quiz to a different lesson would require deleting
+// the old row, which is out of scope here).
+
+function LessonPickerField({ week, value, onChange, disabled, getQuiz, originalLessonId }) {
+  const lessons = week?.lessons ?? []
+
+  return (
+    <div>
+      <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
+        <BookOpen className="w-3 h-3 inline mr-1" />
+        Quiz for lesson <span className="text-red-400">*</span>
+      </label>
+      {week ? (
+        <>
+          <select
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value || '')}
+            disabled={disabled}
+            className="w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <option value="">— Pick a lesson —</option>
+            {lessons.map((l) => {
+              const existingQuiz = getQuiz(l.id)
+              const alreadyPaired = !!existingQuiz && l.id !== originalLessonId
+              return (
+                <option key={l.id} value={l.id} disabled={alreadyPaired && !disabled}>
+                  Lesson {l.lessonNumber}: {l.title}
+                  {alreadyPaired ? ' (already has a quiz)' : ''}
+                </option>
+              )
+            })}
+          </select>
+          <p className="text-xs text-stone-400 mt-1">
+            Week {week.weekNumber} — {week.title}
+            {disabled && ' · lesson pairing is fixed once a quiz is saved'}
+          </p>
+        </>
+      ) : (
+        <p className="text-xs text-stone-500 dark:text-stone-400 italic">
+          No week selected — open this editor from a week to pick a lesson.
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ── QuizEditorPage ────────────────────────────────────────────────────────────
 
-export function QuizEditorPage({ lessonId, onSave, onCancel }) {
-  const { getQuiz, weeks, dbLessons, dbQuizzes, loading } = useLessonsData()
+export function QuizEditorPage({ lessonId, weekId, onSave, onCancel }) {
+  const { getQuiz, weeks, dbLessons, dbQuizzes, loading, applyQuizRow } = useLessonsData()
 
-  const lesson = weeks.flatMap(w => w.lessons).find(l => l.id === lessonId) ?? null
+  const isNewQuiz = !lessonId
+
+  const lesson = lessonId
+    ? weeks.flatMap(w => w.lessons).find(l => l.id === lessonId) ?? null
+    : null
+
+  // For a new quiz we get the week from props; for an existing quiz we
+  // derive it from the lesson the quiz is attached to.
+  const targetWeekId = weekId || lesson?.weekId || null
+  const targetWeek = weeks.find(w => w.id === targetWeekId) ?? null
 
   // A quiz is custom if its lesson is a teacher-created lesson, or if the
   // existing DB quiz row was already marked custom (e.g. after a previous save).
-  const isCustomQuiz = !!(dbLessons?.get(lessonId)?.is_custom) ||
-                       !!(dbQuizzes?.get(lessonId)?.is_custom)
+  const isCustomQuiz = !!(dbLessons?.get(lessonId)?.is_custom)
+    || !!(dbQuizzes?.get(lessonId)?.is_custom)
 
   // draft is null only while waiting for a custom quiz's DB row to arrive.
   const [draft, setDraft] = useState(() => {
@@ -312,16 +365,31 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
 
   if (draft === null) return <QuizEditorSkeleton />
 
+  // Lesson chosen in the picker (reactive to draft changes when creating new).
+  const selectedLesson = draft.lessonId
+    ? (targetWeek?.lessons.find(l => l.id === draft.lessonId)
+       ?? weeks.flatMap(w => w.lessons).find(l => l.id === draft.lessonId)
+       ?? null)
+    : null
+
   async function handleSave() {
     setSaveError(null)
+    if (!draft.lessonId) { setSaveError('Pick which lesson this quiz is for.'); return }
     if (!draft.title.trim()) { setSaveError('Quiz title is required.'); return }
     if (draft.questions.length === 0) { setSaveError('Add at least one question before saving.'); return }
     setSaving(true)
     try {
-      await upsertQuiz({ ...draftToDbRow(draft), is_custom: isCustomQuiz })
+      // For new quizzes, mark as custom if the target lesson is itself custom;
+      // otherwise it's an "edited" overlay on a static lesson's quiz slot.
+      const customFlag = isNewQuiz
+        ? !!(dbLessons?.get(draft.lessonId)?.is_custom)
+        : isCustomQuiz
+      const saved = await upsertQuiz({ ...draftToDbRow(draft), is_custom: customFlag })
+      applyQuizRow(saved)
       onSave()
     } catch (err) {
-      setSaveError(err.message || 'Failed to save quiz.')
+      console.error('[quiz editor] save failed:', err)
+      setSaveError(err.message || err.error_description || err.hint || 'Failed to save quiz.')
       setSaving(false)
     }
   }
@@ -339,9 +407,12 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
           </button>
 
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-stone-400 uppercase tracking-wider">Quiz Editor</p>
+            <p className="text-xs font-bold text-stone-400 uppercase tracking-wider">
+              {isNewQuiz ? 'New Quiz' : 'Quiz Editor'}
+              {targetWeek ? ` · Week ${targetWeek.weekNumber}` : ''}
+            </p>
             <p className="text-sm font-black text-stone-700 dark:text-stone-200 truncate">
-              {draft.title || lesson?.title || 'Untitled Quiz'}
+              {draft.title || selectedLesson?.title || lesson?.title || 'Untitled Quiz'}
             </p>
           </div>
 
@@ -364,19 +435,20 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
       )}
 
       {/* ── Main content ── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24">
-
-        {/* ── Lesson context badge ── */}
-        {lesson && (
-          <div className="mb-6 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700 w-fit shadow-sm">
-            <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">Quiz for</span>
-            <span className="text-sm font-black text-stone-700 dark:text-stone-200">{lesson.title}</span>
-          </div>
-        )}
+      <div className="editor-autogrow max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24">
 
         {/* ── Metadata section ── */}
         <section className="bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 p-6 mb-10 space-y-5 shadow-sm">
           <h2 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Quiz Details</h2>
+
+          <LessonPickerField
+            week={targetWeek}
+            value={draft.lessonId}
+            onChange={(id) => updateDraft('lessonId', id)}
+            disabled={!isNewQuiz}
+            getQuiz={getQuiz}
+            originalLessonId={lessonId}
+          />
 
           <div>
             <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
@@ -384,7 +456,7 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
             </label>
             <input type="text" value={draft.title}
               onChange={e => updateDraft('title', e.target.value)}
-              placeholder={lesson ? `Quiz: ${lesson.title}` : 'e.g. Quiz: Uses of Scientific Models'}
+              placeholder={selectedLesson ? `Quiz: ${selectedLesson.title}` : 'e.g. Quiz: Uses of Scientific Models'}
               className="w-full px-4 py-3 rounded-xl border border-orange-200 dark:border-stone-600 bg-[#fdf6e3] dark:bg-stone-900 text-stone-900 dark:text-white text-xl font-black focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors"
             />
           </div>
@@ -399,27 +471,11 @@ export function QuizEditorPage({ lessonId, onSave, onCancel }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
-                <Clock className="w-3 h-3 inline mr-1" />Time Limit (sec)
-              </label>
-              <input type="number" min={60} max={7200} step={60}
-                value={draft.timeLimit}
-                onChange={e => updateDraft('timeLimit', Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors"
-              />
-              <p className="text-xs text-stone-400 mt-1">{formatTime(draft.timeLimit || 900)}</p>
-            </div>
-
-            <div className="flex items-end pb-1">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-700 border border-orange-100 dark:border-stone-600">
-                <Hash className="w-4 h-4 text-stone-400 shrink-0" />
-                <span className="text-sm font-black text-stone-700 dark:text-stone-200">
-                  {draft.questions.length} question{draft.questions.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-700 border border-orange-100 dark:border-stone-600 w-fit">
+            <Hash className="w-4 h-4 text-stone-400 shrink-0" />
+            <span className="text-sm font-black text-stone-700 dark:text-stone-200">
+              {draft.questions.length} question{draft.questions.length !== 1 ? 's' : ''}
+            </span>
           </div>
         </section>
 

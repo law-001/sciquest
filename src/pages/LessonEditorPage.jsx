@@ -15,6 +15,7 @@ import {
 import { useLessonsData } from '../context/LessonsDataContext'
 import { useAuth } from '../context/AuthContext'
 import { upsertLesson } from '../lib/lessons'
+import { WEEKS_DATA } from '../data/lessonsweek-01'
 import { SLOT_MAP } from '../components/slotMap'
 import { LessonTemplate } from '../components/LessonTemplate'
 import EditableSlotFrame from '../components/EditableSlotFrame'
@@ -23,6 +24,10 @@ import ImagePicker from '../components/ImagePicker'
 import { FORM_MAP, SLOT_META, DEFAULT_SLOT_DATA } from '../components/lesson-slot-forms'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+function isStaticLessonId(id) {
+  return WEEKS_DATA.some((w) => w.lessons.some((l) => l.id === id))
+}
 
 function blankDraft(weekId) {
   return {
@@ -59,7 +64,7 @@ function lessonToEditorDraft(lesson) {
     sections: Array.isArray(lesson.sections) ? [...lesson.sections] : [],
     references: Array.isArray(lesson.references) ? JSON.parse(JSON.stringify(lesson.references)) : [],
     layout: Array.isArray(lesson.layout) ? JSON.parse(JSON.stringify(lesson.layout)) : [],
-    is_custom: true,
+    is_custom: !isStaticLessonId(lesson.id),
     is_hidden: false,
   }
 }
@@ -79,7 +84,7 @@ function draftToDbRow(draft, userId) {
     sections: draft.sections,
     references: draft.references,
     layout: draft.layout,
-    is_custom: draft.is_custom ?? true,
+    is_custom: !isStaticLessonId(draft.id),
     is_hidden: false,
     created_by: userId || null,
   }
@@ -127,7 +132,7 @@ function SlotEditModal({ slot, onSubmit, onCancel }) {
           </p>
         </div>
         {/* Scrollable form body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto themed-scrollbar px-6 py-5">
           <FormComponent
             initialHeading={slot.heading}
             initialData={slot.data}
@@ -144,17 +149,17 @@ function SlotEditModal({ slot, onSubmit, onCancel }) {
 
 function InsertButton({ onClick }) {
   return (
-    <div className="flex items-center gap-3 py-1 group/insert">
-      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 group-hover/insert:bg-primary-200 dark:group-hover/insert:bg-stone-600 transition-colors" />
+    <div className="flex items-center gap-3 py-1">
+      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 transition-colors" />
       <button
         type="button"
         onClick={onClick}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-xs font-bold shadow-sm opacity-0 group-hover/insert:opacity-100 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-300 dark:hover:bg-stone-700 dark:hover:text-primary-400 transition-all duration-150"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-xs font-bold shadow-sm hover:bg-primary-50 hover:text-primary-600 hover:border-primary-300 dark:hover:bg-stone-700 dark:hover:text-primary-400 transition-all duration-150"
       >
         <Plus className="w-3.5 h-3.5" />
         Add Section
       </button>
-      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 group-hover/insert:bg-primary-200 dark:group-hover/insert:bg-stone-600 transition-colors" />
+      <div className="flex-1 h-px bg-orange-100 dark:bg-stone-700 transition-colors" />
     </div>
   )
 }
@@ -230,7 +235,7 @@ function EmptyCanvas({ onAdd }) {
 // ── LessonEditorPage ──────────────────────────────────────────────────────────
 
 export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
-  const { weeks, loading } = useLessonsData()
+  const { weeks, loading, applyLessonRow } = useLessonsData()
   const { user } = useAuth()
 
   // draft is null only while waiting for a custom lesson's DB row to arrive.
@@ -323,10 +328,12 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
     if (draft.layout.length === 0) { setSaveError('Add at least one section before saving.'); return }
     setSaving(true)
     try {
-      await upsertLesson(draftToDbRow(draft, user?.id))
+      const saved = await upsertLesson(draftToDbRow(draft, user?.id))
+      applyLessonRow(saved)
       onSave()
     } catch (err) {
-      setSaveError(err.message || 'Failed to save lesson.')
+      console.error('[lesson editor] save failed:', err)
+      setSaveError(err.message || err.error_description || err.hint || 'Failed to save lesson.')
       setSaving(false)
     }
   }
@@ -411,7 +418,7 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
       )}
 
       {/* ── Main content ── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24">
+      <div className="editor-autogrow max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24">
 
         {/* ── Metadata section ── */}
         <section className="bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 p-6 mb-10 space-y-5 shadow-sm">

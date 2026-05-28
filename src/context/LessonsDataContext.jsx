@@ -40,6 +40,7 @@ function dbRowToLesson(row) {
     sections: row.sections ?? [],
     references: row.references ?? [],
     layout: row.layout ?? [],
+    isHidden: !!row.is_hidden,
     _isFromDb: true,
   }
 }
@@ -59,23 +60,32 @@ function dbRowToQuiz(row) {
 // ── Merge helpers ─────────────────────────────────────────────────────────────
 
 // Merge rule (deterministic, order matters):
-// 1. For each static lesson: if DB row with same id → use DB row; is_hidden → drop.
+// 1. For each static lesson: if DB row with same id → use DB row; is_hidden → drop
+//    (unless `includeHidden` is true, in which case the lesson is kept with
+//    isHidden: true so teachers can see and unhide it).
 // 2. Append DB-only custom lessons into their target week, sorted by lesson_number.
-function mergeWeeks(staticWeeks, dbLessons) {
+function mergeWeeks(staticWeeks, dbLessons, { includeHidden = false } = {}) {
   return staticWeeks.map((week) => {
     const merged = []
+    const staticIds = new Set(week.lessons.map((l) => l.id))
 
     for (const lesson of week.lessons) {
       const override = dbLessons.get(lesson.id)
       if (override) {
-        if (!override.is_hidden) merged.push(dbRowToLesson(override))
+        if (!override.is_hidden || includeHidden)
+          merged.push(dbRowToLesson(override))
       } else {
         merged.push(lesson)
       }
     }
 
     for (const [, row] of dbLessons) {
-      if (row.is_custom && row.week_id === week.id && !row.is_hidden) {
+      if (staticIds.has(row.id)) continue
+      if (
+        row.is_custom &&
+        row.week_id === week.id &&
+        (!row.is_hidden || includeHidden)
+      ) {
         merged.push(dbRowToLesson(row))
       }
     }
@@ -126,15 +136,59 @@ export function LessonsDataProvider({ children }) {
   }, [])
 
   const weeks = useMemo(() => mergeWeeks(WEEKS_DATA, dbLessons), [dbLessons])
+  // Teacher-facing variant that keeps hidden lessons in the list so the
+  // teacher portal can render an unhide control for them.
+  const weeksWithHidden = useMemo(
+    () => mergeWeeks(WEEKS_DATA, dbLessons, { includeHidden: true }),
+    [dbLessons],
+  )
 
   const getQuiz = useCallback(
     (lessonId) => mergeQuiz(getQuizByLesson(lessonId), dbQuizzes.get(lessonId)),
     [dbQuizzes],
   )
 
+  // Optimistic local merges so the UI updates immediately after a save without
+  // waiting for the Realtime push (which requires it to be enabled in Supabase).
+  const applyLessonRow = useCallback((row) => {
+    if (!row?.id) return
+    setDbLessons((prev) => {
+      const next = new Map(prev)
+      next.set(row.id, row)
+      return next
+    })
+  }, [])
+
+  const applyQuizRow = useCallback((row) => {
+    if (!row?.lesson_id) return
+    setDbQuizzes((prev) => {
+      const next = new Map(prev)
+      next.set(row.lesson_id, row)
+      return next
+    })
+  }, [])
+
   const value = useMemo(
-    () => ({ weeks, getQuiz, dbLessons, dbQuizzes, loading }),
-    [weeks, getQuiz, dbLessons, dbQuizzes, loading],
+    () => ({
+      weeks,
+      weeksWithHidden,
+      getQuiz,
+      dbLessons,
+      dbQuizzes,
+      loading,
+      applyLessonRow,
+      applyQuizRow,
+    }),
+    [
+      weeks,
+      weeksWithHidden,
+      getQuiz,
+      dbLessons,
+      dbQuizzes,
+      loading,
+      applyLessonRow,
+      applyQuizRow,
+    ],
   )
 
   return <LessonsDataCtx.Provider value={value}>{children}</LessonsDataCtx.Provider>
