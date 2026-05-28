@@ -24,11 +24,34 @@ const MINIGAME_MAP = {
   cytokinesis: CleavageFurrow,
 };
 
+function useViewportBreakpoint() {
+  const [bp, setBp] = useState(() => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    if (w < 560 || h < 380) return 'xs';
+    if (w < 768 || h < 460) return 'sm';
+    return 'md';
+  });
+  useEffect(() => {
+    const sync = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setBp(w < 560 || h < 380 ? 'xs' : w < 768 || h < 460 ? 'sm' : 'md');
+    };
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
+  }, []);
+  return bp;
+}
+
 export function MinigameOverlay({ phase, onComplete }) {
   const [secondsLeft, setSecondsLeft] = useState(OVERLAY_DURATION);
   const [currentStars, setCurrentStars] = useState(3);
   const completedRef = useRef(false);
   const timerRef = useRef(null);
+  const bp = useViewportBreakpoint();
+  const isXS = bp === 'xs';
+  const isSM = bp === 'sm';
 
   const meta = PHASE_META[phase] ?? { color: '#3BAFA9', label: phase?.toUpperCase() ?? '', subtitle: '' };
   const MinigameComponent = MINIGAME_MAP[phase];
@@ -88,26 +111,30 @@ export function MinigameOverlay({ phase, onComplete }) {
       <div
         style={{
           width: '100%',
-          maxWidth: 560,
-          maxHeight: 'calc(100% - 32px)',
+          maxWidth: isXS ? 'calc(100vw - 16px)' : isSM ? 480 : 560,
+          maxHeight: isXS ? 'calc(100% - 12px)' : 'calc(100% - 32px)',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          margin: '0 16px',
+          margin: isXS ? '0 8px' : '0 16px',
           background: '#0D1B2A',
-          borderRadius: 16,
-          padding: 'clamp(14px,3vh,28px) clamp(14px,3vw,32px) clamp(14px,3vh,32px)',
+          borderRadius: isXS ? 12 : 16,
+          padding: isXS
+            ? '10px 12px 12px'
+            : isSM
+            ? '14px 18px 18px'
+            : 'clamp(14px,3vh,28px) clamp(14px,3vw,32px) clamp(14px,3vh,32px)',
           display: 'flex',
           flexDirection: 'column',
-          gap: 'clamp(10px,2vh,18px)',
+          gap: isXS ? 8 : isSM ? 12 : 'clamp(10px,2vh,18px)',
           animation: 'cdd-overlay-pulse 3s ease-in-out infinite',
         }}
       >
         {/* ── Header ─────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
             <div style={{
               color: meta.color,
-              fontSize: 19,
+              fontSize: isXS ? 13 : isSM ? 16 : 19,
               fontWeight: 700,
               letterSpacing: '0.14em',
               textShadow: `0 0 14px ${meta.color}`,
@@ -116,34 +143,35 @@ export function MinigameOverlay({ phase, onComplete }) {
             </div>
             <div style={{
               color: 'rgba(255,255,255,0.45)',
-              fontSize: 11,
+              fontSize: isXS ? 9 : isSM ? 10 : 11,
               marginTop: 4,
               letterSpacing: '0.05em',
+              lineHeight: 1.35,
             }}>
               {meta.subtitle}
             </div>
           </div>
 
           {/* Countdown */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
             <span
               aria-label={`${secondsLeft} seconds remaining`}
               style={{
                 color: timerColor,
-                fontSize: 28,
+                fontSize: isXS ? 18 : isSM ? 22 : 28,
                 fontWeight: 700,
                 lineHeight: 1,
                 textShadow: secondsLeft <= 5 ? `0 0 16px ${timerColor}` : 'none',
                 transition: 'color 0.3s, text-shadow 0.3s',
-                minWidth: 44,
+                minWidth: isXS ? 28 : 44,
                 textAlign: 'center',
               }}
             >
               {String(secondsLeft).padStart(2, '0')}
             </span>
             <div style={{
-              width: 52,
-              height: 4,
+              width: isXS ? 36 : 52,
+              height: isXS ? 3 : 4,
               borderRadius: 2,
               background: 'rgba(255,255,255,0.08)',
               overflow: 'hidden',
@@ -162,14 +190,14 @@ export function MinigameOverlay({ phase, onComplete }) {
         {/* ── Stars ──────────────────────────────────────────────── */}
         <div
           aria-label={`${currentStars} of 3 stars`}
-          style={{ display: 'flex', gap: 10, justifyContent: 'center' }}
+          style={{ display: 'flex', gap: isXS ? 6 : 10, justifyContent: 'center' }}
         >
           {[1, 2, 3].map(n => (
             <span
               key={n}
               aria-hidden="true"
               style={{
-                fontSize: 30,
+                fontSize: isXS ? 18 : isSM ? 22 : 30,
                 lineHeight: 1,
                 color: currentStars >= n ? '#FFD700' : '#333',
                 filter: currentStars >= n ? 'drop-shadow(0 0 8px #FFD700)' : 'none',
@@ -183,7 +211,9 @@ export function MinigameOverlay({ phase, onComplete }) {
         </div>
 
         {/* ── Minigame content ───────────────────────────────────── */}
-        <div style={{ minHeight: 'clamp(140px, 28vh, 220px)' }}>
+        <div style={{
+          minHeight: isXS ? 100 : isSM ? 130 : 'clamp(140px, 28vh, 220px)',
+        }}>
           {MinigameComponent ? (
             <MinigameComponent
               onComplete={handleChildComplete}

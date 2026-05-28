@@ -4,6 +4,24 @@ const STRAND_COUNT = 4;
 const HIT_WINDOW_MS = 1500;
 const MONO = '"Courier New", Courier, monospace';
 
+function useViewportBp() {
+  const [bp, setBp] = useState(() => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    return (w < 560 || h < 380) ? 'xs' : (w < 768 || h < 460) ? 'sm' : 'md';
+  });
+  useEffect(() => {
+    const sync = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setBp((w < 560 || h < 380) ? 'xs' : (w < 768 || h < 460) ? 'sm' : 'md');
+    };
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
+  }, []);
+  return bp;
+}
+
 function StrandSVG({ color, strokeWidth }) {
   return (
     <svg width="88" height="44" viewBox="0 0 88 44" aria-hidden="true">
@@ -33,6 +51,12 @@ function ChromosomeX() {
 const STRAND_BASE_COLORS = ['#78DCD2', '#5BB8D4', '#7EB9A0', '#4DB6AC'];
 
 export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
+  const bp = useViewportBp();
+  const isXS = bp === 'xs';
+  const isSM = bp === 'sm';
+  const btnHeight = isXS ? 52 : isSM ? 64 : 82;
+  const gridGap = isXS ? 8 : isSM ? 10 : 14;
+  const gridMaxW = isXS ? 280 : isSM ? 320 : 360;
   const [activeIndex, setActiveIndex] = useState(0);
   const [condensed, setCondensed] = useState(() => Array(STRAND_COUNT).fill(false));
   const [missCount, setMissCount] = useState(0);
@@ -99,7 +123,7 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: 14,
+      gap: isXS ? 8 : 14,
       fontFamily: MONO,
     }}>
       <style>{`
@@ -136,9 +160,9 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: 14,
+        gap: gridGap,
         width: '100%',
-        maxWidth: 360,
+        maxWidth: gridMaxW,
       }}>
         {Array.from({ length: STRAND_COUNT }, (_, i) => {
           const isActive   = i === activeIndex && !done;
@@ -156,7 +180,7 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate }) {
                             `Strand ${i + 1}`
               }
               style={{
-                height: 82,
+                height: btnHeight,
                 borderRadius: 12,
                 display: 'flex',
                 alignItems: 'center',

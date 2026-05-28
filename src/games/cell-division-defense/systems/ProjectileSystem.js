@@ -17,7 +17,11 @@ class ProjectileSystem {
     const sprite = this.scene.add.arc(fromX, fromY, 6, 0, 360, false, color, 1);
     sprite.setDepth(8);
 
-    this.projectiles.push({ sprite, target: enemy, speed: 320, def: towerDef });
+    // Scale projectile speed with the cell: on mobile the engagement distances
+    // shrink with entityScale, so a fixed px/s speed makes projectiles hit
+    // almost instantly. Scaling keeps travel time roughly constant.
+    const speed = 320 * (this.scene.entityScale ?? 1);
+    this.projectiles.push({ sprite, target: enemy, speed, def: towerDef });
   }
 
   update(delta) {

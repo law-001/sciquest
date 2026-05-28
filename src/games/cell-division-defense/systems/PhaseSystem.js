@@ -12,8 +12,9 @@ class PhaseSystem {
     this.mutationSystem = mutationSystem;
 
     this.currentPhaseIndex = 0;
-    // All timers use browser setTimeout so they fire independently of Phaser's
-    // paused/running state and the scene-time loop.
+    // Timers use Phaser's scene clock (this.scene.time.delayedCall) so that
+    // setting scene.time.paused = true (done by the pause handler) freezes
+    // every wave/phase countdown while a modal is active.
     this._interphaseTimeout = null;
     this._preWaveTimeout    = null;
     this._waveMinTimeout    = null;
@@ -22,6 +23,12 @@ class PhaseSystem {
     this._tutorialCompleteHandler = null;
     this._waveStartTime = 0;
     this._waveCleared = false;
+  }
+
+  _cancelTimer(ev) {
+    if (!ev) return;
+    if (typeof ev.remove === 'function') ev.remove(false);
+    else clearTimeout(ev);
   }
 
   start() {
@@ -33,26 +40,26 @@ class PhaseSystem {
     const onTutComplete = () => {
       this.scene.bus?.off('tutorialComplete', onTutComplete);
       this._tutorialCompleteHandler = null;
-      clearTimeout(this._interphaseTimeout);
+      this._cancelTimer(this._interphaseTimeout);
       this._interphaseTimeout = null;
       // 10-second countdown warning before first wave
       this.scene.bus?.emit('waveWarning', { seconds: 10 });
-      this._preWaveTimeout = setTimeout(() => {
+      this._preWaveTimeout = this.scene.time.delayedCall(10000, () => {
         this._preWaveTimeout = null;
         this.advancePhase();
-      }, 10000);
+      });
     };
     this._tutorialCompleteHandler = onTutComplete;
     this.scene.bus?.on('tutorialComplete', onTutComplete);
 
-    this._interphaseTimeout = setTimeout(() => {
+    this._interphaseTimeout = this.scene.time.delayedCall(INTERPHASE_DURATION, () => {
       this._interphaseTimeout = null;
       if (this._tutorialCompleteHandler) {
         this.scene.bus?.off('tutorialComplete', this._tutorialCompleteHandler);
         this._tutorialCompleteHandler = null;
       }
       this.advancePhase();
-    }, INTERPHASE_DURATION);
+    });
   }
 
   advancePhase() {
@@ -92,13 +99,13 @@ class PhaseSystem {
 
       // Enforce 30-second minimum wave: start timer now; fire minigame only after both
       // the minimum duration AND all enemies being cleared.
-      this._waveMinTimeout = setTimeout(() => {
+      this._waveMinTimeout = this.scene.time.delayedCall(WAVE_MIN_DURATION, () => {
         this._waveMinTimeout = null;
         if (this._waveCleared) {
           this._triggerMinigame(toPhase);
         }
         // If not cleared yet, onWaveCleared() will handle it
-      }, WAVE_MIN_DURATION);
+      });
     } else {
       this._triggerMinigame(toPhase);
     }
@@ -161,9 +168,9 @@ class PhaseSystem {
   }
 
   destroy() {
-    clearTimeout(this._interphaseTimeout);
-    clearTimeout(this._preWaveTimeout);
-    clearTimeout(this._waveMinTimeout);
+    this._cancelTimer(this._interphaseTimeout);
+    this._cancelTimer(this._preWaveTimeout);
+    this._cancelTimer(this._waveMinTimeout);
     this._interphaseTimeout = null;
     this._preWaveTimeout    = null;
     this._waveMinTimeout    = null;

@@ -170,15 +170,38 @@ export default function CellDivisionDefense({
     };
   }, [gameStarted]);
 
-  // Wave-warning countdown
+  // Compose a single "blocking modal" signal so timers + the scene can pause
+  // uniformly whenever the player is reading any modal or notification.
+  const blockingModalActive =
+    !!notification ||
+    !!minigamePhase ||
+    showResults ||
+    showCellSplit ||
+    paused;
+
+  // Mirror the modal state onto the Phaser scene clock. This pauses every
+  // delayedCall (enemy spawns, wave-min/pre-wave/interphase timers) so the
+  // game can't tick forward while the player is reading instructions or
+  // dismissing a "Back to defending" notification.
+  // Skip while the tutorial is still up — TutorialOverlay manages its own
+  // pause/resume per step (modal steps pause, banner steps resume) and
+  // racing against it here would flip the scene back on mid-step.
   useEffect(() => {
-    if (waveWarningSeconds <= 0) return;
+    const bus = busRef.current;
+    if (!bus || !gameStarted || !tutorialDone) return;
+    bus.emit(blockingModalActive ? "pause" : "resume");
+  }, [blockingModalActive, gameStarted, tutorialDone]);
+
+  // Wave-warning countdown — also frozen while a modal is up so it stays in
+  // sync with the (now paused) PhaseSystem pre-wave timer.
+  useEffect(() => {
+    if (waveWarningSeconds <= 0 || blockingModalActive) return;
     const id = setTimeout(
       () => setWaveWarningSeconds((s) => Math.max(0, s - 1)),
       1000,
     );
     return () => clearTimeout(id);
-  }, [waveWarningSeconds]);
+  }, [waveWarningSeconds, blockingModalActive]);
 
   // Phaser game lifecycle
   useEffect(() => {
@@ -294,6 +317,9 @@ export default function CellDivisionDefense({
         bus.emit("placeTower", { towerId, slotIndex });
         selectedTowerRef.current = null;
         setSelectedTower(null);
+        // Tell the scene to drop the slot-ring highlight; otherwise the
+        // glowing slots stay on screen after the tower is placed.
+        bus.emit("towerSelected", { towerId: null });
       } else if (!isEmpty) {
         bus.emit("sellTower", { slotIndex });
       }

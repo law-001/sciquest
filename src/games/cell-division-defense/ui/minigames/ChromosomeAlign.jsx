@@ -4,22 +4,22 @@ const MONO        = '"Courier New", Courier, monospace';
 const CHR_IDS     = ['A', 'B', 'C', 'D'];
 const CHR_COLORS  = { A: '#9B59B6', B: '#6C3483', C: '#7D3C98', D: '#5B2C6F' };
 const SNAP_PCT    = [12, 37, 62, 87];   // % of container width
-const CONTAINER_H = 264;
-const PLATE_Y     = CONTAINER_H / 2;
-const CHR_SIZE    = 42;
-const SNAP_RADIUS = 44;
 const FALLBACK_W  = 450;               // assumed width before any interaction
 
-// Initial scatter positions as % of container width + fixed top px
-const HOME_PCTS = {
-  A: { xPct: 5,  y: 26  },
-  B: { xPct: 62, y: 26  },
-  C: { xPct: 5,  y: 196 },
-  D: { xPct: 62, y: 196 },
-};
+function pickLayout() {
+  const h = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const w = typeof window !== 'undefined' ? window.innerWidth  : 1200;
+  // Shrink the playfield on small viewports so it fits inside the minigame
+  // overlay without the modal needing to scroll on iPhone-class screens.
+  if (w < 560 || h < 380) return { containerH: 170, chrSize: 30, snapRadius: 32, topY: 14, botY: 124 };
+  if (w < 768 || h < 460) return { containerH: 210, chrSize: 36, snapRadius: 38, topY: 20, botY: 154 };
+  return { containerH: 264, chrSize: 42, snapRadius: 44, topY: 26, botY: 196 };
+}
 
-function homeXY(id, w) {
-  return { x: w * HOME_PCTS[id].xPct / 100, y: HOME_PCTS[id].y };
+function homeXY(id, w, layout) {
+  const isTop = id === 'A' || id === 'B';
+  const xPct  = (id === 'A' || id === 'C') ? 5 : 62;
+  return { x: w * xPct / 100, y: isTop ? layout.topY : layout.botY };
 }
 
 function ChromosomeX({ color, size = 42, glow = false }) {
@@ -38,9 +38,19 @@ function ChromosomeX({ color, size = 42, glow = false }) {
 }
 
 export default function ChromosomeAlign({ onComplete, onStarsUpdate }) {
+  const [layout, setLayout] = useState(pickLayout);
+  const { containerH: CONTAINER_H, chrSize: CHR_SIZE, snapRadius: SNAP_RADIUS } = layout;
+  const PLATE_Y = CONTAINER_H / 2;
+
+  useEffect(() => {
+    const sync = () => setLayout(pickLayout());
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
+  }, []);
+
   // Lazy init uses fallback width; positions snap to actual container on first event
   const [positions, setPositions] = useState(() =>
-    Object.fromEntries(CHR_IDS.map(id => [id, homeXY(id, FALLBACK_W)]))
+    Object.fromEntries(CHR_IDS.map(id => [id, homeXY(id, FALLBACK_W, pickLayout())]))
   );
   const [placed,     setPlaced]     = useState({});   // id → zoneIdx
   const [occupied,   setOccupied]   = useState({});   // zoneIdx → id
@@ -132,7 +142,7 @@ export default function ChromosomeAlign({ onComplete, onStarsUpdate }) {
 
     if (!snapped) {
       // Return home using actual container width (corrects any fallback-width offset)
-      setPositions(prev => ({ ...prev, [id]: homeXY(id, w) }));
+      setPositions(prev => ({ ...prev, [id]: homeXY(id, w, layout) }));
     }
   }
 
@@ -202,7 +212,7 @@ export default function ChromosomeAlign({ onComplete, onStarsUpdate }) {
               position: 'absolute',
               left: `${pct}%`,
               top: PLATE_Y,
-              width: 44, height: 44,
+              width: SNAP_RADIUS, height: SNAP_RADIUS,
               borderRadius: '50%',
               transform: 'translate(-50%, -50%)',
               border: occupied[zi] !== undefined

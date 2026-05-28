@@ -39,7 +39,12 @@ class EnemySystem {
 
     const { path, startX, startY } = this.paths[breachIndex % this.paths.length];
     const pathLength = path.getLength();
-    const pathDuration = (pathLength / def.speed) * 1000;
+    // Scale enemy speed by entityScale: paths shrink proportionally with the
+    // cell on mobile, so a constant px/s speed collapses traversal time and
+    // makes enemies look much faster. Scaling speed keeps the duration
+    // (and the perceived pace) consistent across screen sizes.
+    const scaledSpeed = def.speed * (this.scene.entityScale ?? 1);
+    const pathDuration = (pathLength / scaledSpeed) * 1000;
 
     const follower = this.scene.add.follower(path, startX, startY, type);
     follower.setDepth(5);
@@ -95,16 +100,18 @@ class EnemySystem {
     for (const group of waveConfig) {
       for (let i = 0; i < group.count; i++) {
         this._pendingSpawns++;
-        const capturedDelay = delay;
+        // delayedCall(0) fires next tick — schedule a tiny delay so all spawns
+        // are queued behind the scene clock (and pause with it).
+        const capturedDelay = Math.max(1, delay);
         const breachIndex = spawnIndex % numBreaches;
         const capturedType = group.type;
 
-        const id = setTimeout(() => {
-          this._spawnTimers = this._spawnTimers.filter(t => t !== id);
+        const event = this.scene.time.delayedCall(capturedDelay, () => {
+          this._spawnTimers = this._spawnTimers.filter(t => t !== event);
           this._pendingSpawns--;
           this.spawnEnemy(capturedType, breachIndex);
-        }, capturedDelay);
-        this._spawnTimers.push(id);
+        });
+        this._spawnTimers.push(event);
 
         spawnIndex++;
         delay += group.interval;
@@ -113,7 +120,10 @@ class EnemySystem {
   }
 
   destroy() {
-    this._spawnTimers.forEach(id => clearTimeout(id));
+    this._spawnTimers.forEach(ev => {
+      if (ev?.remove) ev.remove(false);
+      else clearTimeout(ev);
+    });
     this._spawnTimers = [];
   }
 

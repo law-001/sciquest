@@ -367,9 +367,11 @@ export default class CellDefenseScene extends BaseGameScene {
     );
     this.cellR = Math.round(maxR);
     this.nucleusR = this.cellR * 0.16;
-    // 214 ≈ the cell radius on a typical desktop arena, where setScale(1.3)
-    // was authored to look right. Clamp so towers never vanish or overflow.
-    this.entityScale = Phaser.Math.Clamp(this.cellR / 214, 0.4, 1.15);
+    // 260 ≈ the cell radius on a typical desktop arena, where setScale(1.3)
+    // was authored to look right. On mobile (≈ cellR 120-140) this gives
+    // ≈ 0.5, keeping towers/enemies/highlights from crowding the small cell.
+    // Clamp so towers never vanish or overflow.
+    this.entityScale = Phaser.Math.Clamp(this.cellR / 260, 0.35, 1.1);
     this._shopW = shopW;
     this.cellCX = shopW + gameW * 0.5;
     this.cellCY =
@@ -531,21 +533,22 @@ export default class CellDefenseScene extends BaseGameScene {
     const g = this.add.graphics();
     g.setDepth(3);
     this._breachGraphics = g;
+    const s = this.entityScale ?? 1;
 
     breachPoints.forEach((bp) => {
       g.lineStyle(2, 0xff4040, 0.65);
-      g.strokeCircle(bp.x, bp.y, 26);
+      g.strokeCircle(bp.x, bp.y, 26 * s);
       g.lineStyle(1, 0xff4040, 0.25);
-      g.strokeCircle(bp.x, bp.y, 38);
+      g.strokeCircle(bp.x, bp.y, 38 * s);
 
       g.lineStyle(1.5, 0xff4040, 0.6);
       g.beginPath();
-      g.moveTo(bp.x - 18, bp.y);
-      g.lineTo(bp.x + 18, bp.y);
+      g.moveTo(bp.x - 18 * s, bp.y);
+      g.lineTo(bp.x + 18 * s, bp.y);
       g.strokePath();
       g.beginPath();
-      g.moveTo(bp.x, bp.y - 18);
-      g.lineTo(bp.x, bp.y + 18);
+      g.moveTo(bp.x, bp.y - 18 * s);
+      g.lineTo(bp.x, bp.y + 18 * s);
       g.strokePath();
 
       const dx = this.cellCX - bp.x;
@@ -553,14 +556,14 @@ export default class CellDefenseScene extends BaseGameScene {
       const dist = Math.sqrt(dx * dx + dy * dy);
       const nx = dx / dist,
         ny = dy / dist;
-      const arrowBase = 32,
-        arrowTip = 56;
+      const arrowBase = 32 * s,
+        arrowTip = 56 * s;
       const ax = bp.x + nx * arrowBase,
         ay = bp.y + ny * arrowBase;
       const tx = bp.x + nx * arrowTip,
         ty = bp.y + ny * arrowTip;
-      const px = -ny * 8,
-        py = nx * 8;
+      const px = -ny * 8 * s,
+        py = nx * 8 * s;
       g.lineStyle(0, 0, 0);
       g.fillStyle(0xff4040, 0.75);
       g.beginPath();
@@ -570,9 +573,10 @@ export default class CellDefenseScene extends BaseGameScene {
       g.closePath();
       g.fillPath();
 
+      const labelFont = Math.max(8, Math.round(9 * s));
       const lbl = this.add
-        .text(bp.x, bp.y - 44, "ENTRY POINT", {
-          fontSize: "9px",
+        .text(bp.x, bp.y - 44 * s, "ENTRY POINT", {
+          fontSize: `${labelFont}px`,
           color: "#FF8080",
           stroke: "#000000",
           strokeThickness: 2,
@@ -641,6 +645,9 @@ export default class CellDefenseScene extends BaseGameScene {
 
   _buildTowerSlots() {
     const g = this.add.graphics();
+    const s = this.entityScale ?? 1;
+    const outerR = Math.max(6, 11 * s);
+    const innerR = Math.max(2.5, 4 * s);
 
     this.towerSlots = [];
 
@@ -650,9 +657,9 @@ export default class CellDefenseScene extends BaseGameScene {
       const y = this.cellCY + this.cellR * Math.sin(angle);
 
       g.lineStyle(1.5, 0x3bafa9, 0.3);
-      g.strokeCircle(x, y, 11);
+      g.strokeCircle(x, y, outerR);
       g.fillStyle(0x3bafa9, 0.2);
-      g.fillCircle(x, y, 4);
+      g.fillCircle(x, y, innerR);
 
       // Slot taps are resolved by _handleSlotTap via the scene-level pointerup,
       // which behaves consistently for both mouse and touch input.
@@ -704,12 +711,16 @@ export default class CellDefenseScene extends BaseGameScene {
     this._busOn("pause", () => {
       this.physics.pause();
       this.tweens.pauseAll();
+      // Also halt the scene clock so delayedCall timers (enemy spawns,
+      // phase/wave timers) freeze while any modal is up.
+      this.time.paused = true;
       this.paused = true;
     });
 
     this._busOn("resume", () => {
       this.physics.resume();
       this.tweens.resumeAll();
+      this.time.paused = false;
       this.paused = false;
     });
 
@@ -840,13 +851,14 @@ export default class CellDefenseScene extends BaseGameScene {
     const def = TOWERS[towerId];
     const canAfford = def && this.atp >= def.cost;
     const color = canAfford ? 0x3bafa9 : 0xff4444;
+    const highlightR = Math.max(11, 20 * (this.entityScale ?? 1));
 
     for (const slot of this.towerSlots) {
       if (slot.tower) continue;
       this._selectionGraphics.lineStyle(2, color, 0.9);
-      this._selectionGraphics.strokeCircle(slot.x, slot.y, 20);
+      this._selectionGraphics.strokeCircle(slot.x, slot.y, highlightR);
       this._selectionGraphics.fillStyle(color, canAfford ? 0.18 : 0.12);
-      this._selectionGraphics.fillCircle(slot.x, slot.y, 20);
+      this._selectionGraphics.fillCircle(slot.x, slot.y, highlightR);
     }
 
     if (!this.reducedMotion) {
@@ -886,8 +898,10 @@ export default class CellDefenseScene extends BaseGameScene {
   }
 
   _spawnAtpPickup(x, y, amount) {
+    const scale = this.entityScale ?? 1;
     const pickup = this.add.image(x, y, "atpPickup");
     pickup.setDepth(6);
+    pickup.setScale(Math.max(0.55, scale));
     pickup.setInteractive({ useHandCursor: true });
 
     this.tweens.add({
@@ -905,8 +919,9 @@ export default class CellDefenseScene extends BaseGameScene {
       this.atp += amount;
       this._emitState();
 
+      const labelFont = Math.max(11, Math.round(18 * scale));
       const label = this.add.text(pickup.x, pickup.y, `+${amount} ATP`, {
-        fontSize: "18px",
+        fontSize: `${labelFont}px`,
         fontStyle: "bold",
         color: "#FFD700",
         stroke: "#000000",
