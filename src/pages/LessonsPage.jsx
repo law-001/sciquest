@@ -38,7 +38,7 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
-import { WEEKS_DATA } from "../data/lessonsweek-01";
+import { useLessonsData } from "../context/LessonsDataContext";
 import { cn } from "../lib/utils";
 import {
   isWeekUnlocked,
@@ -108,6 +108,7 @@ export function LessonsPage({
   );
   const level = levelFromXp(totalXp);
   const levelProgress = xpToNextLevel(totalXp);
+  const { weeks } = useLessonsData();
   const { user, profile } = useAuth();
   const firstName =
     profile?.first_name || user?.user_metadata?.first_name || "";
@@ -139,14 +140,14 @@ export function LessonsPage({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filteredWeeks = useMemo(() => {
-    if (activeCategory === "All Topics") return WEEKS_DATA;
+    if (activeCategory === "All Topics") return weeks;
     const range = QUARTER_RANGES[activeCategory];
-    if (!range) return WEEKS_DATA;
-    return WEEKS_DATA.filter((week) => {
+    if (!range) return weeks;
+    return weeks.filter((week) => {
       const num = parseInt(week.id.replace(/\D/g, ""), 10);
       return num >= range.min && num <= range.max;
     });
-  }, [activeCategory]);
+  }, [activeCategory, weeks]);
 
   const displayedWeeks = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -423,14 +424,14 @@ export function LessonsPage({
             const IconComponent = ICON_MAP[week.icon] || Globe2;
             const lockReason = weekLockReason(
               week,
-              WEEKS_DATA,
+              weeks,
               lessonsPassed,
               publishedWeekIds,
               openWeekIds,
             );
             const effectiveIsLocked = !isWeekUnlocked(
               week,
-              WEEKS_DATA,
+              weeks,
               lessonsPassed,
               publishedWeekIds,
               openWeekIds,

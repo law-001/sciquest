@@ -46,8 +46,7 @@ import {
 import { fetchAllSections, createSection } from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
-import { getQuizByLesson } from "../data/quizzesweek-01";
-import { WEEKS_DATA } from "../data/lessonsweek-01";
+import { useLessonsData } from "../context/LessonsDataContext";
 import {
   getPublishedWeekIds,
   savePublishedWeekIds,
@@ -79,6 +78,7 @@ import {
 // (null = all sections).
 
 function OverviewSlot({ data, sectionId, onGrade, publishedWeekIds }) {
+  const { weeks } = useLessonsData();
   const { sections, lessons, submissions } = data;
   const filteredSubs = sectionId
     ? submissions.filter((s) => s.section === sectionId)
@@ -89,7 +89,7 @@ function OverviewSlot({ data, sectionId, onGrade, publishedWeekIds }) {
   const totalStudents = sectionId
     ? (sections.find((s) => s.id === sectionId)?.students ?? 0)
     : sections.reduce((sum, s) => sum + s.students, 0);
-  const publishedLessons = WEEKS_DATA.reduce(
+  const publishedLessons = weeks.reduce(
     (sum, w) =>
       sum + (isWeekPublished(w.id, publishedWeekIds) ? w.lessons.length : 0),
     0,
@@ -900,6 +900,7 @@ function LessonsSlot({
   openWeekIds,
   onOpenWeekIdsChange,
 }) {
+  const { weeks } = useLessonsData();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
 
@@ -916,7 +917,7 @@ function LessonsSlot({
   function cycleWeekState(weekId) {
     const state = getWeekState(weekId);
     const publishBase =
-      publishedWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
+      publishedWeekIds ?? new Set(weeks.map((w) => w.id));
     const nextPublish = new Set(publishBase);
     const nextOpen = new Set(openWeekIds ?? []);
 
@@ -951,17 +952,17 @@ function LessonsSlot({
       : 0;
   }
 
-  const expandedWeek = WEEKS_DATA.find((w) => w.id === expandedWeekId) ?? null;
+  const expandedWeek = weeks.find((w) => w.id === expandedWeekId) ?? null;
   const q = search.toLowerCase();
   const filteredWeeks = q
-    ? WEEKS_DATA.filter(
+    ? weeks.filter(
         (w) =>
           w.title.toLowerCase().includes(q) ||
           w.category?.toLowerCase().includes(q) ||
           String(w.weekNumber).includes(q) ||
           w.lessons.some((l) => l.title.toLowerCase().includes(q)),
       )
-    : WEEKS_DATA;
+    : weeks;
   const filteredLessons = expandedWeek
     ? q
       ? expandedWeek.lessons.filter((l) => l.title.toLowerCase().includes(q))
@@ -1241,8 +1242,8 @@ const MANUAL_TYPE_META = {
   },
 };
 
-function getManualQuestionTypes(lessonId) {
-  const quiz = getQuizByLesson(lessonId);
+function getManualQuestionTypes(lessonId, getQuiz) {
+  const quiz = getQuiz(lessonId);
   if (!quiz?.questions) return [];
   const types = new Set();
   for (const q of quiz.questions) {
@@ -1253,8 +1254,8 @@ function getManualQuestionTypes(lessonId) {
 
 // Returns a short preview of the student's first written response so the
 // teacher can scan submissions without opening the full grade modal.
-function getAnswerSnippet(lessonId, answers) {
-  const quiz = getQuizByLesson(lessonId);
+function getAnswerSnippet(lessonId, answers, getQuiz) {
+  const quiz = getQuiz(lessonId);
   if (!quiz?.questions || !answers) return null;
   for (const q of quiz.questions) {
     if (!MANUAL_QUESTION_TYPES.has(q.type)) continue;
@@ -1278,8 +1279,8 @@ function getAnswerSnippet(lessonId, answers) {
   return null;
 }
 
-function getEssayWordCount(lessonId, answers) {
-  const quiz = getQuizByLesson(lessonId);
+function getEssayWordCount(lessonId, answers, getQuiz) {
+  const quiz = getQuiz(lessonId);
   if (!quiz?.questions || !answers) return null;
   for (const q of quiz.questions) {
     if (q.type === "essay") {
@@ -1293,8 +1294,8 @@ function getEssayWordCount(lessonId, answers) {
 
 // Returns rubric strings for all manually-graded questions in a quiz.
 // Shown to the teacher in the grade modal so they have grading criteria handy.
-function getRubricItems(lessonId) {
-  const quiz = getQuizByLesson(lessonId);
+function getRubricItems(lessonId, getQuiz) {
+  const quiz = getQuiz(lessonId);
   if (!quiz?.questions) return [];
   return quiz.questions
     .filter((q) => MANUAL_QUESTION_TYPES.has(q.type) && q.rubric)
@@ -1308,6 +1309,7 @@ function getRubricItems(lessonId) {
 }
 
 function QuizCheckingSlot({ data, sectionId, onGrade }) {
+  const { getQuiz } = useLessonsData();
   const [tab, setTab] = useState("pending");
 
   const allSubs = sectionId
@@ -1377,12 +1379,12 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
               to review
             </p>
             {pending.map((sub) => {
-              const types = getManualQuestionTypes(sub.lessonId);
-              const snippet = getAnswerSnippet(sub.lessonId, sub.answers);
-              const wordCount = getEssayWordCount(sub.lessonId, sub.answers);
+              const types = getManualQuestionTypes(sub.lessonId, getQuiz);
+              const snippet = getAnswerSnippet(sub.lessonId, sub.answers, getQuiz);
+              const wordCount = getEssayWordCount(sub.lessonId, sub.answers, getQuiz);
               const hasEssay = types.includes("essay");
               const minWords = (() => {
-                const quiz = getQuizByLesson(sub.lessonId);
+                const quiz = getQuiz(sub.lessonId);
                 return (
                   quiz?.questions?.find((q) => q.type === "essay")?.minWords ??
                   null
@@ -2397,10 +2399,6 @@ function GradebookSlot({ data, sectionId }) {
 
 // Active (unlocked) games from the registry.
 const ACTIVE_GAMES = Object.values(GAMES).filter((g) => !g.locked);
-const TOTAL_LESSONS_COUNT = WEEKS_DATA.reduce(
-  (sum, w) => sum + w.lessons.length,
-  0,
-);
 
 function engagementStatus(student, hasSubs) {
   if (!hasSubs && student.progress === 0)
@@ -2433,6 +2431,8 @@ function engagementStatus(student, hasSubs) {
 }
 
 function ProgressSlot({ data, sectionId }) {
+  const { weeks } = useLessonsData();
+  const totalLessonsCount = weeks.reduce((sum, w) => sum + w.lessons.length, 0);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [sortKey, setSortKey] = useState("progress");
   const [sortDir, setSortDir] = useState("desc");
@@ -2503,7 +2503,7 @@ function ProgressSlot({ data, sectionId }) {
     );
     const studentGames = gameProgress.get(selectedStudent.id) ?? new Map();
     const lessonsCompleted = Math.round(
-      (selectedStudent.progress / 100) * TOTAL_LESSONS_COUNT,
+      (selectedStudent.progress / 100) * totalLessonsCount,
     );
     const lastSub = studentSubs[0] ?? null;
     const hasSubs = studentSubs.length > 0;
@@ -2511,7 +2511,7 @@ function ProgressSlot({ data, sectionId }) {
     const pendingSubs = studentSubs.filter((s) => s.status === "pending");
 
     // Week-by-week quiz engagement (from student.best which tracks quiz scores)
-    const weekBreakdown = WEEKS_DATA.map((week) => {
+    const weekBreakdown = weeks.map((week) => {
       const lessonResults = week.lessons.map((lesson) => {
         const cell = selectedStudent.best.get(lesson.id) ?? null;
         return {
@@ -2613,7 +2613,7 @@ function ProgressSlot({ data, sectionId }) {
           {[
             {
               label: "Lessons Done",
-              value: `${lessonsCompleted} / ${TOTAL_LESSONS_COUNT}`,
+              value: `${lessonsCompleted} / ${totalLessonsCount}`,
               icon: <BookOpen className="w-5 h-5 text-secondary-500" />,
               bg: "bg-secondary-50 dark:bg-secondary-900/20",
             },
@@ -2667,7 +2667,7 @@ function ProgressSlot({ data, sectionId }) {
               Curriculum Progress
             </p>
             <span className="text-sm font-black text-stone-900 dark:text-white">
-              {lessonsCompleted} of {TOTAL_LESSONS_COUNT} lessons
+              {lessonsCompleted} of {totalLessonsCount} lessons
             </span>
           </div>
           <ProgressBar
@@ -3301,8 +3301,9 @@ function SettingsSlot() {
 // attempt, which automatically lifts the student's leaderboard / profile XP.
 
 function GradeModal({ submission, onClose, onSaved }) {
+  const { getQuiz } = useLessonsData();
   const maxScore = submission.total ?? 0;
-  const quiz = getQuizByLesson(submission.lessonId);
+  const quiz = getQuiz(submission.lessonId);
   const initialPct =
     submission.status === "graded" && maxScore > 0
       ? String(Math.round((submission.score / maxScore) * 100))
@@ -3402,13 +3403,13 @@ function GradeModal({ submission, onClose, onSaved }) {
           </div>
 
           {/* Rubric reference — shown only when the quiz has grading criteria */}
-          {getRubricItems(submission.lessonId).length > 0 && (
+          {getRubricItems(submission.lessonId, getQuiz).length > 0 && (
             <div>
               <h3 className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-3">
                 Rubric / Answer Guide
               </h3>
               <div className="space-y-3">
-                {getRubricItems(submission.lessonId).map((item, idx) => (
+                {getRubricItems(submission.lessonId, getQuiz).map((item, idx) => (
                   <div
                     key={item.id}
                     className="p-4 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-100 dark:border-secondary-800/30"
@@ -3887,6 +3888,7 @@ function QuizzesManagementSlot({
   onPublishedQuizWeekIdsChange,
   quizSettings,
 }) {
+  const { weeks, getQuiz } = useLessonsData();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
   const [openLessonId, setOpenLessonId] = useState(null);
@@ -3896,7 +3898,7 @@ function QuizzesManagementSlot({
   }
 
   function togglePublish(weekId) {
-    const base = publishedQuizWeekIds ?? new Set(WEEKS_DATA.map((w) => w.id));
+    const base = publishedQuizWeekIds ?? new Set(weeks.map((w) => w.id));
     const next = new Set(base);
     if (next.has(weekId)) {
       next.delete(weekId);
@@ -3918,17 +3920,17 @@ function QuizzesManagementSlot({
       : 0;
   }
 
-  const expandedWeek = WEEKS_DATA.find((w) => w.id === expandedWeekId) ?? null;
+  const expandedWeek = weeks.find((w) => w.id === expandedWeekId) ?? null;
   const q = search.toLowerCase();
 
   const filteredWeeks = q
-    ? WEEKS_DATA.filter(
+    ? weeks.filter(
         (w) =>
           w.title.toLowerCase().includes(q) ||
           w.category?.toLowerCase().includes(q) ||
           String(w.weekNumber).includes(q) ||
           w.lessons.some((l) => {
-            const quiz = getQuizByLesson(l.id);
+            const quiz = getQuiz(l.id);
             return (
               l.title.toLowerCase().includes(q) ||
               quiz?.title?.toLowerCase().includes(q) ||
@@ -3936,12 +3938,12 @@ function QuizzesManagementSlot({
             );
           }),
       )
-    : WEEKS_DATA;
+    : weeks;
 
   const filteredLessons = expandedWeek
     ? q
       ? expandedWeek.lessons.filter((l) => {
-          const quiz = getQuizByLesson(l.id);
+          const quiz = getQuiz(l.id);
           return (
             l.title.toLowerCase().includes(q) ||
             quiz?.title?.toLowerCase().includes(q) ||
@@ -4014,7 +4016,7 @@ function QuizzesManagementSlot({
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
               {filteredLessons.map((lesson) => {
                 const pct = getCompletion(lesson.id);
-                const quiz = getQuizByLesson(lesson.id);
+                const quiz = getQuiz(lesson.id);
                 const types = quiz?.questions
                   ? [...new Set(quiz.questions.map((qs) => qs.type))]
                   : [];
