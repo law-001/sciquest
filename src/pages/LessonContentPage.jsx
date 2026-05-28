@@ -1,6 +1,6 @@
 import React from "react";
 import { LessonTemplate } from "../components/LessonTemplate";
-import { WEEKS_DATA } from "../data/lessonsweek-01";
+import { useLessonsData } from "../context/LessonsDataContext";
 
 export function LessonContentPage({
   weekId,
@@ -14,9 +14,10 @@ export function LessonContentPage({
   onLessonSelect,
   quizLocked = false,
 }) {
+  const { weeks } = useLessonsData();
   const week =
-    WEEKS_DATA.find((w) => w.id === weekId) ??
-    WEEKS_DATA.find((w) => w.lessons.some((l) => l.id === activeLessonId));
+    weeks.find((w) => w.id === weekId) ??
+    weeks.find((w) => w.lessons.some((l) => l.id === activeLessonId));
 
   const lesson = week?.lessons.find((l) => l.id === activeLessonId);
 

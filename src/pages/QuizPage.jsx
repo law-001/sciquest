@@ -2,8 +2,7 @@
 
 import React from "react";
 import { QuizContainer } from "../components/QuizContainer";
-import { WEEKS_DATA } from "../data/lessonsweek-01";
-import { getQuizByLesson } from "../data/quizzesweek-01";
+import { useLessonsData } from "../context/LessonsDataContext";
 
 export function QuizPage({
   activeLessonId,
@@ -15,9 +14,10 @@ export function QuizPage({
   maxAttempts = null,
   showCorrectAnswers = true,
 }) {
-  const allLessons = WEEKS_DATA.flatMap((w) => w.lessons);
+  const { weeks, getQuiz } = useLessonsData();
+  const allLessons = weeks.flatMap((w) => w.lessons);
   const lesson = allLessons.find((l) => l.id === activeLessonId);
-  const quiz = getQuizByLesson(activeLessonId);
+  const quiz = getQuiz(activeLessonId);
 
   if (!lesson) {
     return (
