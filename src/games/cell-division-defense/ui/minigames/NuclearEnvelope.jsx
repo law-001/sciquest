@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useViewportBp } from '../useViewportBp';
 
 const MONO    = '"Courier New", Courier, monospace';
 const VB_W    = 500;
@@ -60,6 +61,11 @@ function ptsStr(pts) {
 }
 
 export default function NuclearEnvelope({ onComplete, onStarsUpdate }) {
+  const bp = useViewportBp();
+  const isXS = bp === 'xs';
+  const isSM = bp === 'sm';
+  const maxW = isXS ? 320 : isSM ? 400 : 500;
+
   const [drawings,      setDrawings]      = useState([null, null]);
   const [currentDraw,   setCurrentDraw]   = useState(0);
   const [currentPoints, setCurrentPoints] = useState([]);
@@ -177,8 +183,17 @@ export default function NuclearEnvelope({ onComplete, onStarsUpdate }) {
             : 'NOW SURROUND THE RIGHT CLUSTER')}
       </div>
 
-      {/* SVG drawing field (responsive via padding-bottom aspect ratio) */}
-      <div style={{ position: 'relative', width: '100%', paddingBottom: `${(VB_H / VB_W) * 100}%` }}>
+      {/* SVG drawing field. maxWidth caps how wide it stretches on mobile
+          landscape so the full drawing area stays inside the modal. Using
+          aspect-ratio (vs padding-bottom %) so the height collapses with
+          maxWidth instead of with the parent's width. */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: maxW,
+        margin: '0 auto',
+        aspectRatio: `${VB_W} / ${VB_H}`,
+      }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${VB_W} ${VB_H}`}

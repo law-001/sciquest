@@ -4,6 +4,7 @@ import ChromosomeAlign from './minigames/ChromosomeAlign';
 import ChromatidPull from './minigames/ChromatidPull';
 import NuclearEnvelope from './minigames/NuclearEnvelope';
 import CleavageFurrow from './minigames/CleavageFurrow';
+import { useViewportBp } from './useViewportBp';
 
 const MONO = '"Courier New", Courier, monospace';
 const OVERLAY_DURATION = 30;
@@ -24,32 +25,12 @@ const MINIGAME_MAP = {
   cytokinesis: CleavageFurrow,
 };
 
-function useViewportBreakpoint() {
-  const [bp, setBp] = useState(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    if (w < 560 || h < 380) return 'xs';
-    if (w < 768 || h < 460) return 'sm';
-    return 'md';
-  });
-  useEffect(() => {
-    const sync = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      setBp(w < 560 || h < 380 ? 'xs' : w < 768 || h < 460 ? 'sm' : 'md');
-    };
-    window.addEventListener('resize', sync);
-    return () => window.removeEventListener('resize', sync);
-  }, []);
-  return bp;
-}
-
 export function MinigameOverlay({ phase, onComplete }) {
   const [secondsLeft, setSecondsLeft] = useState(OVERLAY_DURATION);
   const [currentStars, setCurrentStars] = useState(3);
   const completedRef = useRef(false);
   const timerRef = useRef(null);
-  const bp = useViewportBreakpoint();
+  const bp = useViewportBp();
   const isXS = bp === 'xs';
   const isSM = bp === 'sm';
 

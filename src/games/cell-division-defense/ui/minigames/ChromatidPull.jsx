@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { useViewportBp } from '../useViewportBp';
 
 const MONO          = '"Courier New", Courier, monospace';
 const PAIR_COUNT    = 4;
 const PAIR_COLORS   = ['#9B59B6', '#E74C3C', '#27AE60', '#E67E22'];
 const PAIR_LABELS   = ['A', 'B', 'C', 'D'];
-const PULL_PX       = 60;    // horizontal drag needed for success
 const PULL_WINDOW   = 1500;  // ms to drag after severing
 const TOO_EARLY_MS  = 300;   // drag within this ms of sever = error
 
@@ -21,6 +21,18 @@ function ChromX({ color, size = 36 }) {
 }
 
 export default function ChromatidPull({ onComplete, onStarsUpdate }) {
+  const bp = useViewportBp();
+  const isXS = bp === 'xs';
+  const isSM = bp === 'sm';
+  const chrSize     = isXS ? 24 : isSM ? 30 : 34;
+  const pairGap     = isXS ? 6 : isSM ? 8 : 10;
+  const pairPadding = isXS ? '6px 4px' : isSM ? '8px 6px' : '12px 10px';
+  // Pull threshold shrinks with the chromosome so the gesture stays
+  // proportional to the visible separation on a narrow viewport.
+  const pullPx      = isXS ? 36 : isSM ? 48 : 60;
+  const linkW       = isXS ? 12 : isSM ? 14 : 18;
+  const linkH       = isXS ? 6 : isSM ? 7 : 8;
+
   const [pairResults, setPairResults] = useState([]);   // { error: bool }[]
   const [activeIdx,   setActiveIdx]   = useState(0);
   // 'link' | 'severed' | 'pulled'
@@ -103,7 +115,7 @@ export default function ChromatidPull({ onComplete, onStarsUpdate }) {
   function handlePairPointerMove(e) {
     if (stageRef.current !== 'severed' || !dragOriginRef.current) return;
     const dx = Math.abs(e.clientX - dragOriginRef.current.x);
-    if (dx >= PULL_PX) {
+    if (dx >= pullPx) {
       const tooEarly = (dragOriginRef.current.t - (severTimeRef.current ?? 0)) < TOO_EARLY_MS;
       dragOriginRef.current = null;
       if (tooEarly) {
@@ -143,7 +155,7 @@ export default function ChromatidPull({ onComplete, onStarsUpdate }) {
       </div>
 
       {/* Pairs */}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: pairGap, justifyContent: 'center', flexWrap: 'wrap' }}>
         {Array.from({ length: PAIR_COUNT }, (_, i) => {
           const isActive  = i === activeIdx && !allDone;
           const isDone    = i < pairResults.length;
@@ -164,8 +176,8 @@ export default function ChromatidPull({ onComplete, onStarsUpdate }) {
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
-                gap: pulled ? 18 : 2,
-                padding: '12px 10px',
+                gap: pulled ? (isXS ? 12 : 18) : 2,
+                padding: pairPadding,
                 borderRadius: 12,
                 border: isActive
                   ? `1.5px solid ${color}`
@@ -188,7 +200,7 @@ export default function ChromatidPull({ onComplete, onStarsUpdate }) {
                 transition: 'transform 0.3s ease',
                 transform: pulled ? 'translateX(-6px)' : 'none',
               }}>
-                <ChromX color={isDone && !wasError ? '#3EDD88' : color} size={34} />
+                <ChromX color={isDone && !wasError ? '#3EDD88' : color} size={chrSize} />
               </div>
 
               {/* Link / connector / result */}
@@ -198,7 +210,7 @@ export default function ChromatidPull({ onComplete, onStarsUpdate }) {
                   aria-label={stage === 'link' && isActive ? `Sever link for pair ${PAIR_LABELS[i]}` : undefined}
                   tabIndex={stage === 'link' && isActive ? 0 : -1}
                   style={{
-                    width: 18, height: 8, borderRadius: 4,
+                    width: linkW, height: linkH, borderRadius: 4,
                     background: stage === 'link' && isActive
                       ? '#27AE60'
                       : 'rgba(255,255,255,0.18)',
@@ -227,7 +239,7 @@ export default function ChromatidPull({ onComplete, onStarsUpdate }) {
                 transition: 'transform 0.3s ease',
                 transform: pulled ? 'translateX(6px)' : 'none',
               }}>
-                <ChromX color={isDone && !wasError ? '#3EDD88' : color} size={34} />
+                <ChromX color={isDone && !wasError ? '#3EDD88' : color} size={chrSize} />
               </div>
 
               {/* Drag arrows overlay when severed */}

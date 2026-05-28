@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useViewportBp } from '../useViewportBp';
 
 const MONO        = '"Courier New", Courier, monospace';
 const CHR_IDS     = ['A', 'B', 'C', 'D'];
@@ -6,14 +7,12 @@ const CHR_COLORS  = { A: '#9B59B6', B: '#6C3483', C: '#7D3C98', D: '#5B2C6F' };
 const SNAP_PCT    = [12, 37, 62, 87];   // % of container width
 const FALLBACK_W  = 450;               // assumed width before any interaction
 
-function pickLayout() {
-  const h = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const w = typeof window !== 'undefined' ? window.innerWidth  : 1200;
+function layoutForBp(bp) {
   // Shrink the playfield on small viewports so it fits inside the minigame
   // overlay without the modal needing to scroll on iPhone-class screens.
-  if (w < 560 || h < 380) return { containerH: 170, chrSize: 30, snapRadius: 32, topY: 14, botY: 124 };
-  if (w < 768 || h < 460) return { containerH: 210, chrSize: 36, snapRadius: 38, topY: 20, botY: 154 };
-  return { containerH: 264, chrSize: 42, snapRadius: 44, topY: 26, botY: 196 };
+  if (bp === 'xs') return { containerH: 150, chrSize: 26, snapRadius: 30, topY: 10, botY: 114, maxW: 320 };
+  if (bp === 'sm') return { containerH: 200, chrSize: 34, snapRadius: 36, topY: 18, botY: 148, maxW: 420 };
+  return { containerH: 264, chrSize: 42, snapRadius: 44, topY: 26, botY: 196, maxW: 520 };
 }
 
 function homeXY(id, w, layout) {
@@ -38,19 +37,14 @@ function ChromosomeX({ color, size = 42, glow = false }) {
 }
 
 export default function ChromosomeAlign({ onComplete, onStarsUpdate }) {
-  const [layout, setLayout] = useState(pickLayout);
-  const { containerH: CONTAINER_H, chrSize: CHR_SIZE, snapRadius: SNAP_RADIUS } = layout;
+  const bp = useViewportBp();
+  const layout = layoutForBp(bp);
+  const { containerH: CONTAINER_H, chrSize: CHR_SIZE, snapRadius: SNAP_RADIUS, maxW } = layout;
   const PLATE_Y = CONTAINER_H / 2;
-
-  useEffect(() => {
-    const sync = () => setLayout(pickLayout());
-    window.addEventListener('resize', sync);
-    return () => window.removeEventListener('resize', sync);
-  }, []);
 
   // Lazy init uses fallback width; positions snap to actual container on first event
   const [positions, setPositions] = useState(() =>
-    Object.fromEntries(CHR_IDS.map(id => [id, homeXY(id, FALLBACK_W, pickLayout())]))
+    Object.fromEntries(CHR_IDS.map(id => [id, homeXY(id, FALLBACK_W, layout)]))
   );
   const [placed,     setPlaced]     = useState({});   // id → zoneIdx
   const [occupied,   setOccupied]   = useState({});   // zoneIdx → id
@@ -68,6 +62,22 @@ export default function ChromosomeAlign({ onComplete, onStarsUpdate }) {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+
+  // Reseat unplaced chromosomes when the viewport breakpoint changes
+  // (e.g. orientation flip) so they land at the correct top/bottom rows
+  // for the new layout instead of off-screen.
+  useEffect(() => {
+    const w = containerRef.current?.offsetWidth || FALLBACK_W;
+    setPositions(prev => {
+      const next = { ...prev };
+      for (const id of CHR_IDS) {
+        if (placedRef.current[id] === undefined) {
+          next[id] = homeXY(id, w, layout);
+        }
+      }
+      return next;
+    });
+  }, [bp]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function containerWidth() {
     return containerRef.current?.offsetWidth || FALLBACK_W;
@@ -178,12 +188,16 @@ export default function ChromosomeAlign({ onComplete, onStarsUpdate }) {
         {done ? 'ALL CHROMOSOMES ALIGNED' : `DRAG ONTO THE PLATE  (${placedCount} / 4)`}
       </p>
 
-      {/* Play field */}
+      {/* Play field — capped width keeps chromosomes from spreading out
+          beyond an easy reach on wide phone landscape. */}
       <div
         ref={containerRef}
         style={{
           position: 'relative',
           height: CONTAINER_H,
+          width: '100%',
+          maxWidth: maxW,
+          margin: '0 auto',
           userSelect: 'none',
           touchAction: 'none',
           overflow: 'visible',

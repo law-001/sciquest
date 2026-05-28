@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useViewportBp } from '../useViewportBp';
 
 const MONO          = '"Courier New", Courier, monospace';
 const CX            = 120;
@@ -25,6 +26,11 @@ function arcPath(startDeg, endDeg) {
 }
 
 export default function CleavageFurrow({ onComplete, onStarsUpdate }) {
+  const bp = useViewportBp();
+  const isXS = bp === 'xs';
+  const isSM = bp === 'sm';
+  const ringMaxW = isXS ? 170 : isSM ? 210 : 260;
+
   const [sections,       setSections]       = useState([0, 0, 0, 0, 0, 0]);
   const [activeSection,  setActiveSection]  = useState(0);
   const [done,           setDone]           = useState(false);
@@ -124,7 +130,7 @@ export default function CleavageFurrow({ onComplete, onStarsUpdate }) {
       {/* Drawing field */}
       <svg
         viewBox="0 0 240 240"
-        style={{ width: '100%', maxWidth: 260, height: 'auto', touchAction: 'none', userSelect: 'none' }}
+        style={{ width: '100%', maxWidth: ringMaxW, height: 'auto', touchAction: 'none', userSelect: 'none' }}
         aria-label="Cleavage furrow contractile ring"
       >
         {/* Cell membrane */}
