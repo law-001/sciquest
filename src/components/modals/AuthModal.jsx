@@ -173,6 +173,9 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", "", "", ""]);
   const otpRefs = useRef([]);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [rememberMe, setRememberMe] = useState(
+    () => localStorage.getItem('sq_pref_remember_me') === '1'
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
@@ -244,7 +247,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     setIsLoading(true);
     setError("");
     try {
-      const profile = await signIn(form.email, form.password);
+      const profile = await signIn(form.email, form.password, rememberMe);
       onLogin(profile?.role ?? "student");
       handleClose();
     } catch (err) {
@@ -680,7 +683,21 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
               )}
 
               {isLogin && (
-                <div className="flex justify-end pt-1">
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => {
+                        setRememberMe(e.target.checked);
+                        localStorage.setItem('sq_pref_remember_me', e.target.checked ? '1' : '0');
+                      }}
+                      className="w-4 h-4 rounded border-stone-300 accent-primary-600 cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-stone-600 dark:text-stone-400">
+                      Remember me
+                    </span>
+                  </label>
                   <button
                     type="button"
                     className="text-sm font-bold text-primary-600 hover:text-primary-700 transition-colors"
