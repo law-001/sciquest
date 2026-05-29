@@ -11,6 +11,7 @@ import { supabase } from './supabase'
 const LESSONS_CACHE = 'sq_published_weeks'
 const QUIZZES_CACHE = 'sq_published_quiz_weeks'
 const OPEN_CACHE = 'sq_open_weeks'
+const HIDDEN_QUIZZES_CACHE = 'sq_hidden_quiz_lessons'
 
 function readCache(key) {
   try {
@@ -54,6 +55,17 @@ export function isWeekOpen(weekId, openIds) {
   return openIds.has(weekId)
 }
 
+// Per-quiz hiding is opt-in by lesson id — default (no row, or lesson not in
+// set) is `false`, so a quiz stays visible as long as its week is published.
+export function getHiddenQuizLessonIds() {
+  return readCache(HIDDEN_QUIZZES_CACHE)
+}
+
+export function isQuizLessonHidden(lessonId, hiddenIds) {
+  if (!hiddenIds) return false
+  return hiddenIds.has(lessonId)
+}
+
 async function fetchScope(scope) {
   const { data, error } = await supabase
     .from('course_publish_state')
@@ -83,6 +95,12 @@ export async function fetchOpenWeekIds() {
   return ids
 }
 
+export async function fetchHiddenQuizLessonIds() {
+  const ids = await fetchScope('quizzes-individual')
+  writeCache(HIDDEN_QUIZZES_CACHE, ids)
+  return ids
+}
+
 async function upsertScope(scope, ids) {
   const arr = ids ? [...ids] : []
   const { error } = await supabase
@@ -109,6 +127,11 @@ export async function saveOpenWeekIds(ids) {
   await upsertScope('open', ids)
 }
 
+export async function saveHiddenQuizLessonIds(ids) {
+  writeCache(HIDDEN_QUIZZES_CACHE, ids)
+  await upsertScope('quizzes-individual', ids)
+}
+
 // Subscribe to realtime updates so toggles made on one device propagate
 // to every other open client within seconds. Returns an unsubscribe fn.
 export function subscribeToPublishedState(onChange) {
@@ -132,7 +155,9 @@ export function subscribeToPublishedState(onChange) {
               ? QUIZZES_CACHE
               : row.scope === 'open'
                 ? OPEN_CACHE
-                : null
+                : row.scope === 'quizzes-individual'
+                  ? HIDDEN_QUIZZES_CACHE
+                  : null
         if (!cacheKey) return
         writeCache(cacheKey, ids)
         onChange(row.scope, ids)
