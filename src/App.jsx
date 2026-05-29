@@ -30,10 +30,13 @@ import {
   getPublishedWeekIds,
   getPublishedQuizWeekIds,
   getOpenWeekIds,
+  getHiddenQuizLessonIds,
   fetchPublishedWeekIds,
   fetchPublishedQuizWeekIds,
   fetchOpenWeekIds,
+  fetchHiddenQuizLessonIds,
   isWeekPublished,
+  isQuizLessonHidden,
   subscribeToPublishedState,
 } from "./lib/publishedWeeks";
 import {
@@ -157,6 +160,9 @@ function AppContent() {
   );
   const [publishedQuizWeekIds, setPublishedQuizWeekIds] = useState(() =>
     getPublishedQuizWeekIds(),
+  );
+  const [hiddenQuizLessonIds, setHiddenQuizLessonIds] = useState(() =>
+    getHiddenQuizLessonIds(),
   );
   const [openWeekIds, setOpenWeekIds] = useState(() => getOpenWeekIds());
   const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
@@ -324,13 +330,15 @@ function AppContent() {
       fetchPublishedWeekIds(),
       fetchPublishedQuizWeekIds(),
       fetchOpenWeekIds(),
+      fetchHiddenQuizLessonIds(),
       fetchQuizSettings(),
     ])
-      .then(([lessons, quizzes, open, settings]) => {
+      .then(([lessons, quizzes, open, hiddenQuizzes, settings]) => {
         if (cancelled) return;
         setPublishedWeekIds(lessons);
         setPublishedQuizWeekIds(quizzes);
         setOpenWeekIds(open);
+        setHiddenQuizLessonIds(hiddenQuizzes);
         setQuizSettings(settings);
       })
       .catch((err) => {
@@ -341,6 +349,7 @@ function AppContent() {
       if (scope === "lessons") setPublishedWeekIds(ids);
       else if (scope === "quizzes") setPublishedQuizWeekIds(ids);
       else if (scope === "open") setOpenWeekIds(ids);
+      else if (scope === "quizzes-individual") setHiddenQuizLessonIds(ids);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
       // Pull a fresh map rather than patching in place — keeps the cached
@@ -561,7 +570,7 @@ function AppContent() {
     // If the student left a quiz mid-attempt (saved answers in localStorage),
     // jump straight into that quiz so they don't lose the in-progress work.
     const ongoingQuizLessonId = findOngoingQuizLessonId(week, lessonsPassed);
-    if (ongoingQuizLessonId && !isQuizLockedForWeek(weekId)) {
+    if (ongoingQuizLessonId && !isQuizLocked(weekId, ongoingQuizLessonId)) {
       setActiveWeekId(weekId);
       setActiveLessonId(ongoingQuizLessonId);
       if (!reachedLessons.includes(ongoingQuizLessonId)) {
@@ -584,13 +593,14 @@ function AppContent() {
     handleNavigate("lesson-content");
   };
 
-  const isQuizLockedForWeek = (weekId) => {
+  const isQuizLocked = (weekId, lessonId) => {
     if (!weekId) return false;
-    return !isWeekPublished(weekId, publishedQuizWeekIds);
+    if (!isWeekPublished(weekId, publishedQuizWeekIds)) return true;
+    return isQuizLessonHidden(lessonId, hiddenQuizLessonIds);
   };
 
   const handleGoToQuiz = () => {
-    if (isQuizLockedForWeek(activeWeekId)) return;
+    if (isQuizLocked(activeWeekId, activeLessonId)) return;
     handleNavigate("quiz");
   };
 
@@ -948,7 +958,7 @@ function AppContent() {
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}
             onLessonComplete={handleLessonComplete}
-            quizLocked={isQuizLockedForWeek(activeWeekId)}
+            quizLocked={isQuizLocked(activeWeekId, activeLessonId)}
             onLessonSelect={(lessonId) => {
               setActiveLessonId(lessonId);
               window.scrollTo({ top: 0, behavior: "smooth" });

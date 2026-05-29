@@ -58,9 +58,13 @@ import {
   savePublishedQuizWeekIds,
   getOpenWeekIds,
   saveOpenWeekIds,
+  getHiddenQuizLessonIds,
+  saveHiddenQuizLessonIds,
+  isQuizLessonHidden,
   fetchPublishedWeekIds,
   fetchPublishedQuizWeekIds,
   fetchOpenWeekIds,
+  fetchHiddenQuizLessonIds,
   subscribeToPublishedState,
 } from "../lib/publishedWeeks";
 import {
@@ -2219,22 +2223,9 @@ function GradebookSlot({ data, sectionId }) {
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
 
-  if (!sectionId) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Star className="w-12 h-12 text-stone-300 mb-4" />
-        <h2 className="text-xl font-black text-stone-700 dark:text-stone-300 mb-2">
-          Select a Section
-        </h2>
-        <p className="text-stone-500 dark:text-stone-400 max-w-xs text-sm">
-          Use the section switcher above to view the gradebook for a specific
-          section.
-        </p>
-      </div>
-    );
-  }
-
-  const sectionStudents = data.students.filter((s) => s.section === sectionId);
+  const sectionStudents = sectionId
+    ? data.students.filter((s) => s.section === sectionId)
+    : data.students;
   const { quizColumns } = data;
 
   const withData = sectionStudents.filter((s) => s.best.size > 0);
@@ -2250,7 +2241,10 @@ function GradebookSlot({ data, sectionId }) {
 
   const pendingNames = new Set(
     data.submissions
-      .filter((s) => s.status === "pending" && s.section === sectionId)
+      .filter(
+        (s) =>
+          s.status === "pending" && (!sectionId || s.section === sectionId),
+      )
       .map((s) => s.student),
   );
 
@@ -2292,7 +2286,7 @@ function GradebookSlot({ data, sectionId }) {
               {selectedStudent.name}
             </h2>
             <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
-              Student record · {sectionId}
+              Student record · {selectedStudent.section}
             </p>
           </div>
         </div>
@@ -2308,7 +2302,8 @@ function GradebookSlot({ data, sectionId }) {
                 {selectedStudent.name}
               </h3>
               <p className="text-sm text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                {sectionId} · Rank #{rank} in section
+                {selectedStudent.section} · Rank #{rank}{" "}
+                {sectionId ? "in section" : "overall"}
               </p>
               {hasPending && (
                 <p className="text-xs font-bold text-amber-500 flex items-center gap-1 mt-1">
@@ -2683,6 +2678,11 @@ function GradebookSlot({ data, sectionId }) {
                 <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
                   {sortTh("#", "rank")}
                   {sortTh("Student", "name")}
+                  {!sectionId && (
+                    <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                      Section
+                    </th>
+                  )}
                   {sortTh("Progress", "progress")}
                   <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
                     Quizzes
@@ -2727,6 +2727,13 @@ function GradebookSlot({ data, sectionId }) {
                             </div>
                           </div>
                         </td>
+                        {!sectionId && (
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">
+                              {student.section}
+                            </span>
+                          </td>
+                        )}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 min-w-25">
                             <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
@@ -2783,7 +2790,7 @@ function GradebookSlot({ data, sectionId }) {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={sectionId ? 6 : 7}
                       className="px-6 py-8 text-sm text-stone-400 text-center"
                     >
                       No students match your search.
@@ -2818,6 +2825,11 @@ function GradebookSlot({ data, sectionId }) {
                           <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
                             {student.name}
                           </p>
+                          {!sectionId && (
+                            <p className="text-xs font-medium text-stone-500 dark:text-stone-400 truncate">
+                              {student.section}
+                            </p>
+                          )}
                           {hasPending && (
                             <p className="text-xs font-bold text-amber-500 flex items-center gap-1">
                               <AlertCircle className="w-3 h-3" /> Pending grade
@@ -2875,7 +2887,9 @@ function GradebookSlot({ data, sectionId }) {
         <Card className="p-12 text-center">
           <Star className="w-10 h-10 text-stone-300 mx-auto mb-3" />
           <p className="text-stone-500 dark:text-stone-400 font-medium">
-            No students in this section yet.
+            {sectionId
+              ? "No students in this section yet."
+              : "No students yet."}
           </p>
         </Card>
       )}
@@ -2929,11 +2943,15 @@ function ProgressSlot({ data, sectionId }) {
 
   // Fetch game data whenever the section changes.
   useEffect(() => {
-    if (!sectionId) return;
-    const ids = data.students
-      .filter((s) => s.section === sectionId)
-      .map((s) => s.id);
-    if (!ids.length) return;
+    const ids = (
+      sectionId
+        ? data.students.filter((s) => s.section === sectionId)
+        : data.students
+    ).map((s) => s.id);
+    if (!ids.length) {
+      setGameProgress(new Map());
+      return;
+    }
     let cancelled = false;
     setGameLoading(true);
     fetchGameProgressForStudents(ids)
@@ -2961,22 +2979,9 @@ function ProgressSlot({ data, sectionId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionId]);
 
-  if (!sectionId) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <TrendingUp className="w-12 h-12 text-stone-300 mb-4" />
-        <h2 className="text-xl font-black text-stone-700 dark:text-stone-300 mb-2">
-          Select a Section
-        </h2>
-        <p className="text-stone-500 dark:text-stone-400 max-w-xs text-sm">
-          Use the section switcher above to view student progress for a specific
-          section.
-        </p>
-      </div>
-    );
-  }
-
-  const sectionStudents = data.students.filter((s) => s.section === sectionId);
+  const sectionStudents = sectionId
+    ? data.students.filter((s) => s.section === sectionId)
+    : data.students;
 
   // ── Student detail view ──────────────────────────────────────────────────
   const selectedStudent = sectionStudents.find(
@@ -2985,7 +2990,9 @@ function ProgressSlot({ data, sectionId }) {
 
   if (selectedStudent) {
     const studentSubs = data.submissions.filter(
-      (s) => s.student === selectedStudent.name && s.section === sectionId,
+      (s) =>
+        s.student === selectedStudent.name &&
+        s.section === selectedStudent.section,
     );
     const studentGames = gameProgress.get(selectedStudent.id) ?? new Map();
     const lessonsCompleted = Math.round(
@@ -3037,7 +3044,7 @@ function ProgressSlot({ data, sectionId }) {
               {selectedStudent.name}
             </h2>
             <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
-              Student progress · {sectionId}
+              Student progress · {selectedStudent.section}
             </p>
           </div>
         </div>
@@ -3067,7 +3074,7 @@ function ProgressSlot({ data, sectionId }) {
                 </span>
               </div>
               <p className="text-sm text-stone-500 dark:text-stone-400 font-medium">
-                {sectionId}
+                {selectedStudent.section}
               </p>
               {lastSub && (
                 <p className="text-xs text-stone-400 font-medium mt-1 flex items-center gap-1">
@@ -3414,10 +3421,10 @@ function ProgressSlot({ data, sectionId }) {
       else if (sortKey === "attempts")
         v =
           data.submissions.filter(
-            (s) => s.student === a.name && s.section === sectionId,
+            (s) => s.student === a.name && s.section === a.section,
           ).length -
           data.submissions.filter(
-            (s) => s.student === b.name && s.section === sectionId,
+            (s) => s.student === b.name && s.section === b.section,
           ).length;
       else if (sortKey === "games")
         v =
@@ -3443,7 +3450,7 @@ function ProgressSlot({ data, sectionId }) {
     (s) =>
       s.progress === 0 &&
       !data.submissions.some(
-        (sub) => sub.student === s.name && sub.section === sectionId,
+        (sub) => sub.student === s.name && sub.section === s.section,
       ),
   ).length;
 
@@ -3549,6 +3556,11 @@ function ProgressSlot({ data, sectionId }) {
                 <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
                   {sortTh("#", "rank")}
                   {sortTh("Student", "name")}
+                  {!sectionId && (
+                    <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                      Section
+                    </th>
+                  )}
                   {sortTh("Progress", "progress")}
                   {sortTh("Quiz Attempts", "attempts")}
                   {sortTh("Quiz Avg", "avg")}
@@ -3564,7 +3576,8 @@ function ProgressSlot({ data, sectionId }) {
                     const rank = progressRankMap.get(student.id) ?? "—";
                     const studentSubs = data.submissions.filter(
                       (s) =>
-                        s.student === student.name && s.section === sectionId,
+                        s.student === student.name &&
+                        s.section === student.section,
                     );
                     const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
                     const status = engagementStatus(
@@ -3595,6 +3608,13 @@ function ProgressSlot({ data, sectionId }) {
                             </p>
                           </div>
                         </td>
+                        {!sectionId && (
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">
+                              {student.section}
+                            </span>
+                          </td>
+                        )}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 min-w-25">
                             <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
@@ -3660,7 +3680,7 @@ function ProgressSlot({ data, sectionId }) {
                 ) : (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={sectionId ? 7 : 8}
                       className="px-6 py-8 text-sm text-stone-400 text-center"
                     >
                       No students match your search.
@@ -3676,7 +3696,9 @@ function ProgressSlot({ data, sectionId }) {
               displayed.map((student) => {
                 const rank = progressRankMap.get(student.id) ?? "—";
                 const studentSubs = data.submissions.filter(
-                  (s) => s.student === student.name && s.section === sectionId,
+                  (s) =>
+                    s.student === student.name &&
+                    s.section === student.section,
                 );
                 const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
                 const status = engagementStatus(student, studentSubs.length > 0);
@@ -3696,9 +3718,16 @@ function ProgressSlot({ data, sectionId }) {
                         <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-[10px] shrink-0">
                           {student.name.charAt(0)}
                         </div>
-                        <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                          {student.name}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                            {student.name}
+                          </p>
+                          {!sectionId && (
+                            <p className="text-xs font-medium text-stone-500 dark:text-stone-400 truncate">
+                              {student.section}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <span
                         className={cn(
@@ -3757,7 +3786,9 @@ function ProgressSlot({ data, sectionId }) {
         <Card className="p-12 text-center">
           <TrendingUp className="w-10 h-10 text-stone-300 mx-auto mb-3" />
           <p className="text-stone-500 dark:text-stone-400 font-medium">
-            No students in this section yet.
+            {sectionId
+              ? "No students in this section yet."
+              : "No students yet."}
           </p>
         </Card>
       )}
@@ -4325,6 +4356,7 @@ function LessonQuizCard({
   types,
   pct,
   published,
+  onTogglePublish,
   currentLimit,
   currentAttempts,
   currentShow,
@@ -4376,12 +4408,29 @@ function LessonQuizCard({
         <h3 className="text-sm font-bold text-stone-900 dark:text-white leading-snug">
           {quiz?.title ?? lesson.title}
         </h3>
-        <Badge
-          variant={published ? "secondary" : "outline"}
-          className="text-xs shrink-0"
+        <button
+          type="button"
+          onClick={onTogglePublish}
+          className={cn(
+            "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors shrink-0",
+            published
+              ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+              : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
+          )}
+          title={published ? "Click to hide this quiz" : "Click to publish this quiz"}
+          aria-label={
+            published
+              ? `Hide quiz ${quiz?.title ?? lesson.title}`
+              : `Publish quiz ${quiz?.title ?? lesson.title}`
+          }
         >
+          {published ? (
+            <Eye className="w-3 h-3" />
+          ) : (
+            <EyeOff className="w-3 h-3" />
+          )}
           {published ? "Published" : "Hidden"}
-        </Badge>
+        </button>
       </div>
       {quiz?.description && (
         <p className="text-xs text-stone-500 dark:text-stone-400 mb-2 leading-relaxed line-clamp-2">
@@ -4454,6 +4503,8 @@ function QuizzesManagementSlot({
   sectionId,
   publishedQuizWeekIds,
   onPublishedQuizWeekIdsChange,
+  hiddenQuizLessonIds,
+  onHiddenQuizLessonIdsChange,
   quizSettings,
   onEditQuiz,
 }) {
@@ -4499,6 +4550,16 @@ function QuizzesManagementSlot({
       next.add(weekId);
     }
     onPublishedQuizWeekIdsChange(next);
+  }
+
+  function toggleQuizHidden(lessonId) {
+    const next = new Set(hiddenQuizLessonIds ?? []);
+    if (next.has(lessonId)) {
+      next.delete(lessonId);
+    } else {
+      next.add(lessonId);
+    }
+    onHiddenQuizLessonIdsChange(next);
   }
 
   const activityById = new Map(data.lessons.map((l) => [l.id, l]));
@@ -4601,10 +4662,9 @@ function QuizzesManagementSlot({
                 const types = quiz?.questions
                   ? [...new Set(quiz.questions.map((qs) => qs.type))]
                   : [];
-                const published = isWeekPublished(
-                  expandedWeek.id,
-                  publishedQuizWeekIds,
-                );
+                const published =
+                  isWeekPublished(expandedWeek.id, publishedQuizWeekIds) &&
+                  !isQuizLessonHidden(lesson.id, hiddenQuizLessonIds);
                 const currentLimit = getQuizTimeLimit(quizSettings, lesson.id);
                 const currentAttempts = getQuizMaxAttempts(quizSettings, lesson.id);
                 const currentShow = getQuizShowAnswers(quizSettings, lesson.id);
@@ -4619,6 +4679,7 @@ function QuizzesManagementSlot({
                     types={types}
                     pct={pct}
                     published={published}
+                    onTogglePublish={() => toggleQuizHidden(lesson.id)}
                     currentLimit={currentLimit}
                     currentAttempts={currentAttempts}
                     currentShow={currentShow}
@@ -4878,6 +4939,17 @@ export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz, activeTab:
     });
   }
 
+  const [hiddenQuizLessonIds, setHiddenQuizLessonIdsState] = useState(() =>
+    getHiddenQuizLessonIds(),
+  );
+
+  function setHiddenQuizLessonIds(ids) {
+    setHiddenQuizLessonIdsState(ids);
+    saveHiddenQuizLessonIds(ids).catch((err) => {
+      console.error("Failed to save hidden quiz lesson ids:", err);
+    });
+  }
+
   const [openWeekIds, setOpenWeekIdsState] = useState(() => getOpenWeekIds());
 
   function setOpenWeekIds(ids) {
@@ -4899,13 +4971,15 @@ export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz, activeTab:
       fetchPublishedWeekIds(),
       fetchPublishedQuizWeekIds(),
       fetchOpenWeekIds(),
+      fetchHiddenQuizLessonIds(),
       fetchQuizSettings(),
     ])
-      .then(([lessons, quizzes, open, settings]) => {
+      .then(([lessons, quizzes, open, hiddenQuizzes, settings]) => {
         if (cancelled) return;
         setPublishedWeekIdsState(lessons);
         setPublishedQuizWeekIdsState(quizzes);
         setOpenWeekIdsState(open);
+        setHiddenQuizLessonIdsState(hiddenQuizzes);
         setQuizSettings(settings);
       })
       .catch((err) => console.error("Failed to load course settings:", err));
@@ -4914,6 +4988,7 @@ export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz, activeTab:
       if (scope === "lessons") setPublishedWeekIdsState(ids);
       else if (scope === "quizzes") setPublishedQuizWeekIdsState(ids);
       else if (scope === "open") setOpenWeekIdsState(ids);
+      else if (scope === "quizzes-individual") setHiddenQuizLessonIdsState(ids);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
       fetchQuizSettings()
@@ -5170,6 +5245,8 @@ export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz, activeTab:
                 onOpenWeekIdsChange={setOpenWeekIds}
                 publishedQuizWeekIds={publishedQuizWeekIds}
                 onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
+                hiddenQuizLessonIds={hiddenQuizLessonIds}
+                onHiddenQuizLessonIdsChange={setHiddenQuizLessonIds}
                 quizSettings={quizSettings}
                 onEditLesson={onEditLesson}
                 onEditQuiz={onEditQuiz}
