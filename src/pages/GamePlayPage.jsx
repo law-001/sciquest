@@ -16,18 +16,26 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgre
   const reducedMotion = useReducedMotion();
   // visualViewport.height is the true on-screen area; window.innerHeight on iOS
   // Safari landscape excludes the URL bar and overstates the usable height.
-  const getViewportHeight = () => window.visualViewport?.height ?? window.innerHeight;
+  // In fullscreen/borderless the viewport can extend behind the OS taskbar, so we
+  // also cap to screen.availHeight (the work area, taskbar excluded) to keep the
+  // game above the taskbar across resolutions and taskbar positions.
+  const getViewportHeight = () => {
+    const vv = window.visualViewport?.height ?? window.innerHeight;
+    return Math.min(vv, window.screen?.availHeight ?? Infinity);
+  };
   const [vh, setVh] = useState(getViewportHeight);
 
   useEffect(() => {
     const update = () => setVh(getViewportHeight());
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
+    window.addEventListener('fullscreenchange', update);
     window.visualViewport?.addEventListener('resize', update);
     window.visualViewport?.addEventListener('scroll', update);
     return () => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
+      window.removeEventListener('fullscreenchange', update);
       window.visualViewport?.removeEventListener('resize', update);
       window.visualViewport?.removeEventListener('scroll', update);
     };

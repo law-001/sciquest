@@ -2,6 +2,7 @@ import { lazy } from "react";
 import sandbox from "../../assets/sandbox.png";
 import celldiv from "../../assets/celldivision.png";
 import mysteryLab from "../../assets/mysterylab.png";
+import foodchain from "../../assets/foodchain.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -55,6 +56,30 @@ export const GAMES = {
     loader: () => import("../../games/mystery-lab/index.jsx"),
     minRole: "student",
     totalLevels: 1,
+  },
+  "food-chain-survival": {
+    id: "food-chain-survival",
+    title: "Food Chain Survival",
+    tagline:
+      "Survive as each organism — rabbit, fox, mushroom — to restore every link in the chain.",
+    subject: "Science",
+    relatedLessonIds: [],
+    difficulty: 2,
+    estimatedMinutes: 15,
+    thumbnail: foodchain,
+    engine: "custom",
+    category: "Ecology",
+    loader: () => import("../../games/food-chain-survival/index.jsx"),
+    minRole: "student",
+    totalLevels: 3,
+    countCompletedLevels: (progress) => {
+      const LEVEL_CHALLENGES = new Set(["l1", "l2", "l3"]);
+      return new Set(
+        progress
+          .filter((r) => r.completed && LEVEL_CHALLENGES.has(r.challenge_id))
+          .map((r) => r.challenge_id),
+      ).size;
+    },
   },
   "cell-division-defense": {
     id: "cell-division-defense",
