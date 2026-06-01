@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Food Chain Survival</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== HEADER ===================== -->
+  <header id="topbar">
+    <button class="icon-btn" id="backBtn" title="Back" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="head-titles">
+      <h1 id="headTitle">Food Chain Survival</h1>
+      <p id="headSub"><span class="dot dot-o"></span> Survive as each organism to unlock the next link in the chain. <span class="dot dot-t"></span></p>
+    </div>
+    <button class="icon-btn" id="muteBtn" title="Sound on/off" aria-label="Sound">
+      <svg id="soundIcon" viewBox="0 0 24 24" width="20" height="20"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path id="wave1" d="M16 9.5a3.5 3.5 0 010 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path id="wave2" d="M18.5 7a7 7 0 010 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <!-- ===================== LEVEL SELECT ===================== -->
+  <main id="menu" class="screen show">
+    <div class="grid-bg"></div>
+    <div class="cards" id="cards"></div>
+    <footer class="menu-foot">
+      <span id="progressLabel">0 / 3 links restored</span>
+    </footer>
+  </main>
+
+  <!-- ===================== GAME ===================== -->
+  <section id="game" class="screen">
+    <div class="stage" id="stage">
+      <canvas id="canvas" width="960" height="600"></canvas>
+
+      <!-- HUD overlay -->
+      <div id="hud">
+        <div class="hud-top">
+          <div class="hud-pill" id="hudObjective"><span class="hud-role" id="hudRole">RABBIT</span><span id="hudGoal">Eat 8 clover patches</span></div>
+          <div class="hud-right">
+            <div class="hud-stat phase" id="hudPhaseWrap" style="display:none"><span class="hud-ico" id="hudPhaseIco">☀️</span><span id="hudPhase">Morning</span></div>
+            <div class="hud-stat" id="hudTimerWrap"><span class="hud-ico" id="hudTimerIco">⏱</span><span id="hudTimer">2:00</span></div>
+            <div class="hud-count" id="hudCountWrap"><span id="hudCount">0</span><span class="hud-count-sep">/</span><span id="hudCountMax">8</span></div>
+            <button class="icon-btn small" id="pauseBtn" title="Pause">
+              <svg viewBox="0 0 24 24" width="18" height="18"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hud-bars">
+          <div class="bar-row" id="barEnergyRow">
+            <span class="bar-label" id="barEnergyLabel">Energy</span>
+            <div class="bar"><div class="bar-fill energy" id="barEnergy"></div></div>
+          </div>
+          <div class="bar-row" id="barThirstRow" style="display:none">
+            <span class="bar-label">Thirst</span>
+            <div class="bar"><div class="bar-fill thirst" id="barThirst"></div></div>
+          </div>
+          <div class="bar-row" id="barStaminaRow">
+            <span class="bar-label">Stamina</span>
+            <div class="bar thin"><div class="bar-fill stamina" id="barStamina"></div></div>
+          </div>
+        </div>
+        <div class="hud-banner" id="hudBanner"></div>
+        <div class="hud-hint" id="hudHint"></div>
+      </div>
+
+      <!-- mobile dpad -->
+      <div id="touch-controls" class="hidden">
+        <div class="dpad">
+          <button data-dir="up" class="dbtn up">▲</button>
+          <button data-dir="left" class="dbtn left">◀</button>
+          <button data-dir="right" class="dbtn right">▶</button>
+          <button data-dir="down" class="dbtn down">▼</button>
+        </div>
+        <button id="actionBtn" class="action-btn">DASH</button>
+        <button id="burrowBtn" class="action-btn burrow" style="display:none">BURROW</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EDU CARD MODAL ===================== -->
+  <div id="modal" class="modal-wrap">
+    <div class="modal-card" id="modalCard">
+      <div class="modal-accent" id="modalAccent"></div>
+      <div class="modal-body">
+        <span class="modal-kicker" id="modalKicker">BEFORE YOU PLAY</span>
+        <h2 id="modalTitle">Title</h2>
+        <div id="modalContent"></div>
+        <div class="modal-actions" id="modalActions"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- React + Babel (Tweaks panel only) -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- engine + content -->
+<script src="js/engine.js"></script>
+<script src="js/logdecomp.js"></script>
+<script src="js/worldtree.js"></script>
+<script src="js/grass.js"></script>
+<script src="js/water.js"></script>
+<script src="js/world.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/level1.js"></script>
+<script src="js/level2.js"></script>
+<script src="js/level3.js"></script>
+<script src="js/main.js"></script>
+
+<!-- tweaks panel (React) -->
+<script type="text/babel" src="js/tweaks-panel.jsx"></script>
+<script type="text/babel" src="js/tweaks-app.jsx"></script>
+</body>
+</html>
