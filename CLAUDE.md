@@ -11,6 +11,15 @@ npm run lint:fix  # ESLint auto-fix
 
 No test suite. No typecheck script (plain JSX, no TypeScript).
 
+## Testing / Verification
+
+**The developer runs the app and does the testing — Claude does not.** Don't launch the dev server, drive a headless browser, or take screenshots to verify runtime/visual behavior. Instead, after a change:
+
+1. Do the static checks Claude *can* do: `npm run lint` and, for standalone game JS, `node --check <file>`. Report the results.
+2. Then hand off testing with a short **"What to check"** note: exactly what the developer should do, what they should see if it's correct, and the specific signs it's wrong. Be concrete (which screen, which control, expected vs. broken).
+
+The developer will test and report back. Only write a runnable harness/screenshot if explicitly asked.
+
 ## Architecture
 
 React 19 + Vite 8 + Tailwind CSS 4. No React Router — navigation is view-string state in `App.jsx`.

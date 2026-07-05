@@ -148,9 +148,9 @@
       return { r: lerp(a.col[0], b.col[0], k), g: lerp(a.col[1], b.col[1], k), b: lerp(a.col[2], b.col[2], k), a: lerp(a.a, b.a, k), vig: lerp(a.vig, b.vig, k) };
     }
     _phaseHud() {
-      if (this.phase === 'day') return { key: 'day', name: 'Afternoon', ico: '☀️' };
-      if (this.phase === 'dusk') return { key: 'evening', name: 'Dusk', ico: '🌆' };
-      return { key: 'night', name: 'Nightfall', ico: '🌙' };
+      if (this.phase === 'day') return { key: 'day', name: 'Afternoon', ico: 'sun' };
+      if (this.phase === 'dusk') return { key: 'evening', name: 'Dusk', ico: 'sunset' };
+      return { key: 'night', name: 'Nightfall', ico: 'moon' };
     }
     get _dark() { return clamp(this._lightNow.vig / 0.36, 0, 1); }
 
@@ -200,7 +200,7 @@
       const ax = Input.axis(); let mvx = ax.x, mvy = ax.y;
       if (this.hud.touchDir) { mvx += this.hud.touchDir.x; mvy += this.hud.touchDir.y; const m = Math.hypot(mvx, mvy) || 1; mvx /= m; mvy /= m; }
       const moving = mvx || mvy;
-      const sneaking = Input.down('shift');
+      const sneaking = Input.down('shift') || this.hud.sneakDown;
 
       // stamina exhaust lock — same logic as the rabbit: drains on pounce, and
       // once empty you can't sprint again until fully recovered.

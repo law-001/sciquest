@@ -29,7 +29,7 @@
   <!-- ===================== LEVEL SELECT ===================== -->
   <main id="menu" class="screen show">
     <div class="grid-bg"></div>
-    <div class="cards" id="cards"></div>
+    <div class="sq-level-grid" id="cards"></div>
     <footer class="menu-foot">
       <span id="progressLabel">0 / 3 links restored</span>
     </footer>
@@ -45,8 +45,8 @@
         <div class="hud-top">
           <div class="hud-pill" id="hudObjective"><span class="hud-role" id="hudRole">RABBIT</span><span id="hudGoal">Eat 8 clover patches</span></div>
           <div class="hud-right">
-            <div class="hud-stat phase" id="hudPhaseWrap" style="display:none"><span class="hud-ico" id="hudPhaseIco">☀️</span><span id="hudPhase">Morning</span></div>
-            <div class="hud-stat" id="hudTimerWrap"><span class="hud-ico" id="hudTimerIco">⏱</span><span id="hudTimer">2:00</span></div>
+            <div class="hud-stat phase" id="hudPhaseWrap" style="display:none"><span class="hud-ico" id="hudPhaseIco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span><span id="hudPhase">Morning</span></div>
+            <div class="hud-stat" id="hudTimerWrap"><span class="hud-ico" id="hudTimerIco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><span id="hudTimer">2:00</span></div>
             <div class="hud-count" id="hudCountWrap"><span id="hudCount">0</span><span class="hud-count-sep">/</span><span id="hudCountMax">8</span></div>
             <button class="icon-btn small" id="pauseBtn" title="Pause">
               <svg viewBox="0 0 24 24" width="18" height="18"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
@@ -71,16 +71,11 @@
         <div class="hud-hint" id="hudHint"></div>
       </div>
 
-      <!-- mobile dpad -->
+      <!-- mobile controls: analog joystick + skill buttons -->
       <div id="touch-controls" class="hidden">
-        <div class="dpad">
-          <button data-dir="up" class="dbtn up">▲</button>
-          <button data-dir="left" class="dbtn left">◀</button>
-          <button data-dir="right" class="dbtn right">▶</button>
-          <button data-dir="down" class="dbtn down">▼</button>
-        </div>
+        <div id="joystick" class="joystick" aria-label="Move"><div class="joy-knob" id="joyKnob"></div></div>
         <button id="actionBtn" class="action-btn">DASH</button>
-        <button id="burrowBtn" class="action-btn burrow" style="display:none">BURROW</button>
+        <button id="burrowBtn" class="action-btn secondary" style="display:none">BURROW</button>
       </div>
     </div>
   </section>
