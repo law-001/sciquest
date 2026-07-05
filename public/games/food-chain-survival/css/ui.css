@@ -49,6 +49,9 @@ body{
   display:flex;align-items:center;gap:16px;
   padding:14px 22px;z-index:30;
 }
+/* In-game the pause menu handles back/sound, so the header is hidden to give the
+   play area the whole viewport. It stays on the level-select (menu) screen. */
+body.in-game #topbar{display:none;}
 #topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--orange),var(--gold) 55%,var(--teal));}
 .head-titles{flex:1;text-align:center;}
@@ -147,7 +150,10 @@ body.muted #soundIcon::after{content:"";}
 #game{background:#0e1508;}
 .stage{position:absolute;inset:0;display:grid;place-items:center;background:#0e1508;}
 #canvas{
-  image-rendering:auto;width:100%;height:100%;object-fit:contain;display:block;
+  /* object-position pins the drawing to the TOP of the box: when the buffer is
+     sized to the *visible* height (taskbar/host clipping), the unused strip
+     must be the hidden bottom — vertical centering would hide gameplay rows. */
+  image-rendering:auto;width:100%;height:100%;object-fit:contain;object-position:50% 0;display:block;
   background:#9ccb63;touch-action:none;
 }
 

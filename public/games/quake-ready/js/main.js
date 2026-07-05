@@ -41,10 +41,29 @@
   /* ---------------- viewport fit ---------------- */
   // Size the root to the live *visible* viewport (works inside the SciQuest
   // iframe and standalone); tracks resize, zoom and orientation changes.
+  // Embedded (SciQuest iframe) vs standalone tab — the taskbar cut below only
+  // applies standalone; embedded, the host page already sizes the frame.
+  let isTopLevel = true;
+  try { isTopLevel = global.self === global.top; } catch (e) { isTopLevel = false; }
   function fitViewport() {
     const vv = global.visualViewport;
     const w = Math.round(vv ? vv.width : global.innerWidth);
-    const h = Math.round(vv ? vv.height : global.innerHeight);
+    // Inside an iframe, visualViewport reflects the TOP-LEVEL page, so it can
+    // over-report past the frame the host gave us and push the stage behind the
+    // window's taskbar. Clamp to this frame's own layout viewport so --app-h
+    // fills exactly the host container, never more.
+    const frameH = document.documentElement.clientHeight || global.innerHeight;
+    let h = Math.round(Math.min(vv ? vv.height : global.innerHeight, frameH));
+    // A window sized or dragged past the OS work area keeps its full
+    // innerHeight while the always-on-top taskbar covers its bottom strip —
+    // no height comparison can see that, only the window's position. Cut how
+    // far the window's bottom edge overhangs the work-area bottom, so the
+    // stage always ends above the taskbar. Real fullscreen hides the taskbar.
+    if (isTopLevel && !document.fullscreenElement) {
+      const scr = global.screen;
+      const workBottom = ((scr && scr.availTop) || 0) + (scr ? scr.availHeight : Infinity);
+      h = Math.max(200, h - Math.max(0, global.screenY + global.outerHeight - workBottom));
+    }
     const root = document.documentElement.style;
     root.setProperty('--app-w', w + 'px');
     root.setProperty('--app-h', h + 'px');
@@ -55,6 +74,10 @@
     global.visualViewport.addEventListener('resize', fitViewport);
     global.visualViewport.addEventListener('scroll', fitViewport);
   }
+  // A window MOVE fires no resize event but can slide the stage under the OS
+  // taskbar — re-measure on a slow poll (standalone only; embedded, the host
+  // page tracks the window and resizes the frame, which does fire resize).
+  if (isTopLevel) setInterval(fitViewport, 1000);
 
   /* ---------------- audio mute ---------------- */
   function setMute(m) { G.Audio.muted = m; document.body.classList.toggle('muted', m); try { localStorage.setItem('qr_mute', m ? '1' : '0'); } catch (e) {} }
@@ -65,6 +88,7 @@
   function show(name) {
     $('#menu').classList.toggle('show', name === 'menu');
     $('#game').classList.toggle('show', name === 'game');
+    document.body.classList.toggle('in-game', name === 'game');
     $('#headTitle').textContent = name === 'menu' ? 'Quake Ready' : (current ? current.meta.title : 'Quake Ready');
     $('#headSub').style.display = name === 'menu' ? '' : 'none';
   }
@@ -318,19 +342,24 @@
     showModal({ accent: meta.color, kicker: 'DID YOU KNOW', title: meta.edu.post.title, bodyHTML: meta.edu.post.html, actions });
   }
 
-  /* ---------------- pause ---------------- */
-  $('#pauseBtn').addEventListener('click', () => {
+  /* ---------------- pause = universal in-game menu ---------------- */
+  // The top header is hidden during play, so the pause button is the single
+  // entry point for everything the header used to offer: sound + back/exit.
+  function openPauseMenu() {
     if (!current) return; paused = true;
     showModal({
       accent: current.meta.color, kicker: 'PAUSED', title: current.meta.title,
       bodyHTML: '<p style="color:#8d8478;font-weight:700">Take a breather.</p>',
       actions: [
         { label: 'Resume', onClick: () => { paused = false; lastTs = performance.now(); } },
+        { label: G.Audio.muted ? 'Sound: Off' : 'Sound: On', kind: 'ghost', keep: true, onClick: () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); openPauseMenu(); } },
         { label: 'Restart', kind: 'ghost', onClick: () => enterGame(current.meta) },
         { label: 'Missions', kind: 'ghost', onClick: quitToMenu },
+        { label: 'Exit game', kind: 'ghost', onClick: () => { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} } },
       ],
     });
-  });
+  }
+  $('#pauseBtn').addEventListener('click', openPauseMenu);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && current && !paused) $('#pauseBtn').click(); });
 
   /* ---------------- touch controls (Level 2 movement) ---------------- */

@@ -46,10 +46,29 @@
   // area and under the OS taskbar. visualViewport (falling back to innerWidth/
   // innerHeight) reports exactly the visible client box and tracks resize, zoom
   // and orientation changes, so the stage stays fully on-screen at any resolution.
+  // Embedded (SciQuest iframe) vs standalone tab — the taskbar cut below only
+  // applies standalone; embedded, the host page already sizes the frame.
+  let isTopLevel = true;
+  try { isTopLevel = global.self === global.top; } catch (e) { isTopLevel = false; }
   function fitViewport() {
     const vv = global.visualViewport;
     const w = Math.round(vv ? vv.width : global.innerWidth);
-    const h = Math.round(vv ? vv.height : global.innerHeight);
+    // Inside an iframe, visualViewport reflects the TOP-LEVEL page, so it can
+    // over-report past the frame the host gave us and push the stage behind the
+    // window's taskbar. Clamp to this frame's own layout viewport so --app-h
+    // fills exactly the host container, never more.
+    const frameH = document.documentElement.clientHeight || global.innerHeight;
+    let h = Math.round(Math.min(vv ? vv.height : global.innerHeight, frameH));
+    // A window sized or dragged past the OS work area keeps its full
+    // innerHeight while the always-on-top taskbar covers its bottom strip —
+    // no height comparison can see that, only the window's position. Cut how
+    // far the window's bottom edge overhangs the work-area bottom, so the
+    // stage always ends above the taskbar. Real fullscreen hides the taskbar.
+    if (isTopLevel && !document.fullscreenElement) {
+      const scr = global.screen;
+      const workBottom = ((scr && scr.availTop) || 0) + (scr ? scr.availHeight : Infinity);
+      h = Math.max(200, h - Math.max(0, global.screenY + global.outerHeight - workBottom));
+    }
     const root = document.documentElement.style;
     root.setProperty('--app-w', w + 'px');
     root.setProperty('--app-h', h + 'px');
@@ -70,6 +89,7 @@
   function show(name) {
     $('#menu').classList.toggle('show', name === 'menu');
     $('#game').classList.toggle('show', name === 'game');
+    document.body.classList.toggle('in-game', name === 'game');
     $('#backBtn').style.visibility = 'visible';
     $('#headTitle').textContent = name === 'menu' ? 'Food Chain Survival' : (current ? current.meta.title : 'Food Chain Survival');
     $('#headSub').style.display = name === 'menu' ? '' : 'none';
@@ -180,13 +200,61 @@
   const canvas = $('#canvas'), ctx = canvas.getContext('2d');
   const cam = new G.Camera(canvas.width, canvas.height);
   // World-px before the bottom edge where the camera stops scrolling down.
-  // 0 = stop exactly at the world's bottom edge; raise this to stop earlier.
-  cam.bottomInset = -180;
+  // 0 = stop exactly at the world's bottom edge (never reveal the void below the
+  // terrain); raise this to stop earlier. Negative values overscroll past the
+  // edge and expose the background fill, so keep this >= 0.
+  cam.bottomInset = 0;
   // Vertical framing of the followed player. screen-Y = vh/2 - offsetY, so a
-  // positive value lifts the player up toward the centre of the view.
-  cam.offsetY = 90;
+  // positive value lifts the player above centre; 0 keeps it dead-centre.
+  cam.offsetY = 0;
   const fx = new G.FX();
   G.Input.bind(canvas);
+
+  // Fill the game window: the drawing buffer (and camera viewport) track the live
+  // size of the stage, so the map reaches every window edge — no letterbox border.
+  // The viewport is capped to the world so the camera can never scroll past the
+  // map into the void; a window larger than the whole map falls back to showing
+  // it centred. Called on every level start and whenever the window resizes.
+  // Height of the canvas box that is genuinely on screen. The box can extend
+  // past what the player can see in three ways this frame cannot feel through
+  // normal layout: the frame's own viewport, the HOST page's viewport (the
+  // same-origin SciQuest embed can size the iframe taller than its window),
+  // and an OS taskbar overlapping the window's bottom edge. Clamp against all
+  // three so the camera viewport never includes rows nobody can see.
+  function visibleCanvasHeight(rect) {
+    let top = rect.top, bottom = rect.bottom, limit = global.innerHeight;
+    try {
+      if (!isTopLevel && global.frameElement) {
+        const fr = global.frameElement.getBoundingClientRect();
+        top += fr.top; bottom += fr.top;
+        limit = global.top.innerHeight;
+      }
+    } catch (e) { /* cross-origin host: fall back to frame-local clipping */ }
+    if (!document.fullscreenElement) {
+      const scr = global.screen;
+      const workBottom = ((scr && scr.availTop) || 0) + (scr ? scr.availHeight : Infinity);
+      limit -= Math.max(0, global.screenY + global.outerHeight - workBottom);
+    }
+    return Math.max(0, Math.min(bottom, limit) - top);
+  }
+
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    let vw = Math.round(rect.width), vh = Math.round(visibleCanvasHeight(rect));
+    if (vw < 2 || vh < 2) return;            // stage not visible (menu) — skip
+    const world = current && current.level && current.level.world;
+    if (world) { vw = Math.min(vw, world.w); vh = Math.min(vh, world.h); }
+    if (canvas.width !== vw) canvas.width = vw;
+    if (canvas.height !== vh) canvas.height = vh;
+    cam.vw = vw; cam.vh = vh;
+    if (current && current.level) { current.level.W = vw; current.level.H = vh; }
+  }
+  ['resize', 'orientationchange', 'fullscreenchange'].forEach((e) => global.addEventListener(e, resizeCanvas));
+  if (global.visualViewport) global.visualViewport.addEventListener('resize', resizeCanvas);
+  // A window MOVE fires no resize event but can slide the stage under the OS
+  // taskbar — re-measure on a slow poll. Standalone only: embedded, the host
+  // page tracks the window and resizes the frame, which does fire resize here.
+  if (isTopLevel) setInterval(() => { fitViewport(); resizeCanvas(); }, 1000);
 
   function startLevel(id) {
     const meta = G.LEVELS.find((l) => l.id === id);
@@ -210,6 +278,9 @@
     level.hud = hud;
     current = { meta, level };
     global.__cur = current;
+    // Size the viewport to the window (capped to this level's world) before init,
+    // so level.init() sees the real W/H (level 3 centres its camera on them).
+    resizeCanvas();
     level.init({ tweaks: tweaks() });
     paused = false; lastTs = performance.now();
     cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
@@ -334,19 +405,24 @@
     showModal({ accent: meta.color, kicker: 'DID YOU KNOW', title: meta.edu.post.title, bodyHTML: meta.edu.post.html, actions });
   }
 
-  /* ---------------- pause ---------------- */
-  $('#pauseBtn').addEventListener('click', () => {
+  /* ---------------- pause = universal in-game menu ---------------- */
+  // The top header is hidden during play, so the pause button is the single
+  // entry point for everything the header used to offer: sound + back/exit.
+  function openPauseMenu() {
     if (!current) return; paused = true;
     showModal({
       accent: current.meta.color, kicker: 'PAUSED', title: current.meta.title,
       bodyHTML: '<p style="color:#8d8478;font-weight:700">Take a breather.</p>',
       actions: [
         { label: 'Resume', onClick: () => { paused = false; lastTs = performance.now(); } },
+        { label: G.Audio.muted ? 'Sound: Off' : 'Sound: On', kind: 'ghost', keep: true, onClick: () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); openPauseMenu(); } },
         { label: 'Restart', kind: 'ghost', onClick: () => enterGame(current.meta) },
         { label: 'Map', kind: 'ghost', onClick: quitToMenu },
+        { label: 'Exit game', kind: 'ghost', onClick: () => { try { parent.postMessage({ type: 'fcs:exit' }, '*'); } catch (e) {} } },
       ],
     });
-  });
+  }
+  $('#pauseBtn').addEventListener('click', openPauseMenu);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && current && !paused) $('#pauseBtn').click(); });
 
   /* ---------------- touch controls ---------------- */
