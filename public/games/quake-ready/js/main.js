@@ -1,5 +1,7 @@
 /* ===========================================================================
    Main — boot, level-select cards, screen flow, HUD plumbing, modals, loop.
+   Level-select card system reused from Food Chain Survival (shared SciQuest
+   sq-level-* look); progress + messaging use this game's own keys.
    =========================================================================== */
 (function (global) {
   'use strict';
@@ -14,17 +16,18 @@
   };
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
   const STAR_OFF = '<svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
-  // HUD glyphs — inline SVG (no emoji). Phase icons keyed by the `ico` name each level emits.
+  // HUD phase glyphs, keyed by the `ico` name each level emits.
   const HUD_ICONS = {
-    sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
-    sunset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>',
-    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
-    mushroom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a8 8 0 0 1 16 0Z"/><path d="M10 11v6a2 2 0 0 0 4 0v-6"/></svg>',
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>',
+    quake: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l2-6 3 12 3-9 2 3h6"/></svg>',
+    siren: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 19v-6a5 5 0 0 1 10 0v6"/><path d="M4 21h16"/><path d="M12 3v2M4.9 5.9 6.3 7.3M19.1 5.9l-1.4 1.4"/></svg>',
   };
 
+  /* ---------------- reduced motion ---------------- */
+  G.REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   /* ---------------- progress ---------------- */
-  const STORE = 'fcs_progress_v2';
+  const STORE = 'qr_progress_v1';
   function loadProg() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveProg(p) { try { localStorage.setItem(STORE, JSON.stringify(p)); } catch (e) {} }
   let progress = loadProg(); // {1:{cleared:true,stars:3}, ...}
@@ -35,17 +38,9 @@
     return !!(progress[prev.id] && progress[prev.id].cleared);
   }
 
-  /* ---------------- tweaks ---------------- */
-  function tweaks() { return global.__tweaks || { difficulty: 0, enemySpeed: 1, playerSpeed: 1, showCones: true }; }
-
   /* ---------------- viewport fit ---------------- */
-  // Size the root to the live *visible* browser viewport — never the monitor /
-  // screen resolution. screen.avail* describes the whole display work area, which
-  // inside an embed (iframe) or a non-maximized window is larger than the region
-  // the game can actually use; sizing to it pushes the canvas past the visible
-  // area and under the OS taskbar. visualViewport (falling back to innerWidth/
-  // innerHeight) reports exactly the visible client box and tracks resize, zoom
-  // and orientation changes, so the stage stays fully on-screen at any resolution.
+  // Size the root to the live *visible* viewport (works inside the SciQuest
+  // iframe and standalone); tracks resize, zoom and orientation changes.
   function fitViewport() {
     const vv = global.visualViewport;
     const w = Math.round(vv ? vv.width : global.innerWidth);
@@ -62,23 +57,22 @@
   }
 
   /* ---------------- audio mute ---------------- */
-  function setMute(m) { G.Audio.muted = m; document.body.classList.toggle('muted', m); try { localStorage.setItem('fcs_mute', m ? '1' : '0'); } catch (e) {} }
-  setMute(localStorage.getItem('fcs_mute') === '1');
+  function setMute(m) { G.Audio.muted = m; document.body.classList.toggle('muted', m); try { localStorage.setItem('qr_mute', m ? '1' : '0'); } catch (e) {} }
+  setMute(localStorage.getItem('qr_mute') === '1');
   $('#muteBtn').addEventListener('click', () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); });
 
   /* ---------------- screens ---------------- */
   function show(name) {
     $('#menu').classList.toggle('show', name === 'menu');
     $('#game').classList.toggle('show', name === 'game');
-    $('#backBtn').style.visibility = 'visible';
-    $('#headTitle').textContent = name === 'menu' ? 'Food Chain Survival' : (current ? current.meta.title : 'Food Chain Survival');
+    $('#headTitle').textContent = name === 'menu' ? 'Quake Ready' : (current ? current.meta.title : 'Quake Ready');
     $('#headSub').style.display = name === 'menu' ? '' : 'none';
   }
   // NOTE: on the menu screen there is no level to quit, so the back arrow
   // exits the whole game back to the SciQuest games hub (host listens).
   $('#backBtn').addEventListener('click', () => {
     if (current) { quitToMenu(); }
-    else { try { parent.postMessage({ type: 'fcs:exit' }, '*'); } catch (e) {} }
+    else { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} }
   });
 
   /* ---------------- cards ---------------- */
@@ -129,7 +123,7 @@
     wrap.querySelectorAll('.sq-level-card:not(.sq-level-card--locked)').forEach((c) => {
       c.addEventListener('click', () => { G.Audio.ensure(); startLevel(+c.dataset.id); });
     });
-    $('#progressLabel').textContent = cleared + ' / ' + G.LEVELS.length + ' links restored';
+    $('#progressLabel').textContent = cleared + ' / ' + G.LEVELS.length + ' missions complete';
   }
 
   /* ---------------- modal ---------------- */
@@ -156,44 +150,29 @@
   function hideModal() { $('#modal').classList.remove('show'); }
 
   function controlsHTML(kind) {
-    if (kind === 'aim') {
+    if (kind === 'survivor') {
       return `<div class="controls-row">
-        <span class="ctrl"><span class="keycap">Mouse</span> Aim</span>
-        <span class="ctrl"><span class="keycap">Space</span>/<span class="keycap">Click</span> Fling spore</span>
-        <span class="ctrl"><span class="keycap">↑↓←→</span> Nudge aim</span></div>`;
+        <span class="ctrl"><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> / <span class="keycap">↑↓←→</span> Move</span>
+        <span class="ctrl"><span class="keycap">Space</span> Hold to interact / take cover</span></div>`;
     }
-    if (kind === 'worm') {
-      return `<div class="controls-row">
-        <span class="ctrl"><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> / <span class="keycap">↑↓←→</span> Crawl</span>
-        <span class="ctrl"><span class="keycap">Space</span> Hold to eat / heal</span>
-        <span class="ctrl"><span class="keycap">Shift</span> Burrow</span></div>`;
-    }
+    // sim + ops are pointer-driven
     return `<div class="controls-row">
-      <span class="ctrl"><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> / <span class="keycap">↑↓←→</span> Move</span>
-      <span class="ctrl"><span class="keycap">Shift</span> ${kind === 'fox' ? 'Sneak' : 'Sprint'}</span>
-      ${kind === 'fox' ? '<span class="ctrl"><span class="keycap">Space</span> Pounce</span>' : ''}</div>`;
+      <span class="ctrl"><span class="keycap">Mouse</span> ${kind === 'ops' ? 'Click incidents, dispatch from the Command Post' : 'Click the fault · set magnitude & depth · Start'}</span></div>`;
   }
 
   /* ---------------- level lifecycle ---------------- */
   let current = null;       // {meta, level}
-  let env = null, raf = 0, lastTs = 0, paused = false;
+  let raf = 0, lastTs = 0, paused = false;
   const canvas = $('#canvas'), ctx = canvas.getContext('2d');
   const cam = new G.Camera(canvas.width, canvas.height);
-  // World-px before the bottom edge where the camera stops scrolling down.
-  // 0 = stop exactly at the world's bottom edge; raise this to stop earlier.
-  cam.bottomInset = -180;
-  // Vertical framing of the followed player. screen-Y = vh/2 - offsetY, so a
-  // positive value lifts the player up toward the centre of the view.
-  cam.offsetY = 90;
   const fx = new G.FX();
   G.Input.bind(canvas);
 
   function startLevel(id) {
     const meta = G.LEVELS.find((l) => l.id === id);
-    const kindKey = meta.key === 'fox' ? 'fox' : meta.key === 'worm' ? 'worm' : meta.key === 'mushroom' ? 'aim' : 'rabbit';
     showModal({
       accent: meta.color, kicker: 'BEFORE YOU PLAY', title: meta.edu.pre.title,
-      bodyHTML: meta.edu.pre.html + (meta.edu.pre.controls ? controlsHTML(meta.edu.pre.controls === 'aim' ? 'aim' : meta.edu.pre.controls === 'worm' ? 'worm' : kindKey) : ''),
+      bodyHTML: meta.edu.pre.html + (meta.edu.pre.controls ? controlsHTML(meta.edu.pre.controls) : ''),
       actions: [
         { label: 'Back', kind: 'ghost', onClick: () => {} },
         { label: 'Start &nbsp;→', onClick: () => enterGame(meta) },
@@ -202,6 +181,7 @@
   }
 
   function enterGame(meta) {
+    if (current && current.level.cleanup) current.level.cleanup();
     show('game');
     cam.x = 0; cam.y = 0; fx.parts.length = 0; fx.texts.length = 0;
     const Cls = G.LevelClasses[meta.cls];
@@ -209,8 +189,7 @@
     const level = new Cls({ ctx, canvas, cam, fx, hud, meta });
     level.hud = hud;
     current = { meta, level };
-    global.__cur = current;
-    level.init({ tweaks: tweaks() });
+    level.init();
     paused = false; lastTs = performance.now();
     cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
   }
@@ -220,13 +199,14 @@
     const dt = clamp((ts - lastTs) / 1000, 0, 0.045); lastTs = ts;
     if (!paused && current) { current.level.update(dt); fx.update(dt); current.level.draw(); }
     G.Input.endFrame();
-    global.__cur = current;
-    const h = current && current.level.hud; if (h) { h.actionPressed = false; h.burrowPressed = false; }
+    const h = current && current.level.hud; if (h) h.actionPressed = false;
   }
 
   function quitToMenu() {
     cancelAnimationFrame(raf); raf = 0;
     if (current) { current.level.cleanup && current.level.cleanup(); current = null; }
+    ['#taskPanel', '#simPanel', '#simSidebar', '#opsPanel'].forEach((s) => { $(s).style.display = 'none'; });
+    $('#game').classList.remove('mode-shell');
     hideModal(); show('menu'); renderCards();
   }
 
@@ -234,60 +214,61 @@
   function makeHUD(meta) {
     const accent = ACCENTS[meta.color];
     const elBanner = $('#hudBanner'), elHint = $('#hudHint');
-    // spores pill (level 3) created lazily
-    let sporePill = $('#hudSpores');
-    if (!sporePill) {
-      sporePill = document.createElement('div'); sporePill.id = 'hudSpores'; sporePill.className = 'hud-stat';
-      sporePill.innerHTML = '<span class="hud-ico">' + HUD_ICONS.mushroom + '</span><span id="hudSporeNum">0</span>';
-      $('#hudCountWrap').insertAdjacentElement('beforebegin', sporePill);
-    }
     const hud = {
-      touchDir: null, actionDown: false, actionPressed: false, burrowPressed: false, sneakDown: false,
+      touchDir: null, actionDown: false, actionPressed: false,
       config(c) {
         document.documentElement.style.setProperty('--accent', c.accent || accent);
         $('#hud').style.setProperty('--accent', c.accent || accent);
-        $('#hudRole').textContent = c.role; $('#hudRole').style.background = c.accent || accent;
-        $('#hudGoal').textContent = c.goal;
+        $('#hudRole').textContent = c.role || meta.role.toUpperCase();
+        $('#hudRole').style.background = c.accent || accent;
+        $('#hudGoal').textContent = c.goal || meta.hudGoal;
         $('#hudTimerWrap').style.display = c.showTimer ? '' : 'none';
         $('#hudPhaseWrap').style.display = c.showPhase ? '' : 'none';
-        $('#barEnergyRow').style.display = c.showEnergy ? '' : 'none';
-        $('#barEnergyLabel').textContent = c.energyLabel || 'Energy';
-        $('#barThirstRow').style.display = c.showThirst ? '' : 'none';
-        $('#barStaminaRow').style.display = c.showStamina ? '' : 'none';
+        $('#barHealthRow').style.display = c.showHealth ? '' : 'none';
+        $('#barHealthLabel').textContent = c.healthLabel || 'Health';
         $('#hudCountMax').textContent = c.countMax;
         $('#hudCountWrap').style.display = c.countMax != null ? '' : 'none';
-        sporePill.style.display = c.aim ? '' : 'none';
         $('#hudCount').style.color = c.accent || accent;
-        // action button label
-        const lbl = meta.key === 'fox' ? 'POUNCE' : meta.key === 'mushroom' ? 'SPORE' : meta.key === 'worm' ? 'ACT' : 'DASH';
-        $('#actionBtn').textContent = lbl;
+        // Fault Lab dashboard (sidebar + console) rides the shell flag
+        $('#simPanel').style.display = c.shell ? '' : 'none';
+        $('#simSidebar').style.display = c.shell ? '' : 'none';
+        $('#opsPanel').style.display = c.panel === 'ops' ? '' : 'none';
+        $('#taskPanel').style.display = c.tasks ? '' : 'none';
+        if (c.tasks) $('#taskTitle').textContent = c.tasks;
+        $('#actionBtn').textContent = c.actionLabel || 'ACT';
         $('#actionBtn').style.background = (c.accent || accent) + 'ee';
-        const bb = $('#burrowBtn');
-        if (bb) {
-          const secondary = meta.key === 'worm' ? 'BURROW' : meta.key === 'fox' ? 'SNEAK' : '';
-          bb.style.display = secondary ? '' : 'none';
-          bb.textContent = secondary;
-          bb.style.background = (c.accent || accent) + 'cc';
-        }
+        // pointer-driven levels don't need the joystick even on touch devices
+        $('#touch-controls').classList.toggle('hidden', !(c.touch && touchAvailable));
+        // shell layout (rail + framed stage + dock) — Fault Lab only
+        $('#game').classList.toggle('mode-shell', !!c.shell);
       },
       set(s) {
-        if (s.energy != null) { const f = $('#barEnergy'); f.style.width = s.energy + '%'; f.classList.toggle('low', s.energy < 28); }
-        if (s.thirst != null) { const f = $('#barThirst'); f.style.width = s.thirst + '%'; f.classList.toggle('low', s.thirst < 24); }
-        if (s.stamina != null) { const f = $('#barStamina'); f.style.width = s.stamina + '%'; f.classList.toggle('low', s.stamina < 15); }
-        if (s.phase) { $('#hudPhaseIco').innerHTML = HUD_ICONS[s.phase.ico] || ''; $('#hudPhase').textContent = s.phase.name; const w = $('#hudPhaseWrap'); w.classList.toggle('evening', s.phase.key === 'evening'); w.classList.toggle('night', s.phase.key === 'night'); }
+        if (s.health != null) { const f = $('#barHealth'); f.style.width = clamp(s.health, 0, 100) + '%'; f.classList.toggle('low', s.health < 30); }
+        if (s.phase) { $('#hudPhaseIco').innerHTML = HUD_ICONS[s.phase.ico] || ''; $('#hudPhase').textContent = s.phase.name; const w = $('#hudPhaseWrap'); w.classList.toggle('warn', !!s.phase.warn); }
         if (s.count != null) $('#hudCount').textContent = s.count;
         if (s.timer != null) { $('#hudTimer').textContent = fmt(s.timer); $('#hudTimerWrap').classList.toggle('warn', s.timer < 16); }
-        if (s.spores != null) $('#hudSporeNum').textContent = s.spores + ' / ' + (s.maxSpores || 12);
         if (s.danger != null) $('#hudObjective').classList.toggle('danger', s.danger);
+        if (s.goal != null) $('#hudGoal').textContent = s.goal;
+      },
+      // ----- shared checklist panel (Level 1 discoveries / Level 2 tasks) -----
+      setTasks(items) {
+        const ul = $('#taskList'); ul.innerHTML = '';
+        for (const it of items) {
+          const li = document.createElement('li');
+          li.dataset.task = it.id;
+          li.innerHTML = `<span class="tick"></span><span>${it.label}</span>`;
+          ul.appendChild(li);
+        }
+      },
+      taskState(id, state) { // 'done' | 'fail' | ''
+        const li = $('#taskList li[data-task="' + id + '"]');
+        if (li) { li.classList.toggle('done', state === 'done'); li.classList.toggle('fail', state === 'fail'); }
       },
       banner(text, color, dur) {
         elBanner.textContent = text; elBanner.style.color = color || '#fff'; elBanner.classList.add('show');
         clearTimeout(hud._bt); hud._bt = setTimeout(() => elBanner.classList.remove('show'), (dur || 1.1) * 1000);
       },
-      hint(text) { elHint.textContent = text; elHint.classList.add('show'); clearTimeout(hud._ht); hud._ht = setTimeout(() => elHint.classList.remove('show'), 5200); },
-      flashLabel(text) { hud.hint(text); },
-      flashDanger() { hud.banner('Spotted!', '#f1955a', .7); },
-      flashGood() {},
+      hint(text, dur) { elHint.textContent = text; elHint.classList.add('show'); clearTimeout(hud._ht); hud._ht = setTimeout(() => elHint.classList.remove('show'), (dur || 5.2) * 1000); },
       result(won, payload) { showResult(meta, won, payload); },
     };
     return hud;
@@ -303,13 +284,16 @@
       // NOTE: report the clear to the SciQuest host so it can persist progress.
       try {
         const allCleared = G.LEVELS.every((l) => progress[l.id] && progress[l.id].cleared);
-        parent.postMessage({ type: 'fcs:cleared', levelId: meta.id, stars: payload.stars, allCleared }, '*');
+        parent.postMessage({ type: 'qr:cleared', levelId: meta.id, stars: payload.stars, allCleared }, '*');
       } catch (e) {}
     }
     const starsRow = `<div class="result-stars">${[0, 1, 2].map((i) => (i < payload.stars
       ? `<svg class="star pop" style="animation-delay:${.15 + i * .18}s" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>`
       : `<svg class="star off" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>`)).join('')}</div>`;
-    const stats = payload.stats.map((s) => `<div class="stat-line"><span>${s[0]}</span><b>${s[1]}</b></div>`).join('');
+    const stats = (payload.stats || []).map((s) => `<div class="stat-line"><span>${s[0]}</span><b>${s[1]}</b></div>`).join('');
+    const feedback = (payload.feedback || []).length
+      ? `<div style="margin-top:14px"><b style="font-size:13px;letter-spacing:.06em;color:var(--muted)">COACH'S NOTES</b>${payload.feedback.map((f) => `<p style="margin:7px 0 0;font-size:14px">${f}</p>`).join('')}</div>`
+      : '';
     const nextMeta = G.LEVELS.find((l) => l.id === meta.id + 1);
     const actions = [];
     if (won) {
@@ -317,12 +301,12 @@
       actions.push({ label: 'Replay', kind: 'ghost', onClick: () => enterGame(meta) });
     } else {
       actions.push({ label: 'Try again', onClick: () => enterGame(meta) });
-      actions.push({ label: 'Map', kind: 'ghost', onClick: quitToMenu });
+      actions.push({ label: 'Missions', kind: 'ghost', onClick: quitToMenu });
     }
     showModal({
-      accent: meta.color, kicker: payload.resultKicker || (won ? 'CHALLENGE COMPLETE' : 'OUT OF ENERGY'),
-      title: payload.resultTitle || (won ? 'You survived!' : 'Not this time'),
-      bodyHTML: (won ? starsRow : '') + stats,
+      accent: meta.color, kicker: payload.resultKicker || (won ? 'MISSION REPORT' : 'MISSION FAILED'),
+      title: payload.resultTitle || (won ? 'Well done!' : 'Not this time'),
+      bodyHTML: (won ? starsRow : '') + stats + feedback,
       actions,
     });
   }
@@ -330,7 +314,7 @@
     const nextUnlocked = nextMeta && unlocked(nextMeta);
     const actions = [];
     if (nextMeta && nextUnlocked) actions.push({ label: 'Next: ' + nextMeta.title + ' &nbsp;→', accent: nextMeta.color, onClick: () => startLevel(nextMeta.id) });
-    actions.push({ label: 'Back to map', kind: nextMeta ? 'ghost' : undefined, onClick: quitToMenu });
+    actions.push({ label: 'Back to missions', kind: nextMeta ? 'ghost' : undefined, onClick: quitToMenu });
     showModal({ accent: meta.color, kicker: 'DID YOU KNOW', title: meta.edu.post.title, bodyHTML: meta.edu.post.html, actions });
   }
 
@@ -343,17 +327,16 @@
       actions: [
         { label: 'Resume', onClick: () => { paused = false; lastTs = performance.now(); } },
         { label: 'Restart', kind: 'ghost', onClick: () => enterGame(current.meta) },
-        { label: 'Map', kind: 'ghost', onClick: quitToMenu },
+        { label: 'Missions', kind: 'ghost', onClick: quitToMenu },
       ],
     });
   });
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && current && !paused) $('#pauseBtn').click(); });
 
-  /* ---------------- touch controls ---------------- */
+  /* ---------------- touch controls (Level 2 movement) ---------------- */
+  const touchAvailable = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
   function setupTouch() {
-    const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-    if (!isTouch) return;
-    $('#touch-controls').classList.remove('hidden');
+    if (!touchAvailable) return;
 
     // ---- analog joystick → hud.touchDir (direction × tilt 0..1) ----
     const joy = $('#joystick'), knob = $('#joyKnob');
@@ -382,42 +365,15 @@
     const joyEnd = (e) => { for (const t of e.changedTouches) if (t.identifier === joyId) { resetJoy(); break; } };
     joy.addEventListener('touchend', joyEnd); joy.addEventListener('touchcancel', joyEnd);
 
-    // ---- primary skill button: DASH / POUNCE / ACT (held) ----
+    // ---- action button (held) ----
     const ab = $('#actionBtn');
     ab.addEventListener('touchstart', (e) => { e.preventDefault(); const h = current && current.level.hud; if (h) { h.actionDown = true; h.actionPressed = true; } }, { passive: false });
     const abEnd = (e) => { e.preventDefault(); const h = current && current.level.hud; if (h) h.actionDown = false; };
     ab.addEventListener('touchend', abEnd); ab.addEventListener('touchcancel', abEnd);
-
-    // ---- secondary skill button: BURROW (worm · tap) or SNEAK (fox · hold) ----
-    const sb = $('#burrowBtn');
-    if (sb) {
-      sb.addEventListener('touchstart', (e) => {
-        e.preventDefault(); const h = current && current.level.hud; if (!h) return;
-        if (current.meta.key === 'worm') h.burrowPressed = true; else h.sneakDown = true;
-      }, { passive: false });
-      const sbEnd = (e) => { e.preventDefault(); const h = current && current.level.hud; if (h) h.sneakDown = false; };
-      sb.addEventListener('touchend', sbEnd); sb.addEventListener('touchcancel', sbEnd);
-    }
   }
 
   /* ---------------- boot ---------------- */
-  async function boot() {
-    try {
-      const res = await fetch('assets/manifest.json');
-      const manifest = await res.json();
-      await Promise.all([
-        G.Assets.load(manifest),
-        G.LogDecomp ? G.LogDecomp.preload() : Promise.resolve(),
-        G.TreeArt ? G.TreeArt.preload() : Promise.resolve(),
-      ]);
-    } catch (e) {
-      console.error('Asset load failed', e);
-      $('#cards').innerHTML = '<div style="color:#8d8478;font-weight:700;padding:40px;text-align:center">Could not load sprites. Check the assets folder.</div>';
-      return;
-    }
-    renderCards();
-    setupTouch();
-    show('menu');
-  }
-  boot();
+  renderCards();
+  setupTouch();
+  show('menu');
 })(window);

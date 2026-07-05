@@ -35,7 +35,7 @@
       const treeSpot = { x: w.w * 0.5, y: w.h * 0.44, r: 175 };
       this.tree = {
         prop: {
-          type: 'worldtree', x: treeSpot.x, y: treeSpot.y, s: 1.2,
+          type: 'worldtree', x: treeSpot.x, y: treeSpot.y, s: 1.8,
           stage: 1, _prevStage: 1, _fade: 1, block: true, br: 30, by: 14,
         },
         stage: 1, target: 1, stepCd: 0,
@@ -68,7 +68,7 @@
       }
 
       // ---- dead patches (RESTORE these → win) ----
-      const patchCount = [4, 5, 6][this.diff];
+      const patchCount = [5, 6, 7][this.diff];
       for (let i = 0; i < patchCount; i++) {
         const p = this._placeProp('deadpatch', spawn, 170, 150);
         if (!p) continue;
@@ -94,7 +94,7 @@
       this.COST = 46 / this.healFull;              // reserve spent per second while healing
       this.INTERACT = 52;                          // must be this close to act
       this.NEAR = 104;                             // prompt shows within this range
-      this.treeHealFull = [6.5, 8.5, 10.5][this.diff]; // total seconds of deposits to fully revive the tree
+      this.treeHealFull = [10, 13, 16][this.diff]; // total seconds of deposits to fully revive the tree (~50% more than the base tuning)
       this.TREEREACH = 94;                         // wider reach — the trunk blocks a close approach
 
       // ---- ambient food chain: a fox stalks wandering rabbits. Every kill drops
@@ -103,7 +103,7 @@
       this.carcasses = [];                         // fox-kill carcasses + the bones they leave
       this.bunnies = [];
       this.fox = {
-        spr: new G.Sprite('fox', { x: w.w * 0.28, y: w.h * 0.72, scale: 0.5, fps: 9, anchorY: 0.86 }),
+        spr: new G.Sprite('fox', { x: w.w * 0.28, y: w.h * 0.72, scale: 0.85, fps: 9, anchorY: 0.86 }),
         x: w.w * 0.28, y: w.h * 0.72, face: 1, state: 'roam', target: null, wp: null, cd: 2.5, t: 0,
       };
       this.fox.wp = this._critterWander(this.fox.x, this.fox.y);
@@ -388,7 +388,7 @@
         if (ok && this.p && dist(x, y, this.p.x, this.p.y) < 170) ok = false;
         if (ok && this.fox && dist(x, y, this.fox.x, this.fox.y) < 260) ok = false;
       } while (!ok && ++t < 40);
-      this.bunnies.push({ spr: new G.Sprite('rabbit', { x, y, scale: 0.3, fps: 11 }), x, y, face: rand(0, TAU), state: 'graze', t: rand(0, 2), wp: { x, y }, jit: rand(0, TAU) });
+      this.bunnies.push({ spr: new G.Sprite('rabbit', { x, y, scale: 0.6, fps: 11 }), x, y, face: rand(0, TAU), state: 'graze', t: rand(0, 2), wp: { x, y }, jit: rand(0, TAU) });
     }
     _bunnyWander(b) { const w = this.world; b.wp = { x: clamp(b.x + rand(-200, 200), 90, w.w - 90), y: clamp(b.y + rand(-200, 200), 90, w.h - 90) }; }
 

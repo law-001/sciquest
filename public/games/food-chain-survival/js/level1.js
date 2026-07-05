@@ -182,9 +182,9 @@
       };
     }
     _phaseHud() {
-      if (this.phase === 'morning') return { key: 'morning', name: 'Morning', ico: '☀️' };
-      if (this.phase === 'evening') return { key: 'evening', name: 'Evening', ico: '🌇' };
-      return { key: 'night', name: 'Night', ico: '🌙' };
+      if (this.phase === 'morning') return { key: 'morning', name: 'Morning', ico: 'sun' };
+      if (this.phase === 'evening') return { key: 'evening', name: 'Evening', ico: 'sunset' };
+      return { key: 'night', name: 'Night', ico: 'moon' };
     }
 
     update(dt) {
