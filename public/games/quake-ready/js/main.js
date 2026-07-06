@@ -47,11 +47,12 @@
   try { isTopLevel = global.self === global.top; } catch (e) { isTopLevel = false; }
   function fitViewport() {
     const vv = global.visualViewport;
-    const w = Math.round(vv ? vv.width : global.innerWidth);
     // Inside an iframe, visualViewport reflects the TOP-LEVEL page, so it can
     // over-report past the frame the host gave us and push the stage behind the
-    // window's taskbar. Clamp to this frame's own layout viewport so --app-h
-    // fills exactly the host container, never more.
+    // window's taskbar. Clamp both axes to this frame's own layout viewport so
+    // --app-w/--app-h fill exactly the host container, never more.
+    const frameW = document.documentElement.clientWidth || global.innerWidth;
+    const w = Math.round(Math.min(vv ? vv.width : global.innerWidth, frameW));
     const frameH = document.documentElement.clientHeight || global.innerHeight;
     let h = Math.round(Math.min(vv ? vv.height : global.innerHeight, frameH));
     // A window sized or dragged past the OS work area keeps its full

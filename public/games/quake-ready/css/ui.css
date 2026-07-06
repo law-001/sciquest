@@ -39,8 +39,10 @@ body{
   overflow:hidden;
 }
 /* --app-w/--app-h are set from the OS work area (taskbar excluded) by fitViewport()
-   in main.js; the 100dvh/100vw fallbacks cover first paint and the standalone case. */
-#app{width:var(--app-w,100vw);height:var(--app-h,100dvh);display:flex;flex-direction:column;}
+   in main.js; the 100dvh/100vw fallbacks cover first paint and the standalone case.
+   min() caps them at the real viewport so a JS over-measure (mobile browser UI,
+   iframe visualViewport quirks) can never push the console below the fold. */
+#app{width:min(var(--app-w,100vw),100vw);height:min(var(--app-h,100dvh),100dvh);display:flex;flex-direction:column;}
 
 /* ---------------- header ---------------- */
 #topbar{
@@ -444,27 +446,38 @@ body.muted #soundIcon::after{content:"";}
   #game.mode-shell .stage{grid-template-columns:260px minmax(0,1fr);}
 }
 
-/* Portrait phones & small tablets — stack rail, canvas, console. Canvas takes the
-   flexible middle row (never below 160px); the rail is capped and scrolls; the
-   console reflows to the width instead of scrolling sideways. */
+/* Portrait phones & small tablets — one scrollable column: simulation first at
+   its native 960:600 shape (the whole cross-section stays visible, faults and
+   epicenter included), the control console right under it, then the mission
+   rail. Nothing is squeezed to fit; the stage scrolls instead, and the canvas
+   (touch-action:none) never steals the scroll gesture. */
 @media (orientation:portrait) and (max-width:820px){
   #game.mode-shell .stage{
     grid-template-columns:minmax(0,1fr);
-    grid-template-rows:auto minmax(160px,1fr) auto;
-    grid-template-areas:"rail" "canvas" "dock";
+    grid-template-rows:auto auto auto;
+    grid-template-areas:"canvas" "dock" "rail";
     gap:10px;padding:10px;
+    overflow-y:auto;
   }
-  #game.mode-shell #simSidebar{max-height:30vh;}
+  #game.mode-shell #canvas{height:auto;aspect-ratio:960/600;}
+  #game.mode-shell #simSidebar{max-height:none;overflow-y:visible;}
 }
 
 /* Landscape phones (short viewport) — keep rail | canvas so the canvas keeps its
-   height, but shrink the rail and tighten every gap. */
+   height, shrink the rail, tighten every gap, and let the console scroll
+   sideways in one short row instead of wrapping tall. Safe-area insets keep the
+   panels clear of the notch when the page spans the full screen. */
 @media (orientation:landscape) and (max-height:560px){
-  #game.mode-shell .stage{grid-template-columns:210px minmax(0,1fr);gap:8px;padding:8px;}
+  #game.mode-shell .stage{
+    grid-template-columns:210px minmax(0,1fr);gap:8px;
+    padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  }
   #game.mode-shell #simSidebar{gap:8px;}
   #game.mode-shell .sim-mission{padding:10px 12px;}
   #game.mode-shell .sim-mission__title{font-size:17px;}
   #game.mode-shell .sim-card{padding:9px 11px;}
+  #game.mode-shell .sim-console{flex-wrap:nowrap;overflow-x:auto;}
+  #game.mode-shell .sim-console .console-group{flex:0 0 auto;}
 }
 
 /* Narrow/portrait console — full-width rows for the slider + status, no sideways
