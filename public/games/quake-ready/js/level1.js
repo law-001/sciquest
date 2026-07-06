@@ -13,6 +13,7 @@
   const SEA = 230;          // sea level / land surface y
   const COAST = 420;        // shoreline x
   const MOHO = 480;         // crust/mantle boundary y
+  const SKY_DARKEN = 0.2;  // black overlay opacity on the sky backdrop (0 = off, 1 = pitch black)
   const P_SPD = 260, S_SPD = 140;
 
   // Tsunami = a 1D shallow-water field over the cross-section (staggered grid,
@@ -65,7 +66,19 @@
       this.focus = this.faultPointAt(this.fault, DEPTH_BANDS.shallow.mid);
       this.run = null;                     // active simulation state
       this.buildTown();
-      this.clouds = [{ x: 120, y: 52, s: 1 }, { x: 470, y: 34, s: 0.7 }, { x: 800, y: 62, s: 1.15 }];
+      // sky backdrop + drifting cloud sprites (fall back to the painted sky /
+      // no clouds until the PNGs load).
+      this.skyImg = new Image();
+      this.skyImg.src = 'Building%20Assets/SKY.png';
+      this.cloudImgs = [1, 2, 3, 4].map((n) => {
+        const im = new Image(); im.src = 'Building%20Assets/CLOUDS/CLOUDS_' + n + '.png'; return im;
+      });
+      this.clouds = Array.from({ length: 5 }, () => this.spawnCloud(true));
+      // optional rock/magma textures, each clipped to its band's shape when
+      // present (drop CRUST.png / MANTLE.png in Building Assets); until then the
+      // painted gradients below stand in.
+      this.crustImg = new Image(); this.crustImg.src = 'Building%20Assets/NEWER_CRUST.png';
+      this.mantleImg = new Image(); this.mantleImg.src = 'Building%20Assets/NEW_MANTLE.png';
       this._view = { s: 1, offX: 0, offY: 0 };
       this.wireDom();
       this.renderDiscoveries();
@@ -92,6 +105,15 @@
     toWorld(px, py) {
       const v = this._view;
       return { x: (px - v.offX) / v.s, y: (py - v.offY) / v.s };
+    }
+
+    // one drifting cloud: a random sprite, height, scale and speed. `onscreen`
+    // scatters it across the sky at start; otherwise it enters just off the left.
+    spawnCloud(onscreen) {
+      const img = this.cloudImgs[(Math.random() * this.cloudImgs.length) | 0];
+      const s = rand(0.5, 1.05);
+      const w = (img.naturalWidth || 150) * s;
+      return { img, s, y: rand(14, 122), spd: rand(4.5, 13), x: onscreen ? rand(0, this.W) : -w - rand(20, 200) };
     }
 
     /* ---------------- town + props ---------------- */
@@ -347,8 +369,12 @@
     update(dt) {
       dt *= this.speed;                    // simulation-speed control (0.5× / 1× / 2×)
       this.time += dt;
-      // clouds drift
-      for (const c of this.clouds) { c.x += dt * 5 * c.s; if (c.x > 1020) c.x = -70; }
+      // clouds drift right; re-randomise each one as it leaves the right edge
+      for (let i = 0; i < this.clouds.length; i++) {
+        const cl = this.clouds[i];
+        cl.x += dt * cl.spd;
+        if (cl.x > this.W + 20) this.clouds[i] = this.spawnCloud(false);
+      }
       this.boat.bob = Math.sin(this.time * 1.7) * 3;
 
       // ----- idle: pick focus on a fault (pointer is in viewport px → world) -----
@@ -544,18 +570,22 @@
     }
 
     drawSky(c) {
-      const g = c.createLinearGradient(0, 0, 0, SEA);
-      g.addColorStop(0, '#8ECDE8'); g.addColorStop(1, '#DFF2F8');
-      c.fillStyle = g; c.fillRect(-20, -20, this.W + 40, SEA + 20);
+      if (this.skyImg.complete && this.skyImg.naturalWidth) {
+        c.drawImage(this.skyImg, -20, -20, this.W + 40, SEA + 20);
+      } else {
+        const g = c.createLinearGradient(0, 0, 0, SEA);
+        g.addColorStop(0, '#8ECDE8'); g.addColorStop(1, '#DFF2F8');
+        c.fillStyle = g; c.fillRect(-20, -20, this.W + 40, SEA + 20);
+      }
+      if (SKY_DARKEN) {
+        c.fillStyle = 'rgba(0,0,0,' + SKY_DARKEN + ')';
+        c.fillRect(-20, -20, this.W + 40, SEA + 20);
+      }
       c.fillStyle = '#FFD95C';
       c.beginPath(); c.arc(884, 54, 26, 0, TAU); c.fill();
-      c.fillStyle = 'rgba(255,255,255,.9)';
       for (const cl of this.clouds) {
-        c.beginPath();
-        c.ellipse(cl.x, cl.y, 34 * cl.s, 13 * cl.s, 0, 0, TAU);
-        c.ellipse(cl.x + 22 * cl.s, cl.y + 4 * cl.s, 24 * cl.s, 10 * cl.s, 0, 0, TAU);
-        c.ellipse(cl.x - 24 * cl.s, cl.y + 5 * cl.s, 20 * cl.s, 9 * cl.s, 0, 0, TAU);
-        c.fill();
+        const img = cl.img;
+        if (img.complete && img.naturalWidth) c.drawImage(img, cl.x, cl.y, img.naturalWidth * cl.s, img.naturalHeight * cl.s);
       }
     }
 
@@ -567,30 +597,48 @@
       c.closePath();
     }
 
-    drawUnderground(c) {
-      // crust
-      const g = c.createLinearGradient(0, SEA, 0, MOHO);
-      g.addColorStop(0, '#A87B52'); g.addColorStop(1, '#7A563B');
-      c.fillStyle = g;
-      this.undergroundPath(c); c.fill();
-      // strata hint lines
-      c.strokeStyle = 'rgba(255,235,205,.12)'; c.lineWidth = 2;
-      for (const y of [290, 350, 415]) {
-        c.beginPath();
-        for (let x = 0; x <= this.W; x += 24) {
-          const yy = Math.max(y, seabedY(Math.min(x, COAST)) + 12) + Math.sin(x * 0.02 + y) * 4;
-          x === 0 ? c.moveTo(x, yy) : c.lineTo(x, yy);
-        }
-        c.stroke();
-      }
-      // mantle
-      const m = c.createLinearGradient(0, MOHO, 0, this.H);
-      m.addColorStop(0, '#D2622A'); m.addColorStop(1, '#F0A03C');
-      c.fillStyle = m;
+    // wavy top edge of the mantle (animated magma surface) → bottom of the
+    // world; shared by the mantle fill and its image clip.
+    mantlePath(c) {
       c.beginPath();
       c.moveTo(0, MOHO);
       for (let x = 0; x <= this.W; x += 30) c.lineTo(x, MOHO + Math.sin(x * 0.018 + this.time * 0.7) * 5);
-      c.lineTo(this.W, this.H); c.lineTo(0, this.H); c.closePath(); c.fill();
+      c.lineTo(this.W, this.H); c.lineTo(0, this.H); c.closePath();
+    }
+
+    drawUnderground(c) {
+      // crust — CRUST.png clipped to the ground shape if present, else the
+      // painted gradient with strata hint lines.
+      if (this.crustImg.complete && this.crustImg.naturalWidth) {
+        c.save(); this.undergroundPath(c); c.clip();
+        c.drawImage(this.crustImg, 0, SEA - 2, this.W, MOHO - SEA + 12);
+        c.restore();
+      } else {
+        const g = c.createLinearGradient(0, SEA, 0, MOHO);
+        g.addColorStop(0, '#A87B52'); g.addColorStop(1, '#7A563B');
+        c.fillStyle = g;
+        this.undergroundPath(c); c.fill();
+        c.strokeStyle = 'rgba(255,235,205,.12)'; c.lineWidth = 2;
+        for (const y of [290, 350, 415]) {
+          c.beginPath();
+          for (let x = 0; x <= this.W; x += 24) {
+            const yy = Math.max(y, seabedY(Math.min(x, COAST)) + 12) + Math.sin(x * 0.02 + y) * 4;
+            x === 0 ? c.moveTo(x, yy) : c.lineTo(x, yy);
+          }
+          c.stroke();
+        }
+      }
+      // mantle — MANTLE.png clipped to the wavy magma band if present, else gradient.
+      if (this.mantleImg.complete && this.mantleImg.naturalWidth) {
+        c.save(); this.mantlePath(c); c.clip();
+        c.drawImage(this.mantleImg, 0, MOHO - 8, this.W, this.H - MOHO + 8);
+        c.restore();
+      } else {
+        const m = c.createLinearGradient(0, MOHO, 0, this.H);
+        m.addColorStop(0, '#D2622A'); m.addColorStop(1, '#F0A03C');
+        c.fillStyle = m;
+        this.mantlePath(c); c.fill();
+      }
       // Moho dashes
       c.setLineDash([7, 6]); c.strokeStyle = 'rgba(255,220,170,.5)'; c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(0, MOHO); c.lineTo(this.W, MOHO); c.stroke(); c.setLineDash([]);

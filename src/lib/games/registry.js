@@ -3,7 +3,7 @@ import sandbox from "../../assets/sandbox.png";
 import celldiv from "../../assets/celldivision.png";
 import mysteryLab from "../../assets/mysterylab.png";
 import foodchain from "../../assets/foodchain.png";
-import quakeready from "../../assets/quakeready.svg";
+import quakeready from "../../assets/quakeready.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
