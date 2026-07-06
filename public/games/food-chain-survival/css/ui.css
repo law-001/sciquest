@@ -18,6 +18,13 @@
   --lock-bg:#efe7d6; --lock-tx:#a59a85;
   --r:18px;
 
+  /* Menu-button personalities — soft fill + a readable deep ink per intent, so
+     each pause-menu action carries its own colour as well as its own icon. */
+  --warn-soft:var(--gold-soft);  --warn-ink:#8a6410;
+  --nav-soft:var(--teal-soft);   --nav-ink:#0e6f65;
+  --danger-soft:#FBE0D6;         --danger-ink:#bd3a1f;
+  --mute-soft:#edf1f0;           --mute-ink:var(--ink-soft);
+
   /* Level-select tokens — ported from matter-state-sandbox (src/index.css) so
      this standalone static page renders the shared SciQuest level-select look. */
   --sq-surface:#ffffff; --sq-cream-2:#efe6c8;
@@ -253,6 +260,17 @@ body.muted #soundIcon::after{content:"";}
 .modal-actions .btn{align-self:auto;}
 .btn.ghost{background:#f1ebdc;color:var(--ink-soft);box-shadow:none;}
 .btn.ghost:hover{background:#e9e1cf;box-shadow:none;}
+
+/* Toned ghost buttons — colour-code an action by intent. The icon inherits the
+   button's `color`, so each button's glyph and text share one accent hue. */
+.btn.ghost.tone-mute{background:var(--mute-soft);color:var(--mute-ink);}
+.btn.ghost.tone-mute:hover{background:#e4e9e8;}
+.btn.ghost.tone-warn{background:var(--warn-soft);color:var(--warn-ink);}
+.btn.ghost.tone-warn:hover{background:#f4e2b6;}
+.btn.ghost.tone-nav{background:var(--nav-soft);color:var(--nav-ink);}
+.btn.ghost.tone-nav:hover{background:#cbe9e4;}
+.btn.ghost.tone-danger{background:var(--danger-soft);color:var(--danger-ink);}
+.btn.ghost.tone-danger:hover{background:#f8d1c3;}
 
 /* result stars */
 .result-stars{display:flex;gap:8px;justify-content:center;margin:6px 0 16px;}

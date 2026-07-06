@@ -22,6 +22,16 @@
     quake: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l2-6 3 12 3-9 2 3h6"/></svg>',
     siren: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 19v-6a5 5 0 0 1 10 0v6"/><path d="M4 21h16"/><path d="M12 3v2M4.9 5.9 6.3 7.3M19.1 5.9l-1.4 1.4"/></svg>',
   };
+  // Menu-action glyphs — one distinct shape per pause-menu button so each reads
+  // at a glance without its label (play / speaker / redo / grid / door-out).
+  const MENU_ICONS = {
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.14-6.86a1 1 0 0 0 0-1.72L9.5 4.28A1 1 0 0 0 8 5.14z"/></svg>',
+    soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path d="M18.7 7a7 7 0 0 1 0 10"/></svg>',
+    soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path d="M17 9.5l4.5 5M21.5 9.5l-4.5 5"/></svg>',
+    redo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8 8 0 1 1-2.3-5.4"/><path d="M20 3.5V8h-4.5"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>',
+    exit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/><path d="M18 15.5l3.5-3.5L18 8.5"/><path d="M21.5 12H9.5"/></svg>',
+  };
 
   /* ---------------- reduced motion ---------------- */
   G.REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,6 +43,9 @@
   let progress = loadProg(); // {1:{cleared:true,stars:3}, ...}
 
   function unlocked(meta) {
+    // TESTING ONLY — all levels unlocked. REVERT before shipping: delete the
+    // next line so real level-gating (clear the previous level) applies again.
+    return true; // eslint-disable-line no-unreachable
     if (meta.id === 1) return true;
     const prev = G.LEVELS.find((l) => l.id === meta.id - 1);
     return !!(progress[prev.id] && progress[prev.id].cleared);
@@ -164,9 +177,9 @@
     const act = $('#modalActions'); act.innerHTML = '';
     for (const a of actions) {
       const b = document.createElement('button');
-      b.className = 'btn ' + (a.kind === 'ghost' ? 'ghost' : '');
+      b.className = 'btn' + (a.kind === 'ghost' ? ' ghost' : '') + (a.tone ? ' tone-' + a.tone : '');
       b.style.setProperty('--accent', ACCENTS[a.accent || accent] || ACCENTS.orange);
-      b.innerHTML = a.label;
+      b.innerHTML = (a.icon || '') + a.label;
       b.addEventListener('click', () => { if (a.keep !== true) hideModal(); a.onClick && a.onClick(); });
       act.appendChild(b);
     }
@@ -326,7 +339,7 @@
       actions.push({ label: 'Replay', kind: 'ghost', onClick: () => enterGame(meta) });
     } else {
       actions.push({ label: 'Try again', onClick: () => enterGame(meta) });
-      actions.push({ label: 'Missions', kind: 'ghost', onClick: quitToMenu });
+      actions.push({ label: 'Level Select', kind: 'ghost', onClick: quitToMenu });
     }
     showModal({
       accent: meta.color, kicker: payload.resultKicker || (won ? 'MISSION REPORT' : 'MISSION FAILED'),
@@ -339,7 +352,7 @@
     const nextUnlocked = nextMeta && unlocked(nextMeta);
     const actions = [];
     if (nextMeta && nextUnlocked) actions.push({ label: 'Next: ' + nextMeta.title + ' &nbsp;→', accent: nextMeta.color, onClick: () => startLevel(nextMeta.id) });
-    actions.push({ label: 'Back to missions', kind: nextMeta ? 'ghost' : undefined, onClick: quitToMenu });
+    actions.push({ label: 'Level Select', kind: nextMeta ? 'ghost' : undefined, onClick: quitToMenu });
     showModal({ accent: meta.color, kicker: 'DID YOU KNOW', title: meta.edu.post.title, bodyHTML: meta.edu.post.html, actions });
   }
 
@@ -352,11 +365,11 @@
       accent: current.meta.color, kicker: 'PAUSED', title: current.meta.title,
       bodyHTML: '<p style="color:#8d8478;font-weight:700">Take a breather.</p>',
       actions: [
-        { label: 'Resume', onClick: () => { paused = false; lastTs = performance.now(); } },
-        { label: G.Audio.muted ? 'Sound: Off' : 'Sound: On', kind: 'ghost', keep: true, onClick: () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); openPauseMenu(); } },
-        { label: 'Restart', kind: 'ghost', onClick: () => enterGame(current.meta) },
-        { label: 'Missions', kind: 'ghost', onClick: quitToMenu },
-        { label: 'Exit game', kind: 'ghost', onClick: () => { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} } },
+        { label: 'Resume', icon: MENU_ICONS.play, onClick: () => { paused = false; lastTs = performance.now(); } },
+        { label: G.Audio.muted ? 'Sound: Off' : 'Sound: On', icon: G.Audio.muted ? MENU_ICONS.soundOff : MENU_ICONS.soundOn, kind: 'ghost', tone: 'mute', keep: true, onClick: () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); openPauseMenu(); } },
+        { label: 'Restart', icon: MENU_ICONS.redo, kind: 'ghost', tone: 'warn', onClick: () => enterGame(current.meta) },
+        { label: 'Level Select', icon: MENU_ICONS.grid, kind: 'ghost', tone: 'nav', onClick: quitToMenu },
+        { label: 'Exit game', icon: MENU_ICONS.exit, kind: 'ghost', tone: 'danger', onClick: () => { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} } },
       ],
     });
   }
