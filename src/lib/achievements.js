@@ -28,7 +28,7 @@ import { GAME_XP } from '../games/config/xp.js'
 export const CURIOUS_EXPLORER_KEY = 'curious-explorer'
 export const BLACKED_KEY = 'blacked'
 export const MYSTERY_LAB_COMPLETE_KEY = 'mystery-lab-complete'
-export const CELL_DIVISION_COMPLETE_KEY = 'cell-division-complete'
+export const CELL_DIVISION_COMPLETE_KEY = 'cell-division-lab-complete'
 export const MATTER_STATE_SANDBOX_COMPLETE_KEY = 'matter-state-sandbox-complete'
 
 // Local calendar day for a timestamp, as YYYY-MM-DD. Streaks and
@@ -225,9 +225,9 @@ export const ACHIEVEMENTS = [
   },
   {
     key: CELL_DIVISION_COMPLETE_KEY,
-    label: 'Cell Guardian',
-    req: 'Successfully defend the nucleus in Cell Division Defense',
-    xp: GAME_XP['cell-division-defense'].achievementXp,
+    label: 'Cell Splitter',
+    req: 'Complete your first division in Cell Division Lab',
+    xp: GAME_XP['cell-division-lab'].achievementXp,
     criteria: NOT_YET_DERIVABLE,
   },
 ]

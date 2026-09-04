@@ -1,3 +1,9 @@
+> **SUPERSEDED.** The tower-defense game this document describes
+> (`src/games/cell-division-defense/`) has been removed. It was replaced by
+> **Cell Division Lab** (`src/games/cell-division-lab/`), which keeps the five
+> mitosis mini-games but drops the attack/defend loop in favour of a
+> checkpoint-driven cell cycle. Kept for reference only — do not build from it.
+
 # Game Design Document
 ## Cell Division: Divide & Defend
 ### SciQuest — Game 2
