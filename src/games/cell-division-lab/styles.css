@@ -1,0 +1,899 @@
+/* Cell Division Lab — all styles scoped under .cdl-root so nothing leaks into
+   the app or the load-bearing sq-* blocks in src/index.css. */
+
+.cdl-root {
+  --cdl-bg: #fbf5e7;
+  --cdl-bg-2: #f6efdc;
+  --cdl-surface: #ffffff;
+  --cdl-surface-2: #fffaf0;
+
+  --cdl-ink-1: #2b2417;
+  --cdl-ink-2: #4a4231;
+  --cdl-ink-3: #7a6f56;
+  --cdl-ink-4: #ad9f7e;
+
+  --cdl-line: rgba(43, 36, 23, 0.1);
+  --cdl-line-strong: rgba(43, 36, 23, 0.18);
+
+  --cdl-orange: #f08a4b;
+  --cdl-orange-deep: #d76d2e;
+  --cdl-orange-soft: #fbd4b6;
+  --cdl-teal: #2bafa9;
+  --cdl-teal-deep: #1d8580;
+  --cdl-teal-soft: #b8e5e2;
+  --cdl-yellow: #f5c84a;
+  --cdl-yellow-deep: #d9a824;
+  --cdl-yellow-soft: #fbe6a4;
+
+  --cdl-good: #2f9e63;
+  --cdl-good-soft: #cdebd9;
+  --cdl-warn: #d9a824;
+  --cdl-bad: #d1544f;
+  --cdl-bad-soft: #f7d6d4;
+
+  --cdl-stage: #fffaf0;
+  --cdl-stage-line: rgba(43, 36, 23, 0.055);
+
+  /* The cell itself */
+  --cdl-cyto-1: rgba(43, 175, 169, 0.16);
+  --cdl-cyto-2: rgba(43, 175, 169, 0.1);
+  --cdl-cyto-3: rgba(29, 133, 128, 0.15);
+  --cdl-membrane: #1d8580;
+  --cdl-membrane-dot: rgba(29, 133, 128, 0.45);
+  --cdl-organelle: rgba(190, 150, 70, 0.22);
+  --cdl-organelle-line: rgba(160, 120, 40, 0.35);
+  --cdl-nuc-1: #eaf2fd;
+  --cdl-nuc-2: #b9d3f2;
+  --cdl-nuc-line: #4a7cc4;
+  --cdl-nuc-pore: rgba(74, 124, 196, 0.55);
+  --cdl-nucleolus: rgba(74, 124, 196, 0.32);
+  --cdl-chromatin: #a06bc4;
+  --cdl-ribosome: rgba(43, 36, 23, 0.3);
+  --cdl-er: rgba(120, 95, 45, 0.4);
+  --cdl-golgi: rgba(160, 120, 40, 0.42);
+  --cdl-mito: #e6c98a;
+  --cdl-mito-line: rgba(140, 100, 30, 0.6);
+  --cdl-vesicle: rgba(43, 175, 169, 0.3);
+  --cdl-speck: rgba(43, 36, 23, 0.13);
+  --cdl-lyso: rgba(190, 110, 60, 0.34);
+  --cdl-lyso-line: rgba(150, 80, 35, 0.55);
+  --cdl-cortex: rgba(29, 133, 128, 0.3);
+  --cdl-speckle: rgba(74, 124, 196, 0.3);
+
+
+  --cdl-radius-sm: 10px;
+  --cdl-radius: 14px;
+  --cdl-radius-lg: 22px;
+
+  --cdl-shadow: 0 8px 24px -8px rgba(43, 36, 23, 0.22);
+  --cdl-shadow-lg: 0 20px 60px rgba(43, 36, 23, 0.22);
+
+  --cdl-font-display: "Bricolage Grotesque", "Nunito", system-ui, sans-serif;
+  --cdl-font-body: "DM Sans", "Inter", system-ui, sans-serif;
+  --cdl-font-mono: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--cdl-bg);
+  color: var(--cdl-ink-1);
+  font-family: var(--cdl-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.dark) .cdl-root {
+  --cdl-bg: #1c1917;
+  --cdl-bg-2: #292524;
+  --cdl-surface: #292524;
+  --cdl-surface-2: #322c28;
+
+  --cdl-ink-1: #f5efe3;
+  --cdl-ink-2: #ded5c4;
+  --cdl-ink-3: #ab9f8c;
+  --cdl-ink-4: #7d7364;
+
+  --cdl-line: rgba(245, 239, 227, 0.12);
+  --cdl-line-strong: rgba(245, 239, 227, 0.2);
+
+  --cdl-orange-soft: #5c3a22;
+  --cdl-teal-soft: #1c4340;
+  --cdl-yellow-soft: #574512;
+  --cdl-good-soft: #1e4531;
+  --cdl-bad-soft: #4d2523;
+
+  --cdl-stage: #221f1c;
+  --cdl-stage-line: rgba(245, 239, 227, 0.05);
+
+  --cdl-cyto-1: rgba(80, 200, 200, 0.18);
+  --cdl-cyto-2: rgba(59, 175, 169, 0.13);
+  --cdl-cyto-3: rgba(15, 60, 70, 0.42);
+  --cdl-membrane: #2bafa9;
+  --cdl-membrane-dot: rgba(120, 220, 210, 0.5);
+  --cdl-organelle: rgba(180, 150, 90, 0.26);
+  --cdl-organelle-line: rgba(255, 210, 140, 0.3);
+  --cdl-nuc-1: #29405e;
+  --cdl-nuc-2: #1b2c42;
+  --cdl-nuc-line: #a8c8f0;
+  --cdl-nuc-pore: rgba(168, 200, 240, 0.6);
+  --cdl-nucleolus: rgba(168, 200, 240, 0.25);
+  --cdl-chromatin: #b07ad0;
+  --cdl-ribosome: rgba(245, 239, 227, 0.26);
+  --cdl-er: rgba(220, 185, 120, 0.34);
+  --cdl-golgi: rgba(255, 210, 140, 0.34);
+  --cdl-mito: #b8934f;
+  --cdl-mito-line: rgba(40, 28, 10, 0.55);
+  --cdl-vesicle: rgba(120, 220, 210, 0.26);
+  --cdl-speck: rgba(245, 239, 227, 0.12);
+  --cdl-lyso: rgba(210, 130, 70, 0.3);
+  --cdl-lyso-line: rgba(255, 180, 120, 0.45);
+  --cdl-cortex: rgba(120, 220, 210, 0.24);
+  --cdl-speckle: rgba(168, 200, 240, 0.28);
+
+
+  --cdl-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --cdl-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Shell ─────────────────────────────────────────────────────────────── */
+
+.cdl-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.cdl-hud {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  min-height: 60px;
+  background: var(--cdl-surface);
+  border-bottom: 1.5px solid var(--cdl-line);
+  flex-shrink: 0;
+}
+
+.cdl-hud__left,
+.cdl-hud__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cdl-hud__center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cdl-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+}
+
+.cdl-stage-wrap {
+  position: relative;
+  min-width: 0;
+  padding: 14px;
+  display: flex;
+}
+
+.cdl-stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid var(--cdl-line-strong);
+  border-radius: var(--cdl-radius);
+  background-color: var(--cdl-stage);
+  background-image:
+    linear-gradient(var(--cdl-stage-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cdl-stage-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Atoms ─────────────────────────────────────────────────────────────── */
+
+.cdl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cdl-line-strong);
+  background: var(--cdl-surface);
+  color: var(--cdl-ink-1);
+  font-family: var(--cdl-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s, border-color 0.2s;
+}
+.cdl-btn:hover { background: var(--cdl-bg-2); }
+.cdl-btn:active { transform: scale(0.97); }
+.cdl-btn:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 2px; }
+.cdl-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.cdl-btn--primary {
+  background: var(--cdl-orange);
+  border-color: var(--cdl-orange-deep);
+  color: #fff;
+}
+.cdl-btn--primary:hover { background: var(--cdl-orange-deep); }
+
+.cdl-btn--teal {
+  background: var(--cdl-teal);
+  border-color: var(--cdl-teal-deep);
+  color: #fff;
+}
+.cdl-btn--teal:hover { background: var(--cdl-teal-deep); }
+
+.cdl-btn--sm { min-height: 36px; padding: 0 14px; font-size: 13px; }
+
+.cdl-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cdl-line-strong);
+  background: var(--cdl-surface);
+  color: var(--cdl-ink-2);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.cdl-icon-btn:hover { background: var(--cdl-bg-2); }
+.cdl-icon-btn:active { transform: scale(0.94); }
+.cdl-icon-btn:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 2px; }
+
+.cdl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cdl-line-strong);
+  background: var(--cdl-surface-2);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cdl-ink-2);
+  white-space: nowrap;
+}
+.cdl-pill--teal { background: var(--cdl-teal-soft); border-color: var(--cdl-teal); color: var(--cdl-teal-deep); }
+.cdl-pill--orange { background: var(--cdl-orange-soft); border-color: var(--cdl-orange); color: var(--cdl-orange-deep); }
+.cdl-pill--good { background: var(--cdl-good-soft); border-color: var(--cdl-good); color: var(--cdl-good); }
+.cdl-pill--bad { background: var(--cdl-bad-soft); border-color: var(--cdl-bad); color: var(--cdl-bad); }
+
+.cdl-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cdl-ink-3);
+}
+
+.cdl-title {
+  font-family: var(--cdl-font-display);
+  font-weight: 700;
+  color: var(--cdl-ink-1);
+  margin: 0;
+}
+
+.cdl-mono { font-family: var(--cdl-font-mono); }
+
+/* Visible to screen readers only. */
+.cdl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Fidelity meter ────────────────────────────────────────────────────── */
+
+.cdl-fidelity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cdl-fidelity__bar {
+  width: 96px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cdl-bg-2);
+  border: 1px solid var(--cdl-line);
+  overflow: hidden;
+}
+
+.cdl-fidelity__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease, background 0.5s ease;
+}
+
+/* ── Phase track ───────────────────────────────────────────────────────── */
+
+.cdl-track {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 100%;
+  padding: 4px 0;
+}
+.cdl-track::-webkit-scrollbar { display: none; }
+
+.cdl-track__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cdl-ink-4);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cdl-track__step { position: relative; }
+.cdl-track__step--done { color: var(--cdl-teal-deep); }
+.cdl-track__step--active {
+  border-color: var(--cdl-orange);
+  background: var(--cdl-orange-soft);
+  color: var(--cdl-orange-deep);
+}
+
+.cdl-track__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.cdl-track__sep {
+  width: 10px;
+  height: 1.5px;
+  background: var(--cdl-line-strong);
+  flex-shrink: 0;
+}
+
+/* ── Lab notebook ──────────────────────────────────────────────────────── */
+
+.cdl-notebook {
+  border-left: 1.5px solid var(--cdl-line);
+  background: var(--cdl-bg-2);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+.cdl-card {
+  background: var(--cdl-surface);
+  border: 1.5px solid var(--cdl-line);
+  border-radius: var(--cdl-radius);
+  padding: 14px;
+  box-shadow: var(--cdl-shadow);
+}
+
+.cdl-card__accent {
+  height: 4px;
+  margin: -14px -14px 12px;
+  border-radius: var(--cdl-radius) var(--cdl-radius) 0 0;
+}
+
+.cdl-teach {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--cdl-ink-2);
+  margin: 0;
+}
+
+.cdl-objectives {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cdl-objective {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--cdl-ink-2);
+}
+
+.cdl-objective__bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cdl-teal);
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.cdl-defect {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--cdl-bad);
+  padding: 7px 9px;
+  border-radius: var(--cdl-radius-sm);
+  background: var(--cdl-bad-soft);
+}
+
+/* ── Procedure stage ───────────────────────────────────────────────────── */
+
+.cdl-proc { position: absolute; inset: 0; }
+
+.cdl-proc__stage { position: absolute; inset: 0; }
+
+.cdl-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.cdl-svg :focus-visible {
+  outline: 3px solid var(--cdl-teal);
+  outline-offset: 3px;
+}
+
+/* Chrome floats over the cell so the cell is never covered by a panel. */
+.cdl-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  pointer-events: none;
+}
+
+.cdl-overlay--top { top: 0; }
+
+.cdl-overlay--bottom {
+  bottom: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 16px;
+}
+
+.cdl-overlay button { pointer-events: auto; }
+
+.cdl-tag {
+  border-radius: var(--cdl-radius-sm);
+  background: color-mix(in srgb, var(--cdl-surface) 82%, transparent);
+  border: 1.5px solid var(--cdl-line);
+  padding: 7px 12px;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--cdl-shadow);
+}
+
+.cdl-tag--row { display: flex; align-items: center; gap: 14px; }
+
+/* ── Checkpoint gate ───────────────────────────────────────────────────── */
+
+.cdl-gate {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: min(420px, calc(100% - 24px));
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--cdl-radius);
+  border: 1.5px solid var(--cdl-line-strong);
+  background: color-mix(in srgb, var(--cdl-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--cdl-shadow-lg);
+  overflow: hidden;
+}
+
+.cdl-gate__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1.5px solid var(--cdl-line);
+  flex-shrink: 0;
+}
+
+.cdl-gate__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+}
+
+.cdl-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.cdl-timer__num {
+  font-family: var(--cdl-font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdl-timer__bar {
+  width: 52px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--cdl-bg-2);
+  overflow: hidden;
+}
+
+.cdl-timer__fill { height: 100%; border-radius: 999px; transition: width 1s linear, background 0.3s; }
+
+.cdl-stars { display: flex; gap: 5px; align-items: center; }
+.cdl-star { font-size: 19px; line-height: 1; color: var(--cdl-line-strong); transition: color 0.35s; }
+.cdl-star--on { color: var(--cdl-yellow-deep); }
+
+.cdl-hint {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--cdl-ink-3);
+  min-height: 17px;
+  transition: color 0.3s;
+}
+.cdl-hint--good { color: var(--cdl-good); }
+.cdl-hint--bad { color: var(--cdl-bad); }
+.cdl-hint--busy { color: var(--cdl-orange-deep); }
+.cdl-hint--info { color: var(--cdl-ink-2); }
+
+/* The running instruction. It sits over the cell, so it has to hold its own
+   against whatever is behind it — hence the size, the weight and the solid
+   backing rather than a wash. */
+.cdl-overlay--bottom .cdl-hint {
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+  max-width: 720px;
+  padding: 12px 22px;
+  border-radius: 18px;
+  color: var(--cdl-ink-1);
+  background: color-mix(in srgb, var(--cdl-surface) 94%, transparent);
+  border: 2px solid var(--cdl-line-strong);
+  box-shadow: var(--cdl-shadow);
+  backdrop-filter: blur(8px);
+}
+
+.cdl-overlay--bottom .cdl-hint--good { color: var(--cdl-good); border-color: var(--cdl-good); }
+.cdl-overlay--bottom .cdl-hint--bad { color: var(--cdl-bad); border-color: var(--cdl-bad); }
+.cdl-overlay--bottom .cdl-hint--busy { color: var(--cdl-orange-deep); border-color: var(--cdl-orange); }
+
+/* ── Cell animations ───────────────────────────────────────────────────── */
+
+/* Every keyframe below that touches `transform` must run on a group that does
+   NOT carry a transform attribute — the CSS property replaces the attribute
+   outright, which would drop the element back to the stage origin. Positioned
+   elements therefore wrap an inner animated <g>. */
+
+.cdl-cell {
+  animation: cdl-breathe 7s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cdl-pulse { animation: cdl-pulse 1.5s ease-in-out infinite; }
+
+.cdl-float {
+  animation: cdl-float 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cdl-drift {
+  animation: cdl-drift 17s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cdl-drift--b { animation-duration: 23s; animation-direction: reverse; }
+.cdl-drift--c { animation-duration: 29s; }
+
+.cdl-pop {
+  animation: cdl-pop 0.5s cubic-bezier(0.34, 1.4, 0.5, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cdl-place {
+  animation: cdl-place 0.44s cubic-bezier(0.34, 1.4, 0.5, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cdl-fade { animation: cdl-fade 0.45s ease-out both; }
+.cdl-enter { animation: cdl-enter 0.6s ease-out both; }
+
+/* Draws a stroke on, using pathLength="1" so one rule fits any path length. */
+.cdl-grow { animation: cdl-grow 0.5s ease-out both; }
+
+.cdl-clamp { transition: transform 0.34s cubic-bezier(0.34, 1.2, 0.5, 1); }
+.cdl-travel { transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1); }
+.cdl-morph { transition: d 0.4s ease, cx 0.4s ease, cy 0.4s ease, rx 0.4s ease, ry 0.4s ease; }
+.cdl-tint { transition: fill 0.4s ease, stroke 0.4s ease, opacity 0.4s ease; }
+.cdl-coil { transition: d 0.12s linear, stroke 0.3s ease; }
+.cdl-plate { animation: cdl-dash 22s linear infinite; }
+
+.cdl-controls {
+  padding: 10px 12px;
+  border-radius: var(--cdl-radius-sm);
+  background: var(--cdl-teal-soft);
+  border: 1.5px solid var(--cdl-teal);
+}
+
+/* The membrane fighting the contractile ring in the last of the pinch. */
+.cdl-strain {
+  animation: cdl-strain 0.17s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cdl-snap { animation: cdl-snap 0.55s ease-out both; transform-box: fill-box; transform-origin: center; }
+
+/* Gesture cues — which way to drag. */
+.cdl-cue-up { animation: cdl-cue-up 1.1s ease-in-out infinite; }
+.cdl-cue-down { animation: cdl-cue-down 1.1s ease-in-out infinite; }
+.cdl-cue-left { animation: cdl-cue-left 1.2s ease-in-out infinite; }
+.cdl-cue-right { animation: cdl-cue-right 1.2s ease-in-out infinite; }
+
+@keyframes cdl-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.014); }
+}
+@keyframes cdl-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+@keyframes cdl-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-10px) rotate(2deg); }
+}
+@keyframes cdl-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33%      { transform: translate(9px, -7px) rotate(3deg); }
+  66%      { transform: translate(-7px, 6px) rotate(-3deg); }
+}
+@keyframes cdl-pop {
+  0%   { opacity: 0; transform: scale(0.66); }
+  60%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes cdl-place {
+  0%   { opacity: 0.4; transform: translateY(16px) scale(0.9); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cdl-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cdl-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cdl-grow {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes cdl-dash {
+  to { stroke-dashoffset: -420; }
+}
+@keyframes cdl-strain {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-1.7px, 0.9px); }
+  50%      { transform: translate(1.5px, -1.1px); }
+  75%      { transform: translate(-0.9px, -1.5px); }
+}
+@keyframes cdl-snap {
+  0%   { opacity: 0.9; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(2.6); }
+}
+@keyframes cdl-cue-up {
+  0%, 100% { opacity: 0.35; transform: translateY(4px); }
+  50%      { opacity: 1; transform: translateY(-8px); }
+}
+@keyframes cdl-cue-down {
+  0%, 100% { opacity: 0.35; transform: translateY(-4px); }
+  50%      { opacity: 1; transform: translateY(8px); }
+}
+@keyframes cdl-cue-left {
+  0%, 100% { opacity: 0.35; transform: translateX(4px); }
+  50%      { opacity: 1; transform: translateX(-8px); }
+}
+@keyframes cdl-cue-right {
+  0%, 100% { opacity: 0.35; transform: translateX(-4px); }
+  50%      { opacity: 1; transform: translateX(8px); }
+}
+
+.cdl-app--still .cdl-cell,
+.cdl-app--still .cdl-pulse,
+.cdl-app--still .cdl-float,
+.cdl-app--still .cdl-drift,
+.cdl-app--still .cdl-strain,
+.cdl-app--still .cdl-cue-up,
+.cdl-app--still .cdl-cue-down,
+.cdl-app--still .cdl-cue-left,
+.cdl-app--still .cdl-cue-right,
+.cdl-app--still .cdl-plate { animation: none; }
+
+/* ── Full-page screens (level select, results) ─────────────────────────── */
+
+.cdl-select {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--cdl-bg);
+  background-image:
+    linear-gradient(var(--cdl-stage-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cdl-stage-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.cdl-select__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--cdl-surface);
+  border-bottom: 1.5px solid var(--cdl-line);
+  border-top: 3px solid var(--cdl-orange);
+  flex-shrink: 0;
+}
+
+.cdl-select__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 18px 40px;
+}
+
+.cdl-level-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.cdl-level-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 16px 16px;
+  background: var(--cdl-surface);
+  border: 1.5px solid var(--cdl-line);
+  border-radius: var(--cdl-radius-lg);
+  box-shadow: var(--cdl-shadow);
+  overflow: hidden;
+}
+
+.cdl-level-card--locked { opacity: 0.6; }
+
+.cdl-level-card__accent {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+}
+
+.cdl-level-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cdl-level-card__num {
+  font-family: var(--cdl-font-display);
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.cdl-level-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 0 4px;
+  border-top: 1.5px solid var(--cdl-line);
+}
+
+.cdl-results {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .cdl-level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .cdl-level-grid { grid-template-columns: 1fr; }
+  .cdl-select__body { padding: 16px 12px 32px; }
+  .cdl-select__head { padding: 12px; gap: 10px; }
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .cdl-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .cdl-notebook {
+    border-left: none;
+    border-top: 1.5px solid var(--cdl-line);
+    max-height: 34%;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cdl-hud { min-height: 54px; padding: 0 8px; gap: 8px; }
+  .cdl-stage-wrap { padding: 8px; }
+  .cdl-overlay { padding: 8px; }
+  .cdl-overlay--bottom { padding: 8px 10px 10px; }
+  .cdl-overlay--bottom .cdl-hint { font-size: 15px; padding: 9px 14px; border-radius: 14px; }
+  .cdl-tag { padding: 6px 9px; }
+  .cdl-tag--row { gap: 10px; }
+  .cdl-gate { inset: 8px; width: auto; }
+  .cdl-notebook { max-height: 40%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdl-root * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

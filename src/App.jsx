@@ -510,13 +510,20 @@ function AppContent() {
     if (isInviteFlow.current) return;
     if (!user) return;
     const role = profile?.role ?? 'student';
-     
+    const target =
+      role === 'admin' ? 'admin' :
+      role === 'teacher' ? 'teacher-portal' :
+      'lessons';
+    // Replace the baseline entry so back doesn't return to a fleeting 'home'
+    // that the user never actually saw.
+    window.history.replaceState({ sqView: target, sqPayload: null }, '');
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (role === 'admin') setCurrentView('admin');
-    else if (role === 'teacher') setCurrentView('teacher-portal');
-    else setCurrentView('lessons');
-     
+    setCurrentView(target);
   }, [loading, user, profile?.role]);
+
+  // Set to true when applying a view change triggered by the browser back/forward
+  // button — suppresses the pushState below so we don't double-log the entry.
+  const skipHistoryPushRef = useRef(false);
 
   const handleNavigate = useCallback((view, payload) => {
     if (view === 'game-play' && payload?.gameId) {
@@ -540,8 +547,32 @@ function AppContent() {
       setHighlightedActivity(null);
     }
     setCurrentView(view);
+    if (skipHistoryPushRef.current) {
+      skipHistoryPushRef.current = false;
+    } else {
+      window.history.pushState({ sqView: view, sqPayload: payload ?? null }, '');
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  // Wire the browser back/forward buttons to the view-string router.
+  // Baseline entry is stamped with the initial view (read from a ref so this
+  // stays a mount-only effect) so the first back press navigates within the
+  // app instead of leaving the site entirely.
+  const initialViewRef = useRef(currentView);
+  useEffect(() => {
+    if (!window.history.state?.sqView) {
+      window.history.replaceState({ sqView: initialViewRef.current, sqPayload: null }, '');
+    }
+    const handlePop = (event) => {
+      const view = event.state?.sqView ?? 'home';
+      const payload = event.state?.sqPayload ?? undefined;
+      skipHistoryPushRef.current = true;
+      handleNavigate(view, payload);
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [handleNavigate]);
 
   // Called by AuthModal after successful login — navigates by role
   const handleLogin = (role) => {
@@ -795,20 +826,20 @@ function AppContent() {
   // Maps game IDs to their completion achievement keys.
   const GAME_ACHIEVEMENT_KEYS = {
     'mystery-lab': MYSTERY_LAB_COMPLETE_KEY,
-    'cell-division-defense': CELL_DIVISION_COMPLETE_KEY,
+    'cell-division-lab': CELL_DIVISION_COMPLETE_KEY,
     'matter-state-sandbox': MATTER_STATE_SANDBOX_COMPLETE_KEY,
   };
 
   // Human-readable names for XP toast detail text.
   const GAME_NAMES = {
     'mystery-lab': 'Mystery Lab',
-    'cell-division-defense': 'Cell Division Defense',
+    'cell-division-lab': 'Cell Division Lab',
     'matter-state-sandbox': 'Matter State Sandbox',
   };
 
   // Called by GamePlayPage → GameComponent when a game run ends.
   // Mystery Lab payload: { gameId, challengeId, completed, xp, stars }
-  // Cell Division payload: { stars, mutations, hpLeft, xpEarned, levelId, reason? }
+  // Cell Division Lab payload: { gameId, challengeId, levelId, completed, stars, xpEarned, reason? }
   const handleGameProgressUpdate = (payload) => {
     const gameId = payload.gameId ?? activeGameId;
     if (!gameId) return;
@@ -816,8 +847,8 @@ function AppContent() {
     const challengeId = payload.challengeId ?? payload.levelId ?? gameId;
     const stars = payload.stars ?? 0;
     const xpEarned = payload.xp ?? payload.xpEarned ?? 0;
-    // reason:'nucleusDestroyed' signals a loss for Cell Division; absence = win.
-    const isWin = payload.reason !== 'nucleusDestroyed';
+    // reason:'divisionFailed' signals a zero-star run; absence = win.
+    const isWin = payload.reason !== 'divisionFailed';
     const isCompleted = isWin && payload.completed !== false;
 
     // Always persist to DB for attempt-tracking, even on losses.

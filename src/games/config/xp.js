@@ -10,13 +10,13 @@ export const GAME_XP = {
     // One-time achievement bonus XP awarded when all levels are first completed.
     achievementXp: 60,
   },
-  'cell-division-defense': {
-    // XP by star rating (index = stars earned: 0 = game over / failed,
-    // 1 = bronze, 2 = silver, 3 = gold). Awarded each time the game is won;
-    // only the improvement over the student's previous best counts toward
-    // the profile total.
+  'cell-division-lab': {
+    // XP by star rating (index = stars earned: 0 = the division failed,
+    // 1 = bronze, 2 = silver, 3 = gold). Awarded per level completed; only
+    // the improvement over the student's previous best for that level counts
+    // toward the profile total.
     starsXp: [0, 40, 80, 120],
-    // One-time achievement bonus XP awarded on first completion.
+    // One-time achievement bonus XP awarded on the first division completed.
     achievementXp: 75,
   },
 };

@@ -81,20 +81,29 @@ export const GAMES = {
       ).size;
     },
   },
-  "cell-division-defense": {
-    id: "cell-division-defense",
-    title: "Cell Division: Divide & Defend",
-    tagline: "Defend the nucleus and guide your cell through mitosis",
+  "cell-division-lab": {
+    id: "cell-division-lab",
+    title: "Cell Division Lab",
+    tagline:
+      "Run a cell through mitosis and meiosis, one procedure at a time, and see what the daughter cells inherit.",
     subject: "Science",
     relatedLessonIds: ["week-07-cell-division", "week-08-meiosis"],
     difficulty: 2,
-    estimatedMinutes: 12,
+    estimatedMinutes: 20,
     thumbnail: celldiv,
-    engine: "phaser",
+    engine: "react",
     category: "Biology",
-    loader: () => import("../../games/cell-division-defense/index.jsx"),
+    loader: () => import("../../games/cell-division-lab/index.jsx"),
     minRole: "student",
-    totalLevels: 1,
+    totalLevels: 3,
+    countCompletedLevels: (progress) => {
+      const LEVEL_CHALLENGES = new Set(["l1", "l2", "l3"]);
+      return new Set(
+        progress
+          .filter((r) => r.completed && LEVEL_CHALLENGES.has(r.challenge_id))
+          .map((r) => r.challenge_id),
+      ).size;
+    },
   },
 };
 

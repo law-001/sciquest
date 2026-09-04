@@ -12,6 +12,11 @@ function detectDeviceTier() {
   return 'low';
 }
 
+// Games that already render a top-left back control (either shipped and off-limits,
+// or served from a self-contained iframe). Suppressing the overlay for these
+// keeps the corner from stacking two buttons on top of one another.
+const GAMES_WITH_OWN_BACK = new Set(['matter-state-sandbox', 'food-chain-survival', 'cell-division-lab']);
+
 export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgressUpdate }) {
   const reducedMotion = useReducedMotion();
   // visualViewport.height is the true on-screen area; window.innerHeight on iOS
@@ -89,6 +94,8 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgre
     );
   }
 
+  const showOverlayBack = !GAMES_WITH_OWN_BACK.has(activeGameId);
+
   return (
     <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: vh, overflow: 'hidden', touchAction: 'none' }}>
       <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
@@ -103,6 +110,41 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgre
             deviceTier={deviceTier}
           />
         </Suspense>
+        {showOverlayBack && (
+          <button
+            type="button"
+            onClick={() => onNavigate('games')}
+            aria-label="Back to Games"
+            style={{
+              position: 'fixed',
+              top: 'max(12px, env(safe-area-inset-top))',
+              left: 'max(12px, env(safe-area-inset-left))',
+              zIndex: 2147483000,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 14px',
+              minHeight: 40,
+              borderRadius: 999,
+              border: '1.5px solid rgba(255,255,255,0.28)',
+              background: 'rgba(15,20,30,0.72)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              color: '#ffffff',
+              fontFamily: 'Nunito, system-ui, sans-serif',
+              fontWeight: 700,
+              fontSize: 13,
+              letterSpacing: '0.02em',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px -10px rgba(0,0,0,0.6)',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 12H5M11 6l-6 6 6 6" />
+            </svg>
+            Back
+          </button>
+        )}
       </GameAuthGate>
     </div>
   );

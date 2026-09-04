@@ -194,7 +194,6 @@ export default function MysteryLab({
             energyMax={5}
             progress={progress}
             onJump={go}
-            onExit={onExit}
             isDark={isDark}
             onToggleTheme={toggleTheme}
             isMuted={isMuted}
@@ -242,31 +241,6 @@ export default function MysteryLab({
             >
               <Lucide name={isDark ? "sun" : "moon"} size={16} />
             </button>
-            {onExit && (
-              <button
-                type="button"
-                onClick={onExit}
-                aria-label="Exit Mystery Lab"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 14px",
-                  borderRadius: 999,
-                  border: "1.5px solid rgba(28,20,16,0.15)",
-                  background: "rgba(255,255,255,0.94)",
-                  fontFamily: "Nunito, system-ui, sans-serif",
-                  fontWeight: 800,
-                  fontSize: 13,
-                  color: "#1c1410",
-                  boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
-                  cursor: "pointer",
-                }}
-              >
-                <Lucide name="x" size={14} />
-                Exit
-              </button>
-            )}
           </div>
         )}
 

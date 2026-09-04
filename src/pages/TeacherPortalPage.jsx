@@ -47,7 +47,12 @@ import { fetchAllSections, createSection } from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
 import { useLessonsData } from "../context/LessonsDataContext";
-import { deleteLesson, upsertLesson, restoreStaticLesson, setLessonHidden } from "../lib/lessons";
+import {
+  deleteLesson,
+  upsertLesson,
+  restoreStaticLesson,
+  setLessonHidden,
+} from "../lib/lessons";
 import { deleteQuiz } from "../lib/quizzes";
 import {
   getPublishedWeekIds,
@@ -728,7 +733,9 @@ function SectionsSlot({
                           <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
                             {student.progress}%
                           </span>
-                          <span className="text-stone-300 dark:text-stone-600">·</span>
+                          <span className="text-stone-300 dark:text-stone-600">
+                            ·
+                          </span>
                           <span
                             className={cn(
                               "text-xs font-black",
@@ -753,7 +760,9 @@ function SectionsSlot({
                       disabled={!!removingId}
                       aria-label={`Remove ${student.name}`}
                     >
-                      {removingId !== student.id && <Trash2 className="w-4 h-4" />}
+                      {removingId !== student.id && (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 ))
@@ -900,7 +909,14 @@ function SectionsSlot({
 
 // ── Delete lesson confirmation modal ─────────────────────────────────────────
 
-function DeleteLessonModal({ lesson, isCustom, onConfirm, onClose, isLoading, error }) {
+function DeleteLessonModal({
+  lesson,
+  isCustom,
+  onConfirm,
+  onClose,
+  isLoading,
+  error,
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="relative w-full max-w-md bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6">
@@ -991,17 +1007,29 @@ function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
             <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-stone-900 dark:text-white">Restore Default</h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400">Your edits will be removed</p>
+            <h2 className="text-lg font-black text-stone-900 dark:text-white">
+              Restore Default
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              Your edits will be removed
+            </p>
           </div>
         </div>
         <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
           Restore{" "}
-          <strong className="text-stone-900 dark:text-white">{lesson.title}</strong>{" "}
-          to its original content? All your edits will be discarded and students will see the default version.
+          <strong className="text-stone-900 dark:text-white">
+            {lesson.title}
+          </strong>{" "}
+          to its original content? All your edits will be discarded and students
+          will see the default version.
         </p>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
           <button
@@ -1025,7 +1053,13 @@ function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
 // and the lesson list re-renders on every Realtime push from concurrent teacher
 // sessions, so a click without confirmation is too easy to fire accidentally.
 
-function ToggleLessonVisibilityModal({ lesson, isCurrentlyHidden, onConfirm, onClose, isLoading }) {
+function ToggleLessonVisibilityModal({
+  lesson,
+  isCurrentlyHidden,
+  onConfirm,
+  onClose,
+  isLoading,
+}) {
   const willHide = !isCurrentlyHidden;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -1057,7 +1091,9 @@ function ToggleLessonVisibilityModal({ lesson, isCurrentlyHidden, onConfirm, onC
               {willHide ? "Hide Lesson" : "Publish Lesson"}
             </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">
-              {willHide ? "Students won't see this lesson" : "Students will see this lesson"}
+              {willHide
+                ? "Students won't see this lesson"
+                : "Students will see this lesson"}
             </p>
           </div>
         </div>
@@ -1065,19 +1101,29 @@ function ToggleLessonVisibilityModal({ lesson, isCurrentlyHidden, onConfirm, onC
           {willHide ? (
             <>
               Hide{" "}
-              <strong className="text-stone-900 dark:text-white">{lesson.title}</strong>{" "}
-              from students? You can publish it again from this page at any time.
+              <strong className="text-stone-900 dark:text-white">
+                {lesson.title}
+              </strong>{" "}
+              from students? You can publish it again from this page at any
+              time.
             </>
           ) : (
             <>
               Publish{" "}
-              <strong className="text-stone-900 dark:text-white">{lesson.title}</strong>{" "}
+              <strong className="text-stone-900 dark:text-white">
+                {lesson.title}
+              </strong>{" "}
               to students?
             </>
           )}
         </p>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
           <button
@@ -1090,7 +1136,11 @@ function ToggleLessonVisibilityModal({ lesson, isCurrentlyHidden, onConfirm, onC
                 : "bg-secondary-500 hover:bg-secondary-600",
             )}
           >
-            {isLoading ? "Saving…" : willHide ? "Hide Lesson" : "Publish Lesson"}
+            {isLoading
+              ? "Saving…"
+              : willHide
+                ? "Hide Lesson"
+                : "Publish Lesson"}
           </button>
         </div>
       </div>
@@ -1301,8 +1351,7 @@ function LessonsSlot({
 
   function cycleWeekState(weekId) {
     const state = getWeekState(weekId);
-    const publishBase =
-      publishedWeekIds ?? new Set(weeks.map((w) => w.id));
+    const publishBase = publishedWeekIds ?? new Set(weeks.map((w) => w.id));
     const nextPublish = new Set(publishBase);
     const nextOpen = new Set(openWeekIds ?? []);
 
@@ -1408,9 +1457,7 @@ function LessonsSlot({
                 const dbRow = dbLessons.get(lesson.id);
                 const isCustomLesson = !!dbRow?.is_custom;
                 const isEdited = !!dbRow && !dbRow.is_custom;
-                const isHidden = dbRow
-                  ? !!dbRow.is_hidden
-                  : !!lesson.isHidden;
+                const isHidden = dbRow ? !!dbRow.is_hidden : !!lesson.isHidden;
                 const isToggling = togglingLessonId === lesson.id;
                 return (
                   <Card
@@ -1432,7 +1479,9 @@ function LessonsSlot({
                             onClick={() => setPendingVisibilityLesson(lesson)}
                             disabled={isToggling}
                             title={isHidden ? "Publish lesson" : "Hide lesson"}
-                            aria-label={isHidden ? "Publish lesson" : "Hide lesson"}
+                            aria-label={
+                              isHidden ? "Publish lesson" : "Hide lesson"
+                            }
                             aria-pressed={!isHidden}
                             className={cn(
                               "p-1.5 rounded-lg transition-colors",
@@ -1476,9 +1525,13 @@ function LessonsSlot({
                               setDeleteError(null);
                               setDeletingLesson(lesson);
                             }}
-                            title={isCustomLesson ? "Delete lesson" : "Hide lesson"}
+                            title={
+                              isCustomLesson ? "Delete lesson" : "Hide lesson"
+                            }
                             className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            aria-label={isCustomLesson ? "Delete lesson" : "Hide lesson"}
+                            aria-label={
+                              isCustomLesson ? "Delete lesson" : "Hide lesson"
+                            }
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1688,23 +1741,26 @@ function LessonsSlot({
         />
       )}
 
-      {pendingVisibilityLesson && (() => {
-        const lesson = pendingVisibilityLesson;
-        const dbRow = dbLessons.get(lesson.id);
-        const isCurrentlyHidden = dbRow ? !!dbRow.is_hidden : !!lesson.isHidden;
-        return (
-          <ToggleLessonVisibilityModal
-            lesson={lesson}
-            isCurrentlyHidden={isCurrentlyHidden}
-            isLoading={togglingLessonId === lesson.id}
-            onClose={() => setPendingVisibilityLesson(null)}
-            onConfirm={async () => {
-              await handleToggleLessonHidden(lesson);
-              setPendingVisibilityLesson(null);
-            }}
-          />
-        );
-      })()}
+      {pendingVisibilityLesson &&
+        (() => {
+          const lesson = pendingVisibilityLesson;
+          const dbRow = dbLessons.get(lesson.id);
+          const isCurrentlyHidden = dbRow
+            ? !!dbRow.is_hidden
+            : !!lesson.isHidden;
+          return (
+            <ToggleLessonVisibilityModal
+              lesson={lesson}
+              isCurrentlyHidden={isCurrentlyHidden}
+              isLoading={togglingLessonId === lesson.id}
+              onClose={() => setPendingVisibilityLesson(null)}
+              onConfirm={async () => {
+                await handleToggleLessonHidden(lesson);
+                setPendingVisibilityLesson(null);
+              }}
+            />
+          );
+        })()}
     </div>
   );
 }
@@ -1870,8 +1926,16 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
             </p>
             {pending.map((sub) => {
               const types = getManualQuestionTypes(sub.lessonId, getQuiz);
-              const snippet = getAnswerSnippet(sub.lessonId, sub.answers, getQuiz);
-              const wordCount = getEssayWordCount(sub.lessonId, sub.answers, getQuiz);
+              const snippet = getAnswerSnippet(
+                sub.lessonId,
+                sub.answers,
+                getQuiz,
+              );
+              const wordCount = getEssayWordCount(
+                sub.lessonId,
+                sub.answers,
+                getQuiz,
+              );
               const hasEssay = types.includes("essay");
               const minWords = (() => {
                 const quiz = getQuiz(sub.lessonId);
@@ -2104,7 +2168,10 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
               allSubs.map((sub) => {
                 const types = getManualQuestionTypes(sub.lessonId);
                 return (
-                  <div key={sub.id} className="px-5 py-4 flex gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors">
+                  <div
+                    key={sub.id}
+                    className="px-5 py-4 flex gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                  >
                     <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0 self-center">
                       {sub.student.charAt(0)}
                     </div>
@@ -2114,7 +2181,10 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                           {sub.student}
                         </span>
                         {sub.status === "graded" ? (
-                          <Badge variant="secondary" className="text-xs shrink-0">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs shrink-0"
+                          >
                             Graded
                           </Badge>
                         ) : (
@@ -2124,11 +2194,13 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                             className="group inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300 text-amber-600 hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors shrink-0 cursor-pointer"
                           >
                             <span className="group-hover:hidden">Pending</span>
-                            <span className="hidden group-hover:inline whitespace-nowrap">Grade now</span>
+                            <span className="hidden group-hover:inline whitespace-nowrap">
+                              Grade now
+                            </span>
                           </button>
                         )}
                       </div>
-                      <p className="text-xs text-stone-600 dark:text-stone-400 mb-1.5 leading-relaxed break-words">
+                      <p className="text-xs text-stone-600 dark:text-stone-400 mb-1.5 leading-relaxed  wrap-break-word">
                         {sub.quiz}
                       </p>
                       <div className="flex items-center justify-between gap-2">
@@ -2838,11 +2910,18 @@ function GradebookSlot({ data, sectionId }) {
                         </div>
                       </div>
                       {student.best.size > 0 ? (
-                        <span className={cn("text-xs font-bold shrink-0", desc.color)}>
+                        <span
+                          className={cn(
+                            "text-xs font-bold shrink-0",
+                            desc.color,
+                          )}
+                        >
                           {desc.short}
                         </span>
                       ) : (
-                        <span className="text-xs text-stone-400 shrink-0">No data</span>
+                        <span className="text-xs text-stone-400 shrink-0">
+                          No data
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 pl-12">
@@ -2862,11 +2941,16 @@ function GradebookSlot({ data, sectionId }) {
                         <span className="font-bold text-stone-700 dark:text-stone-300">
                           {student.best.size}
                         </span>
-                        <span className="text-stone-400"> / {quizColumns.length}</span>
+                        <span className="text-stone-400">
+                          {" "}
+                          / {quizColumns.length}
+                        </span>
                       </span>
                       {student.best.size > 0 && (
                         <>
-                          <span className="text-stone-300 dark:text-stone-600">·</span>
+                          <span className="text-stone-300 dark:text-stone-600">
+                            ·
+                          </span>
                           <span className={cn("font-black", desc.color)}>
                             {student.avgScore}%
                           </span>
@@ -3697,13 +3781,17 @@ function ProgressSlot({ data, sectionId }) {
                 const rank = progressRankMap.get(student.id) ?? "—";
                 const studentSubs = data.submissions.filter(
                   (s) =>
-                    s.student === student.name &&
-                    s.section === student.section,
+                    s.student === student.name && s.section === student.section,
                 );
                 const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
-                const status = engagementStatus(student, studentSubs.length > 0);
+                const status = engagementStatus(
+                  student,
+                  studentSubs.length > 0,
+                );
                 const desc =
-                  student.avgScore > 0 ? gradeDescriptor(student.avgScore) : null;
+                  student.avgScore > 0
+                    ? gradeDescriptor(student.avgScore)
+                    : null;
                 return (
                   <div
                     key={student.id}
@@ -3736,7 +3824,9 @@ function ProgressSlot({ data, sectionId }) {
                           status.text,
                         )}
                       >
-                        <span className={cn("w-1.5 h-1.5 rounded-full", status.dot)} />
+                        <span
+                          className={cn("w-1.5 h-1.5 rounded-full", status.dot)}
+                        />
                         {status.label}
                       </span>
                     </div>
@@ -3753,9 +3843,12 @@ function ProgressSlot({ data, sectionId }) {
                     </div>
                     <div className="flex items-center gap-2 pl-12 text-xs text-stone-500 dark:text-stone-400 flex-wrap">
                       <span>
-                        {studentSubs.length} attempt{studentSubs.length !== 1 ? "s" : ""}
+                        {studentSubs.length} attempt
+                        {studentSubs.length !== 1 ? "s" : ""}
                       </span>
-                      <span className="text-stone-300 dark:text-stone-600">·</span>
+                      <span className="text-stone-300 dark:text-stone-600">
+                        ·
+                      </span>
                       {desc ? (
                         <span className={cn("font-black", desc.color)}>
                           {student.avgScore}%
@@ -3763,7 +3856,9 @@ function ProgressSlot({ data, sectionId }) {
                       ) : (
                         <span>—</span>
                       )}
-                      <span className="text-stone-300 dark:text-stone-600">·</span>
+                      <span className="text-stone-300 dark:text-stone-600">
+                        ·
+                      </span>
                       {gameLoading ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
@@ -3926,37 +4021,39 @@ function GradeModal({ submission, onClose, onSaved }) {
                 Rubric / Answer Guide
               </h3>
               <div className="space-y-3">
-                {getRubricItems(submission.lessonId, getQuiz).map((item, idx) => (
-                  <div
-                    key={item.id}
-                    className="p-4 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-100 dark:border-secondary-800/30"
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span
-                        className={cn(
-                          "px-2 py-0.5 rounded-md text-xs font-bold",
-                          MANUAL_TYPE_META[item.type]?.className,
-                        )}
-                      >
-                        {MANUAL_TYPE_META[item.type]?.label ?? item.type}
-                      </span>
-                      {item.points !== null && (
-                        <span className="text-xs font-bold text-secondary-600 dark:text-secondary-400">
-                          {item.points} pts
+                {getRubricItems(submission.lessonId, getQuiz).map(
+                  (item, idx) => (
+                    <div
+                      key={item.id}
+                      className="p-4 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-100 dark:border-secondary-800/30"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-xs font-bold",
+                            MANUAL_TYPE_META[item.type]?.className,
+                          )}
+                        >
+                          {MANUAL_TYPE_META[item.type]?.label ?? item.type}
                         </span>
-                      )}
+                        {item.points !== null && (
+                          <span className="text-xs font-bold text-secondary-600 dark:text-secondary-400">
+                            {item.points} pts
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5 leading-snug">
+                        Q{idx + 1}:{" "}
+                        {item.question.length > 90
+                          ? item.question.slice(0, 90) + "…"
+                          : item.question}
+                      </p>
+                      <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed">
+                        {item.rubric}
+                      </p>
                     </div>
-                    <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5 leading-snug">
-                      Q{idx + 1}:{" "}
-                      {item.question.length > 90
-                        ? item.question.slice(0, 90) + "…"
-                        : item.question}
-                    </p>
-                    <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed">
-                      {item.rubric}
-                    </p>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             </div>
           )}
@@ -4216,8 +4313,8 @@ function QuizAttemptsControl({ lessonId, currentAttempts }) {
         )}
       </div>
       <p className="text-[10px] font-medium text-stone-400 dark:text-stone-500 mt-1">
-        XP scales 100% / 50% / 25% across the first 3 attempts. Anything
-        beyond attempt 3 earns no XP.
+        XP scales 100% / 50% / 25% across the first 3 attempts. Anything beyond
+        attempt 3 earns no XP.
       </p>
     </div>
   );
@@ -4250,7 +4347,11 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
           htmlFor={`show-answers-${lessonId}`}
           className="flex items-center gap-1.5 text-xs font-bold text-stone-500 dark:text-stone-400"
         >
-          {enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          {enabled ? (
+            <Eye className="w-3.5 h-3.5" />
+          ) : (
+            <EyeOff className="w-3.5 h-3.5" />
+          )}
           Show correct answers
         </label>
         <button
@@ -4272,7 +4373,7 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
           <span
             className={cn(
               "inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
-              enabled ? "translate-x-[18px]" : "translate-x-[2px]",
+              enabled ? "translate-x-18px" : "translate-x-2px",
             )}
           />
         </button>
@@ -4291,7 +4392,15 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
   );
 }
 
-function DeleteQuizModal({ lesson, quiz, isCustom, onConfirm, onClose, isLoading, error }) {
+function DeleteQuizModal({
+  lesson,
+  quiz,
+  isCustom,
+  onConfirm,
+  onClose,
+  isLoading,
+  error,
+}) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
@@ -4417,7 +4526,9 @@ function LessonQuizCard({
               ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
               : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
           )}
-          title={published ? "Click to hide this quiz" : "Click to publish this quiz"}
+          title={
+            published ? "Click to hide this quiz" : "Click to publish this quiz"
+          }
           aria-label={
             published
               ? `Hide quiz ${quiz?.title ?? lesson.title}`
@@ -4666,7 +4777,10 @@ function QuizzesManagementSlot({
                   isWeekPublished(expandedWeek.id, publishedQuizWeekIds) &&
                   !isQuizLessonHidden(lesson.id, hiddenQuizLessonIds);
                 const currentLimit = getQuizTimeLimit(quizSettings, lesson.id);
-                const currentAttempts = getQuizMaxAttempts(quizSettings, lesson.id);
+                const currentAttempts = getQuizMaxAttempts(
+                  quizSettings,
+                  lesson.id,
+                );
                 const currentShow = getQuizShowAnswers(quizSettings, lesson.id);
                 const dbRow = dbQuizzes.get(lesson.id);
                 const isCustomQuiz = !!dbRow?.is_custom;
@@ -4886,7 +5000,13 @@ const SIDEBAR_TABS = [
 
 // --- Main page ---
 
-export function TeacherPortalPage({ onBack, onEditLesson, onEditQuiz, activeTab: activeTabProp, onActiveTabChange }) {
+export function TeacherPortalPage({
+  onBack,
+  onEditLesson,
+  onEditQuiz,
+  activeTab: activeTabProp,
+  onActiveTabChange,
+}) {
   const { signOut, profile, user } = useAuth();
   const { isDark, toggle } = useTheme();
   const [activeTabLocal, setActiveTabLocal] = useState("overview");
