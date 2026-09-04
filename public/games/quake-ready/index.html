@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Quake Ready</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== HEADER ===================== -->
+  <header id="topbar">
+    <button class="icon-btn" id="backBtn" title="Back" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="head-titles">
+      <h1 id="headTitle">Quake Ready</h1>
+      <p id="headSub"><span class="dot dot-o"></span> Learn how earthquakes work, survive one, then lead the rescue. <span class="dot dot-t"></span></p>
+    </div>
+    <button class="icon-btn" id="muteBtn" title="Sound on/off" aria-label="Sound">
+      <svg id="soundIcon" viewBox="0 0 24 24" width="20" height="20"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path id="wave1" d="M16 9.5a3.5 3.5 0 010 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path id="wave2" d="M18.5 7a7 7 0 010 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <!-- ===================== LEVEL SELECT ===================== -->
+  <main id="menu" class="screen show">
+    <div class="grid-bg"></div>
+    <div class="sq-level-grid" id="cards"></div>
+    <footer class="menu-foot">
+      <span id="progressLabel">0 / 3 missions complete</span>
+    </footer>
+  </main>
+
+  <!-- ===================== GAME ===================== -->
+  <section id="game" class="screen">
+    <div class="stage" id="stage">
+      <canvas id="canvas" width="960" height="600"></canvas>
+
+      <!-- HUD overlay -->
+      <div id="hud">
+        <div class="hud-top">
+          <div class="hud-pill" id="hudObjective"><span class="hud-role" id="hudRole">SEISMOLOGIST</span><span id="hudGoal">Goal</span></div>
+          <div class="hud-right">
+            <div class="hud-stat phase" id="hudPhaseWrap" style="display:none"><span class="hud-ico" id="hudPhaseIco"></span><span id="hudPhase">Before</span></div>
+            <div class="hud-stat" id="hudTimerWrap"><span class="hud-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><span id="hudTimer">2:00</span></div>
+            <div class="hud-count" id="hudCountWrap"><span id="hudCount">0</span><span class="hud-count-sep">/</span><span id="hudCountMax">4</span></div>
+            <button class="icon-btn small" id="pauseBtn" title="Pause">
+              <svg viewBox="0 0 24 24" width="18" height="18"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="hud-bars">
+          <div class="bar-row" id="barHealthRow" style="display:none">
+            <span class="bar-label" id="barHealthLabel">Health</span>
+            <div class="bar"><div class="bar-fill health" id="barHealth"></div></div>
+          </div>
+        </div>
+
+        <!-- shared task / discovery checklist (Levels 1 & 2) -->
+        <aside class="side-tasks" id="taskPanel" style="display:none" aria-live="polite">
+          <h3 id="taskTitle">Discoveries</h3>
+          <ul id="taskList"></ul>
+        </aside>
+
+        <!-- ===== Level 1 dashboard: fixed sidebar (info + objectives) ===== -->
+        <aside class="sim-sidebar" id="simSidebar" style="display:none" aria-label="Mission dashboard">
+          <div class="sim-mission">
+            <span class="sim-mission__eyebrow">ACTIVE MISSION</span>
+            <h2 class="sim-mission__title" id="simMissionTitle">Fault Lab</h2>
+            <p class="sim-mission__goal" id="simMissionGoal">Run experiments to make all four discoveries.</p>
+            <div class="sim-progress">
+              <div class="sim-progress__track"><span class="sim-progress__fill" id="simProgFill"></span></div>
+              <span class="sim-progress__txt" id="simProgTxt">0 / 4</span>
+            </div>
+          </div>
+
+          <section class="sim-card">
+            <h3 class="sim-card__title">Discoveries</h3>
+            <ul class="sim-checklist" id="simDiscList"></ul>
+          </section>
+
+          <section class="sim-card">
+            <h3 class="sim-card__title">Seismograph</h3>
+            <dl class="sim-readout" id="simStats">
+              <div class="sim-readout__row"><dt>Magnitude</dt><dd id="statMag">M 6.0</dd></div>
+              <div class="sim-readout__row"><dt>Focus depth</dt><dd id="statDepth">37 km · Shallow</dd></div>
+              <div class="sim-readout__row"><dt>Epicenter</dt><dd id="statEpi">Bayside Town</dd></div>
+              <div class="sim-readout__row"><dt>Active fault</dt><dd id="statFault">Inland fault</dd></div>
+            </dl>
+          </section>
+
+          <p class="sim-tip" id="simTip">Click a fault on the cross-section to place the focus.</p>
+        </aside>
+
+        <!-- ===== Level 1 dashboard: bottom control console ===== -->
+        <div class="sim-console" id="simPanel" style="display:none">
+          <div class="console-group console-epi">
+            <span class="console-label">Epicenter</span>
+            <span class="console-epi__val" id="conEpi">Inland fault</span>
+            <span class="console-epi__hint">click the map to move</span>
+          </div>
+          <div class="console-group console-mag">
+            <span class="console-label">Magnitude</span>
+            <div class="console-mag__row">
+              <input type="range" id="magSlider" min="3" max="9" step="0.1" value="6.0" aria-label="Earthquake magnitude">
+              <output class="console-mag__val" id="magValue">M 6.0</output>
+            </div>
+          </div>
+          <div class="console-group">
+            <span class="console-label" id="depthLabel">Depth</span>
+            <div class="seg" id="depthSeg" role="group" aria-labelledby="depthLabel">
+              <button class="seg-btn" data-depth="shallow">Shallow</button>
+              <button class="seg-btn" data-depth="medium">Medium</button>
+              <button class="seg-btn" data-depth="deep">Deep</button>
+            </div>
+          </div>
+          <div class="console-group">
+            <span class="console-label" id="speedLabel">Speed</span>
+            <div class="seg" id="speedSeg" role="group" aria-labelledby="speedLabel">
+              <button class="seg-btn" data-speed="0.5">0.5&times;</button>
+              <button class="seg-btn" data-speed="1">1&times;</button>
+              <button class="seg-btn" data-speed="2">2&times;</button>
+            </div>
+          </div>
+          <div class="console-group console-actions">
+            <button class="btn sim-start" id="startSimBtn">Start</button>
+            <button class="btn ghost sim-reset" id="resetSimBtn">Reset</button>
+          </div>
+          <div class="console-group console-status">
+            <span class="status-light" id="lightShake"><i></i>Shaking: —</span>
+            <span class="status-light" id="lightTsu"><i></i>Tsunami: none</span>
+          </div>
+        </div>
+
+        <!-- Level 3 command panel -->
+        <aside class="ops-panel" id="opsPanel" style="display:none">
+          <h3>Command Post</h3>
+          <div class="ops-res">
+            <div class="ops-res-row"><span class="ops-res-label">Fuel</span><div class="bar thin"><div class="bar-fill fuel" id="opsFuel"></div></div></div>
+            <div class="ops-res-row"><span class="ops-res-label">Med&nbsp;kits</span><b id="opsMeds">3</b><span class="ops-res-label" style="margin-left:10px">Saved</span><b id="opsSaved">0</b></div>
+          </div>
+          <div class="ops-incident" id="opsIncident">
+            <p class="ops-empty">Click a flashing incident on the map to see what it needs.</p>
+          </div>
+          <div class="ops-actions" id="opsActions"></div>
+        </aside>
+
+        <div class="hud-banner" id="hudBanner"></div>
+        <div class="hud-hint" id="hudHint"></div>
+      </div>
+
+      <!-- mobile controls: analog joystick + action button (Level 2) -->
+      <div id="touch-controls" class="hidden">
+        <div id="joystick" class="joystick" aria-label="Move"><div class="joy-knob" id="joyKnob"></div></div>
+        <button id="actionBtn" class="action-btn">ACT</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EDU CARD MODAL ===================== -->
+  <div id="modal" class="modal-wrap">
+    <div class="modal-card" id="modalCard">
+      <div class="modal-accent" id="modalAccent"></div>
+      <div class="modal-body">
+        <span class="modal-kicker" id="modalKicker">BEFORE YOU PLAY</span>
+        <h2 id="modalTitle">Title</h2>
+        <div id="modalContent"></div>
+        <div class="modal-actions" id="modalActions"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- engine + content -->
+<script src="js/engine.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/buildings.js"></script>
+<script src="js/level1.js"></script>
+<script src="js/level2.js"></script>
+<script src="js/level3.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

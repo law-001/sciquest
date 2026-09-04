@@ -3,6 +3,7 @@ import sandbox from "../../assets/sandbox.png";
 import celldiv from "../../assets/celldivision.png";
 import mysteryLab from "../../assets/mysterylab.png";
 import foodchain from "../../assets/foodchain.png";
+import quakeready from "../../assets/quakeready.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -81,11 +82,36 @@ export const GAMES = {
       ).size;
     },
   },
+  "quake-ready": {
+    id: "quake-ready",
+    title: "Quake Ready",
+    tagline:
+      "Run your own earthquakes, survive the big one, then command the rescue of Bayside Town.",
+    subject: "Science",
+    relatedLessonIds: [],
+    difficulty: 2,
+    estimatedMinutes: 20,
+    thumbnail: quakeready,
+    engine: "custom",
+    category: "Earth Science",
+    loader: () => import("../../games/quake-ready/index.jsx"),
+    minRole: "student",
+    totalLevels: 3,
+    countCompletedLevels: (progress) => {
+      const LEVEL_CHALLENGES = new Set(["l1", "l2", "l3"]);
+      return new Set(
+        progress
+          .filter((r) => r.completed && LEVEL_CHALLENGES.has(r.challenge_id))
+          .map((r) => r.challenge_id),
+      ).size;
+    },
+  },
   "cell-division-lab": {
     id: "cell-division-lab",
     title: "Cell Division Lab",
     tagline:
       "Run a cell through mitosis and meiosis, one procedure at a time, and see what the daughter cells inherit.",
+
     subject: "Science",
     relatedLessonIds: ["week-07-cell-division", "week-08-meiosis"],
     difficulty: 2,

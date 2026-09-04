@@ -170,9 +170,16 @@
       const dx = tx - this.vw / 2, dy = ty - this.vh / 2 + this.offsetY;
       this.x = lerp(this.x, dx, k);
       this.y = lerp(this.y, dy, k);
-      // Top, left and right stop exactly at the world edge. The bottom stops early
-      // by `bottomInset` world-px, so the camera never reveals/scrolls the world
-      // all the way to its bottom edge — tune bottomInset to set that stop point.
+      // Hard stop so the target can never outrun the smoothed camera and slide off
+      // the visible area (e.g. during a fast dash): keep it within `pad` of every
+      // screen edge. The lerp already holds it near centre in the interior, so this
+      // only bites on very fast moves and at the world edges.
+      const pad = Math.min(48, this.vw * 0.25, this.vh * 0.25);
+      this.x = clamp(this.x, tx - (this.vw - pad), tx - pad);
+      this.y = clamp(this.y, ty - (this.vh - pad), ty - pad);
+      // Then keep the camera inside the world. Top, left and right stop exactly at
+      // the world edge; the bottom stops early by `bottomInset` world-px, so the
+      // camera never reveals/scrolls the world all the way to its bottom edge.
       this.x = clamp(this.x, 0, Math.max(0, worldW - this.vw));
       this.y = clamp(this.y, 0, Math.max(0, worldH - this.vh - this.bottomInset));
     }

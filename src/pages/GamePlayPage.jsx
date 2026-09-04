@@ -19,14 +19,22 @@ const GAMES_WITH_OWN_BACK = new Set(['matter-state-sandbox', 'food-chain-surviva
 
 export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgressUpdate }) {
   const reducedMotion = useReducedMotion();
-  // visualViewport.height is the true on-screen area; window.innerHeight on iOS
-  // Safari landscape excludes the URL bar and overstates the usable height.
-  // In fullscreen/borderless the viewport can extend behind the OS taskbar, so we
-  // also cap to screen.availHeight (the work area, taskbar excluded) to keep the
-  // game above the taskbar across resolutions and taskbar positions.
+  // window.innerHeight can include pixels hidden behind the always-on-top OS
+  // taskbar: a window sized or dragged past the work area keeps its full
+  // content height — the taskbar just covers the bottom strip. Comparing
+  // heights (screen.availHeight) can't catch that, because the window's
+  // POSITION matters; instead measure how far the window's bottom edge
+  // overhangs the work-area bottom and cut exactly that. visualViewport only
+  // ever shrinks the base (iOS URL bar / pinch-zoom); real fullscreen hides
+  // the taskbar, so nothing is cut there.
   const getViewportHeight = () => {
-    const vv = window.visualViewport?.height ?? window.innerHeight;
-    return Math.min(vv, window.screen?.availHeight ?? Infinity);
+    const inner = window.innerHeight;
+    const base = Math.min(inner, window.visualViewport?.height ?? inner);
+    if (document.fullscreenElement) return base;
+    const scr = window.screen;
+    const workBottom = (scr?.availTop ?? 0) + (scr?.availHeight ?? Infinity);
+    const overhang = Math.max(0, window.screenY + window.outerHeight - workBottom);
+    return Math.max(200, base - overhang);
   };
   const [vh, setVh] = useState(getViewportHeight);
 
@@ -37,7 +45,12 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgre
     window.addEventListener('fullscreenchange', update);
     window.visualViewport?.addEventListener('resize', update);
     window.visualViewport?.addEventListener('scroll', update);
+    // Dragging the window (possibly under the taskbar) fires no resize event —
+    // only polling can see the position change. setVh with an unchanged value
+    // is a no-op re-render-wise, so the idle cost is four property reads.
+    const poll = setInterval(update, 1000);
     return () => {
+      clearInterval(poll);
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
       window.removeEventListener('fullscreenchange', update);

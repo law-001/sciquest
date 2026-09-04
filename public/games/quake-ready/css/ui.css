@@ -1,0 +1,515 @@
+/* ===========================================================================
+   Quake Ready — UI styles
+   Shared SciQuest level-select look (warm cream, white cards, orange/teal/gold)
+   reused from Food Chain Survival, plus panels for the quake simulator,
+   survival task list and rescue command post.
+   =========================================================================== */
+:root{
+  --cream:#FBF6EA; --cream-2:#F6EFDD;
+  --grid:rgba(193,160,96,.13);
+  --ink:#2B2622; --ink-soft:#534b42; --muted:#8d8478; --line:#ece3cf;
+  --card:#ffffff; --card-shadow:0 20px 46px rgba(74,60,32,.13), 0 3px 10px rgba(74,60,32,.06);
+
+  --orange:#EE6A1F; --orange-2:#F5894A; --orange-soft:#FCEADD;
+  --teal:#13A597;   --teal-2:#37BCAE;   --teal-soft:#DCF0EC;
+  --gold:#E2A41C;   --gold-2:#F0BE48;   --gold-soft:#FBEFCF;
+
+  --cleared-bg:#D9ECE4; --cleared-tx:#2C8C78;
+  --lock-bg:#efe7d6; --lock-tx:#a59a85;
+  --r:18px;
+
+  /* Menu-button personalities — soft fill + a readable deep ink per intent, so
+     each pause-menu action carries its own colour as well as its own icon. */
+  --warn-soft:var(--gold-soft);  --warn-ink:#8a6410;
+  --nav-soft:var(--teal-soft);   --nav-ink:#0e6f65;
+  --danger-soft:#FBE0D6;         --danger-ink:#bd3a1f;
+  --mute-soft:#edf1f0;           --mute-ink:var(--ink-soft);
+
+  /* Level-select tokens — ported from matter-state-sandbox (src/index.css) so
+     this standalone static page renders the shared SciQuest level-select look. */
+  --sq-surface:#ffffff; --sq-cream-2:#efe6c8;
+  --sq-ink-1:#2b2417; --sq-ink-2:#4a4231; --sq-ink-3:#7a6f56; --sq-ink-4:#ad9f7e;
+  --sq-orange-deep:#d76d2e; --sq-orange-soft:#fbd4b6;
+  --sq-teal-deep:#1d8580;   --sq-teal-soft:#b8e5e2;
+  --sq-yellow-deep:#d9a824;
+  --sq-radius-lg:22px;
+  --sq-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 8px 24px -8px rgba(43,36,23,.18);
+  --sq-border:1.5px solid rgba(43,36,23,.1);
+  --sq-font-display:'Baloo 2',cursive;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  background:var(--cream); color:var(--ink);
+  overflow:hidden;
+}
+/* --app-w/--app-h are set from the OS work area (taskbar excluded) by fitViewport()
+   in main.js; the 100dvh/100vw fallbacks cover first paint and the standalone case.
+   min() caps them at the real viewport so a JS over-measure (mobile browser UI,
+   iframe visualViewport quirks) can never push the console below the fold. */
+#app{width:min(var(--app-w,100vw),100vw);height:min(var(--app-h,100dvh),100dvh);display:flex;flex-direction:column;}
+
+/* ---------------- header ---------------- */
+#topbar{
+  position:relative;flex:0 0 auto;
+  background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:16px;
+  padding:14px 22px;z-index:30;
+}
+/* In-game the pause menu handles back/sound, so the header is hidden to give the
+   play area the whole viewport. It stays on the level-select (menu) screen. */
+body.in-game #topbar{display:none;}
+#topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--orange),var(--gold) 55%,var(--teal));}
+.head-titles{flex:1;text-align:center;}
+#headTitle{font-family:'Baloo 2',cursive;font-weight:800;font-size:26px;letter-spacing:-.01em;color:var(--ink);line-height:1;}
+#headSub{font-size:13.5px;color:var(--muted);font-weight:600;margin-top:5px;}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;vertical-align:middle;margin:0 3px;}
+.dot-o{background:var(--orange);} .dot-t{background:var(--teal);}
+
+.icon-btn{
+  width:42px;height:42px;flex:0 0 auto;border:1px solid var(--line);background:#fff;
+  border-radius:50%;color:var(--ink-soft);display:grid;place-items:center;cursor:pointer;
+  transition:background .15s,transform .15s,box-shadow .15s;
+}
+.icon-btn:hover{background:var(--cream-2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(74,60,32,.10);}
+.icon-btn:active{transform:translateY(0);}
+.icon-btn.small{width:34px;height:34px;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.85);}
+body.muted #wave1,body.muted #wave2{display:none;}
+body.muted #soundIcon::after{content:"";}
+
+/* ---------------- screens ---------------- */
+.screen{flex:1;position:relative;overflow:hidden;display:none;}
+.screen.show{display:flex;}
+
+#menu{flex-direction:column;align-items:center;justify-content:center;}
+.grid-bg{position:absolute;inset:0;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:42px 42px;background-position:center;
+  -webkit-mask-image:radial-gradient(ellipse 90% 90% at 50% 45%,#000 55%,transparent 100%);
+          mask-image:radial-gradient(ellipse 90% 90% at 50% 45%,#000 55%,transparent 100%);
+}
+/* ---------------- level select (matter-state-sandbox layout) ---------------- */
+.sq-level-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:30px;width:100%;max-width:1100px;margin:0 auto;}
+@media(max-width:900px){.sq-level-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.sq-level-grid{grid-template-columns:1fr;max-width:380px;}}
+
+.sq-level-card{
+  position:relative;background:var(--sq-surface);border:var(--sq-border);
+  border-radius:var(--sq-radius-lg);box-shadow:var(--sq-shadow);
+  padding:24px;display:flex;flex-direction:column;gap:12px;min-height:250px;
+  cursor:pointer;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease;
+}
+.sq-level-card:not(.sq-level-card--locked):hover{
+  transform:translateY(-6px) scale(1.02);
+  box-shadow:0 26px 54px rgba(74,60,32,.17),0 4px 12px rgba(74,60,32,.07);
+}
+.sq-level-card--locked{opacity:.72;cursor:not-allowed;}
+.sq-level-card__accent{position:absolute;top:0;left:0;right:0;height:4px;}
+.sq-level-badge{position:absolute;top:18px;right:18px;}
+.sq-level-card__num{font-family:var(--sq-font-display);font-weight:800;font-size:58px;line-height:1;}
+.sq-level-card__num small{
+  display:block;margin-bottom:4px;font-family:'Nunito',sans-serif;
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--sq-ink-3);
+}
+.sq-level-card__name{font-family:var(--sq-font-display);font-size:20px;font-weight:700;}
+.sq-level-card__goal{color:var(--sq-ink-3);font-size:14px;line-height:1.5;flex:1;}
+.sq-level-card__foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;}
+.sq-level-card__count{font-size:13px;font-weight:700;color:var(--sq-ink-3);text-align:right;}
+.sq-level-lock{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--sq-ink-4);}
+.sq-level-play{
+  appearance:none;align-self:flex-start;color:#fff;border:1.5px solid;border-radius:999px;
+  padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:4px;transition:opacity .15s,transform .15s;
+}
+.sq-level-play:hover{opacity:.9;transform:translateY(-1px);}
+.sq-level-play:active{transform:translateY(0);}
+.sq-level-play svg{width:13px;height:13px;}
+
+/* — pills — */
+.sq-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--sq-cream-2);color:var(--sq-ink-2);border:1px solid rgba(43,36,23,.08);}
+.sq-pill--orange{background:var(--sq-orange-soft);color:var(--sq-orange-deep);border-color:rgba(215,109,46,.2);}
+.sq-pill--teal{background:var(--sq-teal-soft);color:var(--sq-teal-deep);border-color:rgba(29,133,128,.2);}
+
+/* — level-select stars — */
+.sq-stars{display:inline-flex;gap:3px;color:var(--sq-yellow-deep);}
+.sq-stars svg{width:15px;height:15px;}
+.sq-stars .off{color:rgba(43,36,23,.18);}
+
+/* — stars used by the result modal — */
+.star{width:16px;height:16px;color:var(--gold);}
+.star.off{color:#e3dccb;}
+
+.btn{
+  appearance:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:15px;color:#fff;background:var(--accent);
+  padding:13px 22px;border-radius:999px;display:inline-flex;align-items:center;gap:9px;
+  align-self:flex-start;transition:filter .15s,transform .15s,box-shadow .15s;
+  box-shadow:0 8px 18px color-mix(in srgb,var(--accent) 38%,transparent);
+}
+.btn:hover{filter:brightness(1.05);transform:translateY(-2px);box-shadow:0 12px 24px color-mix(in srgb,var(--accent) 44%,transparent);}
+.btn:active{transform:translateY(0);}
+.btn svg{width:17px;height:17px;}
+
+.menu-foot{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;color:var(--muted);}
+
+/* ---------------- game stage ---------------- */
+#game{background:#171b24;}
+.stage{position:absolute;inset:0;display:grid;place-items:center;background:#171b24;}
+#canvas{
+  image-rendering:auto;width:100%;height:100%;object-fit:contain;display:block;
+  background:#bfe3f2;touch-action:none;
+}
+
+/* ---------------- HUD ---------------- */
+#hud{position:absolute;inset:0;pointer-events:none;font-family:'Nunito',sans-serif;}
+.hud-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px;gap:12px;}
+.hud-pill{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.92);
+  border-radius:999px;padding:8px 16px 8px 8px;box-shadow:0 6px 18px rgba(0,0,0,.18);font-weight:800;font-size:14.5px;color:var(--ink);}
+.hud-role{font-size:11.5px;font-weight:900;letter-spacing:.08em;color:#fff;background:var(--accent,#EE6A1F);padding:5px 11px;border-radius:999px;}
+.hud-right{display:flex;align-items:center;gap:10px;}
+.hud-stat,.hud-count{background:rgba(255,255,255,.92);border-radius:999px;padding:8px 15px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,.18);display:flex;align-items:center;gap:6px;font-size:15px;}
+.hud-stat .hud-ico{font-size:14px;display:inline-flex;}
+.hud-ico svg{width:15px;height:15px;display:block;}
+.hud-stat.warn{background:#fff0e6;color:var(--orange);animation:pulse .7s infinite;}
+.hud-count{color:var(--accent,#EE6A1F);}
+.hud-count-sep{color:#cdc4b4;}#hudCountMax{color:var(--muted);}
+.hud-top .icon-btn{pointer-events:auto;box-shadow:0 6px 18px rgba(0,0,0,.18);}
+
+.hud-bars{position:absolute;left:18px;bottom:18px;width:230px;display:flex;flex-direction:column;gap:7px;}
+.bar-row{display:flex;align-items:center;gap:9px;}
+.bar-label{font-size:11px;font-weight:900;letter-spacing:.06em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);width:54px;text-transform:uppercase;}
+.bar{flex:1;height:13px;background:rgba(0,0,0,.32);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.3);}
+.bar.thin{height:9px;}
+.bar-fill{height:100%;border-radius:999px;transition:width .18s ease;}
+.bar-fill.energy{background:linear-gradient(90deg,#7fc93f,#aee05a);}
+.bar-fill.thirst{background:linear-gradient(90deg,#2f86cf,#69c0ef);}
+.bar-fill.stamina{background:linear-gradient(90deg,#36b4d6,#74d6ec);}
+.bar-fill.low{background:linear-gradient(90deg,#e85a3a,#f1955a)!important;}
+.hud-stat.phase{transition:background .8s ease,color .8s ease;}
+.hud-stat.phase.evening{background:#fbe7cf;color:#9a5a1f;}
+.hud-stat.phase.night{background:rgba(40,48,98,.94);color:#e2e7ff;}
+.hud-stat.phase.night .hud-ico{filter:drop-shadow(0 0 4px rgba(150,170,255,.6));}
+
+.hud-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:46px;color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.45);
+  opacity:0;transition:opacity .25s,transform .25s;text-align:center;white-space:nowrap;}
+.hud-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+.hud-hint{position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
+  background:rgba(20,26,12,.78);color:#fff;font-weight:700;font-size:14px;padding:9px 18px;border-radius:999px;
+  opacity:0;transition:opacity .3s;max-width:80%;text-align:center;}
+.hud-hint.show{opacity:1;}
+
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+
+/* ---------------- touch controls ---------------- */
+#touch-controls{position:absolute;inset:0;pointer-events:none;}
+#touch-controls.hidden{display:none;}
+.joystick{position:absolute;left:24px;bottom:84px;width:128px;height:128px;border-radius:50%;
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.5);box-shadow:0 4px 14px rgba(0,0,0,.22);
+  display:grid;place-items:center;pointer-events:auto;touch-action:none;user-select:none;}
+.joy-knob{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.9);
+  box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none;will-change:transform;}
+.action-btn{position:absolute;right:24px;bottom:84px;width:92px;height:92px;border-radius:50%;border:none;
+  background:rgba(238,106,31,.92);color:#fff;font-weight:900;font-size:16px;letter-spacing:.04em;
+  box-shadow:0 6px 18px rgba(0,0,0,.28);pointer-events:auto;touch-action:none;}
+.action-btn:active{transform:scale(.95);}
+.action-btn.secondary{right:126px;bottom:96px;width:66px;height:66px;font-size:12px;}
+
+/* ---------------- modal ---------------- */
+.modal-wrap{position:fixed;inset:0;background:rgba(28,22,14,.5);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
+.modal-wrap.show{display:flex;animation:fade .25s;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.modal-card{background:#fff;border-radius:22px;max-width:520px;width:100%;overflow:hidden;
+  max-height:calc(var(--app-h,100dvh) - 40px);display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,.4);transform:translateY(10px);animation:rise .3s forwards;}
+@keyframes rise{to{transform:translateY(0);}}
+.modal-accent{height:8px;flex:0 0 auto;background:var(--accent-bar,linear-gradient(90deg,var(--orange),var(--orange-2)));}
+.modal-body{padding:30px 32px 28px;overflow-y:auto;}
+.modal-kicker{font-size:12px;font-weight:900;letter-spacing:.14em;color:var(--accent,var(--orange));}
+#modalTitle{font-family:'Baloo 2',cursive;font-weight:800;font-size:30px;color:var(--ink);margin:6px 0 14px;line-height:1.05;}
+#modalContent{font-size:15.5px;line-height:1.6;color:var(--ink-soft);}
+#modalContent p{margin-bottom:12px;text-wrap:pretty;}
+.fact{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft,#FCEADD);border-radius:14px;padding:13px 15px;margin:14px 0 4px;}
+.fact .fico{flex:0 0 auto;display:flex;color:var(--accent,var(--orange));margin-top:1px;}
+.fact .fico svg{width:22px;height:22px;}
+.fact b{color:var(--accent,var(--orange));}
+.controls-row{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0 2px;}
+.ctrl{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--ink-soft);}
+.keycap{display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:8px;
+  background:#f3ecdc;border:1px solid #e3d8c0;border-bottom-width:3px;font-weight:900;font-size:13px;color:var(--ink);}
+.modal-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;}
+.modal-actions .btn{align-self:auto;}
+.btn.ghost{background:#f1ebdc;color:var(--ink-soft);box-shadow:none;}
+.btn.ghost:hover{background:#e9e1cf;box-shadow:none;}
+
+/* Toned ghost buttons — colour-code an action by intent. The icon inherits the
+   button's `color`, so each button's glyph and text share one accent hue. */
+.btn.ghost.tone-mute{background:var(--mute-soft);color:var(--mute-ink);}
+.btn.ghost.tone-mute:hover{background:#e4e9e8;}
+.btn.ghost.tone-warn{background:var(--warn-soft);color:var(--warn-ink);}
+.btn.ghost.tone-warn:hover{background:#f4e2b6;}
+.btn.ghost.tone-nav{background:var(--nav-soft);color:var(--nav-ink);}
+.btn.ghost.tone-nav:hover{background:#cbe9e4;}
+.btn.ghost.tone-danger{background:var(--danger-soft);color:var(--danger-ink);}
+.btn.ghost.tone-danger:hover{background:#f8d1c3;}
+
+/* result stars */
+.result-stars{display:flex;gap:8px;justify-content:center;margin:6px 0 16px;}
+.result-stars .star{width:42px;height:42px;}
+.result-stars .star.pop{animation:starpop .4s backwards;}
+@keyframes starpop{from{transform:scale(0) rotate(-40deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+.stat-line{display:flex;justify-content:space-between;font-size:14.5px;padding:7px 0;border-bottom:1px dashed var(--line);font-weight:700;color:var(--ink-soft);}
+.stat-line b{color:var(--ink);}
+
+.hidden{display:none!important;}
+
+/* ===========================================================================
+   Quake Ready additions
+   =========================================================================== */
+.bar-fill.health{background:linear-gradient(90deg,#7fc93f,#aee05a);}
+.bar-fill.fuel{background:linear-gradient(90deg,#E2A41C,#F0BE48);}
+.hud-pill.danger{background:#8c2f1b;color:#fff;}
+.hud-pill.danger .hud-role{background:#E05A4E;}
+
+/* ---------------- side task / discovery checklist ---------------- */
+.side-tasks{
+  position:absolute;top:74px;left:18px;width:250px;pointer-events:none;
+  background:rgba(255,255,255,.93);border-radius:16px;padding:14px 16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.side-tasks h3{font-family:'Baloo 2',cursive;font-size:15px;font-weight:800;color:var(--ink);margin-bottom:8px;}
+.side-tasks ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.side-tasks li{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink-soft);line-height:1.3;}
+.side-tasks li .tick{
+  flex:0 0 auto;width:17px;height:17px;border-radius:50%;margin-top:0;
+  border:2px solid #d8cfba;display:grid;place-items:center;color:#fff;font-size:11px;
+}
+.side-tasks li.done{color:var(--teal);}
+.side-tasks li.done .tick{background:var(--teal);border-color:var(--teal);}
+.side-tasks li.done .tick::after{content:"✓";font-weight:900;}
+.side-tasks li.fail{color:#c9532f;text-decoration:line-through;}
+.side-tasks li.fail .tick{border-color:#c9532f;}
+
+/* ---------------- Level 1 dashboard: sidebar ---------------- */
+.sim-sidebar{
+  display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto;
+  pointer-events:auto;padding-right:2px;
+}
+.sim-mission{
+  background:linear-gradient(135deg,var(--orange-2),var(--orange) 75%);
+  border-radius:16px;padding:14px 16px 15px;color:#fff;
+  box-shadow:0 8px 22px rgba(238,106,31,.35);
+}
+.sim-mission__eyebrow{font-size:9.5px;font-weight:900;letter-spacing:.12em;color:rgba(255,255,255,.8);}
+.sim-mission__title{font-family:'Baloo 2',cursive;font-weight:800;font-size:21px;line-height:1.05;margin:3px 0 5px;}
+.sim-mission__goal{font-size:12.5px;font-weight:600;line-height:1.4;color:rgba(255,255,255,.92);}
+.sim-progress{display:flex;align-items:center;gap:9px;margin-top:11px;}
+.sim-progress__track{flex:1;height:7px;background:rgba(255,255,255,.3);border-radius:999px;overflow:hidden;}
+.sim-progress__fill{display:block;height:100%;width:0;background:#fff;border-radius:999px;transition:width .35s ease;}
+.sim-progress__txt{font-size:11.5px;font-weight:900;color:#fff;white-space:nowrap;}
+
+.sim-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;}
+.sim-card__title{font-family:'Baloo 2',cursive;font-size:13.5px;font-weight:800;color:var(--ink);
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px;}
+
+.sim-checklist{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.sim-checklist li{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;font-weight:700;color:var(--ink-soft);line-height:1.3;}
+.sim-checklist li .tick{flex:0 0 auto;width:18px;height:18px;border-radius:50%;
+  border:2px solid #d8cfba;display:grid;place-items:center;color:#fff;font-size:11px;transition:background .2s,border-color .2s;}
+.sim-checklist li.done{color:var(--teal);}
+.sim-checklist li.done .tick{background:var(--teal);border-color:var(--teal);}
+.sim-checklist li.done .tick::after{content:"✓";font-weight:900;}
+
+.sim-readout{display:flex;flex-direction:column;}
+.sim-readout__row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:7px 0;font-size:12.5px;}
+.sim-readout__row+.sim-readout__row{border-top:1px dashed rgba(43,36,23,.1);}
+.sim-readout__row dt{color:var(--muted);font-weight:700;}
+.sim-readout__row dd{font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--ink);text-align:right;}
+.sim-readout__row dd.hot{color:var(--orange);}
+
+.sim-tip{font-size:12px;font-weight:700;line-height:1.45;color:var(--ink-soft);
+  background:var(--orange-soft);border-radius:12px;padding:10px 13px;border:1px solid rgba(238,106,31,.18);}
+
+/* ---------------- Level 1 dashboard: bottom console ---------------- */
+.sim-console{
+  pointer-events:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 18px;
+  box-shadow:0 8px 24px rgba(74,60,32,.12);
+}
+.console-group{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.console-label{font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);}
+.console-epi{min-width:150px;}
+.console-epi__val{font-family:'Baloo 2',cursive;font-weight:800;font-size:16px;color:var(--ink);line-height:1;}
+.console-epi__hint{font-size:10.5px;font-weight:700;color:var(--orange);}
+.console-mag{flex:1 1 220px;min-width:200px;}
+.console-mag__row{display:flex;align-items:center;gap:12px;}
+#magSlider{flex:1;accent-color:var(--orange);height:26px;cursor:pointer;min-width:120px;}
+.console-mag__val{font-family:'Baloo 2',cursive;font-weight:800;font-size:20px;color:var(--orange);width:60px;text-align:right;}
+.seg{display:inline-flex;background:#f3ecdc;border-radius:999px;padding:3px;gap:2px;}
+.seg-btn{
+  appearance:none;border:none;background:transparent;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--ink-soft);
+  padding:8px 13px;border-radius:999px;min-height:34px;transition:background .15s,color .15s;
+}
+.seg-btn.on{background:var(--orange);color:#fff;}
+.console-actions{flex-direction:row;gap:8px;align-self:flex-end;}
+.btn.sim-start{padding:11px 22px;font-size:14px;--accent:var(--orange);background:var(--orange);}
+.btn.sim-start:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn.sim-reset{padding:11px 16px;font-size:14px;}
+.console-status{gap:6px;margin-left:auto;}
+.status-light{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;
+  color:var(--ink-soft);background:var(--cream-2);padding:6px 12px;border-radius:999px;white-space:nowrap;}
+.status-light i{width:9px;height:9px;border-radius:50%;background:#c9bfa8;flex:0 0 auto;transition:background .2s;}
+.status-light.live i{background:var(--orange);box-shadow:0 0 8px rgba(238,106,31,.7);}
+.status-light.warn{background:#8c2f1b;color:#fff;}
+.status-light.warn i{background:#ff6b4a;box-shadow:0 0 8px rgba(255,107,74,.9);animation:pulse .7s infinite;}
+
+/* ---------------- Level 3 command post ---------------- */
+.ops-panel{
+  position:absolute;top:74px;right:18px;width:240px;pointer-events:auto;
+  background:rgba(255,255,255,.95);border-radius:16px;padding:14px 16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px;
+}
+.ops-panel h3{font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:var(--ink);}
+.ops-res{display:flex;flex-direction:column;gap:6px;}
+.ops-res-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);}
+.ops-res-row .bar{flex:1;}
+.ops-res-label{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.ops-incident{background:var(--cream-2);border-radius:12px;padding:10px 12px;min-height:64px;}
+.ops-incident h4{font-family:'Baloo 2',cursive;font-size:14.5px;color:var(--ink);margin-bottom:3px;}
+.ops-incident p{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.4;}
+.ops-incident .ops-empty{color:var(--muted);}
+.ops-incident .ops-need{color:var(--orange);}
+.ops-actions{display:flex;flex-direction:column;gap:6px;}
+.ops-btn{
+  appearance:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:13px;color:#fff;background:var(--teal);
+  padding:10px 14px;border-radius:12px;min-height:40px;text-align:left;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  transition:filter .15s,transform .15s;
+}
+.ops-btn:hover{filter:brightness(1.07);transform:translateY(-1px);}
+.ops-btn:disabled{background:#d8cfba;color:#8d8478;cursor:not-allowed;transform:none;}
+.ops-btn .cost{font-size:11px;font-weight:900;opacity:.85;}
+
+@media (prefers-reduced-motion: reduce){
+  .hud-stat.warn,.readout.warn{animation:none;}
+}
+
+/* ===========================================================================
+   Fault Lab dashboard layout (Level 1 only, toggled by #game.mode-shell)
+   Simulation-first: a fixed left sidebar (objectives + live instruments), a
+   simulation viewport that fills all remaining space, and a full-width control
+   console docked below. Nothing overlaps the simulation. #hud becomes
+   `display:contents` so its members flow into the stage grid.
+   =========================================================================== */
+#game.mode-shell .stage{
+  display:grid;
+  grid-template-columns:300px minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr) auto;
+  grid-template-areas:"rail canvas" "dock dock";
+  gap:14px;padding:14px;place-items:stretch;
+  background-color:#efe6cf;
+}
+#game.mode-shell #hud{display:contents;}
+#game.mode-shell .hud-bars,
+#game.mode-shell #taskPanel{display:none!important;}
+
+/* simulation viewport — the canvas fills the whole cell; its backing buffer is
+   sized to the cell in JS so the sim scales to fill the available space. */
+#game.mode-shell #canvas{
+  grid-area:canvas;place-self:stretch;
+  width:100%;height:100%;min-width:0;min-height:0;
+  border-radius:18px;border:1.5px solid rgba(43,36,23,.16);
+  box-shadow:var(--sq-shadow);background:#0e1726;
+}
+
+/* pause floats in the sim's top-right corner; objective + count move to the
+   sidebar, so hide them here. */
+#game.mode-shell .hud-top{
+  grid-area:canvas;place-self:start end;position:static;padding:12px;pointer-events:none;
+}
+#game.mode-shell #hudObjective,
+#game.mode-shell #hudCountWrap{display:none!important;}
+#game.mode-shell #pauseBtn{pointer-events:auto;}
+
+#game.mode-shell #simSidebar{grid-area:rail;}
+#game.mode-shell #simPanel{grid-area:dock;}
+
+/* transient overlays live inside the simulation cell, never over the panels */
+#game.mode-shell .hud-banner{
+  position:static;grid-area:canvas;place-self:center;
+  top:auto;left:auto;transform:scale(.85);pointer-events:none;
+}
+#game.mode-shell .hud-banner.show{transform:scale(1);}
+#game.mode-shell .hud-hint{
+  position:static;grid-area:canvas;place-self:end center;
+  top:auto;left:auto;transform:none;margin-bottom:16px;pointer-events:none;max-width:70%;
+}
+
+/* --- Fault Lab responsive ---
+   The cross-section is landscape-native, so the sim keeps rail | canvas side by
+   side wherever it can. Only two things change on small screens: a PORTRAIT phone
+   stacks the three regions, and any short/narrow viewport tightens the rail +
+   console so the simulation itself never gets squeezed out. Ordered so the most
+   specific viewport wins the shared .stage rule (later = higher priority). */
+
+/* Narrow desktops / small landscape tablets — slimmer rail, more canvas. */
+@media (max-width:1040px){
+  #game.mode-shell .stage{grid-template-columns:260px minmax(0,1fr);}
+}
+
+/* Portrait phones & small tablets — one scrollable column: simulation first at
+   its native 960:600 shape (the whole cross-section stays visible, faults and
+   epicenter included), the control console right under it, then the mission
+   rail. Nothing is squeezed to fit; the stage scrolls instead, and the canvas
+   (touch-action:none) never steals the scroll gesture. */
+@media (orientation:portrait) and (max-width:820px){
+  #game.mode-shell .stage{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    grid-template-areas:"canvas" "dock" "rail";
+    gap:10px;padding:10px;
+    overflow-y:auto;
+  }
+  #game.mode-shell #canvas{height:auto;aspect-ratio:960/600;}
+  #game.mode-shell #simSidebar{max-height:none;overflow-y:visible;}
+}
+
+/* Landscape phones (short viewport) — keep rail | canvas so the canvas keeps its
+   height, shrink the rail, tighten every gap, and let the console scroll
+   sideways in one short row instead of wrapping tall. Safe-area insets keep the
+   panels clear of the notch when the page spans the full screen. */
+@media (orientation:landscape) and (max-height:560px){
+  #game.mode-shell .stage{
+    grid-template-columns:210px minmax(0,1fr);gap:8px;
+    padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  }
+  #game.mode-shell #simSidebar{gap:8px;}
+  #game.mode-shell .sim-mission{padding:10px 12px;}
+  #game.mode-shell .sim-mission__title{font-size:17px;}
+  #game.mode-shell .sim-card{padding:9px 11px;}
+  #game.mode-shell .sim-console{flex-wrap:nowrap;overflow-x:auto;}
+  #game.mode-shell .sim-console .console-group{flex:0 0 auto;}
+}
+
+/* Narrow/portrait console — full-width rows for the slider + status, no sideways
+   scroll. Landscape short phones keep the horizontal console to save height. */
+@media (orientation:portrait) and (max-width:640px){
+  #game.mode-shell .sim-console{gap:9px 12px;padding:10px 12px;}
+  .console-epi,.console-mag,.console-status{flex:1 1 100%;min-width:0;}
+  .console-status{margin-left:0;justify-content:flex-start;}
+  .console-actions{margin-left:auto;}
+  #magSlider{min-width:0;}
+}
+
+/* Touch — meet the 44px tap-target minimum for the segmented buttons + slider. */
+@media (pointer:coarse){
+  #game.mode-shell .seg-btn{min-height:42px;padding:9px 15px;}
+  #game.mode-shell #magSlider{height:34px;}
+}

@@ -85,6 +85,24 @@ function saveUnseenCount(uid, n) {
   try { localStorage.setItem(unseenCountKey(uid), String(n)); } catch { /* quota */ }
 }
 
+// Persist the active view + lesson/game ids to sessionStorage so a page
+// refresh keeps the user where they were instead of bouncing to the role
+// default. sessionStorage (not localStorage) so a brand-new tab still opens
+// at the role default. teacher-setup is never restored — it's invite-only.
+const NAV_VIEW_KEY   = 'sq-nav-view';
+const NAV_WEEK_KEY   = 'sq-nav-week';
+const NAV_LESSON_KEY = 'sq-nav-lesson';
+const NAV_GAME_KEY   = 'sq-nav-game';
+function readNav(key) {
+  try { return sessionStorage.getItem(key) || null; } catch { return null; }
+}
+function writeNav(key, value) {
+  try {
+    if (value) sessionStorage.setItem(key, value);
+    else sessionStorage.removeItem(key);
+  } catch { /* quota / disabled */ }
+}
+
 // QuizContainer auto-saves answers to `quiz-answers-<lessonId>` and clears the
 // key on submit, so a lesson with a non-empty entry has an in-progress quiz.
 // Iterates in reverse so the most-advanced in-progress quiz wins when multiple
@@ -132,14 +150,20 @@ function AppContent() {
   );
   // Ref so the onComplete handler can clear it without a re-render.
   const isInviteFlow = useRef(_isOnInvite);
-  const [currentView, setCurrentView] = useState(_isOnInvite ? 'teacher-setup' : 'home');
+  // Restore the last view on refresh; invite flow always wins.
+  const _savedView = readNav(NAV_VIEW_KEY);
+  const _restoredView = _savedView && _savedView !== 'teacher-setup' ? _savedView : null;
+  const [currentView, setCurrentView] = useState(
+    _isOnInvite ? 'teacher-setup' : (_restoredView ?? 'home'),
+  );
+  const didRestoreView = useRef(!_isOnInvite && !!_restoredView);
   const initialRedirectDone = useRef(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
-  const [activeWeekId, setActiveWeekId] = useState(null);
-  const [activeLessonId, setActiveLessonId] = useState(null);
+  const [activeWeekId, setActiveWeekId] = useState(() => readNav(NAV_WEEK_KEY));
+  const [activeLessonId, setActiveLessonId] = useState(() => readNav(NAV_LESSON_KEY));
   const [completedLessons, setCompletedLessons] = useState([]);
-  const [activeGameId, setActiveGameId] = useState(null);
+  const [activeGameId, setActiveGameId] = useState(() => readNav(NAV_GAME_KEY));
   const [completedGames, setCompletedGames] = useState([]);
   const [completedRows, setCompletedRows] = useState([]);
   const [quizAttempts, setQuizAttempts] = useState([]);
@@ -508,6 +532,8 @@ function AppContent() {
     if (loading || initialRedirectDone.current) return;
     initialRedirectDone.current = true;
     if (isInviteFlow.current) return;
+    // A refresh restored the prior view — leave the user where they were.
+    if (didRestoreView.current) return;
     if (!user) return;
     const role = profile?.role ?? 'student';
     const target =
@@ -521,9 +547,18 @@ function AppContent() {
     setCurrentView(target);
   }, [loading, user, profile?.role]);
 
+  // Mirror the nav state into sessionStorage so a refresh restores it.
+  useEffect(() => {
+    writeNav(NAV_VIEW_KEY, currentView === 'teacher-setup' ? null : currentView);
+    writeNav(NAV_WEEK_KEY, activeWeekId);
+    writeNav(NAV_LESSON_KEY, activeLessonId);
+    writeNav(NAV_GAME_KEY, activeGameId);
+  }, [currentView, activeWeekId, activeLessonId, activeGameId]);
+
   // Set to true when applying a view change triggered by the browser back/forward
   // button — suppresses the pushState below so we don't double-log the entry.
   const skipHistoryPushRef = useRef(false);
+
 
   const handleNavigate = useCallback((view, payload) => {
     if (view === 'game-play' && payload?.gameId) {

@@ -20,9 +20,9 @@
         pre: {
           title: 'You are the Rabbit',
           html: `<p>A rabbit is a <b>primary consumer</b> — a herbivore that must constantly forage to fuel its body and stay alert for predators.</p>
-                 <div class="fact"><span class="fico">🌿</span><div><b>Hunger & thirst</b> drain all day. Stand on glowing clover to <b>eat</b>, and on a pond's edge to <b>drink</b>. Let either empty and you won't last.</div></div>
-                 <div class="fact"><span class="fico">⚡</span><div><b>Stamina</b> fuels your sprint (Shift). It refills when you slow down — so pick your escapes wisely.</div></div>
-                 <div class="fact"><span class="fico">🌙</span><div><b>Survive the cycle.</b> The fox grows bolder and the meadow darker as <b>evening</b> and <b>night</b> fall. Hide in grass and bushes until <b>dawn</b>.</div></div>`,
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span><div><b>Hunger & thirst</b> drain all day. Stand on glowing clover to <b>eat</b>, and on a pond's edge to <b>drink</b>. Let either empty and you won't last.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg></span><div><b>Stamina</b> fuels your sprint (Shift). It refills when you slow down — so pick your escapes wisely.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><div><b>Survive the cycle.</b> The fox grows bolder and the meadow darker as <b>evening</b> and <b>night</b> fall. Hide in grass and bushes until <b>dawn</b>.</div></div>`,
           controls: true,
         },
         post: {
@@ -41,9 +41,9 @@
         pre: {
           title: 'You are the Fox',
           html: `<p>A fox is a <b>secondary consumer</b> and <b>predator</b> — but it competes with every other hunter in the wood, and a hunt costs more energy than it returns.</p>
-                 <div class="fact"><span class="fico">🍖</span><div>You start the hunt <b>only half fed</b>. Energy drains the whole time and pouncing burns it fast — only a <b>catch</b> refills it. Waste your pounces and you'll starve.</div></div>
-                 <div class="fact"><span class="fico">🌿</span><div><b>Sneak (hold Shift)</b> and use tall grass — it hides you from sight. But rabbits <b>hear</b> a fox that walks or pounces in the open, and they bolt the instant they do.</div></div>
-                 <div class="fact"><span class="fico">🦅</span><div><b>You're not alone.</b> A rival fox, a diving hawk and ambushing snakes hunt the same rabbits. Every one they take is one you don't get.</div></div>`,
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></span><div>You start the hunt <b>only half fed</b>. Energy drains the whole time and pouncing burns it fast — only a <b>catch</b> refills it. Waste your pounces and you'll starve.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span><div><b>Sneak (hold Shift)</b> and use tall grass — it hides you from sight. But rabbits <b>hear</b> a fox that walks or pounces in the open, and they bolt the instant they do.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/></svg></span><div><b>You're not alone.</b> A rival fox, a diving hawk and ambushing snakes hunt the same rabbits. Every one they take is one you don't get.</div></div>`,
           controls: true,
         },
         post: {
@@ -62,10 +62,10 @@
         pre: {
           title: 'You are the Earthworm',
           html: `<p>An earthworm is a <b>decomposer</b> and the soil's engineer. It eats dead matter and turns it into <b>castings</b> — nutrient-rich fertiliser that lets new plants grow.</p>
-                 <div class="fact"><span class="fico">🍂</span><div><b>Eat dead matter.</b> Crawl onto a log, leaf pile or remains and <b>hold the button</b> to break it down — your <b>Nutrient</b> meter fills as it decomposes.</div></div>
-                 <div class="fact"><span class="fico">🌱</span><div><b>Restore the soil.</b> Crawl onto a dull <b>dead patch</b> and hold the button to deposit castings. The soil greens, grass and flowers regrow — it uses up your nutrients.</div></div>
-                 <div class="fact"><span class="fico">🌳</span><div><b>Feed the great tree.</b> Crawl up to the dying tree at the centre and hold the button to pour castings into its roots. It blooms from bare to flowering as you feed it.</div></div>
-                 <div class="fact"><span class="fico">⬇️</span><div><b>Burrow</b> to travel faster and pass safely <i>under</i> trees and rocks. Surface again whenever you want to work.</div></div>`,
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span><div><b>Eat dead matter.</b> Crawl onto a log, leaf pile or remains and <b>hold the button</b> to break it down — your <b>Nutrient</b> meter fills as it decomposes.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg></span><div><b>Restore the soil.</b> Crawl onto a dull <b>dead patch</b> and hold the button to deposit castings. The soil greens, grass and flowers regrow — it uses up your nutrients.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19a4 4 0 0 1-2.24-7.32A3.5 3.5 0 0 1 9 6.03V6a3 3 0 1 1 6 0v.04a3.5 3.5 0 0 1 3.24 5.65A4 4 0 0 1 16 19Z"/><path d="M12 19v3"/></svg></span><div><b>Feed the great tree.</b> Crawl up to the dying tree at the centre and hold the button to pour castings into its roots. It blooms from bare to flowering as you feed it.</div></div>
+                 <div class="fact"><span class="fico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></svg></span><div><b>Burrow</b> to travel faster and pass safely <i>under</i> trees and rocks. Surface again whenever you want to work.</div></div>`,
           controls: 'worm',
         },
         post: {
