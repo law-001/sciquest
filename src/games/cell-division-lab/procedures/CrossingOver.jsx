@@ -188,7 +188,7 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
           y={TOP_Y + COLUMN_H + 30}
           textAnchor="middle"
           fill="var(--cdl-ink-3)"
-          fontSize={15}
+          fontSize={18}
           fontWeight={700}
           fontFamily="var(--cdl-font-mono)"
         >
@@ -311,7 +311,7 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
           y={TOP_Y - 34}
           textAnchor="middle"
           fill="var(--cdl-bad)"
-          fontSize={15}
+          fontSize={18}
           fontWeight={700}
           fontFamily="var(--cdl-font-mono)"
           pointerEvents="none"

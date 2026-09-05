@@ -92,7 +92,7 @@ export function Chromosome({
           y={offset * 2 + T + 20}
           textAnchor="middle"
           fill="var(--cdl-ink-3)"
-          fontSize={15}
+          fontSize={18}
           fontWeight={700}
           fontFamily="var(--cdl-font-mono)"
         >
@@ -121,7 +121,7 @@ export function Chromatid({ x, y, angle = 0, scale = 1, color, label, glow = fal
           y={T + 22}
           textAnchor="middle"
           fill="var(--cdl-ink-3)"
-          fontSize={14}
+          fontSize={17}
           fontWeight={700}
           fontFamily="var(--cdl-font-mono)"
         >
@@ -327,17 +327,17 @@ export function Nucleotide({ base, flip = false, muted = false, damaged = false 
       <circle
         cx={0}
         cy={phosY}
-        r={9}
+        r={11}
         fill="var(--cdl-surface)"
         stroke="var(--cdl-teal-deep)"
         strokeWidth={2.5}
       />
       <text
         x={0}
-        y={phosY + 4}
+        y={phosY + 5}
         textAnchor="middle"
         fill="var(--cdl-teal-deep)"
-        fontSize={11}
+        fontSize={14}
         fontWeight={800}
         fontFamily="var(--cdl-font-mono)"
         pointerEvents="none"

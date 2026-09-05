@@ -4,6 +4,8 @@ import { DEFECTS, FIDELITY_COST, defectForProcedure } from '../data/defects';
 import { PROCEDURE_SECONDS } from '../procedures';
 import { AmbientCell } from './AmbientCell';
 import { CheckpointGate } from './CheckpointGate';
+import { HowToPlay } from './HowToPlay';
+import { hasSeenHowToPlay } from './how-to-play-seen';
 import { LabNotebook } from './LabNotebook';
 import { PhaseTrack } from './PhaseTrack';
 import { ProcedureFrame } from './ProcedureFrame';
@@ -21,6 +23,7 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
     retriedSteps: [],
   }));
   const [paused, setPaused] = useState(false);
+  const [showGuide, setShowGuide] = useState(() => !hasSeenHowToPlay());
 
   const step = level.steps[run.stepIndex] ?? null;
   const phase = step ? PHASES[step.phaseId] : null;
@@ -147,10 +150,18 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
               <div className="cdl-fidelity__bar">
                 <div className="cdl-fidelity__fill" style={{ width: `${run.fidelity}%`, background: fidelityTone }} />
               </div>
-              <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 12, minWidth: 34 }}>
+              <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 13, minWidth: 36 }}>
                 {run.fidelity}%
               </span>
             </div>
+            <button
+              type="button"
+              className="cdl-icon-btn"
+              onClick={() => setShowGuide(true)}
+              aria-label="How to play"
+            >
+              ?
+            </button>
             <button
               type="button"
               className="cdl-icon-btn"
@@ -184,7 +195,7 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
                   procedure={step.procedure}
                   procedureProps={{ ...(step.props ?? {}), fault: activeFault }}
                   durationSec={PROCEDURE_SECONDS[step.procedure] ?? 45}
-                  paused={paused}
+                  paused={paused || showGuide}
                   onComplete={handleProcedureComplete}
                 />
               )}
@@ -199,7 +210,9 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
         </div>
       </div>
 
-      {paused && (
+      {showGuide && <HowToPlay onClose={() => setShowGuide(false)} />}
+
+      {paused && !showGuide && (
         <div
           role="dialog"
           aria-modal="true"

@@ -320,7 +320,7 @@ export default function ChromatidPull({ mode = 'chromatid', onComplete, onStarsU
                   y={PLATE_Y - 52}
                   textAnchor="middle"
                   fill="var(--cdl-orange-deep)"
-                  fontSize={13}
+                  fontSize={16}
                   fontWeight={800}
                   fontFamily="var(--cdl-font-mono)"
                 >
@@ -375,7 +375,7 @@ export default function ChromatidPull({ mode = 'chromatid', onComplete, onStarsU
                     y={PLATE_Y - gap - 88}
                     textAnchor="middle"
                     fill="var(--cdl-orange-deep)"
-                    fontSize={13}
+                    fontSize={16}
                     fontWeight={800}
                     fontFamily="var(--cdl-font-mono)"
                   >
