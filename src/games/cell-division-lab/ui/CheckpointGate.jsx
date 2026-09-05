@@ -20,7 +20,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResol
       <div className="cdl-gate__head">
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="cdl-eyebrow" style={{ color: phase.color }}>Checkpoint</div>
-          <h2 className="cdl-title" style={{ fontSize: 17, lineHeight: 1.2 }}>{phase.displayName}</h2>
+          <h2 className="cdl-title" style={{ fontSize: 18, lineHeight: 1.2 }}>{phase.displayName}</h2>
         </div>
         <span className={`cdl-pill${choice ? (isCorrect ? ' cdl-pill--good' : ' cdl-pill--bad') : ''}`}>
           {choice ? (isCorrect ? 'Correct call' : 'Wrong call') : 'Awaiting decision'}
@@ -29,7 +29,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResol
 
       <div className="cdl-gate__body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5, color: 'var(--cdl-ink-1)' }}>
+          <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5, color: 'var(--cdl-ink-1)' }}>
             {checkpoint.prompt}
           </p>
 
@@ -40,7 +40,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResol
                 {evidence.map((row) => (
                   <div
                     key={row.label}
-                    style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13 }}
+                    style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14.5 }}
                   >
                     <span style={{ color: 'var(--cdl-ink-3)' }}>{row.label}</span>
                     <span
@@ -92,11 +92,11 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResol
                 >
                   <span
                     className="cdl-mono"
-                    style={{ fontWeight: 800, fontSize: 13, color: 'var(--cdl-ink-1)', minWidth: 96 }}
+                    style={{ fontWeight: 800, fontSize: 14.5, color: 'var(--cdl-ink-1)', minWidth: 100 }}
                   >
                     {opt.label}
                   </span>
-                  <span style={{ fontSize: 13, color: 'var(--cdl-ink-2)', flex: 1 }}>{opt.detail}</span>
+                  <span style={{ fontSize: 14.5, color: 'var(--cdl-ink-2)', flex: 1 }}>{opt.detail}</span>
                   {choice && (isAnswer || isChosen) && (
                     <span aria-hidden="true" style={{ fontWeight: 800, color: isAnswer ? 'var(--cdl-good)' : 'var(--cdl-bad)' }}>
                       {isAnswer ? '✓' : '✗'}

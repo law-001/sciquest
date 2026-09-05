@@ -198,7 +198,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
         x={26}
         y={TEMPLATE_BACKBONE_Y + 5}
         fill="var(--cdl-ink-3)"
-        fontSize={15}
+        fontSize={18}
         fontWeight={700}
         fontFamily="var(--cdl-font-mono)"
         pointerEvents="none"
@@ -209,7 +209,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
         x={26}
         y={NEW_BACKBONE_Y + 5}
         fill="var(--cdl-ink-3)"
-        fontSize={15}
+        fontSize={18}
         fontWeight={700}
         fontFamily="var(--cdl-font-mono)"
         pointerEvents="none"
@@ -232,7 +232,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
           y={96}
           textAnchor="middle"
           fill="var(--cdl-orange-deep)"
-          fontSize={14}
+          fontSize={17}
           fontWeight={800}
           fontFamily="var(--cdl-font-mono)"
         >
@@ -327,7 +327,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
               y={4}
               textAnchor="middle"
               fill="var(--cdl-teal-deep)"
-              fontSize={14}
+              fontSize={17}
               fontWeight={800}
               fontFamily="var(--cdl-font-mono)"
             >

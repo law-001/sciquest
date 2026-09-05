@@ -6,7 +6,7 @@ export function LabNotebook({ phase, defects, stepLabel }) {
       <div className="cdl-card">
         <div className="cdl-card__accent" style={{ background: phase.color }} />
         <div className="cdl-eyebrow">{stepLabel}</div>
-        <h3 className="cdl-title" style={{ fontSize: 16, margin: '4px 0 10px' }}>
+        <h3 className="cdl-title" style={{ fontSize: 19, margin: '4px 0 10px' }}>
           {phase.displayName}
         </h3>
         <p className="cdl-teach">{phase.teachingText}</p>

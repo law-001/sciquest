@@ -152,51 +152,6 @@ export function membranePaths(shape, cx = CELL.cx, cy = CELL.cy, samples = 128) 
   return [`${d}Z`];
 }
 
-// Phospholipid heads studding the membrane. `offset` pushes the row out from
-// the path, so a second row at a negative offset gives the inner leaflet of
-// the bilayer.
-export function membraneDots(shape, cx = CELL.cx, cy = CELL.cy, count = 72, offset = 3) {
-  const dots = [];
-  const bodies = shape.mode === 'split'
-    ? [{ cy: cy - shape.daughterOffsetY, r: shape.daughterR }, { cy: cy + shape.daughterOffsetY, r: shape.daughterR }]
-    : null;
-
-  if (bodies) {
-    for (const b of bodies) {
-      for (let i = 0; i < count / 2; i++) {
-        const a = (i / (count / 2)) * Math.PI * 2;
-        dots.push({ x: cx + Math.cos(a) * (b.r + offset), y: b.cy + Math.sin(a) * (b.r + offset) });
-      }
-    }
-    return dots;
-  }
-
-  for (let i = 0; i < count; i++) {
-    const a = (i / count) * Math.PI * 2;
-    const p = cellPointAt(a, shape, cx, cy);
-    dots.push({ x: p.x + Math.cos(a) * offset, y: p.y + Math.sin(a) * offset });
-  }
-  return dots;
-}
-
-// Mitochondria and vesicles drifting in the cytoplasm. Deterministic so they
-// do not jump every render.
-export function organelles(shape, cx = CELL.cx, cy = CELL.cy, count = 9) {
-  const r = outerRadius(shape);
-  return Array.from({ length: count }, (_, i) => {
-    const a = (i / count) * Math.PI * 2 + i * 0.37;
-    const rr = r * (0.5 + 0.28 * ((i * 7) % 5) / 5);
-    return {
-      x: cx + Math.cos(a) * rr,
-      y: cy + Math.sin(a) * rr * 0.92,
-      rot: (a * 180) / Math.PI + 20,
-      rx: r * 0.062,
-      ry: r * 0.032,
-      delay: i * 0.7,
-    };
-  });
-}
-
 // ── Pointer conversion ───────────────────────────────────────────────────
 
 // getScreenCTM honours preserveAspectRatio, so this stays correct whatever

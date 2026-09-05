@@ -39,9 +39,6 @@
   --cdl-cyto-2: rgba(43, 175, 169, 0.1);
   --cdl-cyto-3: rgba(29, 133, 128, 0.15);
   --cdl-membrane: #1d8580;
-  --cdl-membrane-dot: rgba(29, 133, 128, 0.45);
-  --cdl-organelle: rgba(190, 150, 70, 0.22);
-  --cdl-organelle-line: rgba(160, 120, 40, 0.35);
   --cdl-nuc-1: #eaf2fd;
   --cdl-nuc-2: #b9d3f2;
   --cdl-nuc-line: #4a7cc4;
@@ -54,11 +51,8 @@
   --cdl-mito: #e6c98a;
   --cdl-mito-line: rgba(140, 100, 30, 0.6);
   --cdl-vesicle: rgba(43, 175, 169, 0.3);
-  --cdl-speck: rgba(43, 36, 23, 0.13);
   --cdl-lyso: rgba(190, 110, 60, 0.34);
   --cdl-lyso-line: rgba(150, 80, 35, 0.55);
-  --cdl-cortex: rgba(29, 133, 128, 0.3);
-  --cdl-speckle: rgba(74, 124, 196, 0.3);
 
 
   --cdl-radius-sm: 10px;
@@ -108,9 +102,6 @@
   --cdl-cyto-2: rgba(59, 175, 169, 0.13);
   --cdl-cyto-3: rgba(15, 60, 70, 0.42);
   --cdl-membrane: #2bafa9;
-  --cdl-membrane-dot: rgba(120, 220, 210, 0.5);
-  --cdl-organelle: rgba(180, 150, 90, 0.26);
-  --cdl-organelle-line: rgba(255, 210, 140, 0.3);
   --cdl-nuc-1: #29405e;
   --cdl-nuc-2: #1b2c42;
   --cdl-nuc-line: #a8c8f0;
@@ -123,11 +114,8 @@
   --cdl-mito: #b8934f;
   --cdl-mito-line: rgba(40, 28, 10, 0.55);
   --cdl-vesicle: rgba(120, 220, 210, 0.26);
-  --cdl-speck: rgba(245, 239, 227, 0.12);
   --cdl-lyso: rgba(210, 130, 70, 0.3);
   --cdl-lyso-line: rgba(255, 180, 120, 0.45);
-  --cdl-cortex: rgba(120, 220, 210, 0.24);
-  --cdl-speckle: rgba(168, 200, 240, 0.28);
 
 
   --cdl-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
@@ -174,7 +162,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 360px;
 }
 
 .cdl-stage-wrap {
@@ -207,14 +195,14 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 44px;
+  min-height: 46px;
   padding: 0 18px;
   border-radius: 999px;
   border: 1.5px solid var(--cdl-line-strong);
   background: var(--cdl-surface);
   color: var(--cdl-ink-1);
   font-family: var(--cdl-font-body);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s, background 0.2s, border-color 0.2s;
@@ -238,7 +226,7 @@
 }
 .cdl-btn--teal:hover { background: var(--cdl-teal-deep); }
 
-.cdl-btn--sm { min-height: 36px; padding: 0 14px; font-size: 13px; }
+.cdl-btn--sm { min-height: 38px; padding: 0 14px; font-size: 14px; }
 
 .cdl-icon-btn {
   display: inline-flex;
@@ -253,19 +241,22 @@
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
 }
+.cdl-icon-btn--sm { width: 38px; height: 38px; font-size: 18px; font-weight: 700; }
+
 .cdl-icon-btn:hover { background: var(--cdl-bg-2); }
 .cdl-icon-btn:active { transform: scale(0.94); }
 .cdl-icon-btn:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 2px; }
+.cdl-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .cdl-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 11px;
+  padding: 5px 12px;
   border-radius: 999px;
   border: 1.5px solid var(--cdl-line-strong);
   background: var(--cdl-surface-2);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--cdl-ink-2);
   white-space: nowrap;
@@ -276,7 +267,7 @@
 .cdl-pill--bad { background: var(--cdl-bad-soft); border-color: var(--cdl-bad); color: var(--cdl-bad); }
 
 .cdl-eyebrow {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -347,7 +338,7 @@
   border-radius: 999px;
   border: 1.5px solid transparent;
   background: transparent;
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--cdl-ink-4);
   white-space: nowrap;
@@ -405,7 +396,7 @@
 }
 
 .cdl-teach {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.55;
   color: var(--cdl-ink-2);
   margin: 0;
@@ -424,7 +415,7 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
   color: var(--cdl-ink-2);
 }
@@ -442,7 +433,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--cdl-bad);
   padding: 7px 9px;
@@ -450,9 +441,24 @@
   background: var(--cdl-bad-soft);
 }
 
+/* The notebook is read from further back than the rest of the chrome — it is
+   the instructions, not a label — so it runs a size up throughout. */
+.cdl-notebook .cdl-eyebrow { font-size: 11.5px; }
+.cdl-notebook .cdl-card { padding: 16px; }
+.cdl-notebook .cdl-teach { font-size: 15px; line-height: 1.6; }
+.cdl-notebook .cdl-objective { font-size: 15px; line-height: 1.45; }
+.cdl-notebook .cdl-objective__bullet { width: 7px; height: 7px; margin-top: 8px; }
+.cdl-notebook .cdl-defect { font-size: 13.5px; line-height: 1.45; }
+
 /* ── Procedure stage ───────────────────────────────────────────────────── */
 
-.cdl-proc { position: absolute; inset: 0; }
+/* touch-action none across the stage so a two-finger pinch reaches the zoom
+   handler instead of the browser's own page zoom. */
+.cdl-proc {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
 
 .cdl-proc__stage { position: absolute; inset: 0; }
 
@@ -470,9 +476,10 @@
   outline-offset: 3px;
 }
 
-/* Chrome floats over the cell so the cell is never covered by a panel. */
+/* The readouts float in the corners the cell does not reach. */
 .cdl-overlay {
   position: absolute;
+  top: 0;
   left: 0;
   right: 0;
   display: flex;
@@ -483,17 +490,62 @@
   pointer-events: none;
 }
 
-.cdl-overlay--top { top: 0; }
+.cdl-overlay button { pointer-events: auto; }
 
-.cdl-overlay--bottom {
-  bottom: 0;
+/* The instruction starts under the readouts and is dragged from there, so it
+   never has to sit on top of the part of the cell it is talking about. The
+   layer is the drag area; only the dock inside it takes pointer events. */
+.cdl-hint-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 74px 14px 14px;
+  pointer-events: none;
+}
+
+.cdl-hint-dock {
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px 16px;
+  max-width: min(720px, 100%);
+  pointer-events: auto;
 }
 
-.cdl-overlay button { pointer-events: auto; }
+/* Magnifier for the stage. Bottom-left, where no procedure puts anything and
+   the instruction never starts. */
+.cdl-zoom {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cdl-surface) 88%, transparent);
+  border: 1.5px solid var(--cdl-line);
+  box-shadow: var(--cdl-shadow);
+  backdrop-filter: blur(6px);
+}
+
+.cdl-zoom__level {
+  min-width: 44px;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: var(--cdl-ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  border-radius: 999px;
+}
+.cdl-zoom__level:hover { background: var(--cdl-bg-2); }
+.cdl-zoom__level:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 2px; }
 
 .cdl-tag {
   border-radius: var(--cdl-radius-sm);
@@ -550,7 +602,7 @@
 
 .cdl-timer__num {
   font-family: var(--cdl-font-mono);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -572,7 +624,7 @@
 
 .cdl-hint {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-align: center;
@@ -588,25 +640,49 @@
 /* The running instruction. It sits over the cell, so it has to hold its own
    against whatever is behind it — hence the size, the weight and the solid
    backing rather than a wash. */
-.cdl-overlay--bottom .cdl-hint {
+.cdl-hint--float {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 18px;
   line-height: 1.35;
   font-weight: 700;
   letter-spacing: 0.005em;
   text-wrap: balance;
-  max-width: 720px;
-  padding: 12px 22px;
+  padding: 12px 20px;
   border-radius: 18px;
   color: var(--cdl-ink-1);
   background: color-mix(in srgb, var(--cdl-surface) 94%, transparent);
   border: 2px solid var(--cdl-line-strong);
   box-shadow: var(--cdl-shadow);
   backdrop-filter: blur(8px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
-.cdl-overlay--bottom .cdl-hint--good { color: var(--cdl-good); border-color: var(--cdl-good); }
-.cdl-overlay--bottom .cdl-hint--bad { color: var(--cdl-bad); border-color: var(--cdl-bad); }
-.cdl-overlay--bottom .cdl-hint--busy { color: var(--cdl-orange-deep); border-color: var(--cdl-orange); }
+.cdl-hint--float:active { cursor: grabbing; }
+.cdl-hint--float:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 3px; }
+
+/* Before a procedure reports in there is nothing to say — keep the live region
+   in the tree, drop the capsule around it. */
+.cdl-hint--float:empty {
+  min-height: 0;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+}
+
+.cdl-hint__grip {
+  font-size: 15px;
+  letter-spacing: -0.08em;
+  color: var(--cdl-ink-4);
+}
+
+.cdl-hint--float.cdl-hint--good { color: var(--cdl-good); border-color: var(--cdl-good); }
+.cdl-hint--float.cdl-hint--bad { color: var(--cdl-bad); border-color: var(--cdl-bad); }
+.cdl-hint--float.cdl-hint--busy { color: var(--cdl-orange-deep); border-color: var(--cdl-orange); }
 
 /* ── Cell animations ───────────────────────────────────────────────────── */
 
@@ -763,6 +839,73 @@
 .cdl-app--still .cdl-cue-right,
 .cdl-app--still .cdl-plate { animation: none; }
 
+/* ── How to play ───────────────────────────────────────────────────────── */
+
+.cdl-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(20, 16, 10, 0.5);
+  backdrop-filter: blur(3px);
+  overflow-y: auto;
+}
+
+.cdl-howto {
+  width: min(560px, 100%);
+  margin: auto;
+  padding: 22px;
+}
+
+.cdl-howto__title {
+  font-size: 26px;
+  line-height: 1.15;
+  margin: 4px 0 16px;
+}
+
+.cdl-howto__list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cdl-howto__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cdl-howto__num {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--cdl-teal-soft);
+  border: 1.5px solid var(--cdl-teal);
+  color: var(--cdl-teal-deep);
+  font-family: var(--cdl-font-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cdl-howto__heading {
+  display: block;
+  font-size: 15px;
+  color: var(--cdl-ink-1);
+  margin-bottom: 2px;
+}
+
+.cdl-howto__body { font-size: 14px; }
+
+.cdl-howto__go { width: 100%; }
+
 /* ── Full-page screens (level select, results) ─────────────────────────── */
 
 .cdl-select {
@@ -792,6 +935,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  display: flex;
   padding: 24px 18px 40px;
 }
 
@@ -799,8 +943,11 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+  width: 100%;
   max-width: 1040px;
-  margin: 0 auto;
+  /* auto on all four sides so the grid sits in the middle of the page but
+     still scrolls from the top once it outgrows the viewport. */
+  margin: auto;
 }
 
 .cdl-level-card {
@@ -882,8 +1029,9 @@
   .cdl-hud { min-height: 54px; padding: 0 8px; gap: 8px; }
   .cdl-stage-wrap { padding: 8px; }
   .cdl-overlay { padding: 8px; }
-  .cdl-overlay--bottom { padding: 8px 10px 10px; }
-  .cdl-overlay--bottom .cdl-hint { font-size: 15px; padding: 9px 14px; border-radius: 14px; }
+  .cdl-hint-layer { padding: 64px 10px 10px; }
+  .cdl-zoom { left: 8px; bottom: 8px; }
+  .cdl-hint--float { font-size: 15px; padding: 9px 14px; border-radius: 14px; }
   .cdl-tag { padding: 6px 9px; }
   .cdl-tag--row { gap: 10px; }
   .cdl-gate { inset: 8px; width: auto; }

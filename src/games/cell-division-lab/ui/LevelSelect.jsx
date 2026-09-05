@@ -47,12 +47,12 @@ export function LevelSelect({ progressByLevel, onSelect, onExit }) {
                   </span>
                 </div>
 
-                <h2 className="cdl-title" style={{ fontSize: 18, margin: '2px 0 6px' }}>{level.name}</h2>
+                <h2 className="cdl-title" style={{ fontSize: 20, margin: '2px 0 6px' }}>{level.name}</h2>
                 <p className="cdl-teach" style={{ flex: 1 }}>{level.goal}</p>
 
                 <div className="cdl-level-card__foot">
                   <Stars count={stars} />
-                  <span style={{ fontSize: 12, color: 'var(--cdl-ink-3)' }}>
+                  <span style={{ fontSize: 13, color: 'var(--cdl-ink-3)' }}>
                     {level.steps.length} steps · {level.outcome}
                   </span>
                 </div>
@@ -67,7 +67,7 @@ export function LevelSelect({ progressByLevel, onSelect, onExit }) {
                     {prog?.completed ? 'Play again' : 'Start'}
                   </button>
                 ) : (
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--cdl-ink-3)', textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--cdl-ink-3)', textAlign: 'center' }}>
                     Clear level {level.number - 1} to unlock
                   </p>
                 )}

@@ -223,7 +223,7 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate, onStatus 
                 y={spot.y + 96}
                 textAnchor="middle"
                 fill="var(--cdl-ink-3)"
-                fontSize={14}
+                fontSize={17}
                 fontWeight={700}
                 fontFamily="var(--cdl-font-mono)"
                 pointerEvents="none"

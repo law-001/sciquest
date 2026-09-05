@@ -1,25 +1,14 @@
 import { useMemo } from 'react';
 import {
   NUCLEUS, STAGE_H, STAGE_W,
-  circleShape, membraneDots, membranePaths, outerRadius,
+  circleShape, membranePaths, outerRadius,
 } from '../render/cellGeometry';
 import { ChromatinFiber, Mitochondrion } from '../render/parts';
+import { useStageZoom } from './stage-zoom';
 
 // Everything in here is scenery: it gives the chromosomes somewhere to live,
-// and it never takes a pointer event. Positions are deterministic so the
-// furniture does not rearrange itself on every render.
-
-// Golden angle — an even scatter with no clumping and no randomness.
-const RIBOSOMES = Array.from({ length: 54 }, (_, i) => ({
-  a: i * 2.39996,
-  rf: 0.24 + 0.72 * Math.sqrt((i + 0.5) / 54),
-}));
-
-const SPECKS = Array.from({ length: 120 }, (_, i) => ({
-  a: i * 2.39996 + 1.1,
-  rf: 0.1 + 0.88 * Math.sqrt((i + 0.5) / 120),
-  s: 1.2 + (i % 3) * 0.6,
-}));
+// and it never takes a pointer event. One of each organelle, placed by hand —
+// a scatter of dozens of look-alike dots reads as noise, not as a cell.
 
 function StageDefs() {
   return (
@@ -32,11 +21,6 @@ function StageDefs() {
       <radialGradient id="cdl-nucleoplasm" cx="40%" cy="34%" r="75%">
         <stop offset="0%" stopColor="var(--cdl-nuc-1)" />
         <stop offset="100%" stopColor="var(--cdl-nuc-2)" />
-      </radialGradient>
-      <radialGradient id="cdl-halo" cx="50%" cy="50%" r="50%">
-        <stop offset="52%" stopColor="var(--cdl-membrane)" stopOpacity="0" />
-        <stop offset="82%" stopColor="var(--cdl-membrane)" stopOpacity="0.16" />
-        <stop offset="100%" stopColor="var(--cdl-membrane)" stopOpacity="0" />
       </radialGradient>
     </defs>
   );
@@ -135,100 +119,74 @@ function Peroxisome({ x, y, r = 9 }) {
   );
 }
 
-function CellInterior({ shape, cx, cy }) {
-  const r = outerRadius(shape);
-  const polar = (deg, rf) => ({
-    x: cx + Math.cos((deg * Math.PI) / 180) * r * rf,
-    y: cy + Math.sin((deg * Math.PI) / 180) * r * rf,
-  });
-
-  // Scenery keeps to the periphery, and it is all drawn before the
-  // chromosomes, which sit on top of it.
-  const mitochondria = [32, 148, 212, 328].map((d, i) => ({ ...polar(d, 0.87), rot: d + 90, i }));
-  const lysosomes = [58, 122, 238, 302].map((d, i) => ({ ...polar(d, 0.88), i }));
-  const peroxisomes = [12, 168, 192, 348].map((d, i) => ({ ...polar(d, 0.93), i }));
-  const vesicles = [22, 45, 70, 110, 135, 158, 202, 225, 250, 290, 315, 338]
-    .map((d, i) => ({ ...polar(d, 0.96), i }));
-
+// A transport vesicle: cargo moving between the organelles.
+function Vesicle({ x, y, r = 9 }) {
   return (
-    <g pointerEvents="none">
-      {/* Fine cytosolic texture, thin enough to sit under everything */}
-      {SPECKS.map(({ a, rf, s: size }, i) => (
+    <g transform={`translate(${x} ${y})`}>
+      <g className="cdl-drift">
         <circle
-          key={`sp${i}`}
-          cx={(cx + Math.cos(a) * r * rf).toFixed(1)}
-          cy={(cy + Math.sin(a) * r * rf * 0.95).toFixed(1)}
-          r={size}
-          fill="var(--cdl-speck)"
+          r={r}
+          fill="var(--cdl-vesicle)"
+          stroke="var(--cdl-membrane)"
+          strokeWidth={1.6}
+          strokeOpacity={0.45}
         />
-      ))}
-
-      {RIBOSOMES.map(({ a, rf }, i) => (
-        <circle
-          key={`rb${i}`}
-          cx={(cx + Math.cos(a) * r * rf).toFixed(1)}
-          cy={(cy + Math.sin(a) * r * rf * 0.96).toFixed(1)}
-          r={2.4}
-          fill="var(--cdl-ribosome)"
-        />
-      ))}
-
-      <Reticulum x={cx - r * 0.87} y={cy - r * 0.28} />
-      <Reticulum x={cx - r * 0.8} y={cy + r * 0.42} />
-      <Golgi x={cx + r * 0.84} y={cy - r * 0.2} />
-      <SmoothER x={cx + r * 0.78} y={cy + r * 0.46} />
-
-      {mitochondria.map((m) => (
-        <Mitochondrion key={`mt${m.i}`} x={m.x} y={m.y} rot={m.rot} scale={0.92} variant={m.i % 2 ? 'b' : 'c'} />
-      ))}
-      {lysosomes.map((l) => <Lysosome key={`ly${l.i}`} x={l.x} y={l.y} r={l.i % 2 ? 13 : 16} />)}
-      {peroxisomes.map((pk) => <Peroxisome key={`px${pk.i}`} x={pk.x} y={pk.y} r={pk.i % 2 ? 8 : 10} />)}
-
-      {vesicles.map((v) => (
-        <g key={`vs${v.i}`} transform={`translate(${v.x.toFixed(1)} ${v.y.toFixed(1)})`}>
-          <g className={`cdl-drift${v.i % 3 === 0 ? ' cdl-drift--c' : ''}`}>
-            <circle r={v.i % 4 === 0 ? 9 : 6.5} fill="var(--cdl-vesicle)" />
-            <circle
-              r={v.i % 4 === 0 ? 9 : 6.5}
-              fill="none"
-              stroke="var(--cdl-membrane)"
-              strokeWidth={1.4}
-              strokeOpacity={0.4}
-            />
-          </g>
-        </g>
-      ))}
+      </g>
     </g>
   );
 }
 
-// Inside the nucleus: speckles, nucleoli, and the sliver of cytoplasm still
-// visible past the envelope in the corners.
+const CYTOPLASM_PARTS = {
+  roughEr: Reticulum,
+  golgi: Golgi,
+  smoothEr: SmoothER,
+  lysosome: Lysosome,
+  peroxisome: Peroxisome,
+  mitochondrion: Mitochondrion,
+  vesicle: Vesicle,
+};
+
+// Placed in the four quadrants as fractions of the cell radius: clear of the
+// poles (top and bottom, where the spindle forms), clear of the middle band
+// (where the chromosomes line up), and clear of the waist the cell pinches at.
+const CYTOPLASM = [
+  { id: 'rer', kind: 'roughEr', fx: -0.52, fy: -0.5 },
+  { id: 'golgi', kind: 'golgi', fx: 0.54, fy: -0.48 },
+  { id: 'ser', kind: 'smoothEr', fx: 0.5, fy: 0.52 },
+  { id: 'lyso', kind: 'lysosome', fx: -0.56, fy: 0.5, props: { r: 16 } },
+  { id: 'mito-a', kind: 'mitochondrion', fx: -0.22, fy: -0.72, props: { rot: 16 } },
+  { id: 'mito-b', kind: 'mitochondrion', fx: 0.26, fy: 0.72, props: { rot: -14, variant: 'b' } },
+  { id: 'perox', kind: 'peroxisome', fx: 0.7, fy: -0.24, props: { r: 10 } },
+  { id: 'ves-a', kind: 'vesicle', fx: -0.72, fy: -0.2 },
+  { id: 'ves-b', kind: 'vesicle', fx: 0.3, fy: -0.66, props: { r: 7 } },
+  { id: 'ves-c', kind: 'vesicle', fx: -0.3, fy: 0.68, props: { r: 7 } },
+];
+
+function CellInterior({ shape, cx, cy }) {
+  const r = outerRadius(shape);
+
+  return (
+    <g pointerEvents="none">
+      {CYTOPLASM.map(({ id, kind, fx, fy, props }) => {
+        const Part = CYTOPLASM_PARTS[kind];
+        return <Part key={id} x={cx + fx * r} y={cy + fy * r} {...props} />;
+      })}
+    </g>
+  );
+}
+
+// Inside the nucleus: the chromosome territories that are not being worked on,
+// and the nucleoli where ribosomes are built. Nothing is drawn past the
+// envelope — at this magnification it reads as the edge of everything, so an
+// organelle out there looks like it escaped the cell.
 function NucleusInterior() {
-  const speckles = Array.from({ length: 130 }, (_, i) => {
-    const a = i * 2.39996;
-    const rf = Math.sqrt((i + 0.5) / 130) * 0.97;
-    return {
-      x: NUCLEUS.cx + Math.cos(a) * NUCLEUS.r * rf,
-      y: NUCLEUS.cy + Math.sin(a) * NUCLEUS.r * rf,
-      r: 1.6 + (i % 4) * 0.7,
-    };
-  }).filter((p) => p.y > -6 && p.y < STAGE_H + 6);
-
-  // Chromosome territories — the loose chromatin that is not being worked on.
-  // Kept clear of the middle band, which is where the DNA and the chromosomes
-  // are handled.
+  // Kept to the top and bottom strips: the middle band is where the DNA, the
+  // chromosomes and the crossing-over columns are handled.
   const territories = [
-    { x: 130, y: 96, seed: 1 }, { x: 352, y: 74, seed: 3 },
-    { x: 648, y: 68, seed: 5 }, { x: 878, y: 104, seed: 2 },
-    { x: 124, y: 520, seed: 4 }, { x: 886, y: 536, seed: 6 },
-  ];
-
-  const corners = [
-    { x: 34, y: 30, rot: 30 },
-    { x: 966, y: 34, rot: -28 },
-    { x: 38, y: 592, rot: -34 },
-    { x: 962, y: 588, rot: 26 },
+    { x: 350, y: 92, seed: 1 },
+    { x: 660, y: 88, seed: 3 },
+    { x: 330, y: 552, seed: 4 },
+    { x: 676, y: 556, seed: 6 },
   ];
 
   return (
@@ -246,20 +204,12 @@ function NucleusInterior() {
         />
       ))}
 
-      {/* Nucleoli, where ribosomes are built */}
-      <ellipse cx={168} cy={158} rx={66} ry={52} fill="var(--cdl-nucleolus)" />
-      <ellipse cx={168} cy={158} rx={40} ry={30} fill="var(--cdl-nucleolus)" />
-      <ellipse cx={846} cy={470} rx={52} ry={42} fill="var(--cdl-nucleolus)" />
-      <ellipse cx={846} cy={470} rx={30} ry={24} fill="var(--cdl-nucleolus)" />
-      <ellipse cx={742} cy={122} rx={34} ry={27} fill="var(--cdl-nucleolus)" />
-
-      {speckles.map((p, i) => (
-        <circle key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={p.r} fill="var(--cdl-speckle)" />
-      ))}
-
-      {corners.map((c) => (
-        <Mitochondrion key={`${c.x}-${c.y}`} x={c.x} y={c.y} rot={c.rot} scale={0.6} />
-      ))}
+      {/* Nucleoli, where ribosomes are built. Kept out of the middle band,
+          which is where the DNA and the chromosomes are handled. */}
+      <ellipse cx={170} cy={156} rx={62} ry={50} fill="var(--cdl-nucleolus)" />
+      <ellipse cx={170} cy={156} rx={38} ry={29} fill="var(--cdl-nucleolus)" />
+      <ellipse cx={844} cy={470} rx={50} ry={40} fill="var(--cdl-nucleolus)" />
+      <ellipse cx={844} cy={470} rx={29} ry={23} fill="var(--cdl-nucleolus)" />
     </g>
   );
 }
@@ -283,13 +233,17 @@ export function CellStage({
 }) {
   const cellShape = shape ?? circleShape();
   const paths = useMemo(() => membranePaths(cellShape), [cellShape]);
-  const dots = useMemo(() => membraneDots(cellShape, 500, 312, 84, 4), [cellShape]);
-  const innerDots = useMemo(() => membraneDots(cellShape, 500, 312, 84, -13), [cellShape]);
+
+  // Zooming out grows the window on the stage, so the cell keeps its shape
+  // instead of being cut off by the edge of the frame.
+  const zoom = useStageZoom();
+  const width = STAGE_W / zoom;
+  const height = STAGE_H / zoom;
 
   return (
     <svg
       className="cdl-svg cdl-enter"
-      viewBox={`0 0 ${STAGE_W} ${STAGE_H}`}
+      viewBox={`${(STAGE_W - width) / 2} ${(STAGE_H - height) / 2} ${width} ${height}`}
       preserveAspectRatio="xMidYMid meet"
       aria-label={label}
     >
@@ -300,7 +254,8 @@ export function CellStage({
 
       {view === 'nucleus' ? (
         <g pointerEvents="none">
-          <rect x={0} y={0} width={STAGE_W} height={STAGE_H} fill="url(#cdl-cytoplasm)" />
+          {/* Nothing is painted behind the envelope: outside the nucleus is the
+              bare stage grid, so the teal only ever reads as "inside". */}
           <circle cx={NUCLEUS.cx} cy={NUCLEUS.cy} r={NUCLEUS.r} fill="url(#cdl-nucleoplasm)" />
           <NucleusInterior />
           <circle
@@ -311,18 +266,9 @@ export function CellStage({
             stroke="var(--cdl-nuc-line)"
             strokeWidth={8}
           />
-          <circle
-            cx={NUCLEUS.cx}
-            cy={NUCLEUS.cy}
-            r={NUCLEUS.r - 15}
-            fill="none"
-            stroke="var(--cdl-nuc-line)"
-            strokeWidth={3}
-            strokeOpacity={0.45}
-          />
           {/* Nuclear pores. Only the arc crossing the frame is worth drawing. */}
-          {Array.from({ length: 44 }, (_, i) => {
-            const a = (i / 44) * Math.PI * 2;
+          {Array.from({ length: 26 }, (_, i) => {
+            const a = (i / 26) * Math.PI * 2;
             const cy = NUCLEUS.cy + Math.sin(a) * NUCLEUS.r;
             if (cy < -12 || cy > STAGE_H + 12) return null;
             return (
@@ -341,8 +287,6 @@ export function CellStage({
       ) : (
         <g className={straining ? 'cdl-strain' : undefined} pointerEvents="none">
           <g className="cdl-cell">
-            <circle cx={500} cy={312} r={outerRadius(cellShape) * 1.32} fill="url(#cdl-halo)" />
-
             {paths.map((d) => (
               <path key={d.slice(0, 26)} d={d} fill="url(#cdl-cytoplasm)" />
             ))}
@@ -354,48 +298,16 @@ export function CellStage({
               {nucleus}
             </g>
 
-            {/* The cortical actin mesh lining the inside of the membrane */}
-            {paths.map((d) => (
-              <path
-                key={`cortex-${d.slice(0, 26)}`}
-                d={d}
-                fill="none"
-                stroke="var(--cdl-cortex)"
-                strokeWidth={2}
-                strokeDasharray="10 7"
-                transform="translate(500 312) scale(0.925) translate(-500 -312)"
-              />
-            ))}
-
-            {/* A phospholipid bilayer: two leaflets, each with its own row of
-                heads, rather than a single outline. */}
-            {paths.map((d) => (
-              <path
-                key={`inner-${d.slice(0, 26)}`}
-                d={d}
-                fill="none"
-                stroke="var(--cdl-membrane)"
-                strokeWidth={4}
-                strokeOpacity={0.6}
-                strokeLinejoin="round"
-                transform="translate(500 312) scale(0.968) translate(-500 -312)"
-              />
-            ))}
+            {/* One membrane, drawn as a single wall. */}
             {paths.map((d) => (
               <path
                 key={`edge-${d.slice(0, 26)}`}
                 d={d}
                 fill="none"
                 stroke="var(--cdl-membrane)"
-                strokeWidth={5}
+                strokeWidth={6}
                 strokeLinejoin="round"
               />
-            ))}
-            {innerDots.map((p) => (
-              <circle key={`in-${p.x}-${p.y}`} cx={p.x} cy={p.y} r={2.2} fill="var(--cdl-membrane-dot)" />
-            ))}
-            {dots.map((p) => (
-              <circle key={`out-${p.x}-${p.y}`} cx={p.x} cy={p.y} r={2.6} fill="var(--cdl-membrane-dot)" />
             ))}
           </g>
         </g>

@@ -278,7 +278,7 @@ export default function CleavageFurrow({ onComplete, onStarsUpdate, onStatus }) 
               y={CELL.cy + 50}
               textAnchor="middle"
               fill="var(--cdl-ink-3)"
-              fontSize={14}
+              fontSize={17}
               fontWeight={700}
               fontFamily="var(--cdl-font-mono)"
               pointerEvents="none"
@@ -295,7 +295,7 @@ export default function CleavageFurrow({ onComplete, onStarsUpdate, onStatus }) 
           y={CELL.cy - 68}
           textAnchor="middle"
           fill={strain > 0.45 ? 'var(--cdl-bad)' : 'var(--cdl-ink-3)'}
-          fontSize={14}
+          fontSize={17}
           fontWeight={800}
           fontFamily="var(--cdl-font-mono)"
           pointerEvents="none"

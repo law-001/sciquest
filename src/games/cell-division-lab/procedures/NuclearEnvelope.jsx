@@ -253,11 +253,13 @@ export default function NuclearEnvelope({ count = 2, onComplete, onStarsUpdate, 
         />
       )}
 
+      {/* Reaches well past the stage so the loop can still be drawn when the
+          view has been zoomed out. */}
       <rect
-        x={0}
-        y={0}
-        width={STAGE_W}
-        height={STAGE_H}
+        x={-STAGE_W}
+        y={-STAGE_H}
+        width={STAGE_W * 3}
+        height={STAGE_H * 3}
         fill="transparent"
         style={{ cursor: done ? 'default' : 'crosshair', touchAction: 'none' }}
         role="button"

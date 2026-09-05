@@ -21,7 +21,7 @@ function DaughterCell({ index, healthy, size = 84 }) {
           <circle cx="63" cy="24" r="6" fill="rgba(209,84,79,0.3)" stroke={tint} strokeWidth="1.5" />
         )}
       </svg>
-      <figcaption style={{ fontSize: 11, fontWeight: 700, color: healthy ? 'var(--cdl-good)' : 'var(--cdl-bad)' }}>
+      <figcaption style={{ fontSize: 12.5, fontWeight: 700, color: healthy ? 'var(--cdl-good)' : 'var(--cdl-bad)' }}>
         Cell {index + 1} · {healthy ? 'healthy' : 'defective'}
       </figcaption>
     </figure>
@@ -66,12 +66,12 @@ export function ResultsScreen({ level, stars, fidelity, defects, xpEarned, onRep
                     style={{ width: `${fidelity}%`, background: TONE_COLOR[outcome.tone] }}
                   />
                 </div>
-                <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 13 }}>{fidelity}%</span>
+                <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 14 }}>{fidelity}%</span>
               </div>
               {xpEarned > 0 && <span className="cdl-pill cdl-pill--orange">+{xpEarned} XP</span>}
             </div>
 
-            <p className="cdl-teach" style={{ fontSize: 14 }}>{outcome.detail}</p>
+            <p className="cdl-teach" style={{ fontSize: 15 }}>{outcome.detail}</p>
           </div>
 
           <div className="cdl-card">
