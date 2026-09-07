@@ -21,12 +21,21 @@ import { LessonTemplate } from '../components/LessonTemplate'
 import EditableSlotFrame from '../components/EditableSlotFrame'
 import SlotPickerModal from '../components/SlotPickerModal'
 import ImagePicker from '../components/ImagePicker'
+import MaterialPicker from '../components/MaterialPicker'
 import { FORM_MAP, SLOT_META, DEFAULT_SLOT_DATA } from '../components/lesson-slot-forms'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function isStaticLessonId(id) {
   return WEEKS_DATA.some((w) => w.lessons.some((l) => l.id === id))
+}
+
+// Interactive blocks record completion against this id, so it has to survive
+// reordering and editing. Mirrors genId() in QuizEditorPage.
+function newSlotId() {
+  return typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `slot-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
 function blankDraft(weekId) {
@@ -65,7 +74,7 @@ function lessonToEditorDraft(lesson) {
     references: Array.isArray(lesson.references) ? JSON.parse(JSON.stringify(lesson.references)) : [],
     layout: Array.isArray(lesson.layout) ? JSON.parse(JSON.stringify(lesson.layout)) : [],
     is_custom: !isStaticLessonId(lesson.id),
-    is_hidden: false,
+    is_hidden: !!lesson.isHidden,
   }
 }
 
@@ -85,7 +94,9 @@ function draftToDbRow(draft, userId) {
     references: draft.references,
     layout: draft.layout,
     is_custom: !isStaticLessonId(draft.id),
-    is_hidden: false,
+    // Preserve the teacher's hide toggle — saving an edit must not silently
+    // republish a lesson that was deliberately hidden.
+    is_hidden: !!draft.is_hidden,
     created_by: userId || null,
   }
 }
@@ -110,7 +121,7 @@ function draftToPreviewLesson(draft) {
 
 // ── SlotEditModal ─────────────────────────────────────────────────────────────
 
-function SlotEditModal({ slot, onSubmit, onCancel }) {
+function SlotEditModal({ slot, lessonId, onSubmit, onCancel }) {
   const FormComponent = FORM_MAP[slot.type]
   if (!FormComponent) return null
   return (
@@ -136,6 +147,7 @@ function SlotEditModal({ slot, onSubmit, onCancel }) {
           <FormComponent
             initialHeading={slot.heading}
             initialData={slot.data}
+            lessonId={lessonId}
             onSubmit={onSubmit}
             onCancel={onCancel}
           />
@@ -293,7 +305,12 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
 
   function handleTypeChosen(type) {
     setPickingType(false)
-    const newSlot = { type, heading: '', data: JSON.parse(JSON.stringify(DEFAULT_SLOT_DATA[type] ?? {})) }
+    const newSlot = {
+      id: newSlotId(),
+      type,
+      heading: '',
+      data: JSON.parse(JSON.stringify(DEFAULT_SLOT_DATA[type] ?? {})),
+    }
     const newLayout = [...draft.layout]
     newLayout.splice(insertAt, 0, newSlot)
     updateLayout(newLayout)
@@ -479,6 +496,19 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
           )}
         </section>
 
+        {/* ── Materials ── */}
+        <section className="bg-white dark:bg-stone-800 rounded-2xl border border-orange-100 dark:border-stone-700 p-6 mb-10 shadow-sm">
+          <h2 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-4">
+            Materials
+          </h2>
+          <p className="text-xs text-stone-400 mb-4">
+            Videos and files attached here appear at the bottom of the lesson for
+            students. You can also place a &ldquo;Materials&rdquo; section below to
+            surface specific ones mid-lesson.
+          </p>
+          <MaterialPicker lessonId={draft.id} />
+        </section>
+
         {/* ── Layout canvas ── */}
         <div>
           <div className="flex items-center justify-between mb-6">
@@ -519,6 +549,12 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
                         id={`editor-section-${i}`}
                         heading={slot.heading || `(${SLOT_META[slot.type]?.label ?? slot.type})`}
                         data={slot.data || {}}
+                        // Interactive slots are live in the canvas. Scope their
+                        // saved state to a preview key so a teacher trying out a
+                        // block never writes into their own student progress.
+                        blockId={slot.id ?? `idx-${i}`}
+                        lessonId={draft.id}
+                        stateScope={`preview-${draft.id}`}
                       />
                     </EditableSlotFrame>
                     <InsertButton onClick={() => openPicker(i + 1)} />
@@ -537,6 +573,7 @@ export function LessonEditorPage({ lessonId, weekId, onSave, onCancel }) {
       {editIdx !== null && draft.layout[editIdx] && (
         <SlotEditModal
           slot={draft.layout[editIdx]}
+          lessonId={draft.id}
           onSubmit={handleSlotSave}
           onCancel={() => setEditIdx(null)}
         />

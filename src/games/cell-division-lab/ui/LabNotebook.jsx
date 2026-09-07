@@ -1,6 +1,6 @@
 // The right-hand panel: what this phase is, what the cell is doing, how to
 // work it, what you still have to do, and everything that has gone wrong.
-export function LabNotebook({ phase, defects, stepLabel }) {
+export function LabNotebook({ phase, problems, stepLabel }) {
   return (
     <aside className="cdl-notebook" aria-label="Lab notebook">
       <div className="cdl-card">
@@ -31,16 +31,16 @@ export function LabNotebook({ phase, defects, stepLabel }) {
         </ul>
       </div>
 
-      {defects.length > 0 && (
+      {problems.length > 0 && (
         <div>
           <div className="cdl-eyebrow" style={{ marginBottom: 8 }}>
-            Defect log ({defects.length})
+            What has gone wrong ({problems.length})
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            {defects.map((d, i) => (
-              <div key={`${d.id}-${i}`} className="cdl-defect">
+            {problems.map((p, i) => (
+              <div key={`${p.id}-${i}`} className="cdl-defect">
                 <span aria-hidden="true" style={{ fontWeight: 800 }}>!</span>
-                <span><strong>{d.label}</strong> — {d.detail}</span>
+                <span><strong>{p.label}</strong> — {p.detail}</span>
               </div>
             ))}
           </div>

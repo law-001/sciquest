@@ -63,7 +63,7 @@ export default function ChromosomeAlign({ mode = 'single', onComplete, onStarsUp
   }, []);
 
   const placedCount = Object.keys(placed).length;
-  const noun = isTetrad ? 'homologous pairs' : 'chromosomes';
+  const noun = isTetrad ? 'matching pairs' : 'chromosomes';
 
   const dragPos = draggingId === null ? null : positions[draggingId];
   const armedZone = dragPos
@@ -74,14 +74,14 @@ export default function ChromosomeAlign({ mode = 'single', onComplete, onStarsUp
 
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: `All ${noun} aligned on the plate`, tone: 'good' });
+      onStatus?.({ hint: `All ${noun} lined up`, tone: 'good' });
       return;
     }
     onStatus?.({
-      hint: `Drag each onto the metaphase plate  (${placedCount} / ${PIECE_COUNT})`,
+      hint: `Drag each onto the dashed middle line  (${placedCount} of ${PIECE_COUNT})`,
       tone: 'info',
       submit: placedCount >= 1
-        ? { label: `Submit ${placedCount}/${PIECE_COUNT} aligned`, onSubmit: submitNow }
+        ? { label: `Carry on with ${placedCount} of ${PIECE_COUNT} lined up`, onSubmit: submitNow }
         : null,
     });
   }, [placedCount, done]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -160,7 +160,7 @@ export default function ChromosomeAlign({ mode = 'single', onComplete, onStarsUp
   }
 
   return (
-    <CellStage label="Cell — aligning chromosomes on the metaphase plate">
+    <CellStage label="Cell — lining the chromosomes up in the middle">
       {POLES.map((pole) => (
         <Centrosome key={pole.id} x={pole.x} y={pole.y} dir={pole.dir} />
       ))}
@@ -187,7 +187,7 @@ export default function ChromosomeAlign({ mode = 'single', onComplete, onStarsUp
         fontFamily="var(--cdl-font-mono)"
         pointerEvents="none"
       >
-        METAPHASE PLATE
+        MIDDLE LINE
       </text>
 
       {SNAP_X.map((zx, zi) => (
@@ -233,8 +233,8 @@ export default function ChromosomeAlign({ mode = 'single', onComplete, onStarsUp
             tabIndex={isPlaced || done ? -1 : 0}
             aria-label={
               isTetrad
-                ? `Homologous pair ${label}${isPlaced ? ' aligned on the plate' : ' — press Enter to align it'}`
-                : `Chromosome ${label}${isPlaced ? ' aligned on the plate' : ' — press Enter to align it'}`
+                ? `Matching pair ${label}${isPlaced ? ' lined up in the middle' : ' — press Enter to line it up'}`
+                : `Chromosome ${label}${isPlaced ? ' lined up in the middle' : ' — press Enter to line it up'}`
             }
             onPointerDown={(e) => handleDown(e, id)}
             onPointerMove={handleMove}

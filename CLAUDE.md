@@ -24,11 +24,39 @@ The developer will test and report back. Only write a runnable harness/screensho
 
 React 19 + Vite 8 + Tailwind CSS 4. No React Router — navigation is view-string state in `App.jsx`.
 
-- **Routing**: `currentView` string ("home" | "lessons" | "lesson-content" | "quiz" | "about" | "contact" | "admin" | "teachers" | "teacher-portal" | "profile"). Use `onNavigate(view)` prop to switch views.
-- **Lesson system**: Slot-based. Each lesson in `src/data/` declares a `layout[]` array of slot types. `src/components/lesson-slots/` has the slot components; `src/components/LessonTemplate.jsx` renders them.
+- **Routing**: `currentView` string ("home" | "lessons" | "lesson-content" | "quiz" | "about" | "contact" | "admin" | "teacher-portal" | "teacher-setup" | "teacher-edit-lesson" | "teacher-edit-quiz" | "profile" | "games" | "game-play"). Use `onNavigate(view)` prop to switch views.
+- **Lesson system**: Slot-based. Each lesson declares a `layout[]` array of slot types. `src/components/lesson-slots/` has the slot components; `src/components/slotMap.js` is the type→component registry; `src/components/LessonTemplate.jsx` renders them.
 - **Quiz system**: 10 question types in `src/components/quiz-slots/`. Quiz data lives in `src/data/quizzesweek-*.js`.
 - **Theme**: Dark mode via `src/context/ThemeContext.jsx`. Base bg: `#fdf6e3` (warm cream) / `stone-900` dark.
-- **No backend**: Auth is mock (state only). All lesson/quiz data is static JS files.
+- **Backend**: Supabase (real auth + Postgres + Storage). `src/data/*.js` is the seed content; teacher edits are stored as override rows in the `lessons` / `quizzes` tables and merged over the seed by `src/context/LessonsDataContext.jsx`. Migrations live in `supabase/migrations/`.
+- **Roles**: `student`, `teacher`, `admin`. Users live in either the `staff` table (teacher/admin) or `students`; `role: 'student'` is synthesized client-side.
+
+## Lesson Slots
+
+Every slot component receives:
+
+```
+{ id, heading, data, blockId, lessonId, stateScope?, onInteractionComplete? }
+```
+
+The last four exist for **interactive** slots (`flipCards`, `quickCheck`, `hotspot`,
+`sortBuckets`, `dragLabel`, `customWidget`). Presentational slots destructure only the
+first three and ignore the rest.
+
+- In-progress answers persist to `localStorage`; completion + XP go to the
+  `lesson_interactions` table via `src/lib/lessonInteractions.js`.
+- `stateScope` overrides the localStorage scope. The lesson editor passes a
+  `preview-` prefix so a teacher trying a block out never writes student state.
+- Interactive blocks are **practice, not assessment**: they never touch
+  achievements, `quiz_attempts`, or the gradebook, and never gate lesson completion.
+
+Adding a slot type means adding an entry to each of: `slotMap.js` (`SLOT_MAP`),
+`lesson-slots/index.js`, and `lesson-slot-forms/index.js` (`FORM_MAP`, `SLOT_META`,
+`SLOT_GROUPS`, `DEFAULT_SLOT_DATA`), plus `SlotPickerModal.jsx` (`SLOT_ICONS`, `SLOT_COLORS`).
+
+**Never build a Tailwind class by interpolation** (`` `bg-${color}-50` ``). This project is
+Tailwind v4 with no safelist, so interpolated classes compile to nothing. Use a static map of
+complete class strings — see `FlipCardsSection.jsx`.
 
 ## Key Decisions
 

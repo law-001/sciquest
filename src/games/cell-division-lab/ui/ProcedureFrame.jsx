@@ -181,7 +181,7 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
 
       <div className="cdl-overlay">
         <div className="cdl-tag">
-          <span className="cdl-eyebrow" style={{ color: phase.color }}>Procedure</span>
+          <span className="cdl-eyebrow" style={{ color: phase.color }}>Step</span>
           <h2 className="cdl-title" style={{ fontSize: 17, lineHeight: 1.2 }}>{phase.displayName}</h2>
         </div>
 

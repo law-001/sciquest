@@ -6,14 +6,14 @@ import { CHROM_COLORS, CHROM_LABELS } from './palette';
 
 // PROMETAPHASE — in the cell, on the cell's own spindle.
 //
-// The envelope has broken down and the centrosomes have reached the poles.
-// Drag a microtubule out of a pole and hook it onto a chromosome's
-// kinetochore. Every chromosome needs one fibre from BOTH poles: a chromosome
-// held by one pole alone is dragged whole to that side.
+// The wall around the nucleus has broken down and the fibres now reach in from
+// the top and bottom of the cell. Drag a fibre out of one end and hook it onto
+// a chromosome. Every chromosome needs a fibre from BOTH ends: one held from a
+// single side gets dragged whole into the wrong cell.
 //
-// `fault` (Level 3) jams one kinetochore so the top pole cannot capture it.
-// The spindle checkpoint exists to catch exactly this, so the right answer at
-// the gate afterwards is WAIT.
+// `fault` (Level 3) jams one chromosome so the top can never catch it. The
+// spindle checkpoint exists to catch exactly this, so the right answer at the
+// gate afterwards is WAIT.
 
 const POLES = [
   { id: 'top', x: CELL.cx, y: CELL.cy - CELL.r + 34, dir: -1 },
@@ -75,24 +75,32 @@ export default function SpindleAttach({ fault, onComplete, onStarsUpdate, onStat
 
   const biCount = attached.filter((a) => a.top && a.bottom).length;
 
+  // With the jam in play the step can never reach 4/4, so once every fibre that
+  // CAN be hooked on is hooked on, the only way forward is the submit button.
+  // Say so outright rather than leaving the player stuck on an impossible step.
+  const blocked = stuckIdx >= 0
+    && attached.every((a, i) => (i === stuckIdx ? a.bottom : a.top && a.bottom));
+
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: 'Every chromosome is bi-oriented', tone: 'good' });
+      onStatus?.({ hint: 'Every chromosome is held from both sides', tone: 'good' });
       return;
     }
     onStatus?.({
-      hint: message || `Drag a fibre from each pole onto every kinetochore  (${biCount} / ${SPOTS.length} bi-oriented)`,
-      tone: message ? 'bad' : 'info',
+      hint: blocked
+        ? `Chromosome ${CHROM_LABELS[stuckIdx]} is stuck and will not attach. There is nothing more you can do here — press the button below to carry on.`
+        : message || `Drag a fibre from the top and from the bottom onto every chromosome  (${biCount} of ${SPOTS.length} held from both sides)`,
+      tone: blocked || message ? 'bad' : 'info',
       submit: {
-        label: `Submit ${biCount}/${SPOTS.length} bi-oriented`,
+        label: `Carry on with ${biCount} of ${SPOTS.length} attached`,
         onSubmit: submitNow,
       },
     });
-  }, [biCount, message, done]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [biCount, message, done, blocked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function attach(hit, poleId) {
     if (hit === stuckIdx && poleId === 'top') {
-      setMessage(`Chromosome ${CHROM_LABELS[hit]} will not accept a fibre from the top pole.`);
+      setMessage(`Chromosome ${CHROM_LABELS[hit]} is stuck — it will not take a fibre from the top.`);
       return;
     }
     if (attachedRef.current[hit][poleId]) return;
@@ -142,7 +150,7 @@ export default function SpindleAttach({ fault, onComplete, onStarsUpdate, onStat
   const dragPole = rubber ? POLES.find((p) => p.id === rubber.poleId) : null;
 
   return (
-    <CellStage label="Cell — attaching the spindle">
+    <CellStage label="Cell — attaching the fibres">
       {POLES.map((pole) => (
         <Centrosome key={pole.id} x={pole.x} y={pole.y} dir={pole.dir} active={rubber?.poleId === pole.id} />
       ))}
@@ -188,7 +196,7 @@ export default function SpindleAttach({ fault, onComplete, onStarsUpdate, onStat
               angle={spot.angle}
               scale={0.86}
               color={bi ? 'var(--cdl-good)' : CHROM_COLORS[i]}
-              label={`${CHROM_LABELS[i]} ${bi ? '✓ both poles' : a.top || a.bottom ? '! one pole' : 'unattached'}`}
+              label={`${CHROM_LABELS[i]} ${bi ? '✓ both sides' : a.top || a.bottom ? '! one side only' : 'not attached'}`}
               kinetochores
               attached={a}
             />
@@ -197,7 +205,7 @@ export default function SpindleAttach({ fault, onComplete, onStarsUpdate, onStat
               cy={spot.y}
               r={CATCH_R}
               fill="transparent"
-              aria-label={`Chromosome ${CHROM_LABELS[i]} — ${bi ? 'attached to both poles' : 'press up arrow to attach the top pole, down arrow for the bottom pole'}`}
+              aria-label={`Chromosome ${CHROM_LABELS[i]} — ${bi ? 'attached top and bottom' : 'press up arrow to attach the top, down arrow to attach the bottom'}`}
               role="button"
               tabIndex={done ? -1 : 0}
               onKeyDown={(e) => {
@@ -219,7 +227,7 @@ export default function SpindleAttach({ fault, onComplete, onStarsUpdate, onStat
           r={34}
           fill="transparent"
           style={{ cursor: done ? 'default' : 'grab' }}
-          aria-label={`${pole.id} pole — drag a microtubule from here`}
+          aria-label={`${pole.id} of the cell — drag a fibre from here`}
           onPointerDown={done ? undefined : (e) => handlePoleDown(e, pole.id)}
           onPointerMove={handlePoleMove}
           onPointerUp={handlePoleUp}

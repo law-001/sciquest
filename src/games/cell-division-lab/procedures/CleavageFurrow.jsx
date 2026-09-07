@@ -73,17 +73,17 @@ export default function CleavageFurrow({ onComplete, onStarsUpdate, onStatus }) 
 
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: 'The membrane parted — two daughter cells', tone: 'good' });
+      onStatus?.({ hint: 'The cell pinched right through — two new cells', tone: 'good' });
       return;
     }
-    let hint = 'Press on a handle either side of the equator and drag it inward toward the middle';
-    if (closedSides === 1) hint = 'That side is fully contracted — now drag the other one in';
-    else if (strain > 0.45) hint = 'The membrane is straining — keep pulling, it is nearly through';
+    let hint = 'Press on a handle on either side and drag it inward toward the middle';
+    if (closedSides === 1) hint = 'That side is fully squeezed — now drag the other one in';
+    else if (strain > 0.45) hint = 'The membrane is stretching — keep pulling, it is nearly through';
     onStatus?.({
       hint,
       tone: strain > 0.45 ? 'bad' : closedSides > 0 ? 'busy' : 'info',
       submit: constriction > 0.05
-        ? { label: `Submit at ${Math.round(constriction * 100)}% constricted`, onSubmit: submitNow }
+        ? { label: `Carry on at ${Math.round(constriction * 100)}% squeezed`, onSubmit: submitNow }
         : null,
     });
   }, [closedSides, done, constriction, strain]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -226,7 +226,7 @@ export default function CleavageFurrow({ onComplete, onStarsUpdate, onStatus }) 
             style={{ cursor: full ? 'default' : 'ew-resize', touchAction: 'none' }}
             role="button"
             tabIndex={full ? -1 : 0}
-            aria-label={`${side} side of the contractile ring, ${Math.round(pull[side] * 100)}% contracted — drag it inward, or press Enter to tighten it`}
+            aria-label={`${side} side of the pinching ring, ${Math.round(pull[side] * 100)}% squeezed — drag it inward, or press Enter to tighten it`}
             onPointerDown={full ? undefined : (e) => handleDown(e, side)}
             onPointerMove={handleMove}
             onPointerUp={handleUp}
@@ -300,7 +300,7 @@ export default function CleavageFurrow({ onComplete, onStarsUpdate, onStatus }) 
           fontFamily="var(--cdl-font-mono)"
           pointerEvents="none"
         >
-          {strain > 0.45 ? 'MEMBRANE STRAINING' : 'CONTRACTILE RING'}
+          {strain > 0.45 ? 'MEMBRANE STRETCHING' : 'PINCHING RING'}
         </text>
       )}
     </CellStage>

@@ -24,6 +24,11 @@ import {
   saveQuizAttempt,
   totalXpEarned,
 } from "./lib/progress";
+import {
+  fetchInteractions,
+  recordInteraction,
+  totalInteractionXp,
+} from "./lib/lessonInteractions";
 import { levelFromXp } from "./lib/xp-config";
 import { addScreenSeconds } from "./lib/screentime";
 import {
@@ -166,6 +171,7 @@ function AppContent() {
   const [activeGameId, setActiveGameId] = useState(() => readNav(NAV_GAME_KEY));
   const [completedGames, setCompletedGames] = useState([]);
   const [completedRows, setCompletedRows] = useState([]);
+  const [interactionRows, setInteractionRows] = useState([]);
   const [quizAttempts, setQuizAttempts] = useState([]);
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -210,6 +216,7 @@ function AppContent() {
   const effectiveQuizAttempts     = (user && isStudent) ? quizAttempts     : [];
   const effectiveUnlockedAchievements = (user && isStudent) ? unlockedAchievements : [];
   const effectiveCompletedGames   = (user && isStudent) ? completedGames   : [];
+  const effectiveInteractionRows  = (user && isStudent) ? interactionRows  : [];
 
   // Lesson + week gating now keys off submitted quiz attempts, not lesson reads.
   const lessonsPassed = lessonsPassedFromAttempts(effectiveQuizAttempts);
@@ -219,7 +226,8 @@ function AppContent() {
   const totalXp =
     totalXpEarned(effectiveCompletedRows, effectiveQuizAttempts) +
     totalAchievementXp(effectiveUnlockedAchievements) +
-    gameXpTotal;
+    gameXpTotal +
+    totalInteractionXp(effectiveInteractionRows);
   const currentLevel = levelFromXp(totalXp);
 
   // Submissions already made for the active lesson's quiz — drives the
@@ -233,13 +241,19 @@ function AppContent() {
   useEffect(() => {
     if (!user?.id || !isStudent) return;
     let cancelled = false;
-    Promise.all([fetchProgress(user.id), fetchAchievements(user.id), fetchCompletedGames(supabase, { studentId: user.id })])
-      .then(async ([{ completedLessons: done, completedRows: rows, attempts }, unlocked, games]) => {
+    Promise.all([
+      fetchProgress(user.id),
+      fetchAchievements(user.id),
+      fetchCompletedGames(supabase, { studentId: user.id }),
+      fetchInteractions(user.id),
+    ])
+      .then(async ([{ completedLessons: done, completedRows: rows, attempts }, unlocked, games, interactions]) => {
         if (cancelled) return;
         setCompletedLessons(done);
         setCompletedRows(rows);
         setQuizAttempts(attempts);
         setCompletedGames(games);
+        setInteractionRows(interactions);
         // Anything completed is also "reached" — keeps the lesson tab nav consistent.
         setReachedLessons((prev) => Array.from(new Set([...prev, ...done])));
 
@@ -743,6 +757,41 @@ function AppContent() {
     }
   };
 
+  // Fired the first time a student solves an interactive lesson block.
+  // Deliberately narrow: it awards XP and persists completion, and touches
+  // neither achievements nor quiz_attempts — interactive blocks are practice,
+  // not assessment, so they never reach the gradebook.
+  const handleInteractionComplete = ({ lessonId, blockId, blockType, xp = 0 }) => {
+    if (!lessonId || !blockId) return;
+
+    // The block re-reports on every visit (its latch is per-mount), so the
+    // student's loaded rows are what decide whether this is genuinely new.
+    const alreadyDone = interactionRows.some(
+      (r) => r.lesson_id === lessonId && r.block_id === blockId,
+    );
+    if (alreadyDone) return;
+
+    setInteractionRows((prev) => [
+      ...prev,
+      { lesson_id: lessonId, block_id: blockId, block_type: blockType, xp_awarded: xp },
+    ]);
+
+    if (xp > 0) {
+      const lesson = WEEKS_DATA.flatMap((w) => w.lessons).find((l) => l.id === lessonId);
+      pushNotification({ kind: "xp", amount: xp, detail: lesson?.title, source: "lesson", lessonId });
+      const newLevel = levelFromXp(totalXp + xp);
+      if (newLevel > currentLevel) {
+        pushNotification({ kind: "level-up", level: newLevel });
+      }
+    }
+
+    if (user?.id && isStudent) {
+      recordInteraction({ studentId: user.id, lessonId, blockId, blockType, xp }).catch(
+        (err) => console.error("Failed to save lesson interaction:", err),
+      );
+    }
+  };
+
   // Called by QuizContainer's onComplete on submit with { score, maxScore,
   // xpEarned, pendingGradeCount }. Quiz XP only — lesson completion/XP is
   // handled separately by handleLessonComplete. Fires every attempt.
@@ -1024,6 +1073,7 @@ function AppContent() {
             onBack={() => handleNavigate("lessons")}
             onGoToQuiz={handleGoToQuiz}
             onLessonComplete={handleLessonComplete}
+            onInteractionComplete={handleInteractionComplete}
             quizLocked={isQuizLocked(activeWeekId, activeLessonId)}
             onLessonSelect={(lessonId) => {
               setActiveLessonId(lessonId);

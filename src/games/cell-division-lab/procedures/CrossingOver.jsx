@@ -69,16 +69,16 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
 
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: 'Segments exchanged — the homologues are recombined', tone: 'good' });
+      onStatus?.({ hint: 'Pieces swapped — the two chromosomes have traded DNA', tone: 'good' });
       return;
     }
     onStatus?.({
       hint: message || (aligned
-        ? `Synapsed. Tap each ⇄ chiasma to exchange segments  (${swapped.length} / ${CHIASMATA.length})`
-        : 'Drag the paternal chromosome up or down until its bands line up'),
+        ? `Lined up! Now tap each ⇄ to swap the pieces  (${swapped.length} of ${CHIASMATA.length})`
+        : 'Drag the blue chromosome up or down until its stripes line up'),
       tone: message ? 'bad' : aligned ? 'busy' : 'info',
       submit: swapped.length >= 1
-        ? { label: `Submit ${swapped.length}/${CHIASMATA.length} exchanges`, onSubmit: submitNow }
+        ? { label: `Carry on with ${swapped.length} of ${CHIASMATA.length} swaps`, onSubmit: submitNow }
         : null,
     });
   }, [aligned, message, swapped.length, done]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -119,7 +119,7 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
     if (!aligned) {
       errorRef.current += 1;
       setErrors(errorRef.current);
-      setMessage('The homologues are out of register — that swapped mismatched segments.');
+      setMessage('The chromosomes were not lined up — that swapped two pieces that do not match.');
       onStarsUpdate?.(starsFor(errorRef.current));
     } else {
       setMessage('');
@@ -199,7 +199,7 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
   }
 
   return (
-    <CellStage view="nucleus" label="Nucleus — crossing over">
+    <CellStage view="nucleus" label="Nucleus — swapping pieces">
       {/* Synaptonemal complex, once the pair is in register */}
       {aligned && (
         <g pointerEvents="none">
@@ -226,13 +226,13 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
         </g>
       )}
 
-      <g pointerEvents="none">{renderColumn(left, 0, MATERNAL_X, 'MATERNAL')}</g>
+      <g pointerEvents="none">{renderColumn(left, 0, MATERNAL_X, 'PARENT 1')}</g>
 
       <g
         style={{ cursor: done ? 'default' : dragging ? 'grabbing' : 'grab', touchAction: 'none' }}
         role="button"
         tabIndex={done ? -1 : 0}
-        aria-label={`Paternal chromosome — ${aligned ? 'in register' : `${Math.abs(offset)} bands out of register`}. Use the up and down arrow keys to slide it.`}
+        aria-label={`Parent 2 chromosome — ${aligned ? 'lined up' : `${Math.abs(offset)} stripes out of line`}. Use the up and down arrow keys to slide it.`}
         onPointerDown={handleDragStart}
         onPointerMove={handleDragMove}
         onPointerUp={handleDragEnd}
@@ -263,8 +263,8 @@ export default function CrossingOver({ onComplete, onStarsUpdate, onStatus }) {
             role="button"
             tabIndex={isSwapped || done ? -1 : 0}
             aria-label={isSwapped
-              ? `Chiasma at band ${band + 1}, segments already exchanged`
-              : `Exchange segments at band ${band + 1}`}
+              ? `Crossing point at stripe ${band + 1}, pieces already swapped`
+              : `Swap the pieces at stripe ${band + 1}`}
             style={{ cursor: isSwapped || done ? 'default' : 'pointer' }}
             onPointerDown={isSwapped || done ? undefined : () => handleChiasma(band)}
             onKeyDown={(e) => {

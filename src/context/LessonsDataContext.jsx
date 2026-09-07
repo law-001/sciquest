@@ -19,6 +19,11 @@ import {
   getCachedQuizzes,
   subscribeToQuizChanges,
 } from '../lib/quizzes'
+import {
+  fetchAllMaterials,
+  getCachedMaterials,
+  subscribeToMaterialChanges,
+} from '../lib/materials'
 
 const LessonsDataCtx = createContext(null)
 
@@ -112,26 +117,32 @@ function mergeQuiz(staticQuiz, dbRow) {
 export function LessonsDataProvider({ children }) {
   const [dbLessons, setDbLessons] = useState(() => getCachedLessons())
   const [dbQuizzes, setDbQuizzes] = useState(() => getCachedQuizzes())
+  const [materials, setMaterials] = useState(() => getCachedMaterials())
   // loading is true until the first DB fetch completes (cache gives an immediate
   // first paint but custom-lesson editors need the real data before initializing)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let active = true
-    Promise.all([fetchAllLessons(), fetchAllQuizzes()]).then(([l, q]) => {
-      if (!active) return
-      setDbLessons(l)
-      setDbQuizzes(q)
-      setLoading(false)
-    })
+    Promise.all([fetchAllLessons(), fetchAllQuizzes(), fetchAllMaterials()]).then(
+      ([l, q, m]) => {
+        if (!active) return
+        setDbLessons(l)
+        setDbQuizzes(q)
+        setMaterials(m)
+        setLoading(false)
+      },
+    )
 
     const unsubLessons = subscribeToLessonChanges(setDbLessons)
     const unsubQuizzes = subscribeToQuizChanges(setDbQuizzes)
+    const unsubMaterials = subscribeToMaterialChanges(setMaterials)
 
     return () => {
       active = false
       unsubLessons()
       unsubQuizzes()
+      unsubMaterials()
     }
   }, [])
 
@@ -147,6 +158,30 @@ export function LessonsDataProvider({ children }) {
     (lessonId) => mergeQuiz(getQuizByLesson(lessonId), dbQuizzes.get(lessonId)),
     [dbQuizzes],
   )
+
+  const getMaterials = useCallback(
+    (lessonId) =>
+      materials
+        .filter((m) => m.lesson_id === lessonId)
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+    [materials],
+  )
+
+  // Optimistic local merge after a teacher saves, matching applyLessonRow.
+  const applyMaterialRow = useCallback((row) => {
+    if (!row?.id) return
+    setMaterials((prev) => {
+      const idx = prev.findIndex((m) => m.id === row.id)
+      if (idx === -1) return [...prev, row]
+      const next = [...prev]
+      next[idx] = row
+      return next
+    })
+  }, [])
+
+  const removeMaterialRow = useCallback((id) => {
+    setMaterials((prev) => prev.filter((m) => m.id !== id))
+  }, [])
 
   // Optimistic local merges so the UI updates immediately after a save without
   // waiting for the Realtime push (which requires it to be enabled in Supabase).
@@ -173,21 +208,29 @@ export function LessonsDataProvider({ children }) {
       weeks,
       weeksWithHidden,
       getQuiz,
+      getMaterials,
       dbLessons,
       dbQuizzes,
+      materials,
       loading,
       applyLessonRow,
       applyQuizRow,
+      applyMaterialRow,
+      removeMaterialRow,
     }),
     [
       weeks,
       weeksWithHidden,
       getQuiz,
+      getMaterials,
       dbLessons,
       dbQuizzes,
+      materials,
       loading,
       applyLessonRow,
       applyQuizRow,
+      applyMaterialRow,
+      removeMaterialRow,
     ],
   )
 

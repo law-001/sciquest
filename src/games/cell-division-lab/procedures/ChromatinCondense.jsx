@@ -47,13 +47,13 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate, onStatus 
 
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: 'All chromatin condensed into chromosomes', tone: 'good' });
+      onStatus?.({ hint: 'All the DNA is coiled up into chromosomes', tone: 'good' });
       return;
     }
     onStatus?.({
       hint: holding
-        ? 'Keep holding — the fibre is supercoiling'
-        : `Press and hold the glowing chromatin thread  (${coils.filter((c) => c >= 1).length} / ${SPOTS.length} condensed${misses > 0 ? `, ${misses} left loose` : ''})`,
+        ? 'Keep holding — the DNA is coiling up tighter'
+        : `Press and hold the glowing DNA thread  (${coils.filter((c) => c >= 1).length} of ${SPOTS.length} coiled up${misses > 0 ? `, ${misses} left loose` : ''})`,
       tone: holding ? 'busy' : misses > 0 ? 'bad' : 'info',
     });
   }, [holding, misses, done, coils]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -127,7 +127,7 @@ export default function ChromatinCondense({ onComplete, onStarsUpdate, onStatus 
   }
 
   return (
-    <CellStage view="nucleus" label="Nucleus — condensing chromatin">
+    <CellStage view="nucleus" label="Nucleus — coiling up the DNA">
       {SPOTS.map((spot, i) => {
         const coil = coils[i];
         const isActive = i === activeIndex && !done;

@@ -1,17 +1,17 @@
 // Each level is an ordered list of steps. A step is either a `procedure`
-// (a hands-on mini-game) or a `checkpoint` (a GO / WAIT / SELF-DESTRUCT gate).
+// (a hands-on mini-game) or a `checkpoint` (a GO / WAIT decision).
 //
-// `fault` marks a step that is deliberately rigged in Level 3 — the procedure
-// is made unwinnable or the checkpoint is fed misleading data, so the correct
-// answer becomes WAIT or SELF-DESTRUCT rather than GO.
+// `fault` marks a step that is deliberately rigged in Level 3 — the step is
+// made impossible to finish cleanly, so the checkpoint straight after it
+// reports a problem and the right answer there becomes WAIT instead of GO.
 
 export const LEVELS = [
   {
     id: 'l1',
     number: 1,
     name: 'One Cell, Two Copies',
-    goal: 'Take a single cell through mitosis and produce two identical daughter cells.',
-    outcome: '2 identical diploid cells',
+    goal: 'Take one cell all the way through mitosis and end up with two identical new cells.',
+    outcome: '2 identical cells',
     accent: '#2bafa9',
     unlocksAfter: null,
     steps: [
@@ -32,8 +32,8 @@ export const LEVELS = [
     id: 'l2',
     number: 2,
     name: 'Four Cells, All Different',
-    goal: 'Run both meiotic divisions and produce four genetically unique haploid cells.',
-    outcome: '4 unique haploid cells',
+    goal: 'Run both rounds of meiosis and end up with four cells that are all different from each other.',
+    outcome: '4 different cells',
     accent: '#9B7EC8',
     unlocksAfter: 'l1',
     steps: [
@@ -52,9 +52,9 @@ export const LEVELS = [
   {
     id: 'l3',
     number: 3,
-    name: 'When Control Breaks',
-    goal: 'The checkpoints are reporting bad data. Decide what is safe to allow — and what is not.',
-    outcome: 'Depends on your calls',
+    name: 'When Things Go Wrong',
+    goal: 'Two steps in this cell are broken and cannot be done properly. Use the checkpoints to catch each problem and give the cell a chance to fix it.',
+    outcome: '2 cells — how healthy is up to you',
     accent: '#d1544f',
     unlocksAfter: 'l2',
     steps: [
