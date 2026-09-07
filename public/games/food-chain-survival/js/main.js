@@ -6,14 +6,9 @@
   const G = global.Game;
   const { clamp } = G;
   const $ = (s) => document.querySelector(s);
-  const ACCENTS = { orange: '#EE6A1F', teal: '#13A597', gold: '#E2A41C' };
-  const ACCENT_BAR = {
-    orange: 'linear-gradient(90deg,#EE6A1F,#F5894A)',
-    teal: 'linear-gradient(90deg,#13A597,#37BCAE)',
-    gold: 'linear-gradient(90deg,#E2A41C,#F0BE48)',
-  };
-  const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
-  const STAR_OFF = '<svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
+  const LS = global.SciQuest.LevelSelect;
+  const ACCENTS = LS.ACCENTS;
+  const ACCENT_BAR = LS.ACCENT_BARS;
   // HUD glyphs — inline SVG (no emoji). Phase icons keyed by the `ico` name each level emits.
   const HUD_ICONS = {
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
@@ -38,12 +33,6 @@
   function loadProg() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveProg(p) { try { localStorage.setItem(STORE, JSON.stringify(p)); } catch (e) {} }
   let progress = loadProg(); // {1:{cleared:true,stars:3}, ...}
-
-  function unlocked(meta) {
-    if (meta.id === 1) return true;
-    const prev = G.LEVELS.find((l) => l.id === meta.id - 1);
-    return !!(progress[prev.id] && progress[prev.id].cleared);
-  }
 
   /* ---------------- tweaks ---------------- */
   function tweaks() { return global.__tweaks || { difficulty: 0, enemySpeed: 1, playerSpeed: 1, showCones: true }; }
@@ -90,10 +79,16 @@
     global.visualViewport.addEventListener('scroll', fitViewport);
   }
 
-  /* ---------------- audio mute ---------------- */
+  /* ---------------- audio mute ----------------
+     The menu-header button now toggles theme, not sound. Sound is muted
+     from the pause menu (Sound: On / Off ghost button). `setMute` stays
+     because that pause-menu action calls it. */
   function setMute(m) { G.Audio.muted = m; document.body.classList.toggle('muted', m); try { localStorage.setItem('fcs_mute', m ? '1' : '0'); } catch (e) {} }
   setMute(localStorage.getItem('fcs_mute') === '1');
-  $('#muteBtn').addEventListener('click', () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); });
+
+  /* ---------------- theme ---------------- */
+  LS.initTheme();
+  LS.bindThemeToggle($('#themeBtn'));
 
   /* ---------------- screens ---------------- */
   function show(name) {
@@ -101,7 +96,7 @@
     $('#game').classList.toggle('show', name === 'game');
     document.body.classList.toggle('in-game', name === 'game');
     $('#backBtn').style.visibility = 'visible';
-    $('#headTitle').textContent = name === 'menu' ? 'Food Chain Survival' : (current ? current.meta.title : 'Food Chain Survival');
+    $('#headTitle').textContent = name === 'menu' ? 'Choose a level' : (current ? current.meta.title : 'Food Chain Survival');
     $('#headSub').style.display = name === 'menu' ? '' : 'none';
   }
   // NOTE: on the menu screen there is no level to quit, so the back arrow
@@ -112,54 +107,15 @@
   });
 
   /* ---------------- cards ---------------- */
-  const LOCK_SVG = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-
   function renderCards() {
-    const wrap = $('#cards'); wrap.innerHTML = '';
-    let cleared = 0;
-    for (const meta of G.LEVELS) {
-      const pr = progress[meta.id] || {};
-      const isUnlocked = unlocked(meta);
-      const done = !!pr.cleared; if (done) cleared++;
-      const accent = ACCENTS[meta.color] || ACCENTS.orange;
-      const total = meta.stars;                 // max stars the level awards
-      const earned = done ? (pr.stars || 0) : 0;
-
-      let pill;
-      if (!isUnlocked) pill = `<span class="sq-pill">${LOCK_SVG}Locked</span>`;
-      else if (done) pill = `<span class="sq-pill sq-pill--teal"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Cleared</span>`;
-      else pill = `<span class="sq-pill sq-pill--orange">Ready</span>`;
-
-      let stars = '';
-      for (let i = 0; i < total; i++) stars += i < earned ? STAR : STAR_OFF;
-
-      const foot = isUnlocked
-        ? `<button class="sq-level-play" data-id="${meta.id}" style="background:${accent};border-color:${accent}">${done ? 'Play again' : 'Play'}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`
-        : `<p class="sq-level-lock">${LOCK_SVG}Complete Level ${meta.id - 1} first</p>`;
-
-      const card = document.createElement('article');
-      card.className = 'sq-level-card' + (isUnlocked ? '' : ' sq-level-card--locked');
-      card.setAttribute('aria-disabled', String(!isUnlocked));
-      if (isUnlocked) card.dataset.id = meta.id;
-      card.innerHTML = `
-        <div class="sq-level-card__accent" style="background:${accent}"></div>
-        <div class="sq-level-badge">${pill}</div>
-        <div class="sq-level-card__num" style="color:${isUnlocked ? accent : 'var(--sq-ink-4)'}">
-          <small>Level ${meta.num}</small>${meta.num}
-        </div>
-        <div><div class="sq-level-card__name" style="color:${isUnlocked ? 'var(--sq-ink-1)' : 'var(--sq-ink-4)'}">${meta.title}</div></div>
-        <div class="sq-level-card__goal">${meta.desc}</div>
-        <div class="sq-level-card__foot">
-          <span class="sq-stars" aria-label="${earned} of ${total} stars">${stars}</span>
-          <span class="sq-level-card__count">${meta.goal}</span>
-        </div>
-        ${foot}`;
-      wrap.appendChild(card);
-    }
-    wrap.querySelectorAll('.sq-level-card:not(.sq-level-card--locked)').forEach((c) => {
-      c.addEventListener('click', () => { G.Audio.ensure(); startLevel(+c.dataset.id); });
+    LS.render({
+      container: $('#cards'),
+      levels: G.LEVELS,
+      progress: progress,
+      onPlay: (id) => { G.Audio.ensure(); startLevel(id); },
+      footerEl: $('#progressLabel'),
+      footerText: (cleared, total) => cleared + ' / ' + total + ' links restored',
     });
-    $('#progressLabel').textContent = cleared + ' / ' + G.LEVELS.length + ' links restored';
   }
 
   /* ---------------- modal ---------------- */

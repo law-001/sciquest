@@ -133,6 +133,26 @@ ONLY via event bus (EventEmitter). Never pass React state or refs into Phaser sc
 - No `console.log` in committed code
 - All Supabase queries go through `src/lib/games/progress.js` — no game writes DB directly
 
+### Level-select header (reuse for every new game)
+
+Every game's level-select screen uses the same SciQuest topbar so the platform
+feels consistent. When adding a new game, copy this pattern instead of inventing
+a new header.
+
+**Reference implementations** (identical structure, different substrates):
+- React game — [src/games/matter-state-sandbox/ui/LevelSelect.jsx](src/games/matter-state-sandbox/ui/LevelSelect.jsx) (canonical)
+- React game — [src/games/cell-division-lab/ui/LevelSelect.jsx](src/games/cell-division-lab/ui/LevelSelect.jsx)
+- Standalone HTML game — [public/games/quake-ready/index.html](public/games/quake-ready/index.html) + `#backBtn` block in [public/games/quake-ready/css/ui.css](public/games/quake-ready/css/ui.css)
+- Standalone HTML game — [public/games/food-chain-survival/index.html](public/games/food-chain-survival/index.html) + `#backBtn` block in [public/games/food-chain-survival/css/ui.css](public/games/food-chain-survival/css/ui.css)
+
+**Required parts:**
+- **Back arrow SVG** (identical everywhere): `viewBox="0 0 24 24"`, `width="20"`, `height="18"`, `stroke-width="1.8"`, path `M19 12H5M11 6l-6 6 6 6`. No chevron variants.
+- **Back button styling**: `inline-flex`, `padding: 8px 10px`, `min-height: 44px`, `border-radius: 8px`, no border, no background, `color: var(--sq-ink-3)`, hover → cream bg + `var(--sq-ink-1)` text. Icon-only (no "Back" text).
+- **Header**: centered title "Choose a level" + subtitle with orange/teal dot bookends, theme toggle on the right, thin orange accent stripe along the top edge.
+
+**Don't render the shell overlay Back button on games that have their own header.**
+Add the game's slug to `GAMES_WITH_OWN_BACK` in [src/pages/GamePlayPage.jsx](src/pages/GamePlayPage.jsx) — otherwise the dark pill overlay stacks on top of the game's own back button.
+
 ---
 
 ## Visual Design Spec
