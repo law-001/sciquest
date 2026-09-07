@@ -12,18 +12,21 @@
 <body>
 <div id="app">
 
-  <!-- ===================== HEADER ===================== -->
+  <!-- ===================== HEADER =====================
+       Layout mirrors the SciQuest sandbox level-select header: back-arrow
+       left, big centered title + subtitle, theme-toggle right. Topbar is
+       hidden in-game (CSS: body.in-game #topbar{display:none}), so its
+       title stays "Choose a level" always. Sound is muted from the pause
+       menu, not from here. -->
   <header id="topbar">
     <button class="icon-btn" id="backBtn" title="Back" aria-label="Back">
-      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="20" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
     </button>
     <div class="head-titles">
-      <h1 id="headTitle">Quake Ready</h1>
+      <h1 id="headTitle">Choose a level</h1>
       <p id="headSub"><span class="dot dot-o"></span> Learn how earthquakes work, survive one, then lead the rescue. <span class="dot dot-t"></span></p>
     </div>
-    <button class="icon-btn" id="muteBtn" title="Sound on/off" aria-label="Sound">
-      <svg id="soundIcon" viewBox="0 0 24 24" width="20" height="20"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path id="wave1" d="M16 9.5a3.5 3.5 0 010 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path id="wave2" d="M18.5 7a7 7 0 010 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Switch to dark mode"></button>
   </header>
 
   <!-- ===================== LEVEL SELECT ===================== -->
@@ -176,6 +179,9 @@
   </div>
 
 </div>
+
+<!-- shared SciQuest helpers -->
+<script src="../_shared/level-select.js"></script>
 
 <!-- engine + content -->
 <script src="js/engine.js"></script>
