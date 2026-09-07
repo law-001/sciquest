@@ -2,9 +2,9 @@ import { useState } from 'react';
 
 // A checkpoint gate, floating over the live cell so the cell you are judging
 // stays in view. Read the readout, then decide whether it is safe to carry on.
-// Answering wrongly does not block progress — it just costs fidelity and, for
-// a bypassed checkpoint, leaves a defect behind.
-export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResolve }) {
+// Answering wrongly does not block progress — it just costs accuracy and, for
+// a checkpoint waved through, leaves a problem behind.
+export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetry, onResolve }) {
   const [choice, setChoice] = useState(null);
 
   const chosen = choice ? checkpoint.options.find((o) => o.id === choice) : null;
@@ -23,7 +23,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResol
           <h2 className="cdl-title" style={{ fontSize: 18, lineHeight: 1.2 }}>{phase.displayName}</h2>
         </div>
         <span className={`cdl-pill${choice ? (isCorrect ? ' cdl-pill--good' : ' cdl-pill--bad') : ''}`}>
-          {choice ? (isCorrect ? 'Correct call' : 'Wrong call') : 'Awaiting decision'}
+          {choice ? (isCorrect ? 'Right call' : 'Wrong call') : 'Your call'}
         </span>
       </div>
 
@@ -106,6 +106,16 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, onResol
               );
             })}
           </div>
+
+          {/* The rewind is the whole point of a checkpoint, and there is no way
+              to guess it from the buttons — so say it out loud, but keep it
+              conditional: WAIT only rewinds when WAIT is the right call, and
+              spelling that out here would hand over the answer. */}
+          {!choice && canRetry && (
+            <p className="cdl-teach" style={{ margin: 0, fontSize: 13.5 }}>
+              If the readout shows a problem, WAIT sends the cell back to redo the last step and fix it.
+            </p>
+          )}
 
           {chosen && (
             <>

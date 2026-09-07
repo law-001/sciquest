@@ -12,9 +12,9 @@ import { CellStage } from '../ui/CellStage';
 // onto the polymerase and it pairs: a purine's tab only fits its pyrimidine's
 // socket, so A goes with T and G with C by shape and not just by colour.
 //
-// `fault` (Level 3) damages two template bases. A damaged base cannot be
-// read, so whatever is placed opposite it is a guess — which is exactly the
-// state the G2 checkpoint exists to catch.
+// `fault` (Level 3) damages two letters on the old strand. A damaged letter
+// cannot be read, so whatever gets placed opposite it is a guess — which is
+// exactly the state the G2 checkpoint exists to catch.
 
 const TEMPLATE = ['A', 'T', 'G', 'C', 'C', 'A', 'T', 'G'];
 const LESION_POSITIONS = [2, 5];
@@ -67,20 +67,20 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
 
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: 'Strand replicated — the helix rewinds behind the fork', tone: 'good' });
+      onStatus?.({ hint: 'The new strand is finished — the DNA winds back up', tone: 'good' });
       return;
     }
     if (lesions.includes(activeIdx)) {
       onStatus?.({
-        hint: 'This template base is damaged and cannot be read — whatever you pair here is a guess.',
+        hint: 'This letter on the old strand is damaged and cannot be read. Whatever you put opposite it is only a guess.',
         tone: 'bad',
       });
       return;
     }
     onStatus?.({
       hint: errors > 0
-        ? `${errors} mispaired — ${TEMPLATE.length - activeIdx} bases still to place`
-        : `Drag a nucleotide into the polymerase  ·  A–T, G–C  ·  ${TEMPLATE.length - activeIdx} left`,
+        ? `${errors} wrong so far — ${TEMPLATE.length - activeIdx} letters still to place`
+        : `Drag a DNA letter into the copying clamp  ·  A with T, G with C  ·  ${TEMPLATE.length - activeIdx} left`,
       tone: errors > 0 ? 'bad' : 'info',
     });
   }, [activeIdx, errors, done]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -150,7 +150,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
     : false;
 
   return (
-    <CellStage view="nucleus" label="Nucleus — replicating DNA">
+    <CellStage view="nucleus" label="Nucleus — copying the DNA">
       {/* The stretch already copied, rewound into a double helix */}
       <Helix x1={-20} x2={214} y={AXIS_Y} amp={44} phase={0.6} />
       {/* The parent helix, still wound, feeding into the fork */}
@@ -203,7 +203,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
         fontFamily="var(--cdl-font-mono)"
         pointerEvents="none"
       >
-        TEMPLATE
+        OLD STRAND
       </text>
       <text
         x={26}
@@ -217,7 +217,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
         NEW STRAND
       </text>
 
-      {/* Helicase, prising the parent helix apart at the fork */}
+      {/* The unzipping point, prising the old DNA apart */}
       <g transform={`translate(818 ${AXIS_Y})`} pointerEvents="none">
         <g className="cdl-drift">
           <path
@@ -236,7 +236,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
           fontWeight={800}
           fontFamily="var(--cdl-font-mono)"
         >
-          HELICASE
+          UNZIPS HERE
         </text>
       </g>
 
@@ -321,7 +321,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
             strokeDasharray="14 9"
           />
           <g transform="translate(0 -92)">
-            <rect x={-62} y={-16} width={124} height={28} rx={14} fill="var(--cdl-surface)" fillOpacity={0.9} />
+            <rect x={-78} y={-16} width={156} height={28} rx={14} fill="var(--cdl-surface)" fillOpacity={0.9} />
             <text
               x={0}
               y={4}
@@ -331,7 +331,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
               fontWeight={800}
               fontFamily="var(--cdl-font-mono)"
             >
-              POLYMERASE
+              COPYING CLAMP
             </text>
           </g>
         </g>
@@ -345,7 +345,7 @@ export default function DnaReplication({ fault, onComplete, onStarsUpdate, onSta
           style={{ cursor: 'grab' }}
           role="button"
           tabIndex={0}
-          aria-label={`Free ${base} nucleotide — pair it with template position ${activeIdx + 1}`}
+          aria-label={`Free ${base} letter — match it with old strand position ${activeIdx + 1}`}
           onPointerDown={(e) => handleGrab(e, base)}
           onPointerMove={handleMove}
           onPointerUp={handleRelease}

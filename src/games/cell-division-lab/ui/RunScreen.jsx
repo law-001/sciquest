@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CHECKPOINTS, PHASES } from '../data/phases';
-import { DEFECTS, FIDELITY_COST, defectForProcedure } from '../data/defects';
+import { PROBLEMS, ACCURACY_COST, problemForProcedure } from '../data/defects';
 import { PROCEDURE_SECONDS } from '../procedures';
 import { AmbientCell } from './AmbientCell';
 import { CheckpointGate } from './CheckpointGate';
@@ -16,8 +16,8 @@ import { ProcedureFrame } from './ProcedureFrame';
 export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
   const [run, setRun] = useState(() => ({
     stepIndex: 0,
-    fidelity: 100,
-    defects: [],
+    accuracy: 100,
+    problems: [],
     results: [],
     clearedFaults: [],
     retriedSteps: [],
@@ -44,30 +44,35 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
     return priorResult && priorResult.stars < 3 ? 'wait' : 'go';
   }, [checkpoint, priorResult]);
 
+  // WAIT only means "go back and redo it" while the cell still has a retry
+  // left. Once it is used up the gate has to say so, or the player is told to
+  // expect a rewind that never comes.
+  const canRetry = priorResult && !run.retriedSteps.includes(priorResult.stepIndex);
+
   const checkpointEvidence = useMemo(() => {
     if (!checkpoint) return [];
     if (checkpoint.id === 'g1') {
       return [
-        { label: 'Cell size', value: 'Sufficient', tone: 'good' },
-        { label: 'Nutrients', value: 'Plentiful', tone: 'good' },
-        { label: 'DNA damage scan', value: 'Clear', tone: 'good' },
+        { label: 'Cell size', value: 'Big enough', tone: 'good' },
+        { label: 'Food supply', value: 'Plenty', tone: 'good' },
+        { label: 'DNA damage', value: 'None found', tone: 'good' },
       ];
     }
     if (checkpoint.id === 'g2') {
       const errs = priorResult?.replicationErrors ?? (priorResult?.stars === 3 ? 0 : 1);
       return [
         {
-          label: 'Replication errors',
-          value: errs === 0 ? 'None detected' : `${errs} mispaired`,
+          label: 'Copying mistakes',
+          value: errs === 0 ? 'None' : `${errs} wrong ${errs === 1 ? 'letter' : 'letters'}`,
           tone: errs === 0 ? 'good' : 'bad',
         },
-        { label: 'Chromosome count', value: 'Complete', tone: 'good' },
+        { label: 'Chromosomes', value: 'All there', tone: 'good' },
       ];
     }
-    const mono = priorResult?.monoOriented ?? (priorResult?.stars === 3 ? 0 : 1);
+    const loose = priorResult?.monoOriented ?? (priorResult?.stars === 3 ? 0 : 1);
     return [
-      { label: 'Bi-oriented chromosomes', value: `${4 - mono} / 4`, tone: mono === 0 ? 'good' : 'bad' },
-      { label: 'Unattached kinetochores', value: mono === 0 ? 'None' : `${mono}`, tone: mono === 0 ? 'good' : 'bad' },
+      { label: 'Held from both sides', value: `${4 - loose} of 4`, tone: loose === 0 ? 'good' : 'bad' },
+      { label: 'Still loose', value: loose === 0 ? 'None' : `${loose}`, tone: loose === 0 ? 'good' : 'bad' },
     ];
   }, [checkpoint, priorResult]);
 
@@ -77,17 +82,17 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
   }
 
   function handleProcedureComplete({ stars, ...detail }) {
-    const cost = FIDELITY_COST[stars] ?? 0;
-    const defect = defectForProcedure(step.procedure, stars);
+    const cost = ACCURACY_COST[stars] ?? 0;
+    const problem = problemForProcedure(step.procedure, stars);
 
     advance({
       ...run,
       stepIndex: run.stepIndex + 1,
-      fidelity: Math.max(0, run.fidelity - cost),
-      defects: defect ? [...run.defects, defect] : run.defects,
+      accuracy: Math.max(0, run.accuracy - cost),
+      problems: problem ? [...run.problems, problem] : run.problems,
       results: [
         ...run.results,
-        { stepIndex: run.stepIndex, procedure: step.procedure, stars, cost, defect, ...detail },
+        { stepIndex: run.stepIndex, procedure: step.procedure, stars, cost, problem, ...detail },
       ],
     });
   }
@@ -97,16 +102,15 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
     // procedure is rolled back and replayed with its fault cleared. Only once
     // per step — a cell that still cannot fix the fault has to move on, and
     // without this cap a player who keeps failing the retry loops forever.
-    const canRetry = priorResult && !run.retriedSteps.includes(priorResult.stepIndex);
     if (correct && choice === 'wait' && canRetry) {
       const faultOfStep = level.steps[priorResult.stepIndex]?.fault;
       advance({
         ...run,
         stepIndex: priorResult.stepIndex,
-        fidelity: Math.min(100, run.fidelity + priorResult.cost),
-        defects: priorResult.defect
-          ? run.defects.filter((d) => d !== priorResult.defect)
-          : run.defects,
+        accuracy: Math.min(100, run.accuracy + priorResult.cost),
+        problems: priorResult.problem
+          ? run.problems.filter((p) => p !== priorResult.problem)
+          : run.problems,
         results: run.results.filter((r) => r.stepIndex !== priorResult.stepIndex),
         clearedFaults: faultOfStep ? [...run.clearedFaults, faultOfStep] : run.clearedFaults,
         retriedSteps: [...run.retriedSteps, priorResult.stepIndex],
@@ -120,17 +124,17 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
     advance({
       ...run,
       stepIndex: run.stepIndex + 1,
-      fidelity: Math.max(0, run.fidelity - cost),
-      defects: wavedThrough ? [...run.defects, DEFECTS.checkpointBypass] : run.defects,
+      accuracy: Math.max(0, run.accuracy - cost),
+      problems: wavedThrough ? [...run.problems, PROBLEMS.checkpointBypass] : run.problems,
       results: [...run.results, { stepIndex: run.stepIndex, checkpoint: checkpoint.id, choice, correct }],
     });
   }
 
   if (!step || !phase) return null;
 
-  const fidelityTone = run.fidelity >= 90
+  const accuracyTone = run.accuracy >= 90
     ? 'var(--cdl-good)'
-    : run.fidelity >= 70 ? 'var(--cdl-teal)' : run.fidelity >= 50 ? 'var(--cdl-warn)' : 'var(--cdl-bad)';
+    : run.accuracy >= 70 ? 'var(--cdl-teal)' : run.accuracy >= 50 ? 'var(--cdl-warn)' : 'var(--cdl-bad)';
 
   return (
     <>
@@ -146,12 +150,12 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
 
           <div className="cdl-hud__right">
             <div className="cdl-fidelity">
-              <span className="cdl-eyebrow">Fidelity</span>
+              <span className="cdl-eyebrow">Accuracy</span>
               <div className="cdl-fidelity__bar">
-                <div className="cdl-fidelity__fill" style={{ width: `${run.fidelity}%`, background: fidelityTone }} />
+                <div className="cdl-fidelity__fill" style={{ width: `${run.accuracy}%`, background: accuracyTone }} />
               </div>
               <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 13, minWidth: 36 }}>
-                {run.fidelity}%
+                {run.accuracy}%
               </span>
             </div>
             <button
@@ -185,6 +189,7 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
                     checkpoint={checkpoint}
                     evidence={checkpointEvidence}
                     correctId={checkpointCorrectId}
+                    canRetry={!!canRetry}
                     onResolve={handleCheckpointResolve}
                   />
                 </>
@@ -204,7 +209,7 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
 
           <LabNotebook
             phase={phase}
-            defects={run.defects}
+            problems={run.problems}
             stepLabel={`Step ${run.stepIndex + 1} of ${level.steps.length}`}
           />
         </div>
@@ -229,7 +234,7 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
         >
           <div className="cdl-card" style={{ textAlign: 'center', maxWidth: 320 }}>
             <h2 className="cdl-title" style={{ fontSize: 20, marginBottom: 6 }}>Paused</h2>
-            <p className="cdl-teach" style={{ marginBottom: 14 }}>The procedure timer is stopped.</p>
+            <p className="cdl-teach" style={{ marginBottom: 14 }}>The timer is stopped.</p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button type="button" className="cdl-btn" onClick={onExit}>Leave run</button>
               <button type="button" className="cdl-btn cdl-btn--primary" onClick={() => setPaused(false)}>Resume</button>

@@ -11,6 +11,7 @@ export function LessonContentPage({
   onBack,
   onGoToQuiz,
   onLessonComplete,
+  onInteractionComplete,
   onLessonSelect,
   quizLocked = false,
 }) {
@@ -32,6 +33,7 @@ export function LessonContentPage({
       onBack={onBack}
       onComplete={onGoToQuiz}
       onLessonComplete={onLessonComplete}
+      onInteractionComplete={onInteractionComplete}
       onLessonSelect={onLessonSelect}
       quizLocked={quizLocked}
     />

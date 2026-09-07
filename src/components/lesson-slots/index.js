@@ -9,3 +9,12 @@ export { default as ComparisonSection } from "./Comparisonsection";
 export { default as ScenarioSection } from "./Scenariosection";
 export { default as DiagramSection } from "./Diagramsection";
 export { default as SectionHeading } from "./SectionHeading";
+export {
+  FlipCardsSection,
+  QuickCheckSection,
+  HotspotSection,
+  SortBucketsSection,
+  DragLabelSection,
+  CustomWidgetSection,
+  MaterialsSection,
+} from "./interactive";

@@ -32,7 +32,7 @@ const HOMOLOG_GAP = 56;
 
 export default function ChromatidPull({ mode = 'chromatid', onComplete, onStarsUpdate, onStatus }) {
   const isHomolog = mode === 'homolog';
-  const unit = isHomolog ? 'homologues' : 'chromatids';
+  const unit = isHomolog ? 'matching pairs' : 'copies';
 
   const [results, setResults] = useState([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -72,10 +72,10 @@ export default function ChromatidPull({ mode = 'chromatid', onComplete, onStarsU
     const hint = {
       link: isHomolog
         ? 'Tap the glowing green link holding the highlighted pair together'
-        : 'Tap the glowing green centromere to cut it',
-      severing: 'Cutting — hold off until the link has fully parted',
+        : 'Tap the glowing green link in the middle to cut it',
+      severing: 'Cutting — wait until the link is fully apart',
       ready: 'Now press on the chromosome and drag the mouse up or down to pull the halves apart',
-      flying: 'The spindle takes it from here',
+      flying: 'The fibres take it from here',
     }[stage];
     onStatus?.({ hint: `${hint}${tail}`, tone: stage === 'severing' ? 'bad' : stage === 'ready' ? 'busy' : 'info' });
   }, [stage, allDone, errorCount]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -275,8 +275,8 @@ export default function ChromatidPull({ mode = 'chromatid', onComplete, onStarsU
                 role="button"
                 tabIndex={linkLive ? 0 : -1}
                 aria-label={isHomolog
-                  ? `Link holding homologous pair ${label}${linkLive ? ' — tap to release it' : ''}`
-                  : `Centromere of chromosome ${label}${linkLive ? ' — tap to cut it' : ''}`}
+                  ? `Link holding matching pair ${label}${linkLive ? ' — tap to release it' : ''}`
+                  : `Link in the middle of chromosome ${label}${linkLive ? ' — tap to cut it' : ''}`}
                 style={{ cursor: linkLive ? 'pointer' : 'default' }}
                 onPointerDown={linkLive ? cutLink : undefined}
                 onKeyDown={linkLive ? (e) => {

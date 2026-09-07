@@ -95,13 +95,13 @@ export default function NuclearEnvelope({ count = 2, onComplete, onStarsUpdate, 
 
   useEffect(() => {
     if (done) {
-      onStatus?.({ hint: `All ${total} nuclei enclosed`, tone: 'good' });
+      onStatus?.({ hint: `All ${total} groups are wrapped up`, tone: 'good' });
       return;
     }
     onStatus?.({
-      hint: message || `Draw a closed loop around the ${clusters[current]?.label} cluster  (${drawn} / ${total})`,
+      hint: message || `Draw a closed loop around the ${clusters[current]?.label} group  (${drawn} of ${total})`,
       tone: message ? 'bad' : 'info',
-      submit: { label: `Submit ${drawn}/${total} enclosed`, onSubmit: submitNow },
+      submit: { label: `Carry on with ${drawn} of ${total} wrapped`, onSubmit: submitNow },
     });
   }, [current, drawn, message, done]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -137,14 +137,14 @@ export default function NuclearEnvelope({ count = 2, onComplete, onStarsUpdate, 
     const first = pts[0];
     const last = pts[pts.length - 1];
     if (Math.hypot(last.x - first.x, last.y - first.y) > CLOSE_DISTANCE) {
-      setMessage('The envelope is not closed — finish where you started');
+      setMessage('The loop is not closed — finish where you started');
       return;
     }
 
     const idx = currentRef.current;
     const cluster = clusters[idx];
     if (!isInside(cluster.cx, cluster.cy, pts)) {
-      setMessage(`Surround the ${cluster.label} cluster`);
+      setMessage(`Go all the way around the ${cluster.label} group`);
       return;
     }
 

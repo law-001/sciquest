@@ -7,9 +7,9 @@ const TONE_COLOR = {
   bad: 'var(--cdl-bad)',
 };
 
-// A single daughter cell drawn as a simple diagram, tinted by how healthy it
-// turned out. Defects are also listed in words — the colour is never the only
-// thing telling you something went wrong.
+// A single new cell drawn as a simple diagram, tinted by how healthy it turned
+// out. Problems are also listed in words — the colour is never the only thing
+// telling you something went wrong.
 function DaughterCell({ index, healthy, size = 84 }) {
   const tint = healthy ? 'var(--cdl-teal)' : 'var(--cdl-bad)';
   return (
@@ -22,20 +22,20 @@ function DaughterCell({ index, healthy, size = 84 }) {
         )}
       </svg>
       <figcaption style={{ fontSize: 12.5, fontWeight: 700, color: healthy ? 'var(--cdl-good)' : 'var(--cdl-bad)' }}>
-        Cell {index + 1} · {healthy ? 'healthy' : 'defective'}
+        Cell {index + 1} · {healthy ? 'healthy' : 'damaged'}
       </figcaption>
     </figure>
   );
 }
 
-export function ResultsScreen({ level, stars, fidelity, defects, xpEarned, onReplay, onExit }) {
+export function ResultsScreen({ level, stars, accuracy, problems, xpEarned, onReplay, onExit }) {
   const outcome = OUTCOME_BY_STARS[stars];
   const cellCount = level.id === 'l2' ? 4 : 2;
-  // Defects are shared across the products of the division, so a run with any
-  // major defect marks every daughter cell.
-  const healthyCount = defects.length === 0
+  // Problems are shared across the products of the division, so a run with any
+  // major problem marks every new cell.
+  const healthyCount = problems.length === 0
     ? cellCount
-    : Math.max(0, cellCount - Math.min(cellCount, defects.filter((d) => d.severity === 'major').length));
+    : Math.max(0, cellCount - Math.min(cellCount, problems.filter((p) => p.severity === 'major').length));
 
   return (
     <div className="cdl-select">
@@ -59,14 +59,14 @@ export function ResultsScreen({ level, stars, fidelity, defects, xpEarned, onRep
                 ))}
               </span>
               <div className="cdl-fidelity">
-                <span className="cdl-eyebrow">Fidelity</span>
+                <span className="cdl-eyebrow">Accuracy</span>
                 <div className="cdl-fidelity__bar" style={{ width: 120 }}>
                   <div
                     className="cdl-fidelity__fill"
-                    style={{ width: `${fidelity}%`, background: TONE_COLOR[outcome.tone] }}
+                    style={{ width: `${accuracy}%`, background: TONE_COLOR[outcome.tone] }}
                   />
                 </div>
-                <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 14 }}>{fidelity}%</span>
+                <span className="cdl-mono" style={{ fontWeight: 700, fontSize: 14 }}>{accuracy}%</span>
               </div>
               {xpEarned > 0 && <span className="cdl-pill cdl-pill--orange">+{xpEarned} XP</span>}
             </div>
@@ -85,18 +85,18 @@ export function ResultsScreen({ level, stars, fidelity, defects, xpEarned, onRep
 
           <div className="cdl-card">
             <div className="cdl-eyebrow" style={{ marginBottom: 10 }}>
-              {defects.length === 0 ? 'Defect report' : `Defect report (${defects.length})`}
+              {problems.length === 0 ? 'What went wrong' : `What went wrong (${problems.length})`}
             </div>
-            {defects.length === 0 ? (
+            {problems.length === 0 ? (
               <p className="cdl-teach" style={{ color: 'var(--cdl-good)' }}>
-                No defects. Every chromosome was copied, separated and packaged correctly.
+                Nothing went wrong. Every chromosome was copied, separated and packed away correctly.
               </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {defects.map((d, i) => (
-                  <div key={`${d.id}-${i}`} className="cdl-defect">
+                {problems.map((p, i) => (
+                  <div key={`${p.id}-${i}`} className="cdl-defect">
                     <span aria-hidden="true" style={{ fontWeight: 800 }}>!</span>
-                    <span><strong>{d.label}</strong> — {d.detail}</span>
+                    <span><strong>{p.label}</strong> — {p.detail}</span>
                   </div>
                 ))}
               </div>

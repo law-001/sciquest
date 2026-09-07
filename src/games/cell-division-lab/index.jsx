@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { GAME_XP } from '../config/xp';
 import { useGameProgress } from '../_shared/progress/useGameProgress';
-import { starsForFidelity } from './data/defects';
+import { starsForAccuracy } from './data/defects';
 import { LevelSelect } from './ui/LevelSelect';
 import { ResultsScreen } from './ui/ResultsScreen';
 import { RunScreen } from './ui/RunScreen';
@@ -45,17 +45,17 @@ export default function CellDivisionLab({
   }
 
   function handleFinish(finalRun) {
-    const stars = starsForFidelity(finalRun.fidelity);
+    const stars = starsForAccuracy(finalRun.accuracy);
     const xpEarned = GAME_XP[GAME_ID]?.starsXp?.[stars] ?? 0;
 
-    setSummary({ stars, fidelity: finalRun.fidelity, defects: finalRun.defects, xpEarned });
+    setSummary({ stars, accuracy: finalRun.accuracy, problems: finalRun.problems, xpEarned });
 
     if (studentId) {
       recordCompletion({
         challengeId: level.id,
         score: stars,
         scoreUnit: 'stars',
-        metadata: { xpEarned, fidelity: finalRun.fidelity, defects: finalRun.defects.map((d) => d.id) },
+        metadata: { xpEarned, accuracy: finalRun.accuracy, problems: finalRun.problems.map((p) => p.id) },
       }).catch(() => { /* the run still ends; the hub just won't show it yet */ });
     }
 
@@ -78,8 +78,8 @@ export default function CellDivisionLab({
       <ResultsScreen
         level={level}
         stars={summary.stars}
-        fidelity={summary.fidelity}
-        defects={summary.defects}
+        accuracy={summary.accuracy}
+        problems={summary.problems}
         xpEarned={summary.xpEarned}
         onReplay={() => startLevel(level)}
         onExit={leaveRun}

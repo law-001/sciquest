@@ -13,6 +13,7 @@ import Button from "./Button";
 import Card from "./Card";
 import Badge from "./Badge";
 import ProgressBar from "./ProgressBar";
+import MaterialsPanel from "./MaterialsPanel";
 import { cn } from "../lib/utils";
 
 // ── Slot imports ──
@@ -98,6 +99,7 @@ export function LessonTemplate({
   reachedLessons = [],
   onBack,
   onComplete,
+  onInteractionComplete,
   onLessonComplete,
   onLessonSelect,
   quizLocked = false,
@@ -493,14 +495,23 @@ export function LessonTemplate({
                 if (!Component) return null;
                 return (
                   <Component
-                    key={i}
+                    key={slot.id ?? i}
                     id={`section-${i}`}
                     heading={slot.heading}
                     data={slot.data}
+                    // Interactive slots use these to persist and report
+                    // completion. The presentational slots ignore them.
+                    blockId={slot.id ?? `idx-${i}`}
+                    lessonId={lesson.id}
+                    onInteractionComplete={onInteractionComplete}
                   />
                 );
               })}
             </div>
+
+            {/* Teacher-attached videos and handouts. Renders nothing when the
+                lesson has none, so every existing lesson is unaffected. */}
+            <MaterialsPanel lessonId={lesson.id} />
 
             {/* References */}
             {lesson.references?.length > 0 && (
