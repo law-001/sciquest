@@ -62,8 +62,8 @@ body.in-game #topbar{display:none;}
 #topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--orange),var(--gold) 55%,var(--teal));}
 .head-titles{flex:1;text-align:center;}
-#headTitle{font-family:'Baloo 2',cursive;font-weight:800;font-size:26px;letter-spacing:-.01em;color:var(--ink);line-height:1;}
-#headSub{font-size:13.5px;color:var(--muted);font-weight:600;margin-top:5px;}
+#headTitle{font-family:'Baloo 2',cursive;font-weight:700;font-size:32px;letter-spacing:-.01em;color:var(--ink);line-height:1;}
+#headSub{font-size:13px;color:var(--muted);font-weight:600;margin-top:6px;}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;vertical-align:middle;margin:0 3px;}
 .dot-o{background:var(--orange);} .dot-t{background:var(--teal);}
 
@@ -75,6 +75,18 @@ body.in-game #topbar{display:none;}
 .icon-btn:hover{background:var(--cream-2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(74,60,32,.10);}
 .icon-btn:active{transform:translateY(0);}
 .icon-btn.small{width:34px;height:34px;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.85);}
+/* Level-select back button: match SciQuest sandbox pill styling. */
+#backBtn{
+  width:auto;height:auto;flex:0 0 auto;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 10px;min-height:44px;border-radius:8px;
+  border:none;background:none;box-shadow:none;
+  color:var(--sq-ink-3);cursor:pointer;
+  font-size:13px;font-weight:500;
+  transition:background .15s,color .15s;
+}
+#backBtn:hover{background:var(--cream-2);color:var(--sq-ink-1);transform:none;box-shadow:none;}
+#backBtn:active{transform:none;}
 body.muted #wave1,body.muted #wave2{display:none;}
 body.muted #soundIcon::after{content:"";}
 
@@ -297,3 +309,64 @@ body.muted #soundIcon::after{content:"";}
   #rotate-lock p{font-size:15px;color:var(--muted);font-weight:700;max-width:280px;}
 }
 @keyframes rotate-hint{0%,60%{transform:rotate(0);}80%,100%{transform:rotate(-90deg);}}
+
+/* ===========================================================================
+   Dark mode — class-based, driven by shared theme controller in
+   public/games/_shared/level-select.js. The controller adds `sq-dark` to
+   <html> on load if the user saved a dark preference OR the OS reports
+   prefers-color-scheme:dark (and updates live when the OS pref changes and
+   the user has not manually toggled). Only the *shell* (header, level
+   select, modals, menus) switches; the game canvas paints its own scene.
+   =========================================================================== */
+:root.sq-dark{
+  --cream:#141311; --cream-2:#1e1c19;
+  --grid:rgba(230,205,150,.08);
+  --ink:#f2ead6; --ink-soft:#c2baa8; --muted:#8a806f; --line:#2f2a24;
+  --card:#1c1a17;
+  --card-shadow:0 20px 46px rgba(0,0,0,.55), 0 3px 10px rgba(0,0,0,.35);
+
+  --orange-soft:#3a2416;
+  --teal-soft:#12322f;
+  --gold-soft:#332715;
+
+  --cleared-bg:#173028; --cleared-tx:#8ad5c1;
+  --lock-bg:#242017; --lock-tx:#7c7260;
+
+  --warn-soft:#3a2c14;   --warn-ink:#f0be48;
+  --nav-soft:#12322f;    --nav-ink:#5ecec2;
+  --danger-soft:#3a1a12; --danger-ink:#ff8a6d;
+  --mute-soft:#252220;   --mute-ink:var(--ink-soft);
+
+  --sq-surface:#1e1b17; --sq-cream-2:#2a251d;
+  --sq-ink-1:#f0e6cf; --sq-ink-2:#d0c6ac; --sq-ink-3:#a29881; --sq-ink-4:#7a705a;
+  --sq-orange-soft:#3a2416;
+  --sq-teal-soft:#12322f;
+  --sq-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px -8px rgba(0,0,0,.55);
+  --sq-border:1.5px solid rgba(240,230,207,.12);
+}
+
+:root.sq-dark #topbar{background:var(--card);}
+:root.sq-dark .icon-btn{background:var(--card);}
+:root.sq-dark .icon-btn:hover{background:var(--cream-2);}
+:root.sq-dark .icon-btn.small{background:rgba(28,26,23,.85);border-color:rgba(240,230,207,.18);}
+
+:root.sq-dark .modal-card{background:var(--card);}
+:root.sq-dark .modal-wrap{background:rgba(0,0,0,.65);}
+:root.sq-dark .keycap{background:#2a251d;border-color:#3a3428;color:var(--ink);}
+
+:root.sq-dark .result-stars .star.off,
+:root.sq-dark .star.off{color:#4a4231;}
+
+:root.sq-dark .btn.ghost{background:#2a251d;color:var(--ink-soft);}
+:root.sq-dark .btn.ghost:hover{background:#332c22;}
+:root.sq-dark .btn.ghost.tone-mute:hover{background:#2d2b28;}
+:root.sq-dark .btn.ghost.tone-warn:hover{background:#4a3819;}
+:root.sq-dark .btn.ghost.tone-nav:hover{background:#164843;}
+:root.sq-dark .btn.ghost.tone-danger:hover{background:#4d221a;}
+
+/* Rotate-lock cover on landscape phones. */
+:root.sq-dark #rotate-lock{background:var(--cream);color:var(--ink);}
+
+/* Fact card in the edu modal — main.js sets --accent-soft to a light peach
+   inline, which would leave light text on a light bg. Force a dark tint. */
+:root.sq-dark .fact{background:color-mix(in srgb,var(--accent,#EE6A1F) 20%,var(--card));}

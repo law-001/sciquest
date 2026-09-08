@@ -11,6 +11,16 @@ npm run lint:fix  # ESLint auto-fix
 
 No test suite. No typecheck script (plain JSX, no TypeScript).
 
+## The Gate — after every code change (non-negotiable)
+
+After any change to source or config, run the verification gate automatically, without being asked. A change isn't done until it exits 0.
+
+```bash
+npm run lint && npm run build   # no `check` script here; this is the gate
+```
+
+If it fails: read the actual error (file:line) — don't guess; fix **every** error by editing the source, including pre-existing ones the run surfaces; re-run until green. Never silence an error with `eslint-disable`, config tweaks, or the like unless there's a real reason — say why. Warnings are acceptable; errors are not. (For standalone game JS under `public/games/`, also `node --check <file>` — ESLint ignores it.)
+
 ## Testing / Verification
 
 **The developer runs the app and does the testing — Claude does not.** Don't launch the dev server, drive a headless browser, or take screenshots to verify runtime/visual behavior. Instead, after a change:
@@ -19,6 +29,15 @@ No test suite. No typecheck script (plain JSX, no TypeScript).
 2. Then hand off testing with a short **"What to check"** note: exactly what the developer should do, what they should see if it's correct, and the specific signs it's wrong. Be concrete (which screen, which control, expected vs. broken).
 
 The developer will test and report back. Only write a runnable harness/screenshot if explicitly asked.
+
+## Report-back — after adding or changing any UI element
+
+Whenever a feature, button, view, or UI element is added or changed, report:
+
+1. **Where** — a clickable `file:line` link to the code that renders/controls it, e.g. `[LessonTemplate.jsx:42](src/components/LessonTemplate.jsx#L42)`.
+2. **How to edit it by hand** — name the thing to change (label text, handler, style prop, data entry) and what each change does, so it can be tweaked without re-asking.
+
+For anything touching **placement** (`left`/`right`/`top`/`bottom`/`margin`/`transform`/`gap`/`padding`), name the property + value and which direction each way moves it (e.g. "`gap: 12` — smaller = tighter, bigger = more space"). Prefer plain px values over `50%` + `translate(-50%)` tricks so values stay easy to find and drag.
 
 ## Architecture
 
@@ -63,6 +82,17 @@ complete class strings — see `FlipCardsSection.jsx`.
 - View-string routing instead of React Router — keeps the app self-contained with no URL bar changes.
 - Slot map pattern for lessons so new content types can be added without touching lesson page logic.
 - GSAP + Lenis for animations/scroll — keep animation logic out of business logic components.
+
+## Database (Supabase)
+
+The app is a Vite SPA with a Supabase backend (browser client only — not Next.js; ignore `next/headers`, middleware, server components). Progress, quiz, and lesson data are read through Supabase; only static content lives in `src/data/`.
+
+- **All SQL lives in `supabase/`. Migrations are the only way schema or seed data changes** — never hand-edit the DB in the dashboard, never one-off scripts.
+- Naming follows the existing folder: sequential/timestamped `supabase/migrations/<NNNN | YYYYMMDDHHMMSS>_short_desc.sql` — match the latest style there. **Forward-only: never edit a migration that already ran; write a new one.**
+- Read the current `supabase/schema.sql` snapshot before writing a migration so columns/types match; update it in the same change.
+- **RLS on for every table**, policies shipped in the same migration. Flag demo-grade policies as tighten-before-production.
+- App objects are **camelCase**, DB columns **snake_case** — keep the mapping in `src/lib/games/progress.js` (games) or the matching `src/lib/*` API module. No component talks to the DB directly.
+- Edge functions live in `supabase/functions/`.
 
 ## Domain Knowledge
 
@@ -133,6 +163,26 @@ ONLY via event bus (EventEmitter). Never pass React state or refs into Phaser sc
 - No `console.log` in committed code
 - All Supabase queries go through `src/lib/games/progress.js` — no game writes DB directly
 
+### Level-select header (reuse for every new game)
+
+Every game's level-select screen uses the same SciQuest topbar so the platform
+feels consistent. When adding a new game, copy this pattern instead of inventing
+a new header.
+
+**Reference implementations** (identical structure, different substrates):
+- React game — [src/games/matter-state-sandbox/ui/LevelSelect.jsx](src/games/matter-state-sandbox/ui/LevelSelect.jsx) (canonical)
+- React game — [src/games/cell-division-lab/ui/LevelSelect.jsx](src/games/cell-division-lab/ui/LevelSelect.jsx)
+- Standalone HTML game — [public/games/quake-ready/index.html](public/games/quake-ready/index.html) + `#backBtn` block in [public/games/quake-ready/css/ui.css](public/games/quake-ready/css/ui.css)
+- Standalone HTML game — [public/games/food-chain-survival/index.html](public/games/food-chain-survival/index.html) + `#backBtn` block in [public/games/food-chain-survival/css/ui.css](public/games/food-chain-survival/css/ui.css)
+
+**Required parts:**
+- **Back arrow SVG** (identical everywhere): `viewBox="0 0 24 24"`, `width="20"`, `height="18"`, `stroke-width="1.8"`, path `M19 12H5M11 6l-6 6 6 6`. No chevron variants.
+- **Back button styling**: `inline-flex`, `padding: 8px 10px`, `min-height: 44px`, `border-radius: 8px`, no border, no background, `color: var(--sq-ink-3)`, hover → cream bg + `var(--sq-ink-1)` text. Icon-only (no "Back" text).
+- **Header**: centered title "Choose a level" + subtitle with orange/teal dot bookends, theme toggle on the right, thin orange accent stripe along the top edge.
+
+**Don't render the shell overlay Back button on games that have their own header.**
+Add the game's slug to `GAMES_WITH_OWN_BACK` in [src/pages/GamePlayPage.jsx](src/pages/GamePlayPage.jsx) — otherwise the dark pill overlay stacks on top of the game's own back button.
+
 ---
 
 ## Visual Design Spec
@@ -155,3 +205,29 @@ SciQuest uses a **warm cream background** (`#FAF7F2`) with **orange, teal, and y
 - All buttons are real `<button>` elements with visible labels
 - Tap targets ≥ 44px height on mobile
 - Sliders must respond to keyboard arrow keys
+
+**Accessibility & performance:** keyboard access for everything interactive, labels on inputs, 4.5:1 contrast, visible focus, respect `prefers-reduced-motion`. Below the fold use `loading="lazy"` + explicit image dimensions; animate only `transform`/`opacity`; never import a whole library for one function.
+
+---
+
+## Version log — track every change in `VERSIONS.md` (non-negotiable)
+
+Keep a `VERSIONS.md` at the repo root. After **any** change to source or config, update it automatically as part of finishing the change.
+
+- **Create it if missing** — first change starts at `VERSION_1`.
+- **Append, never replace.** Each change is a **new** entry with the next number. The log only grows — never overwrite, renumber, or reorder existing entries. Newest at the bottom.
+- **One entry per change** — a short bullet list of what changed/was added/was fixed. Enough to know what happened without the diff.
+- **Last line always holds the staged-changes message** for the newest version — one ready-to-paste commit line. Each new version replaces that last line with its own.
+
+```markdown
+# Versions
+
+## VERSION_1
+- Initial setup: <what was built>.
+
+## VERSION_2
+- Added leaderboard: <what changed / which files>.
+
+---
+Staged changes: <one-line commit message for this latest version>
+```
