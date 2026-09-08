@@ -1,3 +1,4 @@
+import { AchievementMedal } from "./AchievementMedal";
 import React, { useEffect, useRef, useState } from "react";
 import { Star, Sparkles, Trophy, ClipboardCheck } from "lucide-react";
 
@@ -65,7 +66,9 @@ function ToastItem({ notification, onDismiss }) {
                     : "from-amber-400 to-orange-500"
             }`}
           >
-            {isLevelUp || isAchievement ? (
+            {isAchievement && notification.achievementKey ? (
+              <AchievementMedal achievementKey={notification.achievementKey} className="w-12 h-12" />
+            ) : isLevelUp || isAchievement ? (
               <Trophy className="w-5 h-5 text-white" />
             ) : isQuizGraded ? (
               <ClipboardCheck className="w-5 h-5 text-white" />
@@ -107,7 +110,7 @@ function ToastItem({ notification, onDismiss }) {
                   isHidden ? "text-white" : "text-amber-500 dark:text-amber-400"
                 }`}
               >
-                {isHidden ? "Hidden Achievement Unlocked" : "Achievement Unlocked"}
+                {isHidden ? "Hidden Achievement Unlocked" : notification.upgraded ? "Achievement Evolved" : "Achievement Unlocked"}
               </p>
               <p className={`text-sm font-bold leading-tight ${isHidden ? "text-white" : "text-stone-900 dark:text-white"}`}>
                 {notification.label}

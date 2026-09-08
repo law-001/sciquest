@@ -53,8 +53,9 @@ import {
   getQuizShowAnswers,
 } from "./lib/quizSettings";
 import { lessonsPassedFromAttempts } from "./lib/lessonGating";
+import { GAME_ACHIEVEMENTS, GAME_MEDALS, visibleAchievementCatalog } from "./lib/game-achievements";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
-import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, MYSTERY_LAB_COMPLETE_KEY, CELL_DIVISION_COMPLETE_KEY, MATTER_STATE_SANDBOX_COMPLETE_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
+import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { supabase } from "./lib/supabase";
 import { writeGameProgress, fetchCompletedGames } from "./lib/games/progress";
 import { XpToast } from "./components/XpToast";
@@ -312,6 +313,7 @@ function AppContent() {
 
         // Auto-award everything the current progress now qualifies for.
         const ctx = {
+          completedGames: games,
           completedLessons: done,
           completedRows: rows,
           attempts,
@@ -945,97 +947,56 @@ function AppContent() {
     }
   };
 
-  // Maps game IDs to their completion achievement keys.
-  const GAME_ACHIEVEMENT_KEYS = {
-    'mystery-lab': MYSTERY_LAB_COMPLETE_KEY,
-    'cell-division-lab': CELL_DIVISION_COMPLETE_KEY,
-    'matter-state-sandbox': MATTER_STATE_SANDBOX_COMPLETE_KEY,
-  };
+  // Refs include in-flight completions so rapid events cannot miss a tier or
+  // duplicate an unlock toast before React commits the next render.
+  const gameProgressRef = useRef(completedGames);
+  const gameAwardPending = useRef(new Set());
+  useEffect(() => { gameAwardPending.current.clear(); }, [user?.id]);
+  useEffect(() => { gameProgressRef.current = completedGames; }, [completedGames]);
 
-  // Human-readable names for XP toast detail text.
-  const GAME_NAMES = {
-    'mystery-lab': 'Mystery Lab',
-    'cell-division-lab': 'Cell Division Lab',
-    'matter-state-sandbox': 'Matter State Sandbox',
-  };
-
-  // Called by GamePlayPage → GameComponent when a game run ends.
-  // Mystery Lab payload: { gameId, challengeId, completed, xp, stars }
-  // Cell Division Lab payload: { gameId, challengeId, levelId, completed, stars, xpEarned, reason? }
-  const handleGameProgressUpdate = (payload) => {
+  const handleGameProgressUpdate = async (payload) => {
     const gameId = payload.gameId ?? activeGameId;
-    if (!gameId) return;
-
+    if (!gameId || payload.reason === 'divisionFailed' || payload.completed === false) return;
     const challengeId = payload.challengeId ?? payload.levelId ?? gameId;
-    const stars = payload.stars ?? 0;
     const xpEarned = payload.xp ?? payload.xpEarned ?? 0;
-    // reason:'divisionFailed' signals a zero-star run; absence = win.
-    const isWin = payload.reason !== 'divisionFailed';
-    const isCompleted = isWin && payload.completed !== false;
+    const previous = gameProgressRef.current.find((g) => g.gameId === gameId && g.challengeId === challengeId);
+    const next = gameProgressRef.current.filter((g) => g.gameId !== gameId || g.challengeId !== challengeId);
+    next.push({ gameId, challengeId, xpEarned: Math.max(previous?.xpEarned ?? 0, xpEarned) });
+    gameProgressRef.current = next;
+    setCompletedGames(next);
+    const diff = Math.max(0, xpEarned - (previous?.xpEarned ?? 0));
+    if (diff > 0) pushNotification({ kind: 'xp', amount: diff, detail: GAME_MEDALS.find((g) => g.gameId === gameId)?.gameName ?? gameId, source: 'game' });
 
-    // Always persist to DB for attempt-tracking, even on losses.
-    if (user?.id && isStudent) {
-      writeGameProgress(supabase, {
-        userId: user.id,
-        gameId,
-        levelId: challengeId,
-        stars,
-        xpEarned: isCompleted ? xpEarned : 0,
-        completedAt: new Date().toISOString(),
-      }).catch((err) => console.error('Failed to save game progress:', err));
+    if (!user?.id || !isStudent) return;
+    if (!payload.progressSaved) {
+      try {
+        await writeGameProgress(supabase, { userId: user.id, gameId, levelId: challengeId, stars: payload.stars ?? 0, xpEarned, completedAt: new Date().toISOString() });
+      } catch (err) {
+        console.error('Failed to save game progress:', err);
+        return;
+      }
     }
-
-    if (!isCompleted) return;
-
-    const existingEntry = completedGames.find(
-      (g) => g.gameId === gameId && g.challengeId === challengeId,
-    );
-    const isFirstCompletion = !existingEntry;
-    const isImprovedScore = existingEntry && xpEarned > existingEntry.xpEarned;
-    const achievementKey = GAME_ACHIEVEMENT_KEYS[gameId];
-    const alreadyHasAchievement = achievementKey ? unlockedAchievements.includes(achievementKey) : false;
-
-    if (isFirstCompletion) {
-      setCompletedGames((prev) => [...prev, { gameId, challengeId, xpEarned }]);
-      if (xpEarned > 0 && !alreadyHasAchievement) {
-        pushNotification({ kind: 'xp', amount: xpEarned, detail: GAME_NAMES[gameId] ?? gameId, source: 'game' });
-      }
-      const newLevel = levelFromXp(totalXp + (alreadyHasAchievement ? 0 : xpEarned));
-      if (newLevel > currentLevel) {
-        pushNotification({ kind: 'level-up', level: newLevel });
-      }
-    } else if (isImprovedScore) {
-      setCompletedGames((prev) =>
-        prev.map((g) =>
-          g.gameId === gameId && g.challengeId === challengeId
-            ? { ...g, xpEarned }
-            : g,
-        ),
-      );
-      const diff = xpEarned - existingEntry.xpEarned;
-      if (diff > 0 && !alreadyHasAchievement) {
-        pushNotification({ kind: 'xp', amount: diff, detail: GAME_NAMES[gameId] ?? gameId, source: 'game' });
-        const newLevel = levelFromXp(totalXp + diff);
-        if (newLevel > currentLevel) {
-          pushNotification({ kind: 'level-up', level: newLevel });
+    const earned = GAME_ACHIEVEMENTS.filter((a) => a.gameId === gameId && a.criteria({ completedGames: next }));
+    const fresh = earned.filter((a) => !unlockedAchievements.includes(a.key) && !gameAwardPending.current.has(a.key));
+    const keys = fresh.map((a) => a.key);
+    keys.forEach((key) => gameAwardPending.current.add(key));
+    let bonus = 0;
+    try {
+      if (keys.length) {
+        await awardAchievements(user.id, keys);
+        setUnlockedAchievements((prev) => [...new Set([...prev, ...keys])]);
+        bonus = fresh.reduce((sum, a) => sum + a.xp, 0);
+        const highest = visibleAchievementCatalog(earned, [...unlockedAchievements, ...keys])[0];
+        if (highest && keys.includes(highest.key)) {
+          pushNotification({ kind: 'achievement', label: highest.label, amount: bonus, achievementKey: highest.key, upgraded: highest.tier > 1 });
         }
       }
+    } catch (err) {
+      keys.forEach((key) => gameAwardPending.current.delete(key));
+      console.error('Failed to award game achievement:', err);
     }
-
-    // Award completion achievement (idempotent — DB ignores duplicates).
-    if (achievementKey && user?.id && isStudent && !unlockedAchievements.includes(achievementKey)) {
-      setUnlockedAchievements((prev) => [...prev, achievementKey]);
-      awardAchievements(user.id, [achievementKey]).catch((err) =>
-        console.error('Failed to award game achievement:', err),
-      );
-      const achXp = achievementXp(achievementKey);
-      pushNotification({
-        kind: 'achievement',
-        label: achievementLabel(achievementKey),
-        amount: achXp,
-        achievementKey,
-      });
-    }
+    const newLevel = levelFromXp(totalXp + diff + bonus);
+    if (newLevel > currentLevel) pushNotification({ kind: 'level-up', level: newLevel });
   };
 
   // Called by the "Back to Lessons" button on the results screen. XP/persistence
@@ -1249,6 +1210,8 @@ function AppContent() {
     <div className="min-h-screen flex flex-col font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
       {!isPortalView && (
         <Navbar
+          avatarId={profile?.avatar}
+          avatarStyle={profile?.avatarStyle}
           currentView={currentView}
           onNavigate={handleNavigate}
           isLoggedIn={isLoggedIn}

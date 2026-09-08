@@ -39,7 +39,16 @@ const IMAGE_AVATARS = [
   { id: 'profile', label: 'Profile', src: '/avatars/profile.jpg' },
 ].map((a) => ({ ...a, kind: 'image' }))
 
-export const AVATARS = [...SVG_AVATARS, ...IMAGE_AVATARS]
+const CHARACTER_AVATARS = [
+  { id: 'robot', label: 'Lab Buddy', character: 'robot', gradient: 'from-teal-400 to-teal-700' },
+  { id: 'cat', label: 'Curious Cat', character: 'cat', gradient: 'from-orange-300 to-rose-400' },
+  { id: 'frog', label: 'Pond Pal', character: 'frog', gradient: 'from-teal-400 to-emerald-700' },
+  { id: 'astronaut', label: 'Space Scout', character: 'astronaut', gradient: 'from-slate-600 to-stone-950' },
+  { id: 'owl', label: 'Night Scholar', character: 'owl', gradient: 'from-amber-300 to-orange-500' },
+  { id: 'sun', label: 'Sunny', character: 'sun', gradient: 'from-orange-400 to-rose-500' },
+].map((a) => ({ ...a, kind: 'character' }))
+
+export const AVATARS = [...CHARACTER_AVATARS, ...SVG_AVATARS, ...IMAGE_AVATARS]
 
 export function getAvatar(id) {
   if (!id) return null

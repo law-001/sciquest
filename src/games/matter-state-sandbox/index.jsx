@@ -159,12 +159,10 @@ export default function MatterStateSandbox({
       challengeId: activeChallenge.id,
       score: 1,
       scoreUnit: 'completion',
-    }).catch(() => {});
-    const lastLevel = LEVELS[LEVELS.length - 1];
-    const lastLevelChallenges = CHALLENGES.filter(c => c.levelId === lastLevel.id);
-    const isLastOfAllLevels = lastLevelChallenges[lastLevelChallenges.length - 1]?.id === activeChallenge.id;
-    if (isLastOfAllLevels) onProgressUpdate?.({ challengeId: activeChallenge.id });
-  }, [isComplete]);
+    }).then(() => {
+      onProgressUpdate?.({ gameId: GAME_ID, challengeId: activeChallenge.id, completed: true, progressSaved: true });
+    }).catch((err) => console.error('Failed to save challenge completion:', err));
+  }, [isComplete, activeChallenge, onProgressUpdate, recordCompletion]);
 
   useEffect(() => { completionFiredRef.current = false; }, [activeChallenge?.id]);
 

@@ -1,3 +1,4 @@
+import { Avatar } from "../Avatar";
 import React, { useState, useEffect, useRef } from "react";
 import { Sun, Moon, User, LogOut, ChevronDown } from "lucide-react";
 import Logo from "../Logo";
@@ -9,6 +10,8 @@ export function Navbar({
   onNavigate,
   isLoggedIn,
   userFirstName,
+  avatarId,
+  avatarStyle,
   onLoginClick,
   onLogoutClick,
   transparent = false,
@@ -149,6 +152,7 @@ export function Navbar({
                       : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
                   }`}
                 >
+                  <Avatar avatarId={avatarId} avatarStyle={avatarStyle} name={userFirstName ?? ""} size={32} />
                   <span className="text-sm font-bold font-heading">{userFirstName ?? "Profile"}</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${isProfileOpen ? "rotate-180" : ""}`}

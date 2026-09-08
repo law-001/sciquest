@@ -1,12 +1,12 @@
-import { GAME_XP } from '../games/config/xp.js'
+import { GAME_ACHIEVEMENTS } from './game-achievements.js'
 
 // ============================================================
 // Achievement catalog + auto-award criteria.
 //
 // `key` is the STABLE identifier persisted in
 // student_achievements.achievement_key. Never rename a key — add a
-// new entry instead. Visual presentation (icon, colors) is mapped by
-// key in ProfilePage so this module stays free of React/JSX.
+// new entry instead. Medal assets use the same keys in public/achievements.
+// Game tiers live in game-achievements.js; this module stays free of JSX.
 //
 // Each `criteria(ctx)` is a pure predicate over already-stored
 // progress data. Achievements that depend on data we don't capture
@@ -209,27 +209,7 @@ export const ACHIEVEMENTS = [
     hidden: true,
     criteria: NOT_YET_DERIVABLE,
   },
-  {
-    key: MATTER_STATE_SANDBOX_COMPLETE_KEY,
-    label: 'State Changer',
-    req: 'Complete all levels in Matter State Sandbox',
-    xp: GAME_XP['matter-state-sandbox'].achievementXp,
-    criteria: NOT_YET_DERIVABLE,
-  },
-  {
-    key: MYSTERY_LAB_COMPLETE_KEY,
-    label: 'Lab Detective',
-    req: 'Solve the Dying Pond mystery in Mystery Lab',
-    xp: GAME_XP['mystery-lab'].achievementXp,
-    criteria: NOT_YET_DERIVABLE,
-  },
-  {
-    key: CELL_DIVISION_COMPLETE_KEY,
-    label: 'Cell Splitter',
-    req: 'Complete your first division in Cell Division Lab',
-    xp: GAME_XP['cell-division-lab'].achievementXp,
-    criteria: NOT_YET_DERIVABLE,
-  },
+  ...GAME_ACHIEVEMENTS,
 ]
 
 const KEYS = new Set(ACHIEVEMENTS.map((a) => a.key))
