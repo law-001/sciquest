@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Paperclip } from 'lucide-react'
 
 import Card from '../../Card'
@@ -13,10 +13,13 @@ export default function MaterialsSection({ id, heading, data, lessonId }) {
   const { intro, materialIds = [] } = data ?? {}
   const { getMaterials } = useLessonsData()
 
-  const ref = useRef(null)
   const [visible, setVisible] = useState(false)
 
-  useEffect(() => {
+  // Callback ref, for the same reason as MaterialsPanel: this section renders
+  // null until the materials arrive, so there is no node for a mount effect to
+  // observe and the fade-in would never fire.
+  const observeRef = useCallback((node) => {
+    if (!node) return
     const obs = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
@@ -26,7 +29,7 @@ export default function MaterialsSection({ id, heading, data, lessonId }) {
       },
       { threshold: 0.1 },
     )
-    if (ref.current) obs.observe(ref.current)
+    obs.observe(node)
     return () => obs.disconnect()
   }, [])
 
@@ -38,7 +41,7 @@ export default function MaterialsSection({ id, heading, data, lessonId }) {
   return (
     <section
       id={id}
-      ref={ref}
+      ref={observeRef}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(24px)',

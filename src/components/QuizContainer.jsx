@@ -25,6 +25,8 @@ import {
   attemptXpFactor,
 } from "../lib/xp-config";
 import { QUESTION_MAP, TYPE_LABELS } from "./questionMap";
+import { useAuth } from "../context/AuthContext";
+import { quizAnswersKey, quizTimerKey } from "../lib/studentStorage";
 
 // ── Scoring helpers ───────────────────────────────────────────────────────────
 // Essay / short-answer return 0 here — they need a teacher to grade them.
@@ -159,6 +161,33 @@ const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
   animationDuration: `${2 + Math.random() * 2}s`,
 }));
 
+function readSavedAnswers(storageKey) {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey)) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+// Resumes a countdown already in progress, or starts one. Persisted so a
+// refresh mid-quiz picks the clock back up instead of resetting it.
+function resumeOrStartTimer(timerStartKey) {
+  try {
+    const stored = localStorage.getItem(timerStartKey);
+    const parsed = stored ? Number(stored) : NaN;
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  } catch {
+    /* ignore */
+  }
+  const ts = Date.now();
+  try {
+    localStorage.setItem(timerStartKey, String(ts));
+  } catch {
+    /* quota */
+  }
+  return ts;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 // onComplete receives { score, maxScore } so the caller can persist the attempt.
 export function QuizContainer({
@@ -173,8 +202,11 @@ export function QuizContainer({
   showCorrectAnswers = true,
 }) {
   const { questions } = quiz;
-  const storageKey = `quiz-answers-${quiz.lessonId}`;
-  const timerStartKey = `quiz-started-${quiz.lessonId}`;
+  const { user } = useAuth();
+  // Scoped to the student: on a shared computer an unscoped key handed the next
+  // person to sign in the previous student's answers and their expired timer.
+  const storageKey = quizAnswersKey(user?.id, quiz.lessonId);
+  const timerStartKey = quizTimerKey(user?.id, quiz.lessonId);
   const hasTimer = Number.isFinite(timeLimitSeconds) && timeLimitSeconds > 0;
 
   // Per-quiz override: null/undefined ⇒ "unlimited". A positive int caps
@@ -196,13 +228,7 @@ export function QuizContainer({
     ? Infinity
     : Math.max(0, attemptCap - priorAttempts);
 
-  const [answers, setAnswers] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(storageKey)) ?? {};
-    } catch {
-      return {};
-    }
-  });
+  const [answers, setAnswers] = useState(() => readSavedAnswers(storageKey));
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -217,23 +243,26 @@ export function QuizContainer({
   // Start time is persisted so a refresh mid-quiz resumes the countdown from
   // where it left off; otherwise students could just reload to reset.
   const [now, setNow] = useState(() => Date.now());
-  const [startedAt, setStartedAt] = useState(() => {
-    if (!hasTimer || attemptsExhausted) return null;
-    try {
-      const stored = localStorage.getItem(timerStartKey);
-      const parsed = stored ? Number(stored) : NaN;
-      if (Number.isFinite(parsed) && parsed > 0) return parsed;
-    } catch {
-      /* ignore */
+  const [startedAt, setStartedAt] = useState(() =>
+    hasTimer && !attemptsExhausted ? resumeOrStartTimer(timerStartKey) : null,
+  );
+
+  // AuthContext restores the session after the first paint, so a quiz opened by
+  // a refresh mounts on the signed-out key and re-keys once the student is
+  // known. Without re-reading here, the auto-save effect above would fire on the
+  // new key and overwrite the student's saved draft with the empty anonymous
+  // one. Same derived-state-during-render pattern LessonTemplate uses.
+  const [prevStorageKey, setPrevStorageKey] = useState(storageKey);
+  if (prevStorageKey !== storageKey) {
+    setPrevStorageKey(storageKey);
+    // A finished attempt is already scored and on screen; leave it alone.
+    if (!isSubmitted) {
+      setAnswers(readSavedAnswers(storageKey));
+      setStartedAt(
+        hasTimer && !attemptsExhausted ? resumeOrStartTimer(timerStartKey) : null,
+      );
     }
-    const ts = Date.now();
-    try {
-      localStorage.setItem(timerStartKey, String(ts));
-    } catch {
-      /* quota */
-    }
-    return ts;
-  });
+  }
 
   const remainingSec =
     hasTimer && startedAt

@@ -536,7 +536,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
             className={`transition-all duration-500 ${
               isLogin
                 ? "max-h-96 overflow-hidden"
-                : "max-h-128 overflow-y-auto pr-1"
+                : "themed-scrollbar max-h-128 overflow-y-auto pr-1"
             }`}
           >
             <form

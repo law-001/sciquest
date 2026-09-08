@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-// In-progress answers live in localStorage only — the same approach
-// QuizContainer uses for `quiz-answers-${lessonId}`. Completion (and XP) is the
-// database's job.
-const storageKeyFor = (lessonId, blockId) => `sq_lesson_interact_${lessonId}_${blockId}`
+import { useAuth } from '../../../context/AuthContext'
+import { interactiveStateKey } from '../../../lib/studentStorage'
 
 function hydrate(storageKey, initial) {
   try {
@@ -17,9 +15,25 @@ function hydrate(storageKey, initial) {
 
 // Persisted per-block state. `makeInitial` is called for the first render and
 // again on reset; it must be pure.
+//
+// In-progress answers stay on the device; completion and XP are the database's
+// job. The key is scoped to the signed-in student so a shared computer does not
+// hand one student's half-finished block to the next.
 export function useInteractiveState(lessonId, blockId, makeInitial) {
-  const storageKey = storageKeyFor(lessonId, blockId)
+  const { user } = useAuth()
+  const storageKey = interactiveStateKey(user?.id, lessonId, blockId)
   const [state, setStateRaw] = useState(() => hydrate(storageKey, makeInitial()))
+
+  // AuthContext restores the session after the first paint, so a block mounted
+  // during a refresh starts on the signed-out key and re-keys a moment later.
+  // Re-read from the new key during render (the same derived-state pattern
+  // LessonTemplate uses for a lesson change) so the student sees their own work
+  // instead of whatever the anonymous scope happened to hold.
+  const [prevKey, setPrevKey] = useState(storageKey)
+  if (prevKey !== storageKey) {
+    setPrevKey(storageKey)
+    setStateRaw(hydrate(storageKey, makeInitial()))
+  }
 
   function setState(updater) {
     setStateRaw((prev) => {

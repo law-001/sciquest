@@ -2,16 +2,9 @@
 // Degrades gracefully (returns empty Map, logs a warning) when Supabase is
 // not configured so a misconfigured deploy doesn't crash the whole app.
 
-import { createClient } from '@supabase/supabase-js'
+import { supabaseOrNull } from './supabaseClient'
 
-const _url = import.meta.env.VITE_SUPABASE_URL
-const _key = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-// Intentionally separate from src/lib/supabase.js so this module can return
-// null and degrade gracefully when env vars are absent (supabase.js throws).
-const supabase = (_url && _key)
-  ? createClient(_url, _key, { auth: { persistSession: true } })
-  : null
+const supabase = supabaseOrNull
 
 if (!supabase) {
   console.warn('[quizzes] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY missing — dynamic quizzes disabled')
@@ -43,6 +36,10 @@ export function getCachedQuizzes() {
 
 export async function fetchAllQuizzes() {
   if (!supabase) return new Map()
+  // See fetchAllLessons: an anonymous read returns zero rows under RLS, and
+  // caching that would discard the offline copy.
+  const { data: sessionData } = await supabase.auth.getSession()
+  if (!sessionData?.session) return readCache()
   try {
     const { data, error } = await supabase.from('quizzes').select('*')
     if (error) throw error

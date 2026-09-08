@@ -46,6 +46,26 @@ export const QUESTION_META = {
   'case-study': { label: 'Case Study', desc: 'Analyze a scenario and answer follow-up questions' },
 }
 
+// Groups the picker renders under, mirroring SLOT_GROUPS for lesson slots. A
+// type missing from every group still works; it falls into "Other".
+export const QUESTION_GROUPS = [
+  {
+    label: 'Objective',
+    desc: 'Auto-graded the moment a student submits',
+    types: ['multiple-choice', 'true-false', 'identification', 'fill-blanks'],
+  },
+  {
+    label: 'Written',
+    desc: 'You grade these by hand in Quiz Checking',
+    types: ['short-answer', 'essay'],
+  },
+  {
+    label: 'Interactive',
+    desc: 'Students match, order or read an image',
+    types: ['matching', 'ordering', 'picture-based', 'case-study'],
+  },
+]
+
 export const DEFAULT_QUESTION_DATA = {
   'multiple-choice': {
     question: '',

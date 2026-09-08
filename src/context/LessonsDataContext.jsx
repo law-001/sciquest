@@ -13,6 +13,7 @@ import {
   fetchAllLessons,
   getCachedLessons,
   subscribeToLessonChanges,
+  subscribeToSignIn,
 } from '../lib/lessons'
 import {
   fetchAllQuizzes,
@@ -24,6 +25,7 @@ import {
   getCachedMaterials,
   subscribeToMaterialChanges,
 } from '../lib/materials'
+import { resolveImagesDeep, resolveLessonImage } from '../lib/lessonImages'
 
 const LessonsDataCtx = createContext(null)
 
@@ -40,11 +42,11 @@ function dbRowToLesson(row) {
     subtitle: row.subtitle ?? '',
     readTime: row.read_time ?? '~15 min read',
     xp: row.xp ?? 50,
-    heroImage: row.hero_image_url ?? null,
+    heroImage: resolveLessonImage(row.hero_image_url) ?? null,
     heroImageAlt: row.hero_image_alt ?? '',
     sections: row.sections ?? [],
     references: row.references ?? [],
-    layout: row.layout ?? [],
+    layout: resolveImagesDeep(row.layout ?? []),
     isHidden: !!row.is_hidden,
     _isFromDb: true,
   }
@@ -124,22 +126,33 @@ export function LessonsDataProvider({ children }) {
 
   useEffect(() => {
     let active = true
-    Promise.all([fetchAllLessons(), fetchAllQuizzes(), fetchAllMaterials()]).then(
-      ([l, q, m]) => {
-        if (!active) return
-        setDbLessons(l)
-        setDbQuizzes(q)
-        setMaterials(m)
-        setLoading(false)
-      },
-    )
 
+    function loadAll() {
+      Promise.all([fetchAllLessons(), fetchAllQuizzes(), fetchAllMaterials()]).then(
+        ([l, q, m]) => {
+          if (!active) return
+          setDbLessons(l)
+          setDbQuizzes(q)
+          setMaterials(m)
+          setLoading(false)
+        },
+      )
+    }
+
+    loadAll()
+
+    // RLS hides every content row from anonymous readers, so a load that
+    // happened before sign-in came back empty. Run it again once a session
+    // exists, or a visitor who signs in would keep seeing the static seed
+    // until they reloaded the page.
+    const unsubSignIn = subscribeToSignIn(loadAll)
     const unsubLessons = subscribeToLessonChanges(setDbLessons)
     const unsubQuizzes = subscribeToQuizChanges(setDbQuizzes)
     const unsubMaterials = subscribeToMaterialChanges(setMaterials)
 
     return () => {
       active = false
+      unsubSignIn()
       unsubLessons()
       unsubQuizzes()
       unsubMaterials()
@@ -203,6 +216,18 @@ export function LessonsDataProvider({ children }) {
     })
   }, [])
 
+  // Restoring a quiz deletes its override row, so there is no row to merge back
+  // in — drop it locally rather than waiting on the Realtime push.
+  const removeQuizRow = useCallback((lessonId) => {
+    if (!lessonId) return
+    setDbQuizzes((prev) => {
+      if (!prev.has(lessonId)) return prev
+      const next = new Map(prev)
+      next.delete(lessonId)
+      return next
+    })
+  }, [])
+
   const value = useMemo(
     () => ({
       weeks,
@@ -215,6 +240,7 @@ export function LessonsDataProvider({ children }) {
       loading,
       applyLessonRow,
       applyQuizRow,
+      removeQuizRow,
       applyMaterialRow,
       removeMaterialRow,
     }),
@@ -229,6 +255,7 @@ export function LessonsDataProvider({ children }) {
       loading,
       applyLessonRow,
       applyQuizRow,
+      removeQuizRow,
       applyMaterialRow,
       removeMaterialRow,
     ],

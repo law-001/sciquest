@@ -1,22 +1,31 @@
 import React from 'react'
-import { Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Copy, Pencil, Trash2 } from 'lucide-react'
 
 export default function EditableSlotFrame({
   children,
   onEdit,
   onMoveUp,
   onMoveDown,
+  onDuplicate,
   onDelete,
   isFirst,
   isLast,
   label = 'section',
+  issues = [],
 }) {
   function handleKeyDown(e) {
-    // Only reorder when the frame wrapper itself is focused, not a child button
+    // Only act when the frame wrapper itself is focused, not a child control
     if (e.target !== e.currentTarget) return
     if (e.key === 'ArrowUp' && !isFirst) { e.preventDefault(); onMoveUp() }
     else if (e.key === 'ArrowDown' && !isLast) { e.preventDefault(); onMoveDown() }
     else if (e.key === 'Enter') { e.preventDefault(); onEdit() }
+    else if ((e.key === 'd' || e.key === 'D') && (e.ctrlKey || e.metaKey) && onDuplicate) {
+      e.preventDefault()
+      onDuplicate()
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      e.preventDefault()
+      onDelete()
+    }
   }
 
   return (
@@ -24,8 +33,19 @@ export default function EditableSlotFrame({
       className="group relative focus-visible:outline-none"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      aria-label={`${label} — ArrowUp/Down to reorder, Enter to edit`}
+      aria-label={`${label} — Enter to edit, ArrowUp/Down to reorder, Ctrl+D to duplicate, Delete to remove`}
     >
+      {/* Completeness chip — information, so unlike the toolbar it stays visible */}
+      {issues.length > 0 && (
+        <div
+          className="absolute -top-3 left-4 z-20 flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700 shadow-sm dark:border-amber-800/50 dark:bg-amber-900/40 dark:text-amber-400"
+          title={issues.join('\n')}
+        >
+          <AlertTriangle className="h-3 w-3 shrink-0" />
+          Needs attention · {issues.length}
+        </div>
+      )}
+
       {/* Hover/focus toolbar — floats top-right */}
       <div
         className="absolute -top-3 right-2 z-20 flex items-center gap-0.5 bg-white dark:bg-stone-800 border border-orange-200 dark:border-stone-600 rounded-xl shadow-md px-1.5 py-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto"
@@ -37,6 +57,13 @@ export default function EditableSlotFrame({
           icon={<Pencil className="w-3.5 h-3.5" />}
           className="text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
         />
+        {onDuplicate && (
+          <ToolbarBtn
+            onClick={onDuplicate}
+            title="Duplicate (Ctrl+D)"
+            icon={<Copy className="w-3.5 h-3.5" />}
+          />
+        )}
         <div className="w-px h-4 bg-orange-100 dark:bg-stone-600 mx-0.5" />
         <ToolbarBtn
           onClick={onMoveUp}
@@ -53,7 +80,7 @@ export default function EditableSlotFrame({
         <div className="w-px h-4 bg-orange-100 dark:bg-stone-600 mx-0.5" />
         <ToolbarBtn
           onClick={onDelete}
-          title="Delete section"
+          title="Delete section (Del)"
           icon={<Trash2 className="w-3.5 h-3.5" />}
           className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
         />
@@ -74,6 +101,7 @@ function ToolbarBtn({ onClick, disabled, title, icon, className = 'text-stone-50
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-label={title}
       tabIndex={-1}
       className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${className}`}
     >

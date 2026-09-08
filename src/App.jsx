@@ -59,6 +59,7 @@ import { supabase } from "./lib/supabase";
 import { writeGameProgress, fetchCompletedGames } from "./lib/games/progress";
 import { XpToast } from "./components/XpToast";
 import { NotificationBubble } from "./components/NotificationBubble";
+import { quizAnswersKey, purgeLegacyStudentKeys } from "./lib/studentStorage";
 
 // localStorage helpers — track pending attempt ids per student so the
 // "Quiz Graded" notification can fire even after a logout/login cycle.
@@ -108,18 +109,19 @@ function writeNav(key, value) {
   } catch { /* quota / disabled */ }
 }
 
-// QuizContainer auto-saves answers to `quiz-answers-<lessonId>` and clears the
-// key on submit, so a lesson with a non-empty entry has an in-progress quiz.
+// QuizContainer auto-saves answers under this student's quiz-answers key and
+// clears it on submit, so a lesson with a non-empty entry has an in-progress
+// quiz.
 // Iterates in reverse so the most-advanced in-progress quiz wins when multiple
 // lessons have stale data. Already-submitted lessons (in lessonsPassed) are
 // skipped so cleared-but-not-removed entries don't cause false positives.
-function findOngoingQuizLessonId(week, lessonsPassed = []) {
+function findOngoingQuizLessonId(week, lessonsPassed = [], userId = null) {
   if (!week?.lessons) return null;
   for (let i = week.lessons.length - 1; i >= 0; i--) {
     const lesson = week.lessons[i];
     if (lessonsPassed.includes(lesson.id)) continue;
     try {
-      const raw = localStorage.getItem(`quiz-answers-${lesson.id}`);
+      const raw = localStorage.getItem(quizAnswersKey(userId, lesson.id));
       if (!raw) continue;
       const parsed = JSON.parse(raw);
       if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
@@ -236,19 +238,45 @@ function AppContent() {
     (a) => a.lesson_id === activeLessonId,
   ).length;
 
+  // Quiz answers and interactive state used to be stored without a user id, so
+  // anything written before that changed is still readable by the next person
+  // to sign in on this machine. Nothing reads those keys now; clear them out.
+  useEffect(() => {
+    purgeLegacyStudentKeys();
+  }, []);
+
   // Hydrate progress + quiz attempts from Supabase whenever a student logs in.
   // Staff don't have student_progress rows, so we skip the fetch for them.
   useEffect(() => {
     if (!user?.id || !isStudent) return;
     let cancelled = false;
-    Promise.all([
+    // allSettled, not all: these are four independent sources. Under Promise.all
+    // a single failure — one missing table, one slow endpoint — rejected the
+    // whole chain, and the student got no progress, no attempts, no achievements
+    // and no games at all. Each source now falls back on its own.
+    Promise.allSettled([
       fetchProgress(user.id),
       fetchAchievements(user.id),
       fetchCompletedGames(supabase, { studentId: user.id }),
       fetchInteractions(user.id),
     ])
-      .then(async ([{ completedLessons: done, completedRows: rows, attempts }, unlocked, games, interactions]) => {
+      .then(async (results) => {
         if (cancelled) return;
+        const [progressRes, achievementsRes, gamesRes, interactionsRes] = results;
+        for (const r of results) {
+          if (r.status === "rejected") {
+            console.error("Failed to load student progress:", r.reason);
+          }
+        }
+        const { completedLessons: done, completedRows: rows, attempts } =
+          progressRes.status === "fulfilled"
+            ? progressRes.value
+            : { completedLessons: [], completedRows: [], attempts: [] };
+        const unlocked =
+          achievementsRes.status === "fulfilled" ? achievementsRes.value : [];
+        const games = gamesRes.status === "fulfilled" ? gamesRes.value : [];
+        const interactions =
+          interactionsRes.status === "fulfilled" ? interactionsRes.value : [];
         setCompletedLessons(done);
         setCompletedRows(rows);
         setQuizAttempts(attempts);
@@ -289,15 +317,21 @@ function AppContent() {
           attempts,
           totalXp: totalXpEarned(rows, attempts),
         };
-        const { unlocked: nextUnlocked } = await syncAchievements(
-          user.id,
-          ctx,
-          unlocked,
-        );
-        if (!cancelled) setUnlockedAchievements(nextUnlocked);
+        // Only when the progress read actually succeeded. Deriving awards from a
+        // fallback of "no progress" would be deriving them from a network error.
+        if (progressRes.status === "fulfilled") {
+          const { unlocked: nextUnlocked } = await syncAchievements(
+            user.id,
+            ctx,
+            unlocked,
+          );
+          if (!cancelled) setUnlockedAchievements(nextUnlocked);
+        } else if (!cancelled) {
+          setUnlockedAchievements(unlocked);
+        }
       })
       .catch((err) => {
-        console.error("Failed to load student progress:", err);
+        console.error("Failed to apply student progress:", err);
       });
     return () => { cancelled = true };
   }, [user?.id, isStudent]);
@@ -649,7 +683,11 @@ function AppContent() {
 
     // If the student left a quiz mid-attempt (saved answers in localStorage),
     // jump straight into that quiz so they don't lose the in-progress work.
-    const ongoingQuizLessonId = findOngoingQuizLessonId(week, lessonsPassed);
+    const ongoingQuizLessonId = findOngoingQuizLessonId(
+      week,
+      lessonsPassed,
+      user?.id,
+    );
     if (ongoingQuizLessonId && !isQuizLocked(weekId, ongoingQuizLessonId)) {
       setActiveWeekId(weekId);
       setActiveLessonId(ongoingQuizLessonId);
