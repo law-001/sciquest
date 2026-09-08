@@ -30,13 +30,14 @@ export default function FoodChainSurvival({ user, profile, onExit, onProgressUpd
         onExitRef.current?.();
         return;
       }
-      if (data.type === 'fcs:cleared') {
+      if (data.type === 'fcs:cleared' && [1, 2, 3].includes(Number(data.levelId))) {
         recordRef.current?.({
           challengeId: `l${data.levelId}`,
           score: data.stars ?? 1,
           scoreUnit: 'stars',
-        }).catch(() => {});
-        if (data.allCleared) onProgressRef.current?.({ challengeId: 'all-links-restored' });
+        }).then(() => {
+          onProgressRef.current?.({ gameId: GAME_ID, challengeId: `l${data.levelId}`, completed: true, stars: data.stars ?? 1, progressSaved: true });
+        }).catch((err) => console.error('Failed to save level completion:', err));
       }
     }
     window.addEventListener('message', handleMessage);

@@ -23,7 +23,7 @@ export async function fetchLeaderboard(period = 'all') {
     since == null || (ts != null && new Date(ts).getTime() >= since)
 
   const [studentsRes, progressRes, attemptsRes, achRes] = await Promise.all([
-    supabase.from('students').select('id, first_name, last_name, avatar'),
+    supabase.from('students').select('id, first_name, last_name, avatar, avatar_style'),
     supabase
       .from('student_progress')
       .select('student_id, xp_awarded, completed_at, created_at')
@@ -33,6 +33,11 @@ export async function fetchLeaderboard(period = 'all') {
       .from('student_achievements')
       .select('student_id, achievement_key, unlocked_at'),
   ])
+  if (studentsRes.error?.code === '42703' || studentsRes.error?.code === 'PGRST204') {
+    const fallback = await supabase.from('students').select('id, first_name, last_name, avatar')
+    studentsRes.data = fallback.data
+    studentsRes.error = fallback.error
+  }
   for (const r of [studentsRes, progressRes, attemptsRes, achRes]) {
     if (r.error) throw r.error
   }
@@ -68,6 +73,7 @@ export async function fetchLeaderboard(period = 'all') {
         name:
           `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || 'Student',
         avatar: s.avatar ?? null,
+        avatarStyle: s.avatar_style,
         xp: a.xp + totalAchievementXp(a.keys),
       }
     })

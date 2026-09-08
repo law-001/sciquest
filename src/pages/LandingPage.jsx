@@ -1,3 +1,4 @@
+import { AchievementMedal } from "../components/AchievementMedal";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowRight,
@@ -377,7 +378,7 @@ function AchievementToast({ show }) {
       <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl shadow-2xl px-4 py-3 max-w-sm">
         <div className="relative shrink-0">
           <div className="w-11 h-11 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-white" />
+            <AchievementMedal achievementKey="curious-explorer" className="w-12 h-12" />
           </div>
           <span className="absolute -inset-1 rounded-full border-2 border-amber-400/50 animate-ping" />
         </div>

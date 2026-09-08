@@ -19,4 +19,10 @@ export const GAME_XP = {
     // One-time achievement bonus XP awarded on the first division completed.
     achievementXp: 75,
   },
+  'plant-cell': {
+    // XP by star rating, awarded per level completed (same scheme as the lab).
+    starsXp: [0, 40, 80, 120],
+    // One-time achievement bonus XP awarded on the first level completed.
+    achievementXp: 70,
+  },
 };

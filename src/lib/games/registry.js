@@ -4,6 +4,7 @@ import celldiv from "../../assets/celldivision.png";
 import mysteryLab from "../../assets/mysterylab.png";
 import foodchain from "../../assets/foodchain.png";
 import quakeready from "../../assets/quakeready.png";
+import plantcell from "../../assets/plantcell.svg";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -113,13 +114,37 @@ export const GAMES = {
       "Run a cell through mitosis and meiosis, one procedure at a time, and see what the daughter cells inherit.",
 
     subject: "Science",
-    relatedLessonIds: ["week-07-cell-division", "week-08-meiosis"],
+    relatedLessonIds: ["week-15", "week-16"],
     difficulty: 2,
     estimatedMinutes: 20,
     thumbnail: celldiv,
     engine: "react",
     category: "Biology",
     loader: () => import("../../games/cell-division-lab/index.jsx"),
+    minRole: "student",
+    totalLevels: 3,
+    countCompletedLevels: (progress) => {
+      const LEVEL_CHALLENGES = new Set(["l1", "l2", "l3"]);
+      return new Set(
+        progress
+          .filter((r) => r.completed && LEVEL_CHALLENGES.has(r.challenge_id))
+          .map((r) => r.challenge_id),
+      ).size;
+    },
+  },
+  "plant-cell": {
+    id: "plant-cell",
+    title: "Plant Cell: Keep the Cell Alive",
+    tagline:
+      "Run photosynthesis, balance the cell's water, then diagnose the organelle that fails.",
+    subject: "Science",
+    relatedLessonIds: [],
+    difficulty: 2,
+    estimatedMinutes: 15,
+    thumbnail: plantcell,
+    engine: "react",
+    category: "Biology",
+    loader: () => import("../../games/plant-cell/index.jsx"),
     minRole: "student",
     totalLevels: 3,
     countCompletedLevels: (progress) => {
