@@ -53,7 +53,7 @@ import {
   restoreStaticLesson,
   setLessonHidden,
 } from "../lib/lessons";
-import { deleteQuiz } from "../lib/quizzes";
+import { deleteQuiz, restoreStaticQuiz } from "../lib/quizzes";
 import {
   getPublishedWeekIds,
   savePublishedWeekIds,
@@ -371,7 +371,7 @@ function AddSectionModal({ existingSectionNames, onAdd, onClose }) {
                 <Loader2 className="w-6 h-6 text-secondary-500 animate-spin" />
               </div>
             ) : dbSections.length > 0 ? (
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <div className="themed-scrollbar space-y-2 max-h-56 overflow-y-auto pr-1">
                 {dbSections.map((section) => (
                   <button
                     key={section.id}
@@ -1450,6 +1450,14 @@ function LessonsSlot({
             </div>
           </div>
 
+          {getWeekState(expandedWeek.id) === "hidden" && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-sm font-bold">
+              <EyeOff className="w-4 h-4 shrink-0" />
+              This week is hidden from students. You can still edit its lessons
+              here — publish the week when you are ready.
+            </div>
+          )}
+
           {filteredLessons.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredLessons.map((lesson) => {
@@ -1644,19 +1652,15 @@ function LessonsSlot({
                   <Card
                     key={week.id}
                     className={cn(
-                      "p-5 transition-opacity",
-                      visible ? "cursor-pointer" : "opacity-60",
+                      "p-5 cursor-pointer transition-opacity",
+                      !visible && "opacity-60",
                     )}
-                    hoverable={visible}
-                    onClick={
-                      visible
-                        ? () => {
-                            setExpandedWeekId(week.id);
-                            setSearch("");
-                            setSearchOpen(false);
-                          }
-                        : undefined
-                    }
+                    hoverable
+                    onClick={() => {
+                      setExpandedWeekId(week.id);
+                      setSearch("");
+                      setSearchOpen(false);
+                    }}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 flex items-center justify-center">
@@ -2060,7 +2064,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
               <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
                 {allSubs.length > 0 ? (
                   allSubs.map((sub) => {
-                    const types = getManualQuestionTypes(sub.lessonId);
+                    const types = getManualQuestionTypes(sub.lessonId, getQuiz);
                     return (
                       <tr
                         key={sub.id}
@@ -2166,7 +2170,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
           <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
             {allSubs.length > 0 ? (
               allSubs.map((sub) => {
-                const types = getManualQuestionTypes(sub.lessonId);
+                const types = getManualQuestionTypes(sub.lessonId, getQuiz);
                 return (
                   <div
                     key={sub.id}
@@ -3969,7 +3973,7 @@ function GradeModal({ submission, onClose, onSaved }) {
         </div>
 
         {/* Scrollable body: submission summary + answer review */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="themed-scrollbar flex-1 overflow-y-auto p-6 space-y-5">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-stone-500 dark:text-stone-400 font-medium">
@@ -4416,7 +4420,7 @@ function DeleteQuizModal({
         <p className="text-sm text-stone-500 dark:text-stone-400 mb-5">
           {isCustom
             ? `Permanently delete the quiz for "${quiz?.title ?? lesson.title}"? This cannot be undone.`
-            : `Hide the quiz for "${quiz?.title ?? lesson.title}" from students? The original quiz will be preserved and can be restored by editing the quiz again.`}
+            : `Hide the quiz for "${quiz?.title ?? lesson.title}" from students? The original quiz is preserved — use the restore button on this card to bring it back.`}
         </p>
         {error && (
           <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 dark:text-red-400 text-sm font-bold">
@@ -4439,6 +4443,104 @@ function DeleteQuizModal({
             className="flex-1 px-4 py-2.5 rounded-xl border border-orange-200 dark:border-stone-600 text-stone-600 dark:text-stone-300 font-bold text-sm hover:bg-orange-50 dark:hover:bg-stone-700 disabled:opacity-60 transition-colors"
           >
             Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Quiz restore confirmation modal ───────────────────────────────────────────
+//
+// Both states call restoreStaticQuiz, which removes the override row so the
+// seed quiz shows again. The wording differs because the teacher is undoing
+// two different things: a deletion, or a set of edits.
+
+function RestoreQuizModal({
+  lesson,
+  quiz,
+  isDeleted,
+  onConfirm,
+  onClose,
+  isLoading,
+  error,
+}) {
+  const name = quiz?.title ?? lesson.title;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={!isLoading ? onClose : undefined}
+    >
+      <div
+        className="relative w-full max-w-md bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          disabled={isLoading}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+            <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-stone-900 dark:text-white">
+              {isDeleted ? "Restore Quiz" : "Restore Default"}
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {isDeleted
+                ? "Students will see it again"
+                : "Your edits will be removed"}
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+          {isDeleted ? (
+            <>
+              Bring back the quiz for{" "}
+              <strong className="text-stone-900 dark:text-white">{name}</strong>?
+              It returns with its original questions — any edits made before it
+              was hidden are discarded.
+            </>
+          ) : (
+            <>
+              Restore the quiz for{" "}
+              <strong className="text-stone-900 dark:text-white">{name}</strong>{" "}
+              to its original questions? All your edits will be discarded and
+              students will see the default version.
+            </>
+          )}
+        </p>
+        {error && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 dark:text-red-400 text-sm font-bold">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
+        )}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white font-bold text-sm transition-colors"
+          >
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isLoading
+              ? "Restoring…"
+              : isDeleted
+                ? "Restore Quiz"
+                : "Restore Default"}
           </button>
         </div>
       </div>
@@ -4473,11 +4575,13 @@ function LessonQuizCard({
   onToggle,
   onEdit,
   onDelete,
+  onRestore,
   isCustomQuiz,
   isEdited,
+  isDeleted,
 }) {
   return (
-    <Card className="p-5">
+    <Card className={cn("p-5", isDeleted && "opacity-60")}>
       <div className="flex items-start justify-between mb-3">
         <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center">
           <ClipboardCheck className="w-5 h-5 text-accent-500" />
@@ -4488,16 +4592,33 @@ function LessonQuizCard({
               Custom
             </span>
           )}
-          {isEdited && !isCustomQuiz && (
+          {isDeleted && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-700/50">
+              Deleted
+            </span>
+          )}
+          {isEdited && !isCustomQuiz && !isDeleted && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
               Edited
             </span>
           )}
+          {/* A deleted quiz merges to null, so the editor would open it blank —
+              restoring is the way back, not editing. */}
+          {onRestore && isEdited && !isCustomQuiz && (
+            <button
+              onClick={onRestore}
+              title={isDeleted ? "Restore quiz" : "Restore default"}
+              className="p-1.5 rounded-lg text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+              aria-label={isDeleted ? "Restore quiz" : "Restore default"}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
             onClick={onEdit}
-            title="Edit quiz"
+            title={isDeleted ? "Write a new quiz" : "Edit quiz"}
             className="p-1.5 rounded-lg text-stone-400 hover:text-secondary-600 dark:hover:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
-            aria-label="Edit quiz"
+            aria-label={isDeleted ? "Write a new quiz" : "Edit quiz"}
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
@@ -4561,8 +4682,14 @@ function LessonQuizCard({
         </div>
       )}
       <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
-        {quiz?.questions?.length ?? 0}{" "}
-        {quiz?.questions?.length === 1 ? "question" : "questions"}
+        {isDeleted ? (
+          "Deleted — students see no quiz for this lesson"
+        ) : (
+          <>
+            {quiz?.questions?.length ?? 0}{" "}
+            {quiz?.questions?.length === 1 ? "question" : "questions"}
+          </>
+        )}
       </p>
       <div className="space-y-1.5 mb-3">
         <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
@@ -4619,7 +4746,7 @@ function QuizzesManagementSlot({
   quizSettings,
   onEditQuiz,
 }) {
-  const { weeks, getQuiz, dbQuizzes } = useLessonsData();
+  const { weeks, getQuiz, dbQuizzes, removeQuizRow } = useLessonsData();
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -4627,6 +4754,9 @@ function QuizzesManagementSlot({
   const [deletingQuizLesson, setDeletingQuizLesson] = useState(null);
   const [deleteQuizLoading, setDeleteQuizLoading] = useState(false);
   const [deleteQuizError, setDeleteQuizError] = useState(null);
+  const [restoringQuizLesson, setRestoringQuizLesson] = useState(null);
+  const [restoreQuizLoading, setRestoreQuizLoading] = useState(false);
+  const [restoreQuizError, setRestoreQuizError] = useState(null);
 
   function toggleLessonOpen(lessonId) {
     setOpenLessonId((prev) => (prev === lessonId ? null : lessonId));
@@ -4649,6 +4779,25 @@ function QuizzesManagementSlot({
       setDeleteQuizError(err.message || "Failed to delete quiz.");
     } finally {
       setDeleteQuizLoading(false);
+    }
+  }
+
+  // Removes the override row so the seed quiz is what students get again —
+  // undoing a soft delete and any edits in one step, since both live in that
+  // same row. Only reachable for static quizzes: a custom quiz is hard-deleted
+  // and has nothing to fall back to.
+  async function handleRestoreQuizConfirm() {
+    if (!restoringQuizLesson) return;
+    setRestoreQuizError(null);
+    setRestoreQuizLoading(true);
+    try {
+      await restoreStaticQuiz(restoringQuizLesson.id);
+      removeQuizRow(restoringQuizLesson.id);
+      setRestoringQuizLesson(null);
+    } catch (err) {
+      setRestoreQuizError(err.message || "Failed to restore quiz.");
+    } finally {
+      setRestoreQuizLoading(false);
     }
   }
 
@@ -4765,6 +4914,14 @@ function QuizzesManagementSlot({
             </div>
           </div>
 
+          {!isWeekPublished(expandedWeek.id, publishedQuizWeekIds) && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-sm font-bold">
+              <EyeOff className="w-4 h-4 shrink-0" />
+              Quizzes for this week are hidden from students. You can still edit
+              them here — publish the week when you are ready.
+            </div>
+          )}
+
           {filteredLessons.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
               {filteredLessons.map((lesson) => {
@@ -4785,6 +4942,9 @@ function QuizzesManagementSlot({
                 const dbRow = dbQuizzes.get(lesson.id);
                 const isCustomQuiz = !!dbRow?.is_custom;
                 const isEdited = !!dbRow && !isCustomQuiz;
+                // Soft-deleted static quiz: the row survives with is_hidden,
+                // which is what makes it restorable.
+                const isDeleted = !!dbRow?.is_hidden;
                 return (
                   <LessonQuizCard
                     key={lesson.id}
@@ -4804,8 +4964,13 @@ function QuizzesManagementSlot({
                       setDeleteQuizError(null);
                       setDeletingQuizLesson(lesson);
                     }}
+                    onRestore={() => {
+                      setRestoreQuizError(null);
+                      setRestoringQuizLesson(lesson);
+                    }}
                     isCustomQuiz={isCustomQuiz}
                     isEdited={isEdited}
+                    isDeleted={isDeleted}
                   />
                 );
               })}
@@ -4860,19 +5025,15 @@ function QuizzesManagementSlot({
                   <Card
                     key={week.id}
                     className={cn(
-                      "p-5 transition-opacity",
-                      published ? "cursor-pointer" : "opacity-60",
+                      "p-5 cursor-pointer transition-opacity",
+                      !published && "opacity-60",
                     )}
-                    hoverable={published}
-                    onClick={
-                      published
-                        ? () => {
-                            setExpandedWeekId(week.id);
-                            setSearch("");
-                            setSearchOpen(false);
-                          }
-                        : undefined
-                    }
+                    hoverable
+                    onClick={() => {
+                      setExpandedWeekId(week.id);
+                      setSearch("");
+                      setSearchOpen(false);
+                    }}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center">
@@ -4952,6 +5113,21 @@ function QuizzesManagementSlot({
           }}
           isLoading={deleteQuizLoading}
           error={deleteQuizError}
+        />
+      )}
+
+      {restoringQuizLesson && (
+        <RestoreQuizModal
+          lesson={restoringQuizLesson}
+          quiz={getQuiz(restoringQuizLesson.id)}
+          isDeleted={!!dbQuizzes.get(restoringQuizLesson.id)?.is_hidden}
+          onConfirm={handleRestoreQuizConfirm}
+          onClose={() => {
+            setRestoringQuizLesson(null);
+            setRestoreQuizError(null);
+          }}
+          isLoading={restoreQuizLoading}
+          error={restoreQuizError}
         />
       )}
     </div>

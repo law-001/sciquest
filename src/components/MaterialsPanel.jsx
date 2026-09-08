@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Paperclip } from 'lucide-react'
 
 import Card from './Card'
@@ -11,10 +11,14 @@ export default function MaterialsPanel({ lessonId }) {
   const { getMaterials } = useLessonsData()
   const materials = getMaterials(lessonId)
 
-  const ref = useRef(null)
   const [visible, setVisible] = useState(false)
 
-  useEffect(() => {
+  // A callback ref rather than an effect: materials load asynchronously, so the
+  // first render returns null and there is no node to observe. React re-runs
+  // this once the node mounts. An effect with [] deps fires only on that first
+  // render, against a null ref, leaving the section stuck at opacity 0.
+  const observeRef = useCallback((node) => {
+    if (!node) return
     const obs = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
@@ -24,7 +28,7 @@ export default function MaterialsPanel({ lessonId }) {
       },
       { threshold: 0.1 },
     )
-    if (ref.current) obs.observe(ref.current)
+    obs.observe(node)
     return () => obs.disconnect()
   }, [])
 
@@ -32,7 +36,7 @@ export default function MaterialsPanel({ lessonId }) {
 
   return (
     <section
-      ref={ref}
+      ref={observeRef}
       className="mt-16 border-t border-orange-200 pt-8 dark:border-stone-700"
       style={{
         opacity: visible ? 1 : 0,

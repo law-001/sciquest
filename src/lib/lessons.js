@@ -2,16 +2,9 @@
 // Degrades gracefully (returns empty Map, logs a warning) when Supabase is
 // not configured so a misconfigured deploy doesn't crash the whole app.
 
-import { createClient } from '@supabase/supabase-js'
+import { supabaseOrNull } from './supabaseClient'
 
-const _url = import.meta.env.VITE_SUPABASE_URL
-const _key = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-// Intentionally separate from src/lib/supabase.js so this module can return
-// null and degrade gracefully when env vars are absent (supabase.js throws).
-const supabase = (_url && _key)
-  ? createClient(_url, _key, { auth: { persistSession: true } })
-  : null
+const supabase = supabaseOrNull
 
 if (!supabase) {
   console.warn('[lessons] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY missing — dynamic lessons disabled')
@@ -43,6 +36,11 @@ export function getCachedLessons() {
 
 export async function fetchAllLessons() {
   if (!supabase) return new Map()
+  // RLS limits these rows to authenticated readers, so a signed-out fetch
+  // succeeds with zero rows rather than erroring. Writing that empty result to
+  // the cache would wipe the copy the next visitor loads from, so skip it.
+  const { data: sessionData } = await supabase.auth.getSession()
+  if (!sessionData?.session) return readCache()
   try {
     const { data, error } = await supabase.from('lessons').select('*')
     if (error) throw error
@@ -120,6 +118,17 @@ export async function uploadLessonImage(file, lessonId) {
   if (error) throw error
   const { data } = supabase.storage.from('lesson-media').getPublicUrl(path)
   return data.publicUrl
+}
+
+// Content fetches are gated on an authenticated session, so a visitor who signs
+// in mid-session has to re-run them: LessonsDataProvider mounts outside
+// AuthProvider and cannot watch auth itself. Returns an unsubscribe function.
+export function subscribeToSignIn(onSignIn) {
+  if (!supabase) return () => {}
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN') onSignIn()
+  })
+  return () => data?.subscription?.unsubscribe()
 }
 
 // Returns an unsubscribe function. Realtime must be enabled on the lessons

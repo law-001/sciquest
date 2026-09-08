@@ -1,6 +1,18 @@
 import React from 'react'
-import { X, CheckSquare, ToggleLeft, AlignLeft, PenLine, FileText, GitCompare, Hash, ListOrdered, Image, BookOpen } from 'lucide-react'
-import { QUESTION_META } from './quiz-slot-forms'
+import {
+  AlignLeft,
+  BookOpen,
+  CheckSquare,
+  FileText,
+  GitCompare,
+  Hash,
+  Image,
+  ListOrdered,
+  PenLine,
+  ToggleLeft,
+} from 'lucide-react'
+import { QUESTION_META, QUESTION_GROUPS } from './quiz-slot-forms'
+import TypePickerModal from './editor/TypePickerModal'
 
 const QUESTION_ICONS = {
   'multiple-choice': CheckSquare,
@@ -29,47 +41,26 @@ const QUESTION_COLORS = {
 }
 
 export default function QuestionPickerModal({ onSelect, onClose }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-2xl bg-[#fdf6e3] dark:bg-stone-900 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-orange-100 dark:border-stone-700">
-          <div>
-            <h2 className="text-lg font-black text-stone-900 dark:text-white">Choose a Question Type</h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400 mt-0.5">Pick the kind of question you want to add</p>
-          </div>
-          <button onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-orange-50 dark:hover:bg-stone-700 transition-colors"
-            aria-label="Close">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  // Same safeguard as the slot picker: a type added to QUESTION_META but not to
+  // a group is still offered rather than silently unreachable.
+  const grouped = new Set(QUESTION_GROUPS.flatMap((g) => g.types))
+  const ungrouped = Object.keys(QUESTION_META).filter((t) => !grouped.has(t))
+  const groups = ungrouped.length
+    ? [...QUESTION_GROUPS, { label: 'Other', desc: '', types: ungrouped }]
+    : QUESTION_GROUPS
 
-        <div className="p-6 grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
-          {Object.keys(QUESTION_META).map(type => {
-            const meta = QUESTION_META[type]
-            const Icon = QUESTION_ICONS[type] || CheckSquare
-            const colors = QUESTION_COLORS[type] || 'text-stone-600 bg-stone-50'
-            return (
-              <button key={type} type="button" onClick={() => onSelect(type)}
-                className="group flex flex-col items-start gap-2 p-4 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-orange-200 dark:hover:border-stone-500">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${colors} transition-transform duration-200 group-hover:scale-110`}>
-                  <Icon className="w-4.5 h-4.5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight">{meta.label}</p>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 leading-snug">{meta.desc}</p>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </div>
+  return (
+    <TypePickerModal
+      title="Choose a Question Type"
+      subtitle="Pick the kind of question you want to add"
+      searchPlaceholder="Search questions…"
+      groups={groups}
+      meta={QUESTION_META}
+      icons={QUESTION_ICONS}
+      colors={QUESTION_COLORS}
+      fallbackIcon={CheckSquare}
+      onSelect={onSelect}
+      onClose={onClose}
+    />
   )
 }

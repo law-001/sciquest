@@ -1,16 +1,11 @@
 // Teacher-uploaded lesson materials — YouTube links, PDFs, PPTs, Word docs.
 //
-// Structured like src/lib/lessons.js: its own client that degrades to null so a
+// Structured like src/lib/lessons.js: degrades to a null client so a
 // misconfigured deploy shows lessons without materials instead of crashing.
 
-import { createClient } from '@supabase/supabase-js'
+import { supabaseOrNull } from './supabaseClient'
 
-const _url = import.meta.env.VITE_SUPABASE_URL
-const _key = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-const supabase = (_url && _key)
-  ? createClient(_url, _key, { auth: { persistSession: true } })
-  : null
+const supabase = supabaseOrNull
 
 if (!supabase) {
   console.warn('[materials] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY missing — lesson materials disabled')
@@ -92,6 +87,10 @@ export function getCachedMaterials() {
 
 export async function fetchAllMaterials() {
   if (!supabase) return []
+  // See fetchAllLessons: an anonymous read returns zero rows under RLS, and
+  // caching that would discard the offline copy.
+  const { data: sessionData } = await supabase.auth.getSession()
+  if (!sessionData?.session) return readCache()
   try {
     const { data, error } = await supabase
       .from('lesson_materials')
