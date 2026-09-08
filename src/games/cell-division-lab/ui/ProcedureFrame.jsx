@@ -1,33 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PROCEDURES } from '../procedures';
-import { MAX_ZOOM, MIN_ZOOM, StageZoomContext, clampZoom } from './stage-zoom';
+import {
+  DEFAULT_STAGE_VIEW, MAX_ZOOM, MIN_ZOOM, StageViewContext,
+  clampStageView, clampZoom, stageUnitsPerPixel, zoomAt,
+} from './stage-zoom';
 
-const NUDGE_PX = 16;
-
-// 1 is the framing every procedure is laid out for. Above it magnifies what
-// you are handling; below it widens the window on the cell.
-const DEFAULT_ZOOM = 1;
+// DEFAULT_STAGE_VIEW is the framing every procedure is laid out for. Zooming
+// above it magnifies what you are handling; below it widens the window on the
+// cell. On a phone the stage is drawn small enough that zooming in is the
+// normal way to work, so the zoom carries a pan with it.
 const ZOOM_BUTTON_STEP = 0.25;
 const WHEEL_ZOOM_RATIO = 1.1;
+// A trackpad pinch arrives as a ctrl-held wheel with a fine-grained delta, so
+// it gets a continuous curve rather than the notch a mouse wheel wants.
+const TRACKPAD_PINCH_DIVISOR = 100;
 
 // Chrome around a single procedure. The procedure itself owns the whole stage
-// — it draws into the cell — so everything here floats over the cell rather
-// than sitting in a panel on top of it.
-export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, paused, onComplete }) {
+// — it draws into the cell — so the only things floating over the cell are the
+// readouts. The instruction is the notebook's, not the stage's.
+export function ProcedureFrame({
+  phase, procedure, procedureProps, durationSec, paused, onStatus, onComplete,
+}) {
   const [secondsLeft, setSecondsLeft] = useState(durationSec);
   const [stars, setStars] = useState(3);
-  const [status, setStatus] = useState({ hint: '', tone: 'info', submit: null });
-  // The instruction sits under the readouts to begin with; from there it can be
-  // dragged anywhere on the stage, so it never has to cover the part of the
-  // cell it is talking about.
-  const [hintOffset, setHintOffset] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [view, setView] = useState(DEFAULT_STAGE_VIEW);
 
   const frameRef = useRef(null);
-  const hintRef = useRef(null);
-  const dragRef = useRef(null);
   const pinchRef = useRef(null);
-  const zoomRef = useRef(DEFAULT_ZOOM);
+  const viewRef = useRef(DEFAULT_STAGE_VIEW);
   const doneRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   const remainingRef = useRef(durationSec);
@@ -50,8 +50,6 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
     return () => clearInterval(id);
   }, [paused]);
 
-  const handleStatus = useCallback((next) => setStatus(next), []);
-
   // Wheel and two-finger pinch, wired by hand because both have to be able to
   // preventDefault — React registers wheel and touch listeners as passive.
   useEffect(() => {
@@ -60,7 +58,10 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
 
     function handleWheel(e) {
       e.preventDefault();
-      setZoom((z) => clampZoom(e.deltaY > 0 ? z / WHEEL_ZOOM_RATIO : z * WHEEL_ZOOM_RATIO));
+      const factor = e.ctrlKey
+        ? Math.exp(-e.deltaY / TRACKPAD_PINCH_DIVISOR)
+        : e.deltaY > 0 ? 1 / WHEEL_ZOOM_RATIO : WHEEL_ZOOM_RATIO;
+      setView((v) => zoomAt(frame, v, v.zoom * factor, { x: e.clientX, y: e.clientY }));
     }
 
     const spread = (touches) => Math.hypot(
@@ -68,16 +69,41 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
       touches[0].clientY - touches[1].clientY,
     );
 
+    const midpoint = (touches) => ({
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2,
+    });
+
     function handleTouchStart(e) {
       if (e.touches.length !== 2) return;
-      pinchRef.current = { spread: spread(e.touches), zoom: zoomRef.current };
+      pinchRef.current = {
+        spread: spread(e.touches),
+        mid: midpoint(e.touches),
+        view: viewRef.current,
+      };
     }
 
+    // Two fingers zoom and pan in one gesture: the spread magnifies about the
+    // point the pinch started on, and the midpoint then drags that point
+    // wherever the fingers take it.
     function handleTouchMove(e) {
       const pinch = pinchRef.current;
       if (!pinch || e.touches.length !== 2) return;
       e.preventDefault();
-      setZoom(clampZoom(pinch.zoom * (spread(e.touches) / pinch.spread)));
+
+      const zoomed = zoomAt(
+        frame,
+        pinch.view,
+        pinch.view.zoom * (spread(e.touches) / pinch.spread),
+        pinch.mid,
+      );
+      const mid = midpoint(e.touches);
+      const units = stageUnitsPerPixel(frame, zoomed.zoom);
+      setView(clampStageView({
+        zoom: zoomed.zoom,
+        panX: zoomed.panX - (mid.x - pinch.mid.x) * units,
+        panY: zoomed.panY - (mid.y - pinch.mid.y) * units,
+      }));
     }
 
     function handleTouchEnd(e) {
@@ -98,55 +124,17 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
     };
   }, []);
 
-  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+  useEffect(() => { viewRef.current = view; }, [view]);
 
-  // Holds the instruction inside the stage however it is moved. Measured from
-  // its layout position, which the drag transform leaves untouched.
-  const clampOffset = useCallback((next) => {
-    const hint = hintRef.current;
-    const frame = hint?.offsetParent;
-    if (!frame) return next;
-    return {
-      x: Math.min(Math.max(next.x, -hint.offsetLeft), frame.clientWidth - hint.offsetWidth - hint.offsetLeft),
-      y: Math.min(Math.max(next.y, -hint.offsetTop), frame.clientHeight - hint.offsetHeight - hint.offsetTop),
-    };
-  }, []);
-
-  function handleDragStart(e) {
-    if (e.button > 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { pointerX: e.clientX, pointerY: e.clientY, ...hintOffset };
-  }
-
-  function handleDragMove(e) {
-    const start = dragRef.current;
-    if (!start) return;
-    setHintOffset(clampOffset({
-      x: start.x + (e.clientX - start.pointerX),
-      y: start.y + (e.clientY - start.pointerY),
-    }));
-  }
-
-  function handleDragEnd(e) {
-    dragRef.current = null;
-    if (e.currentTarget.hasPointerCapture?.(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
-  }
-
-  // Arrow keys move it too, so it is not a mouse-only affordance.
-  function handleHintKeyDown(e) {
-    const step = {
-      ArrowUp: { x: 0, y: -NUDGE_PX },
-      ArrowDown: { x: 0, y: NUDGE_PX },
-      ArrowLeft: { x: -NUDGE_PX, y: 0 },
-      ArrowRight: { x: NUDGE_PX, y: 0 },
-    }[e.key];
-    if (!step) return;
-    e.preventDefault();
-    setHintOffset((prev) => clampOffset({ x: prev.x + step.x, y: prev.y + step.y }));
-  }
-
+  // The buttons have no pointer to zoom about, so they use the middle of the
+  // frame — which is what the reader is looking at.
   function zoomBy(delta) {
-    setZoom((z) => clampZoom(z + delta));
+    const frame = frameRef.current;
+    const box = frame?.getBoundingClientRect();
+    const centre = box
+      ? { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+      : { x: 0, y: 0 };
+    setView((v) => zoomAt(frame, v, clampZoom(v.zoom + delta), centre));
   }
 
   function handleComplete(result) {
@@ -165,24 +153,24 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
   return (
     <div className="cdl-proc" ref={frameRef}>
       <div className="cdl-proc__stage">
-        <StageZoomContext.Provider value={zoom}>
+        <StageViewContext.Provider value={view}>
           {Component
             ? (
               <Component
                 {...procedureProps}
                 onComplete={handleComplete}
                 onStarsUpdate={setStars}
-                onStatus={handleStatus}
+                onStatus={onStatus}
               />
             )
             : <p className="cdl-hint cdl-hint--bad">No procedure registered for “{procedure}”.</p>}
-        </StageZoomContext.Provider>
+        </StageViewContext.Provider>
       </div>
 
       <div className="cdl-overlay">
         <div className="cdl-tag">
           <span className="cdl-eyebrow" style={{ color: phase.color }}>Step</span>
-          <h2 className="cdl-title" style={{ fontSize: 17, lineHeight: 1.2 }}>{phase.displayName}</h2>
+          <h2 className="cdl-title cdl-tag__title">{phase.displayName}</h2>
         </div>
 
         <div className="cdl-tag cdl-tag--row">
@@ -203,12 +191,12 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
         </div>
       </div>
 
-      <div className="cdl-zoom" title="Scroll or pinch to zoom">
+      <div className="cdl-zoom" title="Scroll or pinch to zoom — two fingers also pan">
         <button
           type="button"
           className="cdl-icon-btn cdl-icon-btn--sm"
           onClick={() => zoomBy(ZOOM_BUTTON_STEP)}
-          disabled={zoom >= MAX_ZOOM}
+          disabled={view.zoom >= MAX_ZOOM}
           aria-label="Zoom in"
         >
           +
@@ -216,48 +204,20 @@ export function ProcedureFrame({ phase, procedure, procedureProps, durationSec, 
         <button
           type="button"
           className="cdl-zoom__level cdl-mono"
-          onClick={() => setZoom(DEFAULT_ZOOM)}
-          aria-label={`Zoom ${Math.round(zoom * 100)} percent — reset to fit`}
+          onClick={() => setView(DEFAULT_STAGE_VIEW)}
+          aria-label={`Zoom ${Math.round(view.zoom * 100)} percent — reset to fit`}
         >
-          {Math.round(zoom * 100)}%
+          {Math.round(view.zoom * 100)}%
         </button>
         <button
           type="button"
           className="cdl-icon-btn cdl-icon-btn--sm"
           onClick={() => zoomBy(-ZOOM_BUTTON_STEP)}
-          disabled={zoom <= MIN_ZOOM}
+          disabled={view.zoom <= MIN_ZOOM}
           aria-label="Zoom out"
         >
           −
         </button>
-      </div>
-
-      <div className="cdl-hint-layer">
-        <div
-          ref={hintRef}
-          className="cdl-hint-dock"
-          style={{ transform: `translate(${hintOffset.x}px, ${hintOffset.y}px)` }}
-        >
-          <p
-            className={`cdl-hint cdl-hint--float cdl-hint--${status.tone ?? 'info'}`}
-            aria-live="polite"
-            tabIndex={0}
-            title="Drag, or use the arrow keys, to move this out of the way"
-            onPointerDown={handleDragStart}
-            onPointerMove={handleDragMove}
-            onPointerUp={handleDragEnd}
-            onPointerCancel={handleDragEnd}
-            onKeyDown={handleHintKeyDown}
-          >
-            {status.hint && <span className="cdl-hint__grip" aria-hidden="true">⠿</span>}
-            {status.hint}
-          </p>
-          {status.submit && (
-            <button type="button" className="cdl-btn" onClick={status.submit.onSubmit}>
-              {status.submit.label}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
