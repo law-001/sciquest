@@ -19,7 +19,7 @@ export function LevelSelect({ progressByLevel, onSelect, onExit }) {
         <button type="button" className="cdl-icon-btn" onClick={onExit} aria-label="Back to games">←</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="cdl-eyebrow">Cell Division Lab</div>
-          <h1 className="cdl-title" style={{ fontSize: 26, lineHeight: 1.15 }}>Choose a division</h1>
+          <h1 className="cdl-title cdl-select__title">Choose a division</h1>
         </div>
       </header>
 

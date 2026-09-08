@@ -20,7 +20,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
       <div className="cdl-gate__head">
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="cdl-eyebrow" style={{ color: phase.color }}>Checkpoint</div>
-          <h2 className="cdl-title" style={{ fontSize: 18, lineHeight: 1.2 }}>{phase.displayName}</h2>
+          <h2 className="cdl-title cdl-gate__title">{phase.displayName}</h2>
         </div>
         <span className={`cdl-pill${choice ? (isCorrect ? ' cdl-pill--good' : ' cdl-pill--bad') : ''}`}>
           {choice ? (isCorrect ? 'Right call' : 'Wrong call') : 'Your call'}
@@ -29,9 +29,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
 
       <div className="cdl-gate__body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5, color: 'var(--cdl-ink-1)' }}>
-            {checkpoint.prompt}
-          </p>
+          <p className="cdl-gate__prompt">{checkpoint.prompt}</p>
 
           {evidence.length > 0 && (
             <div className="cdl-card" style={{ boxShadow: 'none' }}>
@@ -71,32 +69,20 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
                   onClick={() => handleChoose(opt.id)}
                   disabled={!!choice}
                   aria-label={`${opt.label} — ${opt.detail}`}
+                  className="cdl-gate__option"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    textAlign: 'left',
-                    padding: '12px 14px',
-                    minHeight: 56,
-                    borderRadius: 'var(--cdl-radius)',
                     cursor: choice ? 'default' : 'pointer',
                     background: isAnswer
                       ? 'var(--cdl-good-soft)'
                       : isChosen ? 'var(--cdl-bad-soft)' : 'var(--cdl-surface)',
-                    border: `1.5px solid ${
-                      isAnswer ? 'var(--cdl-good)' : isChosen ? 'var(--cdl-bad)' : 'var(--cdl-line-strong)'
-                    }`,
+                    borderColor: isAnswer
+                      ? 'var(--cdl-good)'
+                      : isChosen ? 'var(--cdl-bad)' : 'var(--cdl-line-strong)',
                     opacity: choice && !isChosen && !isAnswer ? 0.5 : 1,
-                    transition: 'background 0.2s, border-color 0.2s, opacity 0.2s',
                   }}
                 >
-                  <span
-                    className="cdl-mono"
-                    style={{ fontWeight: 800, fontSize: 14.5, color: 'var(--cdl-ink-1)', minWidth: 100 }}
-                  >
-                    {opt.label}
-                  </span>
-                  <span style={{ fontSize: 14.5, color: 'var(--cdl-ink-2)', flex: 1 }}>{opt.detail}</span>
+                  <span className="cdl-mono cdl-gate__option-label">{opt.label}</span>
+                  <span className="cdl-gate__option-detail">{opt.detail}</span>
                   {choice && (isAnswer || isChosen) && (
                     <span aria-hidden="true" style={{ fontWeight: 800, color: isAnswer ? 'var(--cdl-good)' : 'var(--cdl-bad)' }}>
                       {isAnswer ? '✓' : '✗'}

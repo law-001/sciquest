@@ -3,15 +3,15 @@ import { markHowToPlaySeen } from './how-to-play-seen';
 const POINTS = [
   {
     title: 'The cell is the board',
-    body: 'You work straight on the cell itself — drag, press and draw on the chromosomes, the DNA and the outside of the cell. Scroll the wheel, pinch, or use the + and − buttons in the corner to zoom in and out.',
+    body: 'You work straight on the cell itself — drag, press and draw on the chromosomes, the DNA and the outside of the cell. Scroll the wheel, pinch, or use the + and − buttons in the corner to zoom in and out. On a touchscreen, two fingers also slide the cell about once you have zoomed in.',
   },
   {
-    title: 'Read the instruction, then move it',
-    body: 'The floating instruction tells you your next move. Drag it out of the way (or move it with the arrow keys) if it is covering something you need.',
+    title: 'Do this now',
+    body: 'The bar at the top of the notebook always tells you your next move, and it changes as you work. It turns green when a step is done and red when something has gone wrong.',
   },
   {
     title: 'The notebook explains the step',
-    body: 'The panel on the right says what the cell is doing, how the controls work, and what you still have to finish.',
+    body: 'Under the instruction, the notebook says what the cell is doing, how the controls work, and what you still have to finish. It sits beside the cell on a big screen and under it on a phone or tablet, where the Notes button opens and closes it.',
   },
   {
     title: 'Beat the timer',
