@@ -163,3 +163,100 @@ export function subscribeToMaterialChanges(onChange) {
     .subscribe()
   return () => { supabase.removeChannel(channel) }
 }
+
+// ── Opening and saving ───────────────────────────────────────────────────────
+
+const KIND_MIME = {
+  pdf: 'application/pdf',
+  ppt: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  doc: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+}
+
+const KIND_EXT = { pdf: 'pdf', ppt: 'pptx', doc: 'docx' }
+
+// Uploads are stored as `<lessonId>/<timestamp>-<original name>`; strip both
+// parts so a saved file lands under the name the teacher uploaded.
+export function fileNameForMaterial(material) {
+  const fromPath = material.storage_path?.split('/').pop()
+  if (fromPath) return fromPath.replace(/^\d+-/, '')
+  const fromUrl = decodeURIComponent(material.url?.split('?')[0].split('/').pop() ?? '')
+  if (fromUrl) return fromUrl.replace(/^\d+-/, '')
+  const ext = KIND_EXT[material.kind]
+  return ext ? `${material.title}.${ext}` : material.title
+}
+
+// Word and PowerPoint have no native browser renderer. Microsoft's viewer shows
+// them in a tab instead of handing the file to a desktop app; it fetches the
+// file itself, which works because the lesson-materials bucket is public.
+function viewerUrlFor(material) {
+  if (material.kind === 'doc' || material.kind === 'ppt') {
+    return `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(material.url)}`
+  }
+  return material.url
+}
+
+async function fetchMaterialBlob(material) {
+  const res = await fetch(material.url)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const blob = await res.blob()
+  const mime = KIND_MIME[material.kind]
+  // Storage replays whatever content type the browser guessed at upload time,
+  // and an empty guess becomes application/octet-stream — which is enough on its
+  // own to make a browser download a PDF instead of rendering it.
+  return mime && blob.type !== mime ? blob.slice(0, blob.size, mime) : blob
+}
+
+function openBlank() {
+  const tab = window.open('about:blank', '_blank')
+  if (tab) tab.opener = null
+  return tab
+}
+
+function sendTo(tab, url) {
+  if (tab) tab.location.replace(url)
+  else window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+// Shows the material in a new browser tab, leaving the SciQuest tab untouched.
+// The tab is opened synchronously, before any await, so the popup blocker sees
+// it as part of the click.
+export async function openMaterial(material) {
+  const tab = openBlank()
+  if (material.kind !== 'pdf') {
+    sendTo(tab, viewerUrlFor(material))
+    return
+  }
+  try {
+    const url = URL.createObjectURL(await fetchMaterialBlob(material))
+    sendTo(tab, url)
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  } catch {
+    sendTo(tab, material.url)
+  }
+}
+
+// Saves the file without navigating: `download` on a plain anchor is ignored
+// cross-origin, so the storage URL would replace the SciQuest tab instead.
+export async function downloadMaterial(material) {
+  const filename = fileNameForMaterial(material)
+  try {
+    const url = URL.createObjectURL(await fetchMaterialBlob(material))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.rel = 'noopener'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 30_000)
+  } catch {
+    // Fallback for a blocked fetch: Storage sets the attachment header itself
+    // for `?download=`, and a hidden frame keeps the current tab in place.
+    const sep = material.url.includes('?') ? '&' : '?'
+    const frame = document.createElement('iframe')
+    frame.hidden = true
+    frame.src = `${material.url}${sep}download=${encodeURIComponent(filename)}`
+    document.body.appendChild(frame)
+    setTimeout(() => frame.remove(), 60_000)
+  }
+}

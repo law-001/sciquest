@@ -8,7 +8,12 @@ import {
   Presentation,
 } from 'lucide-react'
 
-import { formatFileSize, youtubeIdFromUrl } from '../lib/materials'
+import {
+  downloadMaterial,
+  formatFileSize,
+  openMaterial,
+  youtubeIdFromUrl,
+} from '../lib/materials'
 
 const KIND_META = {
   youtube: { icon: Play, label: 'Video', tone: 'text-red-600 bg-red-50 dark:bg-red-900/20' },
@@ -62,6 +67,7 @@ function YouTubeEmbed({ videoId, title }) {
 }
 
 function MaterialRow({ material }) {
+  const [busy, setBusy] = useState(null)
   const meta = metaFor(material.kind)
   const Icon = meta.icon
   const videoId = material.kind === 'youtube' ? youtubeIdFromUrl(material.url) : null
@@ -84,7 +90,25 @@ function MaterialRow({ material }) {
     )
   }
 
-  const isDownload = material.kind === 'pdf' || material.kind === 'ppt' || material.kind === 'doc'
+  const isFile = material.kind === 'pdf' || material.kind === 'ppt' || material.kind === 'doc'
+
+  const handleOpen = async () => {
+    setBusy('open')
+    try {
+      await openMaterial(material)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const handleSave = async () => {
+    setBusy('save')
+    try {
+      await downloadMaterial(material)
+    } finally {
+      setBusy(null)
+    }
+  }
 
   return (
     <li className="flex items-center gap-3 rounded-xl border border-orange-100 bg-white p-3 dark:border-stone-700 dark:bg-stone-800">
@@ -104,24 +128,25 @@ function MaterialRow({ material }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <a
-          href={material.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex min-h-11 items-center gap-1.5 rounded-xl border border-orange-200 px-3 py-2 text-xs font-bold text-stone-600 transition-colors hover:bg-orange-50 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
+        <button
+          type="button"
+          onClick={handleOpen}
+          disabled={busy !== null}
+          className="flex min-h-11 items-center gap-1.5 rounded-xl border border-orange-200 px-3 py-2 text-xs font-bold text-stone-600 transition-colors hover:bg-orange-50 disabled:opacity-60 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-          Open
-        </a>
-        {isDownload && (
-          <a
-            href={material.url}
-            download
-            className="flex min-h-11 items-center gap-1.5 rounded-xl bg-primary-500 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-primary-600"
+          {busy === 'open' ? 'Opening…' : 'Open'}
+        </button>
+        {isFile && (
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={busy !== null}
+            className="flex min-h-11 items-center gap-1.5 rounded-xl bg-primary-500 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-primary-600 disabled:opacity-60"
           >
             <Download className="h-3.5 w-3.5" />
-            Save
-          </a>
+            {busy === 'save' ? 'Saving…' : 'Save'}
+          </button>
         )}
       </div>
     </li>

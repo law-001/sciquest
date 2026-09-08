@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { CHECKPOINTS, PHASES } from '../data/phases';
 import { PROBLEMS, ACCURACY_COST, problemForProcedure } from '../data/defects';
 import { PROCEDURE_SECONDS } from '../procedures';
@@ -9,6 +9,15 @@ import { hasSeenHowToPlay } from './how-to-play-seen';
 import { LabNotebook } from './LabNotebook';
 import { PhaseTrack } from './PhaseTrack';
 import { ProcedureFrame } from './ProcedureFrame';
+
+// Until a procedure reports in there is still something to say — the phase's
+// own controls line, or for a checkpoint the decision it is waiting on.
+function fallbackInstruction(step, phase) {
+  if (step.kind === 'checkpoint') {
+    return { hint: 'Read the cell readout, then choose GO or WAIT', tone: 'info' };
+  }
+  return { hint: phase.controls ?? 'Work on the cell', tone: 'info' };
+}
 
 // One attempt at one level. Mounted only while a run is in progress, so `run`
 // is never null in here — which keeps every derived value below safe to
@@ -24,6 +33,19 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
   }));
   const [paused, setPaused] = useState(false);
   const [showGuide, setShowGuide] = useState(() => !hasSeenHowToPlay());
+  // The running instruction is the notebook's headline, so it is held here
+  // rather than inside the procedure frame that produces it. Tagged with the
+  // step it belongs to and dropped the moment the step changes, so a stale
+  // instruction can never outlive the procedure that wrote it — the reset has
+  // to happen in render, before the next procedure's mount effect reports in.
+  const [status, setStatus] = useState({ stepKey: null, value: null });
+
+  const handleStatus = useCallback((next) => {
+    setStatus((prev) => ({ stepKey: prev.stepKey, value: next }));
+  }, []);
+
+  const stepKey = `${run.stepIndex}-${run.results.length}`;
+  if (status.stepKey !== stepKey) setStatus({ stepKey, value: null });
 
   const step = level.steps[run.stepIndex] ?? null;
   const phase = step ? PHASES[step.phaseId] : null;
@@ -195,12 +217,13 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
                 </>
               ) : (
                 <ProcedureFrame
-                  key={`pr-${run.stepIndex}-${step.procedure}-${run.results.length}`}
+                  key={`pr-${stepKey}-${step.procedure}`}
                   phase={phase}
                   procedure={step.procedure}
                   procedureProps={{ ...(step.props ?? {}), fault: activeFault }}
                   durationSec={PROCEDURE_SECONDS[step.procedure] ?? 45}
                   paused={paused || showGuide}
+                  onStatus={handleStatus}
                   onComplete={handleProcedureComplete}
                 />
               )}
@@ -211,6 +234,7 @@ export function RunScreen({ level, reducedMotion, onExit, onFinish }) {
             phase={phase}
             problems={run.problems}
             stepLabel={`Step ${run.stepIndex + 1} of ${level.steps.length}`}
+            instruction={status.value ?? fallbackInstruction(step, phase)}
           />
         </div>
       </div>
