@@ -931,12 +931,15 @@
 
 /* ── How to play ───────────────────────────────────────────────────────── */
 
+/* A flex column, not centred grid items: a card taller than a phone screen
+   has its top centred out of the scroll range and unreachable, where auto
+   margins collapse to nothing the moment the space runs out. */
 .cdl-modal {
   position: absolute;
   inset: 0;
   z-index: 40;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
   background: rgba(20, 16, 10, 0.5);
   backdrop-filter: blur(3px);
@@ -944,10 +947,15 @@
   touch-action: pan-y;
 }
 
+/* Never taller than the screen: the steps scroll inside the card so the title
+   and the Start button stay put rather than running off the bottom. */
 .cdl-howto {
   width: min(560px, 100%);
+  max-height: 100%;
   margin: auto;
   padding: 22px;
+  display: flex;
+  flex-direction: column;
 }
 
 .cdl-howto__title {
@@ -963,6 +971,10 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .cdl-howto__item {
@@ -995,7 +1007,7 @@
 
 .cdl-howto__body { font-size: 14px; }
 
-.cdl-howto__go { width: 100%; }
+.cdl-howto__go { width: 100%; flex-shrink: 0; }
 
 /* ── Full-page screens (level select, results) ─────────────────────────── */
 
@@ -1239,10 +1251,19 @@
   .cdl-gate__head { padding: 10px 12px; }
   .cdl-gate__prompt { font-size: 15px; }
   .cdl-notebook:not(.cdl-notebook--collapsed) { max-height: 58%; }
-  .cdl-modal { padding: 12px; }
-  .cdl-howto { padding: 18px 16px; }
-  .cdl-howto__title { font-size: 22px; }
-  .cdl-howto__list { gap: 12px; }
+  .cdl-modal {
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .cdl-howto { padding: 16px 14px; }
+  .cdl-howto__title { font-size: 21px; margin: 2px 0 12px; }
+  .cdl-howto__list { gap: 12px; margin-bottom: 14px; }
+  .cdl-howto__item { gap: 10px; }
+  .cdl-howto__num { width: 22px; height: 22px; font-size: 12px; }
+  .cdl-howto__heading { font-size: 14px; }
+  .cdl-howto__body { font-size: 13.5px; }
 }
 
 /* Narrow phones. Everything that can be inferred from the number beside it
@@ -1279,9 +1300,18 @@
   .cdl-overlay { padding: 6px 8px; }
   .cdl-instruct { padding-top: 10px; padding-bottom: 10px; gap: 7px; }
   .cdl-instruct__text { font-size: 17px; }
-  .cdl-howto { padding: 16px; }
-  .cdl-howto__title { font-size: 20px; margin-bottom: 12px; }
-  .cdl-howto__list { gap: 10px; }
+  .cdl-modal {
+    padding: 10px;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .cdl-howto { padding: 14px; }
+  .cdl-howto__title { font-size: 19px; margin: 2px 0 10px; }
+  .cdl-howto__list { gap: 10px; margin-bottom: 12px; }
+  .cdl-howto__item { gap: 9px; }
+  .cdl-howto__num { width: 21px; height: 21px; font-size: 11px; }
+  .cdl-howto__heading { font-size: 13.5px; }
+  .cdl-howto__body { font-size: 13px; }
 }
 
 /* Landscape and stacked: the sheet may take more of the height than it does in
