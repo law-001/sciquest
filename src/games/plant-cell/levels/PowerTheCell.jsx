@@ -8,6 +8,8 @@ import {
 } from '../engine/photosynthesis';
 import { useSimLoop } from '../engine/useSimLoop';
 import { CellView } from '../ui/CellView';
+import { PlantView } from '../ui/PlantView';
+import { ViewTabs } from '../ui/ViewTabs';
 import { Meter, StatChip, StatusLine } from '../ui/CellStats';
 import { toneForValue } from '../ui/tone';
 import { ResourceSlider } from '../ui/ResourceControls';
@@ -16,6 +18,8 @@ import { RunFrame } from '../ui/RunFrame';
 // Level 1 — sunlight, water and carbon dioxide in; glucose and oxygen out.
 export function PowerTheCell({ level, reducedMotion, particleBudget, onExit, onFinish }) {
   const [controls, setControls] = useState({ light: 50, water: 50, co2: 50 });
+  // 'plant' is the object view (whole plant by a window); 'cell' zooms inside.
+  const [view, setView] = useState('plant');
   const [sim, setSim] = useState(() => createPhotosynthesisState(level.sim));
   const [paused, setPaused] = useState(false);
   const finishedRef = useRef(false);
@@ -51,17 +55,33 @@ export function PowerTheCell({ level, reducedMotion, particleBudget, onExit, onF
 
   const stage = (
     <div className="pc-stage">
-      <CellView
-        activity={sim.rate}
-        respiration={sim.glucose > 0 ? 0.6 : 0.1}
-        vacuoleFill={45}
-        turgor={Math.max(40, sim.cellWater)}
-        health={sim.health}
-        photosynthesis={{ ...controls, rate: sim.rate }}
-        reducedMotion={reducedMotion}
-        particleBudget={particleBudget}
-        title="Plant cell running photosynthesis"
-      />
+      <ViewTabs view={view} onChange={setView} />
+
+      {view === 'plant' ? (
+        <PlantView
+          light={controls.light}
+          water={controls.water}
+          co2={controls.co2}
+          soil={sim.soil}
+          health={sim.health}
+          turgor={sim.cellWater}
+          reducedMotion={reducedMotion}
+          particleBudget={particleBudget}
+          title="The plant by the window"
+        />
+      ) : (
+        <CellView
+          activity={sim.rate}
+          respiration={sim.glucose > 0 ? 0.6 : 0.1}
+          vacuoleFill={45}
+          turgor={Math.max(40, sim.cellWater)}
+          health={sim.health}
+          photosynthesis={{ ...controls, rate: sim.rate }}
+          reducedMotion={reducedMotion}
+          particleBudget={particleBudget}
+          title="Plant cell running photosynthesis"
+        />
+      )}
       <div className="pc-equation" aria-label="The photosynthesis equation">
         <span className="pc-equation__side">
           <b style={{ color: '#d9a824' }}>sunlight</b> + <b style={{ color: '#3f7fb5' }}>water</b> + <b style={{ color: '#6f6553' }}>carbon dioxide</b>
@@ -79,6 +99,37 @@ export function PowerTheCell({ level, reducedMotion, particleBudget, onExit, onF
   const panel = (
     <>
       <StatusLine tone={advice.tone}>{advice.text}</StatusLine>
+
+      <div className="pc-eyebrow">Your controls</div>
+      <div className="pc-panel__group">
+        <ResourceSlider
+          id="pc-light"
+          label="Sunlight on the leaf"
+          icon="☀️"
+          accent="#d9a824"
+          value={controls.light}
+          onChange={(light) => setControls((c) => ({ ...c, light }))}
+          hint="More light drives photosynthesis, but the leaf also loses water faster."
+        />
+        <ResourceSlider
+          id="pc-water"
+          label="Water drawn from the roots"
+          icon="💧"
+          accent="#3f7fb5"
+          value={controls.water}
+          onChange={(water) => setControls((c) => ({ ...c, water }))}
+          hint="The soil around the roots refills slowly. Drain it and uptake stops."
+        />
+        <ResourceSlider
+          id="pc-co2"
+          label="Stomata open (carbon dioxide in)"
+          icon="🌬️"
+          accent="#6f6553"
+          value={controls.co2}
+          onChange={(co2) => setControls((c) => ({ ...c, co2 }))}
+          hint="Open stomata let carbon dioxide in — and let water vapour out."
+        />
+      </div>
 
       <div className="pc-panel__group">
         <Meter
@@ -125,35 +176,6 @@ export function PowerTheCell({ level, reducedMotion, particleBudget, onExit, onF
         <StatChip label="Oxygen released" value={`${Math.round(sim.oxygen)}`} tone="info" />
       </div>
 
-      <div className="pc-panel__group">
-        <ResourceSlider
-          id="pc-light"
-          label="Sunlight on the leaf"
-          icon="☀️"
-          accent="#d9a824"
-          value={controls.light}
-          onChange={(light) => setControls((c) => ({ ...c, light }))}
-          hint="More light drives photosynthesis, but the leaf also loses water faster."
-        />
-        <ResourceSlider
-          id="pc-water"
-          label="Water drawn from the roots"
-          icon="💧"
-          accent="#3f7fb5"
-          value={controls.water}
-          onChange={(water) => setControls((c) => ({ ...c, water }))}
-          hint="The soil around the roots refills slowly. Drain it and uptake stops."
-        />
-        <ResourceSlider
-          id="pc-co2"
-          label="Stomata open (carbon dioxide in)"
-          icon="🌬️"
-          accent="#6f6553"
-          value={controls.co2}
-          onChange={(co2) => setControls((c) => ({ ...c, co2 }))}
-          hint="Open stomata let carbon dioxide in — and let water vapour out."
-        />
-      </div>
     </>
   );
 

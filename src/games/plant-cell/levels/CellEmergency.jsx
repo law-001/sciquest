@@ -3,6 +3,8 @@ import { SUSPECTS, TESTS } from '../data/faults';
 import { ORGANELLES } from '../data/organelles';
 import { useSimLoop } from '../engine/useSimLoop';
 import { CellView } from '../ui/CellView';
+import { PlantView } from '../ui/PlantView';
+import { ViewTabs } from '../ui/ViewTabs';
 import { Meter, StatChip, StatusLine } from '../ui/CellStats';
 import { toneForValue } from '../ui/tone';
 import { HoldButton } from '../ui/ResourceControls';
@@ -29,6 +31,8 @@ function initialState(sim) {
 export function CellEmergency({ level, fault, reducedMotion, particleBudget, onExit, onFinish }) {
   const [state, setState] = useState(() => initialState(level.sim));
   const [selected, setSelected] = useState(null);
+  // Organelles are only clickable in the cell view, so this level opens there.
+  const [view, setView] = useState('cell');
   const [message, setMessage] = useState(null);
   const [holding, setHolding] = useState(false);
   const finishedRef = useRef(false);
@@ -121,24 +125,45 @@ export function CellEmergency({ level, fault, reducedMotion, particleBudget, onE
     }
     : fault.symptoms);
 
+  const thirsty = fault.id === 'vacuole' || fault.id === 'membrane';
+
   const stage = (
     <div className="pc-stage">
-      <CellView
-        activity={repaired ? 0.7 : fault.id === 'chloroplast' ? 0.08 : 0.5}
-        respiration={repaired ? 0.7 : fault.id === 'mitochondrion' ? 0.05 : 0.5}
-        vacuoleFill={repaired ? 55 : fault.id === 'vacuole' ? 18 : 50}
-        turgor={repaired ? 70 : fault.id === 'vacuole' || fault.id === 'membrane' ? 38 : 65}
-        health={state.health}
-        damagedId={state.phase === 'investigate' ? null : fault.organelleId}
-        selectedId={selected}
-        onSelectOrganelle={state.phase === 'investigate' ? setSelected : null}
-        reducedMotion={reducedMotion}
-        particleBudget={particleBudget}
-        title="Plant cell showing symptoms"
-      />
+      <ViewTabs view={view} onChange={setView} />
+
+      {view === 'plant' ? (
+        <PlantView
+          light={70}
+          water={repaired ? 60 : thirsty ? 12 : 45}
+          co2={repaired ? 55 : 35}
+          soil={60}
+          health={state.health}
+          turgor={repaired ? 70 : thirsty ? 38 : 65}
+          reducedMotion={reducedMotion}
+          particleBudget={particleBudget}
+          title={repaired ? 'The plant recovering' : 'The plant showing symptoms'}
+        />
+      ) : (
+        <CellView
+          activity={repaired ? 0.7 : fault.id === 'chloroplast' ? 0.08 : 0.5}
+          respiration={repaired ? 0.7 : fault.id === 'mitochondrion' ? 0.05 : 0.5}
+          vacuoleFill={repaired ? 55 : fault.id === 'vacuole' ? 18 : 50}
+          turgor={repaired ? 70 : thirsty ? 38 : 65}
+          health={state.health}
+          damagedId={state.phase === 'investigate' ? null : fault.organelleId}
+          selectedId={selected}
+          onSelectOrganelle={state.phase === 'investigate' ? setSelected : null}
+          reducedMotion={reducedMotion}
+          particleBudget={particleBudget}
+          title="Plant cell showing symptoms"
+        />
+      )}
+
       <p className="pc-flow">
         {state.phase === 'investigate'
-          ? 'Click an organelle in the cell (or use the list) to look at it more closely.'
+          ? view === 'plant'
+            ? 'The whole plant is showing the damage. Switch to the cell view to click an organelle.'
+            : 'Click an organelle in the cell (or use the list) to look at it more closely.'
           : repaired
             ? 'The repaired organelle is back at work and the cell is recovering.'
             : 'Hold the repair button to rebuild the damaged organelle.'}
