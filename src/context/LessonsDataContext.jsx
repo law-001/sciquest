@@ -79,8 +79,11 @@ function mergeWeeks(staticWeeks, dbLessons, { includeHidden = false } = {}) {
     for (const lesson of week.lessons) {
       const override = dbLessons.get(lesson.id)
       if (override) {
+        // `signature` is developer-owned code, not editable content, so it has
+        // no DB column. Carry it over from the seed or a teacher's first edit
+        // would silently delete the lesson's pinned interactive.
         if (!override.is_hidden || includeHidden)
-          merged.push(dbRowToLesson(override))
+          merged.push({ ...dbRowToLesson(override), signature: lesson.signature })
       } else {
         merged.push(lesson)
       }
