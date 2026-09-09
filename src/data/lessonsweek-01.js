@@ -60,6 +60,15 @@ const week01 = {
       heroImage: microscope,
       heroImageAlt: "Microscopic view of cells",
 
+      signature: {
+        widgetId: "model-gallery",
+        heading: "Watch It: Four Models Doing Their Job",
+        intro:
+          "A bridge flexing under a truck, an atom with electrons going round, a formula plotting itself, a hurricane tracking up a coast. Run each one and watch what it is for.",
+        instruction: "Run all four models",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Breakdown",
@@ -313,6 +322,15 @@ const week01 = {
       xp: 50,
       heroImage: scimethod,
       heroImageAlt: "Students conducting a scientific investigation in class",
+
+      signature: {
+        widgetId: "investigation-run",
+        heading: "Watch It: Fourteen Days of Growing",
+        intro:
+          "Set the one thing you are allowed to change, then watch two bean plants grow day by day while the graph plots itself.",
+        instruction: "Set the light, then run the full 14 days",
+        xp: 25,
+      },
 
       sections: [
         "Introduction",
@@ -612,6 +630,15 @@ const week01 = {
       xp: 50,
       heroImage: model,
       heroImageAlt: "Computer simulation model",
+
+      signature: {
+        widgetId: "globe-unroll",
+        heading: "Watch It: Unroll the Globe",
+        intro:
+          "Drag the globe flat and watch Greenland swell to the size of Africa. Same coastlines, same maths — just flattened.",
+        instruction: "Unroll it all the way, then roll it back",
+        xp: 25,
+      },
 
       sections: [
         "Introduction",

@@ -38,6 +38,15 @@ export const week02 = {
       heroImage: matter,
       heroImageAlt: "Microscopic view illustrating particle theory",
 
+      signature: {
+        widgetId: "particle-lab",
+        heading: "Watch It: A Box of Real Particles",
+        intro:
+          "Live particles with real speeds. Heat them and they break their pattern; cool them and they snap back into it. Everything particle theory claims is on screen.",
+        instruction: "Drive the sliders and watch all five behaviours happen",
+        xp: 25,
+      },
+
       sections: [
         "What is Matter?",
         "Important Properties of Matter",
@@ -231,6 +240,15 @@ export const week02 = {
       xp: 50,
       heroImage: lesson6hero,
       heroImageAlt: "Diagram showing the three main states of matter",
+
+      signature: {
+        widgetId: "state-change-lab",
+        heading: "Watch It: Water on a Burner",
+        intro:
+          "Hold the flame under a beaker of ice and watch it through: the lattice breaking, the thermometer stalling, the bubbles rising, the vapour filling the glass.",
+        instruction: "Heat it, cool it, and watch all six changes happen",
+        xp: 25,
+      },
 
       sections: [
         "Introduction",
