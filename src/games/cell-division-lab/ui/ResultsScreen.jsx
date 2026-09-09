@@ -43,7 +43,7 @@ export function ResultsScreen({ level, stars, accuracy, problems, xpEarned, onRe
         <button type="button" className="cdl-icon-btn" onClick={onExit} aria-label="Back to games">←</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="cdl-eyebrow">Level {level.number} · {level.name}</div>
-          <h1 className="cdl-title" style={{ fontSize: 24, lineHeight: 1.15 }}>{outcome.title}</h1>
+          <h1 className="cdl-title cdl-select__title">{outcome.title}</h1>
         </div>
       </header>
 

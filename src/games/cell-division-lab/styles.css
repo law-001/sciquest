@@ -163,6 +163,7 @@
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 360px;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .cdl-stage-wrap {
@@ -325,6 +326,7 @@
   gap: 2px;
   overflow-x: auto;
   scrollbar-width: none;
+  touch-action: pan-x;
   max-width: 100%;
   padding: 4px 0;
 }
@@ -371,15 +373,136 @@
 /* ── Lab notebook ──────────────────────────────────────────────────────── */
 
 .cdl-notebook {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   border-left: 1.5px solid var(--cdl-line);
   background: var(--cdl-bg-2);
-  padding: 16px;
+}
+
+/* The notes run past the bottom of the panel more often than not, and a card
+   sliced off at the edge reads as broken rather than as scrollable. */
+.cdl-notebook::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30px;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--cdl-bg-2), transparent);
+}
+
+.cdl-notebook__body {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The game is hosted in a touch-action: none viewport box, so every scroller
+     inside it has to name the axis it wants back. */
+  touch-action: pan-y;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 0;
+  padding: 16px;
+  padding-bottom: max(34px, env(safe-area-inset-bottom));
 }
+
+.cdl-notebook__title { font-size: 19px; margin: 4px 0 10px; }
+
+/* The running instruction. It is read every few seconds while a procedure is
+   live, so it gets the top of the panel, the display face, and an accent in
+   the tone the procedure last reported — never the tone alone: the wording
+   always says what happened too. */
+.cdl-instruct {
+  --cdl-tone: var(--cdl-teal);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px 16px 14px;
+  background: var(--cdl-surface);
+  border-bottom: 1.5px solid var(--cdl-line);
+  border-left: 5px solid var(--cdl-tone);
+  box-shadow: var(--cdl-shadow);
+  transition: border-color 0.3s;
+}
+.cdl-instruct--good { --cdl-tone: var(--cdl-good); }
+.cdl-instruct--bad { --cdl-tone: var(--cdl-bad); }
+.cdl-instruct--busy { --cdl-tone: var(--cdl-orange); }
+
+.cdl-instruct__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cdl-instruct__eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cdl-tone);
+  white-space: nowrap;
+}
+
+.cdl-instruct__step {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--cdl-ink-4);
+}
+
+.cdl-instruct__text {
+  margin: 0;
+  font-family: var(--cdl-font-display);
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--cdl-ink-1);
+  text-wrap: balance;
+  transition: color 0.3s;
+}
+.cdl-instruct--good .cdl-instruct__text { color: var(--cdl-good); }
+.cdl-instruct--bad .cdl-instruct__text { color: var(--cdl-bad); }
+.cdl-instruct--busy .cdl-instruct__text { color: var(--cdl-orange-deep); }
+
+.cdl-instruct__pop {
+  display: block;
+  animation: cdl-instruct-in 0.34s cubic-bezier(0.34, 1.3, 0.5, 1) both;
+}
+
+.cdl-instruct__submit { width: 100%; }
+
+@keyframes cdl-instruct-in {
+  0%   { opacity: 0; transform: translateY(-5px); }
+  100% { opacity: 1; transform: none; }
+}
+
+.cdl-notebook__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--cdl-bad);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Only a stacked notebook collapses; beside the stage there is nothing to
+   collapse it out of the way of, so the handle is not shown at all. */
+.cdl-notebook__toggle { display: none; }
 
 .cdl-card {
   background: var(--cdl-surface);
@@ -492,28 +615,6 @@
 
 .cdl-overlay button { pointer-events: auto; }
 
-/* The instruction starts under the readouts and is dragged from there, so it
-   never has to sit on top of the part of the cell it is talking about. The
-   layer is the drag area; only the dock inside it takes pointer events. */
-.cdl-hint-layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 74px 14px 14px;
-  pointer-events: none;
-}
-
-.cdl-hint-dock {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  max-width: min(720px, 100%);
-  pointer-events: auto;
-}
-
 /* Magnifier for the stage. Bottom-left, where no procedure puts anything and
    the instruction never starts. */
 .cdl-zoom {
@@ -558,6 +659,8 @@
 
 .cdl-tag--row { display: flex; align-items: center; gap: 14px; }
 
+.cdl-tag__title { font-size: 17px; line-height: 1.2; }
+
 /* ── Checkpoint gate ───────────────────────────────────────────────────── */
 
 .cdl-gate {
@@ -576,6 +679,40 @@
   overflow: hidden;
 }
 
+.cdl-gate__title { font-size: 18px; line-height: 1.2; }
+
+.cdl-gate__prompt {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--cdl-ink-1);
+}
+
+.cdl-gate__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1.5px solid var(--cdl-line-strong);
+  border-radius: var(--cdl-radius);
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.cdl-gate__option-label {
+  min-width: 100px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--cdl-ink-1);
+}
+
+.cdl-gate__option-detail {
+  flex: 1;
+  font-size: 14.5px;
+  color: var(--cdl-ink-2);
+}
+
 .cdl-gate__head {
   display: flex;
   align-items: center;
@@ -589,6 +726,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   padding: 14px 16px 16px;
 }
 
@@ -632,57 +771,7 @@
   min-height: 17px;
   transition: color 0.3s;
 }
-.cdl-hint--good { color: var(--cdl-good); }
 .cdl-hint--bad { color: var(--cdl-bad); }
-.cdl-hint--busy { color: var(--cdl-orange-deep); }
-.cdl-hint--info { color: var(--cdl-ink-2); }
-
-/* The running instruction. It sits over the cell, so it has to hold its own
-   against whatever is behind it — hence the size, the weight and the solid
-   backing rather than a wash. */
-.cdl-hint--float {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  line-height: 1.35;
-  font-weight: 700;
-  letter-spacing: 0.005em;
-  text-wrap: balance;
-  padding: 12px 20px;
-  border-radius: 18px;
-  color: var(--cdl-ink-1);
-  background: color-mix(in srgb, var(--cdl-surface) 94%, transparent);
-  border: 2px solid var(--cdl-line-strong);
-  box-shadow: var(--cdl-shadow);
-  backdrop-filter: blur(8px);
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-}
-
-.cdl-hint--float:active { cursor: grabbing; }
-.cdl-hint--float:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 3px; }
-
-/* Before a procedure reports in there is nothing to say — keep the live region
-   in the tree, drop the capsule around it. */
-.cdl-hint--float:empty {
-  min-height: 0;
-  padding: 0;
-  border-color: transparent;
-  background: none;
-  box-shadow: none;
-}
-
-.cdl-hint__grip {
-  font-size: 15px;
-  letter-spacing: -0.08em;
-  color: var(--cdl-ink-4);
-}
-
-.cdl-hint--float.cdl-hint--good { color: var(--cdl-good); border-color: var(--cdl-good); }
-.cdl-hint--float.cdl-hint--bad { color: var(--cdl-bad); border-color: var(--cdl-bad); }
-.cdl-hint--float.cdl-hint--busy { color: var(--cdl-orange-deep); border-color: var(--cdl-orange); }
 
 /* ── Cell animations ───────────────────────────────────────────────────── */
 
@@ -837,26 +926,36 @@
 .cdl-app--still .cdl-cue-down,
 .cdl-app--still .cdl-cue-left,
 .cdl-app--still .cdl-cue-right,
+.cdl-app--still .cdl-instruct__pop,
 .cdl-app--still .cdl-plate { animation: none; }
 
 /* ── How to play ───────────────────────────────────────────────────────── */
 
+/* A flex column, not centred grid items: a card taller than a phone screen
+   has its top centred out of the scroll range and unreachable, where auto
+   margins collapse to nothing the moment the space runs out. */
 .cdl-modal {
   position: absolute;
   inset: 0;
   z-index: 40;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
   background: rgba(20, 16, 10, 0.5);
   backdrop-filter: blur(3px);
   overflow-y: auto;
+  touch-action: pan-y;
 }
 
+/* Never taller than the screen: the steps scroll inside the card so the title
+   and the Start button stay put rather than running off the bottom. */
 .cdl-howto {
   width: min(560px, 100%);
+  max-height: 100%;
   margin: auto;
   padding: 22px;
+  display: flex;
+  flex-direction: column;
 }
 
 .cdl-howto__title {
@@ -872,6 +971,10 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .cdl-howto__item {
@@ -904,7 +1007,7 @@
 
 .cdl-howto__body { font-size: 14px; }
 
-.cdl-howto__go { width: 100%; }
+.cdl-howto__go { width: 100%; flex-shrink: 0; }
 
 /* ── Full-page screens (level select, results) ─────────────────────────── */
 
@@ -931,10 +1034,16 @@
   flex-shrink: 0;
 }
 
+.cdl-select__title {
+  font-size: clamp(21px, 4.6vw, 26px);
+  line-height: 1.15;
+}
+
 .cdl-select__body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  touch-action: pan-y;
   display: flex;
   padding: 24px 18px 40px;
 }
@@ -996,6 +1105,7 @@
 }
 
 .cdl-results {
+  width: 100%;
   max-width: 700px;
   margin: 0 auto;
   display: flex;
@@ -1003,39 +1113,229 @@
   gap: 16px;
 }
 
+/* Safe areas. The game is mounted edge to edge in a fixed viewport box, so on
+   a notched phone the chrome — never the stage — carries the insets. */
+.cdl-select__head,
+.cdl-hud {
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+}
+.cdl-select__body { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+
 @media (max-width: 900px) {
   .cdl-level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 620px) {
   .cdl-level-grid { grid-template-columns: 1fr; }
-  .cdl-select__body { padding: 16px 12px 32px; }
-  .cdl-select__head { padding: 12px; gap: 10px; }
+  .cdl-select__body {
+    padding: 16px 12px max(32px, env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  .cdl-select__head {
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    gap: 10px;
+  }
+  .cdl-level-card { padding: 16px 14px 14px; }
+  .cdl-level-card__num { font-size: 36px; }
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────── */
 
+/* Tablet portrait and down: the notebook stops being a column beside the stage
+   and becomes a sheet under it, so the stage keeps the full width. */
 @media (max-width: 900px) {
-  .cdl-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  /* Flex, not grid: a percentage cap only resolves against a parent with a
+     definite height, and an auto grid row is not one — as a grid item the
+     notebook's cap was dropped and the sheet ran off the bottom of the phone. */
+  .cdl-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cdl-stage-wrap {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
   .cdl-notebook {
+    flex: 0 0 auto;
     border-left: none;
     border-top: 1.5px solid var(--cdl-line);
-    max-height: 34%;
-    padding: 12px;
   }
+
+  /* Capped only while the notes are open. Collapsed, the panel is the
+     instruction on its own and trimming it hides the thing being read. */
+  .cdl-notebook:not(.cdl-notebook--collapsed) { max-height: 52%; }
+
+  /* Folded away, the instruction is the last thing on the screen — so it is
+     what the home indicator sits over unless it carries the inset itself. */
+  .cdl-notebook--collapsed .cdl-instruct {
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .cdl-notebook__body { padding: 12px; gap: 12px; }
+
+  .cdl-instruct {
+    border-left: none;
+    border-top: 5px solid var(--cdl-tone);
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+
+  /* The notes fold away; the instruction above them never does. */
+  .cdl-notebook__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--cdl-line-strong);
+    background: var(--cdl-surface-2);
+    color: var(--cdl-ink-2);
+    font-family: var(--cdl-font-body);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .cdl-notebook__toggle:hover { background: var(--cdl-bg-2); }
+  .cdl-notebook__toggle:focus-visible { outline: 2.5px solid var(--cdl-teal); outline-offset: 2px; }
+
+  .cdl-notebook__chevron { font-size: 10px; color: var(--cdl-ink-3); }
+
+  /* The step is in the instruction's own row, so the card drops its copy. */
+  .cdl-notebook__body > .cdl-card > .cdl-eyebrow { display: none; }
+
+  .cdl-notebook--collapsed .cdl-notebook__body { display: none; }
+  .cdl-notebook--collapsed::after { display: none; }
+}
+
+/* Below this the phase rail can no longer share a row with the readouts. */
+@media (max-width: 760px) {
+  .cdl-hud {
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 0;
+    padding-top: 5px;
+    padding-bottom: 3px;
+  }
+  .cdl-hud__left { flex: 1; }
+  .cdl-hud__center { order: 3; flex-basis: 100%; justify-content: flex-start; }
 }
 
 @media (max-width: 640px) {
-  .cdl-hud { min-height: 54px; padding: 0 8px; gap: 8px; }
-  .cdl-stage-wrap { padding: 8px; }
+  .cdl-hud {
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+  .cdl-stage-wrap {
+    padding: 8px;
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
   .cdl-overlay { padding: 8px; }
-  .cdl-hint-layer { padding: 64px 10px 10px; }
   .cdl-zoom { left: 8px; bottom: 8px; }
-  .cdl-hint--float { font-size: 15px; padding: 9px 14px; border-radius: 14px; }
   .cdl-tag { padding: 6px 9px; }
   .cdl-tag--row { gap: 10px; }
+  /* "Step" over a name the tag is already headed by costs a line the stage
+     needs more than the label does. */
+  .cdl-tag > .cdl-eyebrow { display: none; }
+  .cdl-tag__title { font-size: 15px; }
   .cdl-gate { inset: 8px; width: auto; }
-  .cdl-notebook { max-height: 40%; }
+  .cdl-gate__body { padding: 12px; }
+  .cdl-gate__head { padding: 10px 12px; }
+  .cdl-gate__prompt { font-size: 15px; }
+  .cdl-notebook:not(.cdl-notebook--collapsed) { max-height: 58%; }
+  .cdl-modal {
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .cdl-howto { padding: 16px 14px; }
+  .cdl-howto__title { font-size: 21px; margin: 2px 0 12px; }
+  .cdl-howto__list { gap: 12px; margin-bottom: 14px; }
+  .cdl-howto__item { gap: 10px; }
+  .cdl-howto__num { width: 22px; height: 22px; font-size: 12px; }
+  .cdl-howto__heading { font-size: 14px; }
+  .cdl-howto__body { font-size: 13.5px; }
+}
+
+/* Narrow phones. Everything that can be inferred from the number beside it
+   gives up its width first. */
+@media (max-width: 420px) {
+  .cdl-fidelity { gap: 6px; }
+  .cdl-hud .cdl-fidelity__bar { display: none; }
+  .cdl-hud__right { gap: 6px; }
+  .cdl-tag__title { font-size: 14px; }
+  .cdl-tag--row { gap: 8px; }
+  .cdl-timer__num { font-size: 18px; }
+  .cdl-timer__bar { width: 40px; }
+  .cdl-star { font-size: 16px; }
+  .cdl-instruct { padding: 10px 12px 12px; gap: 8px; }
+  .cdl-instruct__text { font-size: 17px; }
+  .cdl-gate__option { flex-wrap: wrap; gap: 4px 10px; }
+  .cdl-gate__option-label { flex-basis: 100%; min-width: 0; }
+}
+
+/* Landscape phones: height, not width, is what there is none of. */
+@media (max-height: 500px) {
+  /* A second HUD row costs more here than a squeezed rail does: the rail
+     already scrolls the current step into view. */
+  .cdl-hud {
+    flex-wrap: nowrap;
+    min-height: 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  .cdl-hud__center { order: 0; flex-basis: auto; justify-content: center; }
+  .cdl-hud .cdl-fidelity__bar { display: none; }
+  .cdl-track { padding: 0; }
+  .cdl-stage-wrap { padding: 6px; }
+  .cdl-overlay { padding: 6px 8px; }
+  .cdl-instruct { padding-top: 10px; padding-bottom: 10px; gap: 7px; }
+  .cdl-instruct__text { font-size: 17px; }
+  .cdl-modal {
+    padding: 10px;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .cdl-howto { padding: 14px; }
+  .cdl-howto__title { font-size: 19px; margin: 2px 0 10px; }
+  .cdl-howto__list { gap: 10px; margin-bottom: 12px; }
+  .cdl-howto__item { gap: 9px; }
+  .cdl-howto__num { width: 21px; height: 21px; font-size: 11px; }
+  .cdl-howto__heading { font-size: 13.5px; }
+  .cdl-howto__body { font-size: 13px; }
+}
+
+/* Landscape and stacked: the sheet may take more of the height than it does in
+   portrait, because there is less of it to give the stage anyway. */
+@media (max-height: 500px) and (max-width: 900px) {
+  .cdl-notebook:not(.cdl-notebook--collapsed) { max-height: 62%; }
+}
+
+/* Landscape and wide enough for two columns: the notebook is a full-height
+   column here, so it gives up width rather than height — a height cap left it
+   ending part-way down the screen with its notes sliced off. */
+@media (max-height: 500px) and (min-width: 901px) {
+  .cdl-body { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); }
+  .cdl-notebook__body { padding: 12px; gap: 12px; }
+}
+
+/* Touch. The compact controls are sized for a cursor; a finger needs the
+   full target even where the button's own box is smaller. */
+@media (pointer: coarse) {
+  .cdl-icon-btn--sm { width: 44px; height: 44px; }
+  .cdl-btn--sm { min-height: 44px; }
+  .cdl-zoom__level { min-width: 48px; padding: 8px 2px; }
+  .cdl-track__step { padding: 8px 10px; }
+  .cdl-notebook__toggle { min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

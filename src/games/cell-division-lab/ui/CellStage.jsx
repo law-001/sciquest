@@ -4,7 +4,7 @@ import {
   circleShape, membranePaths, outerRadius,
 } from '../render/cellGeometry';
 import { ChromatinFiber, Mitochondrion } from '../render/parts';
-import { useStageZoom } from './stage-zoom';
+import { useStageView } from './stage-zoom';
 
 // Everything in here is scenery: it gives the chromosomes somewhere to live,
 // and it never takes a pointer event. One of each organelle, placed by hand —
@@ -235,15 +235,17 @@ export function CellStage({
   const paths = useMemo(() => membranePaths(cellShape), [cellShape]);
 
   // Zooming out grows the window on the stage, so the cell keeps its shape
-  // instead of being cut off by the edge of the frame.
-  const zoom = useStageZoom();
+  // instead of being cut off by the edge of the frame; the pan slides that
+  // window, which is the only way to reach the edges of a wide procedure on a
+  // phone-sized stage.
+  const { zoom, panX, panY } = useStageView();
   const width = STAGE_W / zoom;
   const height = STAGE_H / zoom;
 
   return (
     <svg
       className="cdl-svg cdl-enter"
-      viewBox={`${(STAGE_W - width) / 2} ${(STAGE_H - height) / 2} ${width} ${height}`}
+      viewBox={`${(STAGE_W - width) / 2 + panX} ${(STAGE_H - height) / 2 + panY} ${width} ${height}`}
       preserveAspectRatio="xMidYMid meet"
       aria-label={label}
     >
