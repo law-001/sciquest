@@ -9,6 +9,8 @@ import {
 } from '../engine/osmosis';
 import { useSimLoop } from '../engine/useSimLoop';
 import { CellView } from '../ui/CellView';
+import { PlantView } from '../ui/PlantView';
+import { ViewTabs } from '../ui/ViewTabs';
 import { Meter, StatChip, StatusLine } from '../ui/CellStats';
 import { toneForValue } from '../ui/tone';
 import { HoldButton, ResourceSlider } from '../ui/ResourceControls';
@@ -19,6 +21,7 @@ const WEATHER_ICON = { mild: '🌤️', rain: '🌧️', drought: '🔥', salty:
 // Level 2 — osmosis across the membrane, with the vacuole as the water bank.
 export function KeepItAlive({ level, reducedMotion, particleBudget, onExit, onFinish }) {
   const [channels, setChannels] = useState(50);
+  const [view, setView] = useState('plant');
   const [transfer, setTransfer] = useState(null);
   const [sim, setSim] = useState(() => createOsmosisState(level.sim));
   const [paused, setPaused] = useState(false);
@@ -66,17 +69,34 @@ export function KeepItAlive({ level, reducedMotion, particleBudget, onExit, onFi
         </span>
       </div>
 
-      <CellView
-        activity={0.35}
-        respiration={0.45}
-        vacuoleFill={sim.vacuole}
-        turgor={sim.turgor}
-        health={sim.health}
-        waterFlow={{ direction, strength: Math.min(1, Math.abs(sim.flow) / 8) }}
-        reducedMotion={reducedMotion}
-        particleBudget={particleBudget}
-        title="Plant cell exchanging water with its surroundings"
-      />
+      <ViewTabs view={view} onChange={setView} />
+
+      {view === 'plant' ? (
+        <PlantView
+          light={env.light}
+          water={channels}
+          co2={env.stomata}
+          soil={env.water}
+          health={sim.health}
+          turgor={sim.turgor}
+          weather={env.id === 'mild' ? null : env.id}
+          reducedMotion={reducedMotion}
+          particleBudget={particleBudget}
+          title={`The plant in ${env.label.toLowerCase()}`}
+        />
+      ) : (
+        <CellView
+          activity={0.35}
+          respiration={0.45}
+          vacuoleFill={sim.vacuole}
+          turgor={sim.turgor}
+          health={sim.health}
+          waterFlow={{ direction, strength: Math.min(1, Math.abs(sim.flow) / 8) }}
+          reducedMotion={reducedMotion}
+          particleBudget={particleBudget}
+          title="Plant cell exchanging water with its surroundings"
+        />
+      )}
 
       <p className="pc-flow" aria-live="polite">
         {direction === 'in' && 'Water is moving INTO the cell through the membrane.'}
@@ -89,6 +109,39 @@ export function KeepItAlive({ level, reducedMotion, particleBudget, onExit, onFi
   const panel = (
     <>
       <StatusLine tone={status.tone}>{status.text}</StatusLine>
+
+      <div className="pc-eyebrow">Your controls</div>
+      <div className="pc-panel__group">
+        <ResourceSlider
+          id="pc-channels"
+          label="Membrane channels open"
+          icon="🚪"
+          accent="#2bafa9"
+          value={channels}
+          onChange={setChannels}
+          hint="The membrane sets how fast water crosses — never which way. Some water always seeps through, even fully closed."
+        />
+
+        <div className="pc-holds">
+          <HoldButton
+            label="Store in vacuole"
+            icon="⬇"
+            tone="teal"
+            active={transfer === 'store'}
+            onHoldChange={(on) => setTransfer(on ? 'store' : null)}
+          />
+          <HoldButton
+            label="Release from vacuole"
+            icon="⬆"
+            tone="orange"
+            active={transfer === 'release'}
+            onHoldChange={(on) => setTransfer(on ? 'release' : null)}
+          />
+        </div>
+        <p className="pc-slider__hint">
+          Hold a button (or press and hold Enter on it) to move water between the cytoplasm and the vacuole.
+        </p>
+      </div>
 
       <div className="pc-panel__group">
         <Meter
@@ -133,37 +186,6 @@ export function KeepItAlive({ level, reducedMotion, particleBudget, onExit, onFi
         <StatChip label="Water outside" value={`${env.water}%`} tone={env.water < 25 ? 'warn' : 'info'} />
       </div>
 
-      <div className="pc-panel__group">
-        <ResourceSlider
-          id="pc-channels"
-          label="Membrane channels open"
-          icon="🚪"
-          accent="#2bafa9"
-          value={channels}
-          onChange={setChannels}
-          hint="The membrane sets how fast water crosses — never which way. Some water always seeps through, even fully closed."
-        />
-
-        <div className="pc-holds">
-          <HoldButton
-            label="Store in vacuole"
-            icon="⬇"
-            tone="teal"
-            active={transfer === 'store'}
-            onHoldChange={(on) => setTransfer(on ? 'store' : null)}
-          />
-          <HoldButton
-            label="Release from vacuole"
-            icon="⬆"
-            tone="orange"
-            active={transfer === 'release'}
-            onHoldChange={(on) => setTransfer(on ? 'release' : null)}
-          />
-        </div>
-        <p className="pc-slider__hint">
-          Hold a button (or press and hold Enter on it) to move water between the cytoplasm and the vacuole.
-        </p>
-      </div>
 
       <div className="pc-note">
         <strong>Cell wall:</strong> holding firm. It supports the cell and stops it bursting when water floods in — it does not decide what crosses.

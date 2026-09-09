@@ -4,7 +4,7 @@ import celldiv from "../../assets/celldivision.png";
 import mysteryLab from "../../assets/mysterylab.png";
 import foodchain from "../../assets/foodchain.png";
 import quakeready from "../../assets/quakeready.png";
-import plantcell from "../../assets/plantcell.svg";
+import plantcell from "../../assets/plantcell.png";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {

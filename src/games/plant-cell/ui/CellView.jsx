@@ -3,7 +3,6 @@ import {
   MITOCHONDRIA_SPOTS,
   NUCLEUS,
   ORGANELLES,
-  RIBOSOME_SPOTS,
   VACUOLE,
 } from '../data/organelles';
 
@@ -38,9 +37,21 @@ const STREAM_COLOR = {
   waterOut: '#5aa9e6',
 };
 
+const STREAM_SPRITE = {
+  light: '/games/plant-cell/art/particle-sunlight.png',
+  water: '/games/plant-cell/art/particle-water.png',
+  waterIn: '/games/plant-cell/art/particle-water.png',
+  waterOut: '/games/plant-cell/art/particle-water.png',
+  co2: '/games/plant-cell/art/particle-co2.png',
+  glucose: '/games/plant-cell/art/particle-glucose.png',
+  oxygen: '/games/plant-cell/art/particle-oxygen.png',
+};
+
 function Stream({ kind, lanes, perLane, duration, animate }) {
   if (perLane <= 0) return null;
   const color = STREAM_COLOR[kind];
+  const sprite = STREAM_SPRITE[kind];
+  const radius = kind === 'light' ? 9.5 : kind === 'co2' ? 8 : kind === 'oxygen' ? 8 : 7.2;
   return (
     <g aria-hidden="true">
       {lanes.map((d, laneIndex) => (
@@ -48,59 +59,28 @@ function Stream({ kind, lanes, perLane, duration, animate }) {
           <path d={d} fill="none" stroke={color} strokeWidth="1.2" strokeDasharray="3 5" opacity="0.35" />
           {animate
             && Array.from({ length: perLane }, (_, i) => (
-              <circle key={i} r={kind === 'light' ? 3.4 : 2.8} fill={color} opacity="0.9">
-                <animateMotion
-                  path={d}
-                  dur={`${duration}s`}
-                  begin={`${-(i * duration) / perLane}s`}
-                  repeatCount="indefinite"
-                />
-              </circle>
+              sprite ? (
+                <image key={i} href={sprite} x={-radius} y={-radius} width={radius * 2} height={radius * 2}>
+                  <animateMotion
+                    path={d}
+                    dur={`${duration}s`}
+                    begin={`${-(i * duration) / perLane}s`}
+                    repeatCount="indefinite"
+                  />
+                </image>
+              ) : (
+                <circle key={i} r={radius} fill={color} opacity="0.9">
+                  <animateMotion
+                    path={d}
+                    dur={`${duration}s`}
+                    begin={`${-(i * duration) / perLane}s`}
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              )
             ))}
         </g>
       ))}
-    </g>
-  );
-}
-
-function Chloroplast({ spot, glow, damaged }) {
-  const fill = damaged ? '#b7b1a2' : '#3f9b56';
-  return (
-    <g transform={`translate(${spot.x} ${spot.y}) rotate(${spot.tilt})`}>
-      {glow > 0.05 && !damaged && (
-        <ellipse rx="21" ry="14" fill="#f5c84a" opacity={0.1 + glow * 0.35} />
-      )}
-      <ellipse rx="15" ry="9.5" fill={fill} stroke="#2b6c3c" strokeWidth="1.4" />
-      <g fill="#2b6c3c" opacity={damaged ? 0.35 : 0.75}>
-        <rect x="-8" y="-3.5" width="5" height="7" rx="1.6" />
-        <rect x="-1" y="-4.5" width="5" height="9" rx="1.6" />
-        <rect x="6" y="-3" width="4" height="6" rx="1.6" />
-      </g>
-      {damaged && (
-        <path d="M -9 -6 L 9 6 M 9 -6 L -9 6" stroke="#d1544f" strokeWidth="2" strokeLinecap="round" />
-      )}
-    </g>
-  );
-}
-
-function Mitochondrion({ spot, activity, damaged }) {
-  const fill = damaged ? '#c9bfae' : '#e08a5f';
-  return (
-    <g transform={`translate(${spot.x} ${spot.y}) rotate(${spot.tilt})`}>
-      {activity > 0.05 && !damaged && (
-        <ellipse rx="22" ry="13" fill="#f08a4b" opacity={0.08 + activity * 0.25} />
-      )}
-      <ellipse rx="16" ry="8.5" fill={fill} stroke="#a9532c" strokeWidth="1.4" />
-      <path
-        d="M -11 0 q 3.5 -5 7 0 q 3.5 5 7 0 q 3.5 -5 6 0"
-        fill="none"
-        stroke="#a9532c"
-        strokeWidth="1.4"
-        opacity={damaged ? 0.3 : 0.85}
-      />
-      {damaged && (
-        <path d="M -10 -6 L 10 6 M 10 -6 L -10 6" stroke="#d1544f" strokeWidth="2" strokeLinecap="round" />
-      )}
     </g>
   );
 }
@@ -137,15 +117,10 @@ function Hotspot({ id, x, y, w, h, rx, label, selected, onSelect }) {
 
 export function CellView({
   // 0–1, how hard photosynthesis is running.
-  activity = 0,
   // 0–1, how hard respiration is running.
-  respiration = 0,
   vacuoleFill = 40,
-  turgor = 60,
-  health = 100,
   photosynthesis = null,
   waterFlow = null,
-  damagedId = null,
   selectedId = null,
   onSelectOrganelle = null,
   reducedMotion = false,
@@ -154,9 +129,6 @@ export function CellView({
 }) {
   // A cell short of water pulls its membrane away from the wall — the gap is
   // exactly what plasmolysis looks like down a microscope.
-  const slack = Math.max(0, (70 - Math.min(turgor, 70)) / 70) * 7;
-  const wilt = Math.max(0, (60 - Math.min(health, 60)) / 60);
-
   const vacRx = VACUOLE.minRx + (VACUOLE.maxRx - VACUOLE.minRx) * (vacuoleFill / 100);
   const vacRy = VACUOLE.minRy + (VACUOLE.maxRy - VACUOLE.minRy) * (vacuoleFill / 100);
 
@@ -175,72 +147,20 @@ export function CellView({
       <title>{title}</title>
 
       {/* Cell wall — the outermost layer, thick and rigid. */}
-      <rect
-        x="5" y="5" width={VIEW_W - 10} height={VIEW_H - 10} rx="34"
-        fill="none" stroke="#7d9b4e" strokeWidth="9"
-        opacity={damagedId === 'cellWall' ? 0.45 : 1}
-      />
-      <rect
-        x="5" y="5" width={VIEW_W - 10} height={VIEW_H - 10} rx="34"
-        fill="none" stroke="#5d7a34" strokeWidth="1.5" opacity="0.5"
-      />
 
       {/* Cytoplasm, held inside the cell membrane. */}
-      <rect
-        x={11 + slack} y={11 + slack}
-        width={VIEW_W - 22 - slack * 2} height={VIEW_H - 22 - slack * 2}
-        rx={28}
-        fill={wilt > 0.35 ? '#e8e3cf' : '#dff0e2'}
-        stroke={damagedId === 'membrane' ? '#d1544f' : '#2f7d5c'}
-        strokeWidth="2.4"
-        strokeDasharray={damagedId === 'membrane' ? '6 5' : undefined}
-        className="pc-cell__membrane"
-      />
 
       {/* Vacuole — the store. Grows and shrinks with what is in it. */}
-      <g className="pc-cell__vacuole">
-        <ellipse
-          cx={VACUOLE.x} cy={VACUOLE.y} rx={vacRx} ry={vacRy}
-          fill="#bfe3f2"
-          stroke={damagedId === 'vacuole' ? '#d1544f' : '#4f9ec4'}
-          strokeWidth="2"
-          strokeDasharray={damagedId === 'vacuole' ? '6 5' : undefined}
-          opacity="0.85"
-        />
-        <ellipse
-          cx={VACUOLE.x - vacRx * 0.3} cy={VACUOLE.y - vacRy * 0.35}
-          rx={vacRx * 0.32} ry={vacRy * 0.24}
-          fill="#ffffff" opacity="0.35"
-        />
-      </g>
 
       {/* Nucleus, pushed to the side by the vacuole. */}
-      <g opacity={damagedId === 'nucleus' ? 0.5 : 1}>
-        <circle cx={NUCLEUS.x} cy={NUCLEUS.y} r={NUCLEUS.r} fill="#c8b6e2" stroke="#7b5ea7" strokeWidth="2" />
-        <circle cx={NUCLEUS.x + 4} cy={NUCLEUS.y - 3} r="8" fill="#7b5ea7" opacity="0.55" />
-      </g>
 
-      {RIBOSOME_SPOTS.map((spot) => (
-        <circle key={`r-${spot.x}-${spot.y}`} cx={spot.x} cy={spot.y} r="2.6" fill="#6f6553" opacity="0.55" />
-      ))}
-
-      {MITOCHONDRIA_SPOTS.map((spot) => (
-        <Mitochondrion
-          key={`m-${spot.x}`}
-          spot={spot}
-          activity={respiration}
-          damaged={damagedId === 'mitochondrion'}
-        />
-      ))}
-
-      {CHLOROPLAST_SPOTS.map((spot) => (
-        <Chloroplast
-          key={`c-${spot.x}-${spot.y}`}
-          spot={spot}
-          glow={activity}
-          damaged={damagedId === 'chloroplast'}
-        />
-      ))}
+      {/* A unified illustration prevents the wall, membrane and organelles from
+          reading as mismatched layers. Functional overlays remain above it. */}
+      <image
+        href="/games/plant-cell/art/full-cell.png"
+        x="0" y="0" width={VIEW_W} height={VIEW_H}
+        preserveAspectRatio="none"
+      />
 
       {photosynthesis && (
         <g>

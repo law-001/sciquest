@@ -52,4 +52,5 @@
 - Added the hard-won build constraints: one rAF loop read through refs, and the React Compiler lint rules (no ref writes during render, no synchronous setState in an effect) which are errors here, not warnings.
 
 ---
+Staged changes: Add Plant Cell: Keep the Cell Alive game (3 levels) with registry, XP and achievement wiring
 Staged changes: docs(lessons): rewrite the signature interactive plan around visual simulations

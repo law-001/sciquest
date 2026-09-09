@@ -103,13 +103,14 @@ export const LEVELS = [
       // Read as: 3 stars if the water balance sat in the healthy band 86% of the time.
       starBandPercent: [0, 45, 68, 86],
     },
-    // Weather runs on a clock: each entry takes over at `at` seconds.
+    // Weather runs on a clock: each entry takes over at `at` seconds. `light`
+    // and `stomata` are what the object view draws — they do not feed the sim.
     weather: [
-      { at: 0, id: 'mild', label: 'Mild morning', solute: 30, water: 62, note: 'Soil water and salt are both moderate.' },
-      { at: 11, id: 'rain', label: 'Heavy rain', solute: 8, water: 100, note: 'Fresh water everywhere — water moves into the cell.' },
-      { at: 25, id: 'drought', label: 'Drought', solute: 36, water: 8, note: 'The soil is drying out. There is very little water to take in.' },
-      { at: 39, id: 'salty', label: 'Salty soil', solute: 88, water: 55, note: 'Salt outside pulls water out of the cell by osmosis.' },
-      { at: 50, id: 'mild', label: 'Mild evening', solute: 30, water: 62, note: 'Conditions settle again.' },
+      { at: 0, id: 'mild', label: 'Mild morning', solute: 30, water: 62, light: 58, stomata: 55, note: 'Soil water and salt are both moderate.' },
+      { at: 11, id: 'rain', label: 'Heavy rain', solute: 8, water: 100, light: 26, stomata: 48, note: 'Fresh water everywhere — water moves into the cell.' },
+      { at: 25, id: 'drought', label: 'Drought', solute: 36, water: 8, light: 95, stomata: 14, note: 'The soil is drying out. There is very little water to take in.' },
+      { at: 39, id: 'salty', label: 'Salty soil', solute: 88, water: 55, light: 62, stomata: 38, note: 'Salt outside pulls water out of the cell by osmosis.' },
+      { at: 50, id: 'mild', label: 'Mild evening', solute: 30, water: 62, light: 40, stomata: 52, note: 'Conditions settle again.' },
     ],
   },
 

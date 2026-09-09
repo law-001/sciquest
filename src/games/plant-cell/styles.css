@@ -28,6 +28,15 @@
   --pc-radius: 14px;
   --pc-radius-lg: 20px;
 
+  /* A level has to fit one screen with no page scrolling, so the run screen's
+     spacing, type and control heights shrink with the window height. The
+     mobile block below puts them back to comfortable fixed sizes. */
+  --pc-gap: clamp(7px, 1.15vh, 14px);
+  --pc-pad: clamp(10px, 1.7vh, 18px);
+  --pc-text: clamp(11.5px, 1.5vh, 13.5px);
+  --pc-text-sm: clamp(10px, 1.25vh, 12px);
+  --pc-control: clamp(34px, 4.8vh, 44px);
+
   height: 100%;
   background: var(--pc-bg);
   color: var(--pc-ink-1);
@@ -155,13 +164,13 @@
 }
 
 .pc-note {
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--pc-text-sm);
+  line-height: 1.45;
   color: var(--pc-ink-2);
   background: var(--pc-surface-2);
   border: 1.5px solid var(--pc-line-soft);
   border-radius: var(--pc-radius-sm);
-  padding: 10px 12px;
+  padding: clamp(6px, 1vh, 10px) 12px;
 }
 
 /* — Briefing / results modal — */
@@ -236,7 +245,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 20px;
+  padding: clamp(7px, 1.3vh, 12px) 20px;
   background: var(--pc-surface);
   border-bottom: 1.5px solid var(--pc-line);
 }
@@ -304,25 +313,35 @@
 
 .pc-run__stage {
   min-width: 0;
-  padding: 18px;
-  overflow-y: auto;
+  padding: var(--pc-pad);
+  overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
 }
 
 .pc-run__panel {
   min-width: 0;
-  padding: 18px;
+  padding: var(--pc-pad);
+  /* Nothing here should need scrolling on a desktop window; this is only a
+     safety net for very short ones. */
   overflow-y: auto;
   background: var(--pc-surface);
   border-left: 1.5px solid var(--pc-line);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--pc-gap);
 }
 
 @media (max-width: 900px) {
+  .pc-root {
+    --pc-gap: 12px;
+    --pc-pad: 16px;
+    --pc-text: 13.5px;
+    --pc-text-sm: 12px;
+    --pc-control: 44px;
+  }
+
   .pc-run__body {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
@@ -338,21 +357,43 @@
   .pc-run__stage {
     overflow: visible;
   }
+
+  .pc-stage {
+    height: auto;
+  }
+
+  .pc-cell {
+    height: auto;
+  }
 }
 
 /* — Stage — */
 .pc-stage {
   width: 100%;
   max-width: 620px;
+  height: 100%;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  gap: var(--pc-gap);
 }
 
+/* The drawing takes whatever height is left once the captions have theirs,
+   and letterboxes inside it — that is what keeps the level off a scrollbar. */
 .pc-cell {
   width: 100%;
-  height: auto;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
   display: block;
+}
+
+.pc-viewtabs,
+.pc-equation,
+.pc-weather,
+.pc-flow {
+  flex-shrink: 0;
 }
 
 .pc-cell__membrane,
@@ -365,6 +406,22 @@
   .pc-cell__vacuole ellipse {
     transition: none;
   }
+}
+
+.pc-viewtabs {
+  display: flex;
+  gap: 8px;
+}
+
+.pc-viewtabs .pc-btn {
+  min-height: 44px;
+}
+
+.pc-viewtabs .pc-btn[aria-pressed='true'] {
+  background: var(--pc-surface-2);
+  border-color: var(--pc-green);
+  color: var(--pc-green);
+  font-weight: 700;
 }
 
 .pc-hotspot {
@@ -434,7 +491,7 @@
 .pc-panel__group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--pc-gap);
 }
 
 .pc-meter__head {
@@ -442,17 +499,17 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .pc-meter__label {
-  font-size: 13px;
+  font-size: var(--pc-text);
   font-weight: 600;
   color: var(--pc-ink-2);
 }
 
 .pc-meter__value {
-  font-size: 13px;
+  font-size: var(--pc-text);
   font-weight: 800;
 }
 
@@ -492,8 +549,8 @@
 .pc-chip {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 7px 11px;
+  gap: 1px;
+  padding: clamp(4px, 0.7vh, 7px) 11px;
   border-radius: var(--pc-radius-sm);
   background: var(--pc-surface-2);
   border: 1.5px solid var(--pc-line-soft);
@@ -507,7 +564,7 @@
 }
 
 .pc-chip__value {
-  font-size: 14px;
+  font-size: var(--pc-text);
   font-weight: 800;
 }
 
@@ -516,11 +573,11 @@
   align-items: flex-start;
   gap: 8px;
   margin: 0;
-  padding: 10px 12px;
+  padding: clamp(6px, 1.1vh, 10px) 12px;
   border-radius: var(--pc-radius-sm);
   border: 1.5px solid;
   background: var(--pc-surface-2);
-  font-size: 13.5px;
+  font-size: var(--pc-text);
   line-height: 1.45;
   font-weight: 600;
 }
@@ -539,30 +596,30 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   cursor: pointer;
 }
 
 .pc-slider__label {
-  font-size: 13.5px;
+  font-size: var(--pc-text);
   font-weight: 600;
 }
 
 .pc-slider__value {
-  font-size: 13.5px;
+  font-size: var(--pc-text);
   font-weight: 800;
 }
 
 .pc-slider__hint {
-  margin: 6px 0 0;
-  font-size: 12px;
+  margin: 2px 0 0;
+  font-size: var(--pc-text-sm);
   line-height: 1.45;
   color: var(--pc-ink-3);
 }
 
 .pc-range {
   width: 100%;
-  height: 44px;
+  height: var(--pc-control);
   accent-color: var(--pc-range-accent, var(--pc-green));
   cursor: pointer;
 }
@@ -575,15 +632,15 @@
 
 .pc-hold {
   flex: 1 1 150px;
-  min-height: 48px;
-  padding: 10px 14px;
+  min-height: var(--pc-control);
+  padding: clamp(6px, 1vh, 10px) 14px;
   border-radius: var(--pc-radius-sm);
   border: 1.5px solid var(--pc-line);
   background: var(--pc-surface-2);
   color: var(--pc-ink-1);
   font: inherit;
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: var(--pc-text);
   cursor: pointer;
   touch-action: none;
   user-select: none;
@@ -605,14 +662,14 @@
 .pc-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 12px;
+  gap: var(--pc-gap);
+  padding-top: var(--pc-gap);
   border-top: 1.5px solid var(--pc-line-soft);
 }
 
 .pc-tests {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -620,9 +677,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
-  min-height: 48px;
-  padding: 9px 12px;
+  gap: 2px;
+  min-height: var(--pc-control);
+  padding: clamp(5px, 0.9vh, 9px) 11px;
   border-radius: var(--pc-radius-sm);
   border: 1.5px solid var(--pc-line);
   background: var(--pc-surface-2);
@@ -646,7 +703,7 @@
 }
 
 .pc-test__label {
-  font-size: 13.5px;
+  font-size: var(--pc-text);
   font-weight: 600;
 }
 
@@ -661,19 +718,23 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  /* Evidence is the one list that keeps growing, so it scrolls inside its own
+     box rather than pushing the rest of the panel off screen. */
+  max-height: clamp(86px, 15vh, 180px);
+  overflow-y: auto;
 }
 
 .pc-evidence__row {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  padding: 9px 11px;
+  padding: clamp(5px, 0.9vh, 9px) 11px;
   border-radius: var(--pc-radius-sm);
   border: 1.5px solid var(--pc-line-soft);
   background: var(--pc-surface-2);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: var(--pc-text-sm);
+  line-height: 1.4;
   color: var(--pc-ink-2);
 }
 
@@ -709,14 +770,14 @@
 }
 
 .pc-suspect {
-  min-height: 44px;
-  padding: 9px 14px;
+  min-height: var(--pc-control);
+  padding: clamp(5px, 0.9vh, 9px) 13px;
   border-radius: 999px;
   border: 1.5px solid var(--pc-line);
   background: var(--pc-surface-2);
   color: var(--pc-ink-1);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--pc-text);
   font-weight: 600;
   cursor: pointer;
 }
