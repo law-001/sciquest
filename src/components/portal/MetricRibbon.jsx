@@ -27,7 +27,6 @@ const STRIPE = {
  */
 export function MetricRibbon({
   accent = "primary",
-  eyebrow,
   title,
   subtitle,
   metrics,
@@ -46,27 +45,7 @@ export function MetricRibbon({
       <div className="flex flex-col lg:flex-row">
         {/* Identity block */}
         <div className="lg:w-[288px] xl:w-[320px] shrink-0 px-5 pt-5 pb-4 lg:py-5 border-b lg:border-b-0 lg:border-r border-orange-100 dark:border-stone-700">
-          <div className="flex items-center gap-2">
-            <span className="relative flex w-2 h-2">
-              <span
-                className={cn(
-                  "absolute inline-flex w-full h-full rounded-full opacity-60 motion-safe:animate-ping",
-                  TICK.teal,
-                )}
-              />
-              <span
-                className={cn(
-                  "relative inline-flex w-2 h-2 rounded-full",
-                  TICK.teal,
-                )}
-              />
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 dark:text-stone-500">
-              {eyebrow}
-            </span>
-          </div>
-
-          <h1 className="mt-1.5 font-heading text-[26px] leading-[1.1] font-black text-stone-900 dark:text-white">
+          <h1 className="font-heading text-[26px] leading-[1.1] font-black text-stone-900 dark:text-white">
             {title}
           </h1>
           <p className="mt-1 text-[13px] text-stone-500 dark:text-stone-400 font-medium">

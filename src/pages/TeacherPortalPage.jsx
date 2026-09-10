@@ -244,7 +244,6 @@ function OverviewSlot({
     <div className="space-y-4">
       <MetricRibbon
         accent="secondary"
-        eyebrow="Live"
         title="Teaching Desk"
         subtitle={`${today} · ${teacherName}`}
         metrics={metrics}
@@ -2506,6 +2505,36 @@ function gradeDescriptor(pct) {
 
 function GradebookSlot({ data, sectionId }) {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  // Game rows for the open student record: { studentId, byGame, failed? }.
+  // Keyed by student so a stale result never shows under another name.
+  const [studentGames, setStudentGames] = useState(null);
+
+  useEffect(() => {
+    if (!selectedStudentId) return;
+    let cancelled = false;
+    fetchGameProgressForStudents([selectedStudentId])
+      .then((rows) => {
+        if (cancelled) return;
+        const byGame = new Map();
+        for (const row of rows) {
+          if (!byGame.has(row.game_id)) byGame.set(row.game_id, []);
+          byGame.get(row.game_id).push(row);
+        }
+        setStudentGames({ studentId: selectedStudentId, byGame });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setStudentGames({
+            studentId: selectedStudentId,
+            byGame: new Map(),
+            failed: true,
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedStudentId]);
   const [sortKey, setSortKey] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
@@ -2556,6 +2585,19 @@ function GradebookSlot({ data, sectionId }) {
     const notAttempted = quizColumns.filter(
       (q) => !selectedStudent.best.has(q.id),
     );
+    const bestCells = [...selectedStudent.best.values()];
+    const quizPointsEarned = bestCells.reduce((sum, b) => sum + b.score, 0);
+    const quizPointsMax = bestCells.reduce((sum, b) => sum + b.maxScore, 0);
+
+    const gamesLoading = studentGames?.studentId !== selectedStudent.id;
+    const gameScores = ACTIVE_GAMES.map((game) => {
+      const rows = (gamesLoading ? null : studentGames.byGame.get(game.id)) ?? [];
+      return { game, rows, ...getGameScore(game, rows) };
+    });
+    const gamesPlayed = gameScores.filter((g) => g.rows.length > 0).length;
+    const starGames = gameScores.filter((g) => g.unit === "stars");
+    const starsEarned = starGames.reduce((sum, g) => sum + g.earned, 0);
+    const starsMax = starGames.reduce((sum, g) => sum + g.max, 0);
 
     return (
       <div className="space-y-4">
@@ -2664,6 +2706,8 @@ function GradebookSlot({ data, sectionId }) {
           />
         </PortalPanel>
 
+        {/* Quiz and game performance — side by side from lg up, stacked below */}
+        <div className="grid gap-4 lg:grid-cols-2 items-start">
         {/* Quiz performance list */}
         <PortalPanel>
           <div className="p-5 border-b border-orange-100 dark:border-stone-700">
@@ -2702,15 +2746,21 @@ function GradebookSlot({ data, sectionId }) {
                           {q.title}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-2.5 shrink-0">
                         {cell ? (
                           <>
-                            <span className="text-xs text-stone-400 font-medium">
-                              {cell.score}/{cell.maxScore} pts
-                            </span>
                             <span
-                              className={cn("text-base font-black", d?.color)}
+                              className={cn(
+                                "text-lg leading-none font-black tabular-nums",
+                                d?.color,
+                              )}
                             >
+                              {cell.score}
+                              <span className="text-xs font-bold text-stone-400">
+                                {" "}/ {cell.maxScore} pts
+                              </span>
+                            </span>
+                            <span className="text-xs font-medium tabular-nums text-stone-400">
                               {pct}%
                             </span>
                             <span
@@ -2774,7 +2824,7 @@ function GradebookSlot({ data, sectionId }) {
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="space-y-0.5">
                   <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Overall average
+                    Total score
                   </p>
                   <p className="text-xs text-stone-400">
                     Based on {selectedStudent.best.size} quiz
@@ -2787,11 +2837,14 @@ function GradebookSlot({ data, sectionId }) {
                 <div className="flex items-center gap-3">
                   <span
                     className={cn(
-                      "text-3xl font-black",
+                      "text-3xl font-black tabular-nums",
                       gradeDescriptor(selectedStudent.avgScore).color,
                     )}
                   >
-                    {selectedStudent.avgScore}%
+                    {quizPointsEarned}
+                    <span className="text-base font-bold text-stone-400">
+                      {" "}/ {quizPointsMax} pts
+                    </span>
                   </span>
                   <div>
                     <p
@@ -2800,6 +2853,7 @@ function GradebookSlot({ data, sectionId }) {
                         gradeDescriptor(selectedStudent.avgScore).color,
                       )}
                     >
+                      {selectedStudent.avgScore}% avg ·{" "}
                       {gradeDescriptor(selectedStudent.avgScore).short}
                     </p>
                     <p
@@ -2816,6 +2870,116 @@ function GradebookSlot({ data, sectionId }) {
             </div>
           )}
         </PortalPanel>
+
+          {/* Game performance */}
+          <PortalPanel>
+            <div className="p-5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
+                  Game Performance
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
+                  Best result per game
+                </p>
+              </div>
+              {gamesLoading && (
+                <Loader2 className="w-4 h-4 text-secondary-500 animate-spin" />
+              )}
+            </div>
+
+            {gamesLoading ? (
+              <div className="p-8 text-center">
+                <p className="text-sm text-stone-400">Loading game results…</p>
+              </div>
+            ) : studentGames.failed ? (
+              <div className="p-8 text-center">
+                <p className="text-sm text-stone-400">
+                  Couldn&apos;t load game results.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-orange-100 dark:divide-stone-700">
+                {gameScores.map(({ game, rows, earned, max, unit }, idx) => {
+                  const played = rows.length > 0;
+                  const pct = max ? Math.round((earned / max) * 100) : 0;
+                  const attempts = rows.reduce(
+                    (sum, r) => sum + (r.attempts ?? 1),
+                    0,
+                  );
+                  return (
+                    <div key={game.id} className="p-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <span className="text-xs font-black text-stone-400 dark:text-stone-500 mt-0.5 shrink-0 w-5 text-right">
+                            {idx + 1}.
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-snug">
+                              {game.title}
+                            </p>
+                            <p className="text-xs text-stone-400 font-medium mt-0.5">
+                              {played
+                                ? `${attempts} ${attempts === 1 ? "attempt" : "attempts"}`
+                                : game.category}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          {played ? (
+                            <>
+                              <span className="text-lg leading-none font-black tabular-nums text-stone-900 dark:text-white">
+                                {earned}
+                                <span className="text-xs font-bold text-stone-400">
+                                  {" "}/ {max} {unit}
+                                </span>
+                              </span>
+                              <span className="text-xs font-medium tabular-nums text-stone-400">
+                                {pct}%
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-xs text-stone-400 italic">
+                              Not played yet
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="pl-8">
+                        <div className="h-2 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-secondary-400"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {!gamesLoading && !studentGames.failed && (
+              <div className="p-5 border-t border-orange-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/40">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                      Total stars
+                    </p>
+                    <p className="text-xs text-stone-400">
+                      {gamesPlayed} of {gameScores.length} games played
+                    </p>
+                  </div>
+                  <span className="text-3xl font-black tabular-nums text-stone-900 dark:text-white">
+                    {starsEarned}
+                    <span className="text-base font-bold text-stone-400">
+                      {" "}/ {starsMax} stars
+                    </span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </PortalPanel>
+        </div>
       </div>
     );
   }
@@ -3152,6 +3316,27 @@ function GradebookSlot({ data, sectionId }) {
 
 // Active (unlocked) games from the registry.
 const ACTIVE_GAMES = Object.values(GAMES).filter((g) => !g.locked);
+
+// What a game "score" is out of. Level games award up to 3 stars per level;
+// Mystery Lab is one case scored on three 1–3 star criteria; the Sandbox
+// records each of its 8 challenges as done, with no stars.
+const STARS_PER_LEVEL = 3;
+const GAME_SCORE_RULES = {
+  "mystery-lab": { max: 9, unit: "stars" },
+  "matter-state-sandbox": { max: 8, unit: "challenges" },
+};
+
+function getGameScore(game, rows) {
+  const rule = GAME_SCORE_RULES[game.id] ?? {
+    max: game.totalLevels * STARS_PER_LEVEL,
+    unit: "stars",
+  };
+  const earned =
+    rule.unit === "challenges"
+      ? rows.length
+      : rows.reduce((sum, r) => sum + (r.best_score ?? 0), 0);
+  return { earned: Math.min(earned, rule.max), max: rule.max, unit: rule.unit };
+}
 
 function engagementStatus(student, hasSubs) {
   if (!hasSubs && student.progress === 0)
