@@ -181,3 +181,22 @@
 - Dropped the shared "Staged changes" footer — the one line every branch rewrote, so it conflicted every time. Each entry now ends with its own `- Commit:` line instead.
 - `CLAUDE.md` version-log rules updated to match: number one past the highest in the file, a `Commit:` line per entry, no shared trailing line, and duplicate numbers after a merge are left alone.
 - Commit: Stop VERSIONS.md merge conflicts with union merge and per-entry commit lines
+
+## VERSION_26
+- Teacher quiz modal: fixed the "Show correct answers" switch (`QuizShowAnswersControl` in `src/pages/TeacherPortalPage.jsx`).
+- The switch now holds its own on/off state and flips immediately on click (reverting if the save fails). Before, it only redrew when Supabase realtime echoed the save back to the parent, so it could look stuck until a reload. Same pattern as the Attempts control above it.
+- The knob now slides: `translate-x-2px` / `translate-x-18px` aren't Tailwind classes and compiled to nothing; replaced with `translate-x-[2px]` / `translate-x-[18px]`.
+- Commit: Fix teacher quiz "Show correct answers" switch not flipping or sliding
+
+## VERSION_27
+- Student profile pictures now show in the teacher and admin portals instead of a plain initial.
+- `src/lib/users.js` (admin) and `src/lib/teacher.js` (teacher portal) now select `avatar` + `avatar_style` from `students` and pass them on as `avatar` / `avatarStyle`. Staff rows get `null`, so teachers still show their initial.
+- Every student initial circle in `AdminDashboardPage.jsx` (Users, Recent Users, Remove User, Students roster) and `TeacherPortalPage.jsx` (dashboard roster, Students, Gradebook, Quiz Checking, the student profile cards) is now the shared `<Avatar>` at the same size (28 / 32 / 36 / 64 px). Teacher-only circles on the admin Teachers screens are unchanged.
+- No migration: staff can already read `students`, and the avatar columns exist.
+- Commit: Show student profile pictures in teacher and admin portals
+
+## VERSION_28
+- Student profile pictures on quiz submissions: the dashboard "Latest submissions" list and the Quiz Checking submission rows (`TeacherPortalPage.jsx`) now show the student's `<Avatar>` instead of an initial. Quiz Checking's amber/teal pending-vs-graded tint on the initial is gone; the "Needs Grading" / "Graded" tabs and grade labels still carry that state in text.
+- `fetchTeacherDashboard()` (`src/lib/teacher.js`) attaches `avatar` / `avatarStyle` to each submission from the student it belongs to.
+- Every remaining initial circle is a staff member (admin Teachers screens, the portal's own user badge) or the hardcoded landing-page leaderboard sample — none has a student picture to show, so they are unchanged.
+- Commit: Show student profile pictures on quiz submission rows
