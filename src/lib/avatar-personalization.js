@@ -1,40 +1,62 @@
-import { Star, Heart, Sparkles, Crown, Glasses, Flower2, Leaf, Rocket, Atom, Zap, Music2, Rainbow } from 'lucide-react';
-
 export const MAX_STICKERS = 6;
 export const AVATAR_BACKGROUNDS = [
-  { id: 'original', label: 'Original', className: 'bg-primary-500' },
-  { id: 'sunrise', label: 'Sunrise', className: 'bg-gradient-to-br from-amber-300 to-orange-500' },
-  { id: 'lagoon', label: 'Lagoon', className: 'bg-gradient-to-br from-teal-300 to-sky-600' },
-  { id: 'meadow', label: 'Meadow', className: 'bg-gradient-to-br from-lime-300 to-emerald-600' },
-  { id: 'peach', label: 'Peach', className: 'bg-gradient-to-br from-orange-200 to-rose-400' },
-  { id: 'midnight', label: 'Midnight', className: 'bg-gradient-to-br from-slate-700 to-stone-950' },
+  // IDs are retained for saved profiles. Each one maps to an individual box
+  // cropped directly from the supplied background sheet.
+  { id: 'original', label: 'Science Lab', className: 'bg-teal-400', src: '/avatars/backgrounds/lab.webp' },
+  { id: 'midnight', label: 'Space', className: 'bg-blue-950', src: '/avatars/backgrounds/space.webp' },
+  { id: 'meadow', label: 'Forest', className: 'bg-lime-400', src: '/avatars/backgrounds/forest.webp' },
+  { id: 'lagoon', label: 'Pond', className: 'bg-sky-400', src: '/avatars/backgrounds/pond.webp' },
+  { id: 'sunrise', label: 'Village', className: 'bg-orange-400', src: '/avatars/backgrounds/village.webp' },
+  { id: 'peach', label: 'Library', className: 'bg-violet-400', src: '/avatars/backgrounds/library.webp' },
 ];
 export const AVATAR_STICKERS = [
-  { id: 'star', label: 'Star', Glyph: Star, color: 'text-amber-500' },
-  { id: 'heart', label: 'Heart', Glyph: Heart, color: 'text-rose-500' },
-  { id: 'sparkles', label: 'Sparkles', Glyph: Sparkles, color: 'text-amber-500' },
-  { id: 'crown', label: 'Crown', Glyph: Crown, color: 'text-orange-500' },
-  { id: 'glasses', label: 'Glasses', Glyph: Glasses, color: 'text-stone-800' },
-  { id: 'flower', label: 'Flower', Glyph: Flower2, color: 'text-rose-500' },
-  { id: 'leaf', label: 'Leaf', Glyph: Leaf, color: 'text-emerald-600' },
-  { id: 'rocket', label: 'Rocket', Glyph: Rocket, color: 'text-orange-600' },
-  { id: 'atom', label: 'Atom', Glyph: Atom, color: 'text-teal-600' },
-  { id: 'lightning', label: 'Lightning', Glyph: Zap, color: 'text-amber-500' },
-  { id: 'music', label: 'Music', Glyph: Music2, color: 'text-teal-600' },
-  { id: 'rainbow', label: 'Rainbow', Glyph: Rainbow, color: 'text-orange-500' },
+  // col/row index into the generated 4x3 sticker sheet, in the order
+  // STICKER_ORDER lays them out in scripts/build-avatar-assets.py — change one
+  // and you must change the other. IDs are persisted inside students.avatar_style.
+  { id: 'heart', label: 'Heart', col: 0, row: 0 },
+  { id: 'glasses', label: 'Sunglasses', col: 1, row: 0 },
+  { id: 'flower', label: 'Flower', col: 2, row: 0 },
+  { id: 'bow', label: 'Ribbon Bow', col: 3, row: 0 },
+  { id: 'bowtie', label: 'Bow Tie', col: 0, row: 1 },
+  { id: 'flowers', label: 'Flower Bunch', col: 1, row: 1 },
+  { id: 'speech', label: 'Speech Bubble', col: 2, row: 1 },
+  { id: 'star', label: 'Star', col: 3, row: 1 },
+  { id: 'sparkles', label: 'Sparkles', col: 0, row: 2 },
+  { id: 'gradcap', label: 'Graduation Cap', col: 1, row: 2 },
+  { id: 'potion', label: 'Potion', col: 2, row: 2 },
+  { id: 'partyhat', label: 'Party Hat', col: 3, row: 2 },
 ];
+
+export const STICKER_MIN = 12;
+export const STICKER_MAX = 48;
 
 const clamp = (n, min, max, fallback) => Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 
-// Keep sticker corners inside the circular crop, even when rotated.
+// Wrap to the -180..180 the rotation slider and clamp both work in, so a full
+// turn of the rotate handle doesn't stick at either end.
+export const wrapDegrees = (deg) => ((((deg + 180) % 360) + 360) % 360) - 180;
+
+// Keep sticker corners inside the circular crop, even when rotated. Width and
+// height are independent so a sticker can be stretched; `size` is the old
+// single-dimension field and is still read so saved profiles carry over.
 export function constrainSticker(sticker) {
-  const size = clamp(sticker.size, 20, 38, 26);
+  const width = clamp(sticker.width ?? sticker.size, STICKER_MIN, STICKER_MAX, 26);
+  const height = clamp(sticker.height ?? sticker.size, STICKER_MIN, STICKER_MAX, 26);
   let x = clamp(sticker.x, 0, 100, 50) - 50;
   let y = clamp(sticker.y, 0, 100, 50) - 50;
-  const radius = 49 - size * Math.SQRT1_2;
+  // Half the diagonal, so the corners stay inside the circle at any rotation.
+  const radius = Math.max(0, 49 - Math.hypot(width, height) / 2);
   const distance = Math.hypot(x, y);
   if (distance > radius) { x *= radius / distance; y *= radius / distance; }
-  return { ...sticker, x: x + 50, y: y + 50, size, rotation: clamp(sticker.rotation, -180, 180, 0) };
+  return {
+    id: sticker.id,
+    stickerId: sticker.stickerId,
+    x: x + 50,
+    y: y + 50,
+    width,
+    height,
+    rotation: clamp(wrapDegrees(sticker.rotation), -180, 180, 0),
+  };
 }
 
 export function normalizeAvatarStyle(value) {
@@ -44,6 +66,6 @@ export function normalizeAvatarStyle(value) {
     .filter((s) => s && typeof s.id === 'string' && s.id.length > 0 && s.id.length <= 64 && AVATAR_STICKERS.some((item) => item.id === s.stickerId))
     .filter((s) => { if (ids.has(s.id)) return false; ids.add(s.id); return true; })
     .slice(0, MAX_STICKERS)
-    .map((s) => constrainSticker({ id: s.id, stickerId: s.stickerId, x: s.x, y: s.y, size: s.size, rotation: s.rotation }));
+    .map((s) => constrainSticker({ id: s.id, stickerId: s.stickerId, x: s.x, y: s.y, width: s.width, height: s.height, size: s.size, rotation: s.rotation }));
   return { background, stickers };
 }

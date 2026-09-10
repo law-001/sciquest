@@ -22,11 +22,21 @@ begin
   if jsonb_typeof(value->'stickers') <> 'array' then return false; end if;
   if jsonb_array_length(value->'stickers') > 6 then return false; end if;
   for sticker in select * from jsonb_array_elements(value->'stickers') loop
-    if jsonb_typeof(sticker) <> 'object' or not (sticker ?& array['id', 'stickerId', 'x', 'y', 'size', 'rotation']) then return false; end if;
+    if jsonb_typeof(sticker) <> 'object' or not (sticker ?& array['id', 'stickerId', 'x', 'y', 'rotation']) then return false; end if;
     if jsonb_typeof(sticker->'id') <> 'string' or length(sticker->>'id') not between 1 and 64 then return false; end if;
-    if jsonb_typeof(sticker->'stickerId') <> 'string' or sticker->>'stickerId' not in ('star', 'heart', 'sparkles', 'crown', 'glasses', 'flower', 'leaf', 'rocket', 'atom', 'lightning', 'music', 'rainbow') then return false; end if;
-    if jsonb_typeof(sticker->'x') <> 'number' or jsonb_typeof(sticker->'y') <> 'number' or jsonb_typeof(sticker->'size') <> 'number' or jsonb_typeof(sticker->'rotation') <> 'number' then return false; end if;
-    if (sticker->>'x')::numeric not between 0 and 100 or (sticker->>'y')::numeric not between 0 and 100 or (sticker->>'size')::numeric not between 20 and 38 or (sticker->>'rotation')::numeric not between -180 and 180 then return false; end if;
+    -- Retain legacy IDs so existing saved profiles remain valid.
+    if jsonb_typeof(sticker->'stickerId') <> 'string' or sticker->>'stickerId' not in ('star', 'heart', 'sparkles', 'crown', 'glasses', 'flower', 'leaf', 'rocket', 'atom', 'lightning', 'music', 'rainbow', 'bow', 'bowtie', 'flowers', 'speech', 'gradcap', 'potion', 'partyhat') then return false; end if;
+    if jsonb_typeof(sticker->'x') <> 'number' or jsonb_typeof(sticker->'y') <> 'number' or jsonb_typeof(sticker->'rotation') <> 'number' then return false; end if;
+    if (sticker->>'x')::numeric not between 0 and 100 or (sticker->>'y')::numeric not between 0 and 100 or (sticker->>'rotation')::numeric not between -180 and 180 then return false; end if;
+    if sticker ? 'width' or sticker ? 'height' then
+      if not (sticker ?& array['width', 'height']) then return false; end if;
+      if jsonb_typeof(sticker->'width') <> 'number' or jsonb_typeof(sticker->'height') <> 'number' then return false; end if;
+      if (sticker->>'width')::numeric not between 12 and 48 or (sticker->>'height')::numeric not between 12 and 48 then return false; end if;
+    else
+      -- Old profiles used a single square size; the client upgrades on save.
+      if not (sticker ? 'size') or jsonb_typeof(sticker->'size') <> 'number' then return false; end if;
+      if (sticker->>'size')::numeric not between 20 and 38 then return false; end if;
+    end if;
   end loop;
   return true;
 end;

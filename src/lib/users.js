@@ -141,9 +141,11 @@ export async function fetchStudents() {
 // (own_student_update) restricts this to their own row.
 export async function updateStudentProfile(studentId, { firstName, lastName, avatar, avatarStyle }) {
   if (!studentId) return
-  const patch = { first_name: firstName, last_name: lastName }
-  // Only touch the avatar column when the caller supplies one, so name-only
-  // edits don't wipe a previously chosen avatar.
+  // Only touch a column when the caller supplies it, so a picture-only edit
+  // doesn't wipe the stored name and a name-only edit doesn't wipe the avatar.
+  const patch = {}
+  if (firstName !== undefined) patch.first_name = firstName
+  if (lastName !== undefined) patch.last_name = lastName
   if (avatar !== undefined) patch.avatar = getAvatar(avatar)?.id ?? null
   if (avatarStyle !== undefined) patch.avatar_style = normalizeAvatarStyle(avatarStyle)
   const { error } = await supabase
