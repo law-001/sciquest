@@ -104,6 +104,7 @@ export function LessonTemplate({
   onLessonComplete,
   onLessonSelect,
   quizLocked = false,
+  personalQuizGrant = null,
 }) {
   const [activeSection, setActiveSection] = useState(0);
   const [prevLessonId, setPrevLessonId] = useState(lesson?.id);
@@ -568,6 +569,21 @@ export function LessonTemplate({
                     Back to Lessons
                   </Button>
                 </div>
+                {!quizLocked && personalQuizGrant && (
+                  <p className="mt-5 text-sm font-bold text-secondary-700 dark:text-secondary-400">
+                    Your teacher re-opened this quiz just for you
+                    {personalQuizGrant.openUntil
+                      ? ` — open until ${new Date(
+                          personalQuizGrant.openUntil,
+                        ).toLocaleString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}.`
+                      : "."}
+                  </p>
+                )}
               </Card>
             </div>
           </div>

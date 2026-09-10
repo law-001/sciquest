@@ -16,4 +16,14 @@ export const CUSTOM_WIDGETS = {
     desc: 'Students drag a temperature slider and watch particles change state.',
     Component: lazy(() => import('./widgets/ParticleMotionWidget')),
   },
+  'pour-test': {
+    label: 'Pour Test — the empty-space proof',
+    desc: 'Pour 50 mL of water into 50 mL of alcohol and measure less than 100 mL',
+    Component: lazy(() => import('./widgets/PourTestWidget')),
+  },
+  'container-test': {
+    label: 'Container Test — shape vs volume',
+    desc: 'Move ice, water and steam between three containers and read what each one keeps',
+    Component: lazy(() => import('./widgets/ContainerTestWidget')),
+  },
 }

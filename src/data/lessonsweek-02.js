@@ -173,6 +173,20 @@ export const week02 = {
           },
         },
 
+        // ── Bench test: the empty-space claim, measured ──
+        // Placed straight after the five statements so the claim is made and
+        // then proved on the same screen.
+        {
+          type: "customWidget",
+          heading: "Try It: The Pour Test",
+          data: {
+            widgetId: "pour-test",
+            intro:
+              "Statement three says there is empty space between particles. Here is the measurement that proves it: pour 50 mL of water into 50 mL of alcohol and the flask does not read 100 mL.",
+            xp: 25,
+          },
+        },
+
         // ── Section 4: Key Ideas About Particles ──
         // (Reinforces all three objectives in summary form)
         {
@@ -363,6 +377,18 @@ export const week02 = {
                   "e.g. Air fills an entire room because gas particles move rapidly and spread out to occupy all available space.",
               },
             ],
+          },
+        },
+
+        // ── Bench test: shape and volume, container by container ──
+        {
+          type: "customWidget",
+          heading: "Try It: The Container Test",
+          data: {
+            widgetId: "container-test",
+            intro:
+              "A solid keeps its shape and volume, a liquid keeps only its volume, and a gas keeps neither. Move the same sample between three containers and watch which of those two things it holds on to.",
+            xp: 25,
           },
         },
 
