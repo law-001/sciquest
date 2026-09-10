@@ -52,6 +52,11 @@ import {
   getQuizMaxAttempts,
   getQuizShowAnswers,
 } from "./lib/quizSettings";
+import {
+  fetchQuizAccessGrants,
+  findActiveGrant,
+  subscribeToQuizAccess,
+} from "./lib/quizStudentAccess";
 import { lessonsPassedFromAttempts } from "./lib/lessonGating";
 import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/achievements-store";
 import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, MYSTERY_LAB_COMPLETE_KEY, CELL_DIVISION_COMPLETE_KEY, MATTER_STATE_SANDBOX_COMPLETE_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
@@ -198,6 +203,10 @@ function AppContent() {
   );
   const [openWeekIds, setOpenWeekIds] = useState(() => getOpenWeekIds());
   const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
+  const [quizAccessGrants, setQuizAccessGrants] = useState([]);
+  // Ticks each minute so a personal quiz grant's end time closes the quiz
+  // without the student reloading.
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   // Stable refs so interval callbacks always see the latest values without
   // being listed as effect deps (which would reset the interval constantly).
@@ -219,6 +228,7 @@ function AppContent() {
   const effectiveUnlockedAchievements = (user && isStudent) ? unlockedAchievements : [];
   const effectiveCompletedGames   = (user && isStudent) ? completedGames   : [];
   const effectiveInteractionRows  = (user && isStudent) ? interactionRows  : [];
+  const effectiveQuizAccessGrants = (user && isStudent) ? quizAccessGrants : [];
 
   // Lesson + week gating now keys off submitted quiz attempts, not lesson reads.
   const lessonsPassed = lessonsPassedFromAttempts(effectiveQuizAttempts);
@@ -435,6 +445,25 @@ function AppContent() {
       unsubQuiz();
     };
   }, []);
+
+  // Quizzes a teacher re-opened for this student only. RLS returns just the
+  // signed-in student's rows.
+  useEffect(() => {
+    if (!user?.id || !isStudent) return;
+    let cancelled = false;
+    const load = () =>
+      fetchQuizAccessGrants()
+        .then((grants) => { if (!cancelled) setQuizAccessGrants(grants); })
+        .catch((err) => console.error("Failed to load quiz access:", err));
+    load();
+    const unsub = subscribeToQuizAccess(load);
+    const tick = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => {
+      cancelled = true;
+      unsub();
+      clearInterval(tick);
+    };
+  }, [user?.id, isStudent]);
 
   // Curious Explorer is the one achievement earned by a UI action
   // (scrolling the landing page) rather than derived from progress.
@@ -688,7 +717,7 @@ function AppContent() {
       lessonsPassed,
       user?.id,
     );
-    if (ongoingQuizLessonId && !isQuizLocked(weekId, ongoingQuizLessonId)) {
+    if (ongoingQuizLessonId && !isQuizLocked(weekId, ongoingQuizLessonId, { freshClock: true })) {
       setActiveWeekId(weekId);
       setActiveLessonId(ongoingQuizLessonId);
       if (!reachedLessons.includes(ongoingQuizLessonId)) {
@@ -711,14 +740,46 @@ function AppContent() {
     handleNavigate("lesson-content");
   };
 
-  const isQuizLocked = (weekId, lessonId) => {
+  const isQuizClosedForClass = (weekId, lessonId) =>
+    !isWeekPublished(weekId, publishedQuizWeekIds) ||
+    isQuizLessonHidden(lessonId, hiddenQuizLessonIds);
+
+  // The teacher's per-student grant, but only when it's what keeps the quiz
+  // open — null when the quiz is open for the whole class anyway.
+  // `freshClock`: event handlers read the real time (nowMs can be a minute
+  // stale); render code uses the ticking nowMs so renders stay pure.
+  const getPersonalQuizGrant = (weekId, lessonId, { freshClock = false } = {}) =>
+    weekId && isQuizClosedForClass(weekId, lessonId)
+      ? findActiveGrant(
+          effectiveQuizAccessGrants,
+          lessonId,
+          user?.id,
+          freshClock ? undefined : nowMs,
+        )
+      : null;
+
+  const isQuizLocked = (weekId, lessonId, options) => {
     if (!weekId) return false;
-    if (!isWeekPublished(weekId, publishedQuizWeekIds)) return true;
-    return isQuizLessonHidden(lessonId, hiddenQuizLessonIds);
+    return (
+      isQuizClosedForClass(weekId, lessonId) &&
+      !getPersonalQuizGrant(weekId, lessonId, options)
+    );
   };
 
+  // The quiz page needs the grant's end time even after it passes, so it can
+  // auto-submit on time — or show "closed" to a student who comes back late —
+  // rather than let the server reject a fresh attempt.
+  const getQuizClosesAt = (weekId, lessonId) =>
+    weekId && isQuizClosedForClass(weekId, lessonId)
+      ? (effectiveQuizAccessGrants.find(
+          (g) => g.lessonId === lessonId && g.studentId === user?.id,
+        )?.openUntil ?? null)
+      : null;
+
   const handleGoToQuiz = () => {
-    if (isQuizLocked(activeWeekId, activeLessonId)) return;
+    // A grant that just ended must not open a quiz that would auto-submit
+    // the moment it loads.
+    if (isQuizLocked(activeWeekId, activeLessonId, { freshClock: true })) return;
     handleNavigate("quiz");
   };
 
@@ -867,46 +928,45 @@ function AppContent() {
     }
 
     // Toast(s). XP earned first; level-up next if it crossed a threshold.
-    if (quizXp > 0) {
-      pushNotification({ kind: "xp", amount: quizXp, detail: lesson?.title, source: "quiz" });
-    }
-    const newLevel = levelFromXp(totalXp + quizXp);
-    if (newLevel > currentLevel) {
-      pushNotification({ kind: "level-up", level: newLevel });
+    const announceXp = () => {
+      if (quizXp > 0) {
+        pushNotification({ kind: "xp", amount: quizXp, detail: lesson?.title, source: "quiz" });
+      }
+      const newLevel = levelFromXp(totalXp + quizXp);
+      if (newLevel > currentLevel) {
+        pushNotification({ kind: "level-up", level: newLevel });
+      }
+    };
+
+    // Staff/anonymous: nothing is persisted, so nothing can be refused.
+    if (!(studentId && isStudent && hasScore)) {
+      announceXp();
+      return;
     }
 
-    // Persist for logged-in students. Staff/anonymous: skip writes silently.
-    if (studentId && isStudent && hasScore) {
-      saveQuizAttempt({
-        studentId,
-        weekId,
-        lessonId,
-        score: result.score,
-        maxScore: result.maxScore,
-        xpAwarded: quizXp,
-        pendingGradeCount: result.pendingGradeCount ?? 0,
-        answers: result.answers ?? null,
-      }).then((saved) => {
-        if (saved?.id) {
-          // Patch the optimistic entry so the grade-poll can match it by id.
-          setQuizAttempts((prev) =>
-            prev.map((a) =>
-              a.lesson_id === lessonId && a.submitted_at === clientTs
-                ? { ...a, id: saved.id, submitted_at: saved.submitted_at }
-                : a,
-            ),
-          );
-          // Remember pending attempt ids so the notification fires even after
-          // the student logs out and back in before the teacher grades.
-          if ((result.pendingGradeCount ?? 0) > 0) {
-            const ids = loadPendingIds(studentId);
-            ids.add(saved.id);
-            savePendingIds(studentId, ids);
-          }
+    // The server refuses an attempt on a closed quiz (is_quiz_open_for in
+    // the quiz_attempts insert policy), so XP toasts and achievements wait
+    // for the save instead of celebrating an attempt that never lands.
+    // Returned so QuizContainer can tell the student it wasn't saved.
+    const handleSaved = (saved) => {
+      if (saved?.id) {
+        // Patch the optimistic entry so the grade-poll can match it by id.
+        setQuizAttempts((prev) =>
+          prev.map((a) =>
+            a.lesson_id === lessonId && a.submitted_at === clientTs
+              ? { ...a, id: saved.id, submitted_at: saved.submitted_at }
+              : a,
+          ),
+        );
+        // Remember pending attempt ids so the notification fires even after
+        // the student logs out and back in before the teacher grades.
+        if ((result.pendingGradeCount ?? 0) > 0) {
+          const ids = loadPendingIds(studentId);
+          ids.add(saved.id);
+          savePendingIds(studentId, ids);
         }
-      }).catch((err) => {
-        console.error("Failed to save quiz attempt:", err);
-      });
+      }
+      announceXp();
 
       // Re-derive achievements against progress that now includes this
       // attempt, so quiz-driven ones (First Quiz, Perfect Score, …)
@@ -942,7 +1002,30 @@ function AppContent() {
         .catch((err) => {
           console.error("Failed to sync achievements:", err);
         });
-    }
+    };
+
+    const handleRejected = (err) => {
+      // Drop the optimistic entry — it would otherwise count as an attempt
+      // and unlock the next lesson until the next reload.
+      setQuizAttempts((prev) =>
+        prev.filter(
+          (a) => !(a.lesson_id === lessonId && a.submitted_at === clientTs),
+        ),
+      );
+      console.error("Failed to save quiz attempt:", err);
+      throw err;
+    };
+
+    return saveQuizAttempt({
+      studentId,
+      weekId,
+      lessonId,
+      score: result.score,
+      maxScore: result.maxScore,
+      xpAwarded: quizXp,
+      pendingGradeCount: result.pendingGradeCount ?? 0,
+      answers: result.answers ?? null,
+    }).then(handleSaved, handleRejected);
   };
 
   // Maps game IDs to their completion achievement keys.
@@ -1113,6 +1196,7 @@ function AppContent() {
             onLessonComplete={handleLessonComplete}
             onInteractionComplete={handleInteractionComplete}
             quizLocked={isQuizLocked(activeWeekId, activeLessonId)}
+            personalQuizGrant={getPersonalQuizGrant(activeWeekId, activeLessonId)}
             onLessonSelect={(lessonId) => {
               setActiveLessonId(lessonId);
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1129,6 +1213,7 @@ function AppContent() {
             onComplete={handleQuizComplete}
             onFinish={handleQuizFinish}
             timeLimitSeconds={getQuizTimeLimit(quizSettings, activeLessonId)}
+            closesAt={getQuizClosesAt(activeWeekId, activeLessonId)}
             maxAttempts={getQuizMaxAttempts(quizSettings, activeLessonId)}
             showCorrectAnswers={getQuizShowAnswers(quizSettings, activeLessonId)}
           />

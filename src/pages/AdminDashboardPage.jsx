@@ -29,9 +29,16 @@ import {
   Plus,
   UserCheck,
 } from "lucide-react";
-import Card from "../components/Card";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
+import {
+  MetricRibbon,
+  PanelHeader,
+  PortalPanel,
+  PortalShell,
+  ProportionBar,
+  TabHead,
+} from "../components/portal";
 import { cn } from "../lib/utils";
 import {
   fetchUsers,
@@ -50,7 +57,6 @@ import {
   deleteSection,
 } from "../lib/sections";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { QUIZZES_DATA } from "../data/quizzesweek-01";
 import { questionUnits } from "../lib/xp-config";
@@ -152,7 +158,7 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
           </p>
         </div>
       </div>
-      <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+      <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
         Are you sure you want to remove{" "}
         <strong className="text-stone-900 dark:text-white">{user.name}</strong>{" "}
         ({user.email})? Their account, progress, and all associated records will
@@ -200,7 +206,7 @@ function WipeDataModal({ user, onConfirm, onClose, isLoading, error }) {
           </p>
         </div>
       </div>
-      <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+      <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
         Wipe all learning and game data for{" "}
         <strong className="text-stone-900 dark:text-white">{user.name}</strong>{" "}
         ({user.email})? Lesson progress, quiz attempts, and game records will be
@@ -255,7 +261,7 @@ function InviteTeacherModal({ onClose }) {
 
   return (
     <Modal onClose={onClose}>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
           <Mail className="w-5 h-5 text-teal-600 dark:text-teal-400" />
         </div>
@@ -287,7 +293,7 @@ function InviteTeacherModal({ onClose }) {
         </div>
       ) : (
         <>
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
               Teacher Email Address
             </label>
@@ -330,49 +336,44 @@ function InviteTeacherModal({ onClose }) {
 // ─── Dashboard Tab ─────────────────────────────────────────────────────────────
 
 const SECTION_COLORS = ["#f97316", "#14b8a6", "#eab308", "#8b5cf6", "#3b82f6"];
-const ACTIVITY_COLORS = ["#22c55e", "#a8a29e"];
+const MIX_COLORS = ["#f97316", "#14b8a6"];
 
-function DashboardTab({ stats, recentUsers, sectionData }) {
+function DashboardTab({
+  metrics,
+  counts,
+  recentUsers,
+  sectionData,
+  teachers,
+  totalLessons,
+  adminName,
+}) {
   const containerRef = useRef(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
-      gsap.from(".anim-heading", {
-        y: 18,
+      gsap.from(".anim-ribbon", {
+        y: 14,
         opacity: 0,
-        duration: 0.45,
+        duration: 0.4,
         ease: "power2.out",
       });
-      gsap.from(".stat-card", {
-        y: 28,
+      gsap.from(".anim-panel", {
+        y: 20,
         opacity: 0,
-        duration: 0.5,
+        duration: 0.45,
         stagger: 0.08,
         ease: "power2.out",
         delay: 0.1,
       });
-      gsap.from(".users-table", {
-        y: 22,
+      gsap.from(".roster-row", {
+        x: -12,
         opacity: 0,
-        duration: 0.5,
+        duration: 0.32,
+        stagger: 0.045,
         ease: "power2.out",
-        delay: 0.22,
-      });
-      gsap.from(".users-table tbody tr", {
-        x: -16,
-        opacity: 0,
-        duration: 0.38,
-        stagger: 0.05,
-        ease: "power2.out",
-        delay: 0.38,
-      });
-      gsap.from(".analytics-card", {
-        x: 24,
-        opacity: 0,
-        duration: 0.55,
-        stagger: 0.12,
-        ease: "power2.out",
-        delay: 0.18,
+        delay: 0.3,
       });
     }, containerRef);
     return () => ctx.revert();
@@ -383,108 +384,108 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
     color: SECTION_COLORS[i % SECTION_COLORS.length],
   }));
   const totalSectionStudents = sectionSlices.reduce((s, d) => s + d.value, 0);
-  const activityData = [
-    { label: "Active", value: 987, color: ACTIVITY_COLORS[0] },
-    { label: "Inactive", value: 261, color: ACTIVITY_COLORS[1] },
+
+  const mix = [
+    { label: "Students", value: counts?.students ?? 0, color: MIX_COLORS[0] },
+    { label: "Teachers", value: counts?.teachers ?? 0, color: MIX_COLORS[1] },
   ];
+  const mixTotal = mix.reduce((s, d) => s + d.value, 0);
+
+  // How much of the curriculum the student body has actually worked through:
+  // completions against every lesson every enrolled student could finish.
+  const possible = (counts?.students ?? 0) * totalLessons;
+  const done = counts?.completedLessons ?? 0;
+  const reachPct = possible ? Math.round((done / possible) * 100) : 0;
+
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
 
   return (
-    <div className="space-y-6" ref={containerRef}>
-      <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Dashboard
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Overview and system management
-        </p>
+    <div className="space-y-4" ref={containerRef}>
+      <div className="anim-ribbon">
+        <MetricRibbon
+          accent="primary"
+          eyebrow="Live"
+          title="Control Center"
+          subtitle={`${today} · signed in as ${adminName}`}
+          metrics={metrics}
+          action={
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full sm:w-auto"
+              leftIcon={<Mail className="w-4 h-4" />}
+              onClick={() => setInviteOpen(true)}
+            >
+              Invite a teacher
+            </Button>
+          }
+        />
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
-          <Card key={i} className="stat-card p-6">
-            <div className="flex items-center justify-center gap-4">
-              <div
-                className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                  stat.bgLight,
-                  stat.bgDark,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-stone-500 dark:text-stone-400 whitespace-nowrap">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-black text-stone-900 dark:text-white">
-                  {stat.value}
-                </p>
-              </div>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        {/* Tall: the account roster runs the height of the two panels beside it */}
+        <PortalPanel className="anim-panel xl:col-span-7 xl:row-span-2">
+          <PanelHeader title="Newest accounts" count={recentUsers.length} />
+
+          {recentUsers.length === 0 ? (
+            <div className="px-5 py-12 text-center">
+              <UserCheck className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600" />
+              <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+                No accounts yet
+              </p>
+              <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                Invite a teacher or add students to see them here.
+              </p>
             </div>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Recent Users Table */}
-        <Card className="users-table xl:col-span-2 overflow-hidden">
-          <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
-              Recent Users
-            </h2>
-          </div>
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Joined
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-                {recentUsers.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-6 py-10 text-center text-sm text-stone-500 dark:text-stone-400"
-                    >
-                      No recent users
-                    </td>
+          ) : (
+            <>
+              {/* Desktop rows */}
+              <table className="hidden md:table w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-orange-100 dark:border-stone-700">
+                    <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
+                      Person
+                    </th>
+                    <th className="px-3 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
+                      Role
+                    </th>
+                    <th className="px-3 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
+                      Status
+                    </th>
+                    <th className="px-5 py-2 text-right text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
+                      Joined
+                    </th>
                   </tr>
-                ) : (
-                  recentUsers.map((user) => (
+                </thead>
+                <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
+                  {recentUsers.map((user) => (
                     <tr
                       key={user.id}
-                      className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                      className="roster-row hover:bg-orange-50/60 dark:hover:bg-stone-700/40 transition-colors"
                     >
-                      <td className="px-6 py-4 max-w-0 w-full">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
+                      <td className="px-5 py-2.5 max-w-0 w-full">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-200 flex items-center justify-center font-black text-[11px] shrink-0">
                             {user.name.charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
                               {user.name}
-                            </p>
-                            <p className="text-xs text-stone-500 dark:text-stone-400 truncate" title={user.email}>
+                            </span>
+                            <span
+                              className="block text-[11px] text-stone-500 dark:text-stone-400 truncate"
+                              title={user.email}
+                            >
                               {user.email}
-                            </p>
-                          </div>
+                            </span>
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2.5">
                         <Badge
                           variant={
                             user.role === "Teacher" ? "secondary" : "primary"
@@ -493,10 +494,10 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
                           {user.role}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2.5">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1.5 text-xs font-bold",
+                            "inline-flex items-center gap-1.5 text-[11px] font-bold whitespace-nowrap",
                             user.status === "Active"
                               ? "text-secondary-600 dark:text-secondary-400"
                               : "text-stone-400 dark:text-stone-500",
@@ -504,7 +505,7 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
                         >
                           <span
                             className={cn(
-                              "w-2 h-2 rounded-full",
+                              "w-1.5 h-1.5 rounded-full",
                               user.status === "Active"
                                 ? "bg-secondary-500"
                                 : "bg-stone-300 dark:bg-stone-600",
@@ -513,163 +514,218 @@ function DashboardTab({ stats, recentUsers, sectionData }) {
                           {user.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                      <td className="px-5 py-2.5 text-right text-[12px] tabular-nums text-stone-500 dark:text-stone-400 font-medium whitespace-nowrap">
                         {user.joined}
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          {/* Mobile cards */}
-          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
-            {recentUsers.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-stone-500 dark:text-stone-400">
-                No recent users
-              </p>
-            ) : (
-              recentUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="px-5 py-4 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                      {user.name.charAt(0)}
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Mobile rows */}
+              <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
+                {recentUsers.map((user) => (
+                  <div key={user.id} className="roster-row px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-200 flex items-center justify-center font-black text-[11px] shrink-0">
+                        {user.name.charAt(0)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          user.role === "Teacher" ? "secondary" : "primary"
+                        }
+                      >
+                        {user.role}
+                      </Badge>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        user.role === "Teacher" ? "secondary" : "primary"
-                      }
-                    >
-                      {user.role}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between mt-2 pl-11">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1.5 text-xs font-bold",
-                        user.status === "Active"
-                          ? "text-secondary-600 dark:text-secondary-400"
-                          : "text-stone-400 dark:text-stone-500",
-                      )}
-                    >
+                    <div className="mt-1.5 pl-[42px] flex items-center justify-between">
                       <span
                         className={cn(
-                          "w-1.5 h-1.5 rounded-full",
+                          "inline-flex items-center gap-1.5 text-[11px] font-bold",
                           user.status === "Active"
-                            ? "bg-secondary-500"
-                            : "bg-stone-300 dark:bg-stone-600",
+                            ? "text-secondary-600 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
                         )}
-                      />
-                      {user.status}
-                    </span>
-                    <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                      {user.joined}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
-
-        {/* Analytics Charts */}
-        <div className="space-y-4">
-          <Card className="analytics-card p-5">
-            <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">
-              Student Sections
-            </h3>
-            {totalSectionStudents === 0 ? (
-              <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-8">
-                No students yet
-              </p>
-            ) : (
-              <>
-                <div className="flex justify-center mb-4">
-                  <DonutChart
-                    data={sectionSlices}
-                    size={160}
-                    label={{
-                      value: totalSectionStudents.toLocaleString(),
-                      sub: "students",
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  {sectionSlices.map((d) => (
-                    <div
-                      key={d.label}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
+                      >
                         <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ background: d.color }}
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            user.status === "Active"
+                              ? "bg-secondary-500"
+                              : "bg-stone-300 dark:bg-stone-600",
+                          )}
                         />
-                        <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">
-                          {d.label}
-                        </span>
-                      </div>
-                      <span className="text-xs font-bold text-stone-900 dark:text-white">
-                        {d.value}
+                        {user.status}
+                      </span>
+                      <span className="text-[11px] tabular-nums text-stone-500 dark:text-stone-400 font-medium">
+                        {user.joined}
                       </span>
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </Card>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </PortalPanel>
 
-          <Card className="analytics-card p-5">
-            <h3 className="text-sm font-bold text-stone-700 dark:text-stone-300 mb-4">
-              Weekly Activity
+        {/* Distribution — two blocks, one panel, hairline between */}
+        <PortalPanel className="anim-panel xl:col-span-5">
+          <PanelHeader title="Distribution" />
+
+          <div className="px-5 py-4">
+            <div className="flex items-baseline justify-between mb-3">
+              <h3 className="text-[13px] font-bold text-stone-700 dark:text-stone-300">
+                Students by section
+              </h3>
+              <span className="text-[11px] font-black tabular-nums text-stone-400">
+                {totalSectionStudents}
+              </span>
+            </div>
+            {totalSectionStudents === 0 ? (
+              <p className="text-[12px] text-stone-500 dark:text-stone-400 py-3">
+                No students are assigned to a section yet.
+              </p>
+            ) : (
+              <ProportionBar data={sectionSlices} unit="students" />
+            )}
+          </div>
+
+          <div className="px-5 py-4 border-t border-orange-100 dark:border-stone-700">
+            <h3 className="text-[13px] font-bold text-stone-700 dark:text-stone-300 mb-3">
+              Account mix
             </h3>
-            <div className="flex justify-center mb-4">
-              <DonutChart
-                data={activityData}
-                size={140}
-                label={{ value: "79%", sub: "active" }}
+            {mixTotal === 0 ? (
+              <p className="text-[12px] text-stone-500 dark:text-stone-400 py-3">
+                No accounts yet.
+              </p>
+            ) : (
+              <div className="flex items-center gap-5">
+                <DonutChart
+                  data={mix}
+                  size={104}
+                  label={{ value: mixTotal.toLocaleString(), sub: "people" }}
+                />
+                <dl className="flex-1 min-w-0 space-y-2">
+                  {mix.map((d) => (
+                    <div key={d.label} className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="w-1.5 h-4 rounded-full shrink-0"
+                        style={{ background: d.color }}
+                      />
+                      <dt className="text-[12px] font-medium text-stone-600 dark:text-stone-400">
+                        {d.label}
+                      </dt>
+                      <dd className="ml-auto text-[12px] font-black tabular-nums text-stone-900 dark:text-white">
+                        {d.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
+          </div>
+        </PortalPanel>
+
+        {/* Square-ish: one big figure carrying the whole story */}
+        <PortalPanel className="anim-panel xl:col-span-5">
+          <PanelHeader title="Curriculum reach" />
+          <div className="px-5 py-5">
+            <p className="text-[44px] leading-none font-black tabular-nums text-stone-900 dark:text-white">
+              {reachPct}
+              <span className="text-[20px] align-top">%</span>
+            </p>
+            <p className="mt-1.5 text-[12px] font-medium text-stone-500 dark:text-stone-400">
+              of everything the student body could have finished
+            </p>
+            <div
+              className="mt-4 h-2 w-full rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden"
+              role="img"
+              aria-label={`Curriculum reach: ${reachPct} percent`}
+            >
+              <div
+                className="h-full rounded-full bg-primary-500"
+                style={{ width: `${Math.min(100, reachPct)}%` }}
               />
             </div>
-            <div className="space-y-2">
-              {activityData.map((d) => (
-                <div
-                  key={d.label}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ background: d.color }}
-                    />
-                    <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">
-                      {d.label} this week
-                    </span>
-                  </div>
-                  <span className="text-xs font-bold text-stone-900 dark:text-white">
-                    {d.value}
-                  </span>
+            <dl className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-orange-100 dark:border-stone-700">
+              {[
+                { label: "Completed", value: done.toLocaleString() },
+                { label: "Possible", value: possible.toLocaleString() },
+                { label: "Lessons each", value: totalLessons.toLocaleString() },
+              ].map((cell) => (
+                <div key={cell.label}>
+                  <dt className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
+                    {cell.label}
+                  </dt>
+                  <dd className="mt-0.5 text-[15px] font-black tabular-nums text-stone-900 dark:text-white">
+                    {cell.value}
+                  </dd>
                 </div>
               ))}
-            </div>
-          </Card>
-        </div>
+            </dl>
+          </div>
+        </PortalPanel>
       </div>
+
+      {/* Wide and short: who holds teaching access, at a glance */}
+      <PortalPanel className="anim-panel">
+        <PanelHeader title="Teaching staff" count={teachers.length}>
+          <span className="text-[11px] font-medium text-stone-400 dark:text-stone-500">
+            Accounts with portal access
+          </span>
+        </PanelHeader>
+        {teachers.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <GraduationCap className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600" />
+            <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+              No teachers yet
+            </p>
+            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+              Invite one and they will appear here.
+            </p>
+          </div>
+        ) : (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px bg-orange-100 dark:bg-stone-700">
+            {/* gap-px over a tinted track draws the hairlines, so they stay
+                correct however the grid wraps */}
+            {teachers.slice(0, 8).map((t) => (
+              <li
+                key={t.id}
+                className="flex items-center gap-2.5 px-5 py-3 bg-white dark:bg-stone-800"
+              >
+                <span className="w-8 h-8 shrink-0 rounded-full bg-secondary-100 dark:bg-secondary-950 text-secondary-700 dark:text-secondary-200 flex items-center justify-center font-black text-[11px]">
+                  {t.name.charAt(0)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                    {t.name}
+                  </span>
+                  <span
+                    className="block text-[11px] text-stone-500 dark:text-stone-400 truncate"
+                    title={t.email}
+                  >
+                    joined {t.joined}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </PortalPanel>
+
+      {inviteOpen && <InviteTeacherModal onClose={() => setInviteOpen(false)} />}
     </div>
   );
 }
-
-// ─── Users Tab ─────────────────────────────────────────────────────────────────
 
 function UsersTab() {
   const [users, setUsers] = useState([]);
@@ -742,23 +798,21 @@ function UsersTab() {
   };
 
   return (
-    <div className="space-y-6" ref={containerRef}>
+    <div className="space-y-4" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Users
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Manage all student and teacher accounts
-        </p>
+        <TabHead
+          title="Users"
+          subtitle="Manage all student and teacher accounts"
+        />
       </div>
 
-      <Card className="anim-card overflow-hidden">
-        <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
+      <PortalPanel className="anim-card">
+        <div className="px-5 py-3.5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
               All Users
             </h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400">
+            <p className="mt-0.5 text-[11px] font-medium text-stone-400 dark:text-stone-500">
               {loading ? "Loading…" : `${users.length} accounts`}
             </p>
           </div>
@@ -780,7 +834,7 @@ function UsersTab() {
         </div>
 
         {showRemoveSearch && (
-          <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
+          <div className="px-5 py-2.5 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
             <input
               autoFocus
               type="text"
@@ -833,22 +887,22 @@ function UsersTab() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Name
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Role
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Section
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Status
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Joined
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em] text-right">
                   Actions
                 </th>
               </tr>
@@ -887,7 +941,7 @@ function UsersTab() {
                     key={user.id}
                     className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {user.name.charAt(0)}
@@ -902,7 +956,7 @@ function UsersTab() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <Badge
                         variant={
                           user.role === "Teacher" ? "secondary" : "primary"
@@ -911,10 +965,10 @@ function UsersTab() {
                         {user.role}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {user.section}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <span
                         className={cn(
                           "inline-flex items-center gap-1.5 text-xs font-bold",
@@ -934,10 +988,10 @@ function UsersTab() {
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {user.joined}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-5 py-2.5 text-right">
                       <button
                         onClick={() => setUserToRemove(user)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -1033,7 +1087,7 @@ function UsersTab() {
             ))
           )}
         </div>
-      </Card>
+      </PortalPanel>
 
       {userToRemove && (
         <RemoveUserModal
@@ -1128,14 +1182,12 @@ function ResetDataTab() {
   };
 
   return (
-    <div className="space-y-6" ref={containerRef}>
+    <div className="space-y-4" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Reset Data
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Wipe a user's progress for testing — their account stays intact
-        </p>
+        <TabHead
+          title="Reset Data"
+          subtitle="Wipe a user's progress for testing — their account stays intact"
+        />
       </div>
 
       {wipedName && (
@@ -1148,17 +1200,17 @@ function ResetDataTab() {
         </div>
       )}
 
-      <Card className="anim-card overflow-hidden">
-        <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-          <h2 className="text-lg font-bold text-stone-900 dark:text-white">
-            Select a User
-          </h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">
-            {loading ? "Loading…" : `${users.length} accounts`}
-          </p>
+      <PortalPanel className="anim-card">
+        <div className="px-5 py-3.5 border-b border-orange-100 dark:border-stone-700">
+          <h2 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
+              Select a User
+            </h2>
+            <p className="mt-0.5 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+              {loading ? "Loading…" : `${users.length} accounts`}
+            </p>
         </div>
 
-        <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-amber-50/40 dark:bg-amber-900/10">
+        <div className="px-5 py-2.5 border-b border-orange-100 dark:border-stone-700 bg-amber-50/40 dark:bg-amber-900/10">
           <input
             type="text"
             value={query}
@@ -1173,16 +1225,16 @@ function ResetDataTab() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Name
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Role
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Section
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em] text-right">
                   Actions
                 </th>
               </tr>
@@ -1221,7 +1273,7 @@ function ResetDataTab() {
                     key={user.id}
                     className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {user.name.charAt(0)}
@@ -1236,7 +1288,7 @@ function ResetDataTab() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <Badge
                         variant={
                           user.role === "Teacher" ? "secondary" : "primary"
@@ -1245,10 +1297,10 @@ function ResetDataTab() {
                         {user.role}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {user.section}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-5 py-2.5 text-right">
                       <button
                         onClick={() => {
                           setUserToWipe(user);
@@ -1327,7 +1379,7 @@ function ResetDataTab() {
             ))
           )}
         </div>
-      </Card>
+      </PortalPanel>
 
       {userToWipe && (
         <WipeDataModal
@@ -1428,33 +1480,30 @@ function TeachersTab() {
   };
 
   return (
-    <div className="space-y-6" ref={containerRef}>
-      <div className="flex items-center justify-between">
-        <div className="anim-heading">
-          <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-            Teachers
-          </h1>
-          <p className="text-stone-500 dark:text-stone-400 font-medium">
-            Manage teacher accounts and send invites
-          </p>
-        </div>
-        <div className="anim-invite-btn">
+    <div className="space-y-4" ref={containerRef}>
+      <div className="anim-heading">
+        <TabHead
+          title="Teachers"
+          subtitle="Manage teacher accounts and send invites"
+        >
           <Button
+            size="sm"
+            className="anim-invite-btn"
             leftIcon={<Mail className="w-4 h-4" />}
             onClick={() => setShowInvite(true)}
           >
             Invite Teacher
           </Button>
-        </div>
+        </TabHead>
       </div>
 
-      <Card className="anim-card overflow-hidden">
-        <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
+      <PortalPanel className="anim-card">
+        <div className="px-5 py-3.5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
               All Teachers
             </h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400">
+            <p className="mt-0.5 text-[11px] font-medium text-stone-400 dark:text-stone-500">
               {loading ? "Loading…" : `${teachers.length} teachers`}
             </p>
           </div>
@@ -1476,7 +1525,7 @@ function TeachersTab() {
         </div>
 
         {showRemoveSearch && (
-          <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
+          <div className="px-5 py-2.5 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
             <input
               autoFocus
               type="text"
@@ -1530,22 +1579,22 @@ function TeachersTab() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Teacher
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Classes
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Students
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Status
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Joined
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em] text-right">
                   Actions
                 </th>
               </tr>
@@ -1584,7 +1633,7 @@ function TeachersTab() {
                     key={teacher.id}
                     className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-secondary-100 dark:bg-secondary-900/40 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {teacher.name.charAt(0)}
@@ -1599,13 +1648,13 @@ function TeachersTab() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">
+                    <td className="px-5 py-2.5 text-sm font-bold text-stone-800 dark:text-stone-200">
                       {teacher.classes}
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">
+                    <td className="px-5 py-2.5 text-sm font-bold text-stone-800 dark:text-stone-200">
                       {teacher.students}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <span
                         className={cn(
                           "inline-flex items-center gap-1.5 text-xs font-bold",
@@ -1625,10 +1674,10 @@ function TeachersTab() {
                         {teacher.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {teacher.joined}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-5 py-2.5 text-right">
                       <button
                         onClick={() => setTeacherToRemove(teacher)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -1711,7 +1760,7 @@ function TeachersTab() {
             ))
           )}
         </div>
-      </Card>
+      </PortalPanel>
 
       {showInvite && (
         <InviteTeacherModal onClose={() => setShowInvite(false)} />
@@ -1816,23 +1865,21 @@ function StudentsTab() {
   };
 
   return (
-    <div className="space-y-6" ref={containerRef}>
+    <div className="space-y-4" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Students
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Manage enrolled student accounts
-        </p>
+        <TabHead
+          title="Students"
+          subtitle="Manage enrolled student accounts"
+        />
       </div>
 
-      <Card className="anim-card overflow-hidden">
-        <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex flex-col sm:flex-row sm:items-center gap-3">
+      <PortalPanel className="anim-card">
+        <div className="px-5 py-3.5 border-b border-orange-100 dark:border-stone-700 flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex-1">
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
               All Students
             </h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400">
+            <p className="mt-0.5 text-[11px] font-medium text-stone-400 dark:text-stone-500">
               {loading
                 ? "Loading…"
                 : `${filtered.length} student${filtered.length !== 1 ? "s" : ""}`}
@@ -1870,7 +1917,7 @@ function StudentsTab() {
         </div>
 
         {showRemoveSearch && (
-          <div className="px-6 py-4 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
+          <div className="px-5 py-2.5 border-b border-orange-100 dark:border-stone-700 bg-red-50/40 dark:bg-red-900/10">
             <input
               autoFocus
               type="text"
@@ -1924,19 +1971,19 @@ function StudentsTab() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Name
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Section
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Status
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Joined
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em] text-right">
                   Actions
                 </th>
               </tr>
@@ -1975,7 +2022,7 @@ function StudentsTab() {
                     key={student.id}
                     className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {student.name.charAt(0)}
@@ -1990,10 +2037,10 @@ function StudentsTab() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {student.section}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <span
                         className={cn(
                           "inline-flex items-center gap-1.5 text-xs font-bold",
@@ -2013,10 +2060,10 @@ function StudentsTab() {
                         {student.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {student.joined}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-5 py-2.5 text-right">
                       <button
                         onClick={() => setStudentToRemove(student)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -2083,7 +2130,7 @@ function StudentsTab() {
             ))
           )}
         </div>
-      </Card>
+      </PortalPanel>
 
       {studentToRemove && (
         <RemoveUserModal
@@ -2130,18 +2177,16 @@ function LessonsTab() {
   }, []);
 
   return (
-    <div className="space-y-6" ref={containerRef}>
+    <div className="space-y-4" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Lessons
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Browse lesson content by week
-        </p>
+        <TabHead
+          title="Lessons"
+          subtitle="Browse lesson content by week"
+        />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {WEEKS_DATA.map((week) => (
-          <Card key={week.id} className="week-card p-6" hoverable>
+          <PortalPanel className="week-card p-5" key={week.id}>
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
@@ -2174,7 +2219,7 @@ function LessonsTab() {
                 <span className="text-rose-500 dark:text-rose-400">Locked</span>
               )}
             </div>
-          </Card>
+          </PortalPanel>
         ))}
       </div>
     </div>
@@ -2208,16 +2253,14 @@ function QuizzesTab() {
   }, []);
 
   return (
-    <div className="space-y-6" ref={containerRef}>
+    <div className="space-y-4" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Quizzes
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Browse quiz content by week
-        </p>
+        <TabHead
+          title="Quizzes"
+          subtitle="Browse quiz content by week"
+        />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {WEEKS_DATA.map((week) => {
           const weekQuizzes = week.lessons
             .map((l) => QUIZZES_DATA[l.id])
@@ -2236,7 +2279,7 @@ function QuizzesTab() {
           );
 
           return (
-            <Card key={week.id} className="week-card p-6" hoverable>
+            <PortalPanel className="week-card p-5" key={week.id}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
@@ -2267,7 +2310,7 @@ function QuizzesTab() {
                   {totalMinutes} min
                 </span>
               </div>
-            </Card>
+            </PortalPanel>
           );
         })}
       </div>
@@ -2328,7 +2371,7 @@ function SettingRow({ label, hint, children }) {
 
 function SettingsSection({ icon, title, description, children }) {
   return (
-    <Card className="settings-section p-6">
+    <PortalPanel className="settings-section p-5">
       <div className="flex items-start gap-4 mb-5">
         <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-700 flex items-center justify-center text-stone-600 dark:text-stone-300 shrink-0">
           {icon}
@@ -2341,7 +2384,7 @@ function SettingsSection({ icon, title, description, children }) {
         </div>
       </div>
       <div className="pl-14">{children}</div>
-    </Card>
+    </PortalPanel>
   );
 }
 
@@ -2373,14 +2416,12 @@ function SettingsTab() {
   }, []);
 
   return (
-    <div className="space-y-6" ref={containerRef}>
+    <div className="space-y-4" ref={containerRef}>
       <div className="anim-heading">
-        <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-          Settings
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 font-medium">
-          Configure your SciQuest platform
-        </p>
+        <TabHead
+          title="Settings"
+          subtitle="Configure your SciQuest platform"
+        />
       </div>
 
       <SettingsSection
@@ -2529,7 +2570,7 @@ function CreateSectionModal({ onCreated, onClose }) {
 
   return (
     <Modal onClose={onClose}>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
           <FolderOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />
         </div>
@@ -2543,7 +2584,7 @@ function CreateSectionModal({ onCreated, onClose }) {
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
           Section Name
         </label>
@@ -2599,7 +2640,7 @@ function DeleteSectionModal({ section, onConfirm, onClose, isLoading, error }) {
           </p>
         </div>
       </div>
-      <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+      <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
         Permanently delete{" "}
         <strong className="text-stone-900 dark:text-white">{section.name}</strong>?
         Students currently assigned to this section will not be affected, but it
@@ -2686,50 +2727,48 @@ function SectionsTab() {
   };
 
   return (
-    <div className="space-y-6" ref={containerRef}>
-      <div className="anim-heading flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-stone-900 dark:text-white mb-1">
-            Sections
-          </h1>
-          <p className="text-stone-500 dark:text-stone-400 font-medium">
-            Manage platform-wide science sections
-          </p>
-        </div>
-        <Button
-          leftIcon={<Plus className="w-4 h-4" />}
-          onClick={() => setShowCreate(true)}
+    <div className="space-y-4" ref={containerRef}>
+      <div className="anim-heading">
+        <TabHead
+          title="Sections"
+          subtitle="Manage platform-wide science sections"
         >
-          Create Section
-        </Button>
+          <Button
+            size="sm"
+            leftIcon={<Plus className="w-4 h-4" />}
+            onClick={() => setShowCreate(true)}
+          >
+            Create Section
+          </Button>
+        </TabHead>
       </div>
 
-      <Card className="anim-card overflow-hidden">
-        <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-          <h2 className="text-lg font-bold text-stone-900 dark:text-white">
-            All Sections
-          </h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">
-            {loading ? "Loading…" : `${sections.length} section${sections.length !== 1 ? "s" : ""}`}
-          </p>
+      <PortalPanel className="anim-card">
+        <div className="px-5 py-3.5 border-b border-orange-100 dark:border-stone-700">
+          <h2 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
+              All Sections
+            </h2>
+            <p className="mt-0.5 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+              {loading ? "Loading…" : `${sections.length} section${sections.length !== 1 ? "s" : ""}`}
+            </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50 dark:bg-stone-700/50 border-b border-orange-100 dark:border-stone-700">
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Name
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Created By
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Students
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
                   Created
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
+                <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em] text-right">
                   Actions
                 </th>
               </tr>
@@ -2762,7 +2801,7 @@ function SectionsTab() {
                     key={section.id}
                     className="bg-white dark:bg-stone-800 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
                           <FolderOpen className="w-4 h-4 text-teal-600 dark:text-teal-400" />
@@ -2772,20 +2811,20 @@ function SectionsTab() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-2.5">
                       <Badge
                         variant={section.createdByRole === "admin" ? "primary" : "secondary"}
                       >
                         {section.createdByRole === "admin" ? "Admin" : "Teacher"}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-stone-800 dark:text-stone-200">
+                    <td className="px-5 py-2.5 text-sm font-bold text-stone-800 dark:text-stone-200">
                       {section.students}
                     </td>
-                    <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400 font-medium">
                       {shortDate(section.createdAt)}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-5 py-2.5 text-right">
                       <button
                         onClick={() => {
                           setSectionToDelete(section);
@@ -2803,7 +2842,7 @@ function SectionsTab() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </PortalPanel>
 
       {showCreate && (
         <CreateSectionModal
@@ -2835,12 +2874,12 @@ function SectionsTab() {
 const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { id: "users", label: "Users", Icon: Users },
-  { id: "reset-data", label: "Reset Data", Icon: Eraser },
   { id: "teachers", label: "Teachers", Icon: GraduationCap },
   { id: "students", label: "Students", Icon: UserCheck },
   { id: "sections", label: "Sections", Icon: FolderOpen },
   { id: "lessons", label: "Lessons", Icon: BookOpen },
   { id: "quizzes", label: "Quizzes", Icon: HelpCircle },
+  { id: "reset-data", label: "Reset Data", Icon: Eraser },
   { id: "settings", label: "Settings", Icon: Settings },
 ];
 
@@ -2862,23 +2901,11 @@ const ADMIN_TAB_MAP = {
 
 export function AdminDashboardPage({ onNavigate }) {
   const { signOut, profile } = useAuth();
-  const { isDark, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [profileOpen, setProfileOpen] = useState(false);
   const [recentUsers, setRecentUsers] = useState([]);
   const [counts, setCounts] = useState(null);
   const [sectionData, setSectionData] = useState([]);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    function handleOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, []);
+  const [teachers, setTeachers] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2886,12 +2913,14 @@ export function AdminDashboardPage({ onNavigate }) {
       fetchRecentUsers(5),
       fetchDashboardCounts(),
       fetchSectionCounts(),
+      fetchTeachers(),
     ])
-      .then(([rows, dashboardCounts, sections]) => {
+      .then(([rows, dashboardCounts, sections, staff]) => {
         if (cancelled) return;
         setRecentUsers(rows);
         setCounts(dashboardCounts);
         setSectionData(sections);
+        setTeachers(staff);
       })
       .catch(() => {
         /* dashboard falls back to placeholders on failure */
@@ -2907,34 +2936,30 @@ export function AdminDashboardPage({ onNavigate }) {
   );
   const showCount = (n) => (n == null ? "…" : n.toLocaleString());
 
-  const stats = [
+  const metrics = [
     {
-      label: "Total Students",
+      label: "Students",
       value: showCount(counts?.students),
-      icon: <Users className="w-6 h-6 text-primary-500" />,
-      bgLight: "bg-primary-50",
-      bgDark: "dark:bg-primary-900/20",
+      hint: "enrolled learners",
+      tone: "orange",
     },
     {
-      label: "Total Teachers",
+      label: "Teachers",
       value: showCount(counts?.teachers),
-      icon: <GraduationCap className="w-6 h-6 text-secondary-500" />,
-      bgLight: "bg-secondary-50",
-      bgDark: "dark:bg-secondary-900/20",
+      hint: "staff accounts",
+      tone: "teal",
     },
     {
-      label: "Active Lessons",
+      label: "Lessons",
       value: totalLessons.toLocaleString(),
-      icon: <BookOpen className="w-6 h-6 text-accent-500" />,
-      bgLight: "bg-accent-50",
-      bgDark: "dark:bg-accent-900/20",
+      hint: `across ${WEEKS_DATA.length} weeks`,
+      tone: "yellow",
     },
     {
-      label: "Lessons Completed",
+      label: "Completions",
       value: showCount(counts?.completedLessons),
-      icon: <HelpCircle className="w-6 h-6 text-blue-500" />,
-      bgLight: "bg-blue-50",
-      bgDark: "dark:bg-blue-900/20",
+      hint: "lessons finished",
+      tone: "blue",
     },
   ];
 
@@ -2944,123 +2969,30 @@ export function AdminDashboardPage({ onNavigate }) {
     : "Admin";
 
   return (
-    <div className="min-h-screen font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
-      {/* Admin Navbar — always visible */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 shadow-warm bg-[rgba(255,251,245,0.85)] dark:bg-stone-900/90">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
-                <Shield className="h-5 w-5" />
-              </div>
-              <span className="font-heading font-black text-lg text-stone-900 dark:text-white">
-                Admin Portal
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggle}
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
-                className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
-              >
-                {isDark ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </button>
-
-              {/* Profile dropdown */}
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setProfileOpen((v) => !v)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-sm">
-                    {adminName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-bold text-stone-700 dark:text-stone-300 hidden sm:inline">
-                    {adminName}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      "w-4 h-4 text-stone-500 transition-transform duration-200",
-                      profileOpen && "rotate-180",
-                    )}
-                  />
-                </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-stone-800 rounded-xl shadow-xl border border-orange-100 dark:border-stone-700 overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-orange-100 dark:border-stone-700">
-                      <p className="text-sm font-black text-stone-900 dark:text-white">
-                        {adminName}
-                      </p>
-                      {profile?.email && (
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">
-                          {profile.email}
-                        </p>
-                      )}
-                      <span className="inline-block mt-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded-md">
-                        Admin
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        signOut();
-                        onNavigate("home");
-                      }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar — driven by SIDEBAR_ITEMS slot map */}
-          <aside className="w-full md:w-52 shrink-0">
-            <Card className="p-3 sticky top-24">
-              <nav className="space-y-1" aria-label="Admin navigation">
-                {SIDEBAR_ITEMS.map(({ id, label, Icon: ItemIcon }) => (
-                  <button
-                    key={id}
-                    onClick={() => setActiveTab(id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors text-left",
-                      activeTab === id
-                        ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
-                        : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-primary-600 dark:hover:text-primary-400",
-                    )}
-                  >
-                    <ItemIcon className="w-5 h-5 shrink-0" />
-                    {label}
-                  </button>
-                ))}
-              </nav>
-            </Card>
-          </aside>
-
-          {/* Main content — rendered via ADMIN_TAB_MAP slot map */}
-          <main className="flex-1 min-w-0">
-            <TabContent
-              stats={stats}
-              recentUsers={recentUsers}
-              sectionData={sectionData}
-            />
-          </main>
-        </div>
-      </div>
-    </div>
+    <PortalShell
+      accent="primary"
+      brandLabel="Admin Portal"
+      BrandIcon={Shield}
+      roleLabel="Admin"
+      items={SIDEBAR_ITEMS}
+      activeId={activeTab}
+      onSelect={setActiveTab}
+      userName={adminName}
+      userEmail={profile?.email}
+      onSignOut={() => {
+        signOut();
+        onNavigate("home");
+      }}
+    >
+      <TabContent
+        metrics={metrics}
+        counts={counts}
+        recentUsers={recentUsers}
+        sectionData={sectionData}
+        teachers={teachers}
+        totalLessons={totalLessons}
+        adminName={adminName}
+      />
+    </PortalShell>
   );
 }

@@ -28,14 +28,28 @@ import {
   Search,
   ClipboardCheck,
   RotateCcw,
+  CalendarClock,
+  UserCheck,
 } from "lucide-react";
-import Card from "../components/Card";
+import {
+  BarList,
+  MetricRibbon,
+  PanelHeader,
+  PortalPanel,
+  PortalShell,
+  RosterGroup,
+  RosterList,
+  RosterRow,
+  StatStrip,
+  TabHead,
+  groupByQuarter,
+} from "../components/portal";
+import { TICK } from "../components/portal/tones";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
 import { cn } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import {
   fetchTeacherDashboard,
   gradeQuizAttempt,
@@ -83,20 +97,36 @@ import {
   getQuizMaxAttempts,
   getQuizShowAnswers,
 } from "../lib/quizSettings";
+import {
+  fetchQuizAccessGrants,
+  grantQuizAccess,
+  revokeQuizAccess,
+  isGrantActive,
+  subscribeToQuizAccess,
+} from "../lib/quizStudentAccess";
 
 // --- Slot components ---
 // Every slot receives the fetched `data` bundle plus the active sectionId
 // (null = all sections).
 
-function OverviewSlot({ data, sectionId, onGrade, publishedWeekIds }) {
+function OverviewSlot({
+  data,
+  sectionId,
+  onGrade,
+  publishedWeekIds,
+  openWeekIds,
+  onNavigateTab,
+  teacherName,
+}) {
   const { weeks } = useLessonsData();
-  const { sections, submissions } = data;
+  const { sections, submissions, students } = data;
   const filteredSubs = sectionId
     ? submissions.filter((s) => s.section === sectionId)
     : submissions;
-  const pendingCount = filteredSubs.filter(
-    (s) => s.status === "pending",
-  ).length;
+  const scopedStudents = sectionId
+    ? students.filter((s) => s.section === sectionId)
+    : students;
+  const pending = filteredSubs.filter((s) => s.status === "pending");
   const totalStudents = sectionId
     ? (sections.find((s) => s.id === sectionId)?.students ?? 0)
     : sections.reduce((sum, s) => sum + s.students, 0);
@@ -105,6 +135,7 @@ function OverviewSlot({ data, sectionId, onGrade, publishedWeekIds }) {
       sum + (isWeekPublished(w.id, publishedWeekIds) ? w.lessons.length : 0),
     0,
   );
+  const totalLessons = weeks.reduce((s, w) => s + w.lessons.length, 0);
   const avgScore = sectionId
     ? (sections.find((s) => s.id === sectionId)?.avgScore ?? 0)
     : sections.length
@@ -113,165 +144,369 @@ function OverviewSlot({ data, sectionId, onGrade, publishedWeekIds }) {
         )
       : 0;
 
+  const scopeName = sectionId
+    ? (sections.find((s) => s.id === sectionId)?.name ?? "Section")
+    : "All sections";
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+
+  const metrics = [
+    { label: "Students", value: totalStudents, hint: scopeName, tone: "orange" },
+    {
+      label: "Live lessons",
+      value: publishedLessons,
+      hint: `of ${totalLessons} written`,
+      tone: "teal",
+    },
+    {
+      label: "Avg. score",
+      value: `${avgScore}%`,
+      hint: "across graded work",
+      tone: "yellow",
+    },
+    {
+      label: "Needs grading",
+      value: pending.length,
+      hint: pending.length ? "waiting on you" : "all caught up",
+      tone: "pink",
+    },
+  ];
+
+  // Students the teacher should look at first: failing, then stalled, then
+  // never started. Ordered by how far behind they are, worst first.
+  // Keyed on name + section, matching how the Progress tab pairs a student to
+  // their submissions — two sections can hold the same name.
+  const studentsWithSubs = new Set(
+    filteredSubs.map((s) => `${s.student}|${s.section}`),
+  );
+  const attention = scopedStudents
+    .map((st) => ({
+      st,
+      status: engagementStatus(
+        st,
+        studentsWithSubs.has(`${st.name}|${st.section}`),
+      ),
+    }))
+    .filter(({ status }) =>
+      ["Needs Help", "Not Started"].includes(status.label),
+    )
+    .sort((a, b) => {
+      const rank = (x) => (x.status.label === "Needs Help" ? 0 : 1);
+      return rank(a) - rank(b) || a.st.avgScore - b.st.avgScore;
+    })
+    .slice(0, 6);
+
+  // Which quiz is the class weakest on — the reteach list. Best attempt per
+  // student per quiz, averaged, lowest first.
+  const byQuiz = new Map();
+  for (const sub of filteredSubs) {
+    if (sub.status !== "graded" || !sub.total) continue;
+    if (!byQuiz.has(sub.quiz)) byQuiz.set(sub.quiz, []);
+    byQuiz.get(sub.quiz).push(Math.round((sub.score / sub.total) * 100));
+  }
+  const hardest = [...byQuiz.entries()]
+    .map(([label, pcts]) => ({
+      label,
+      value: Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length),
+      sub: `${pcts.length} ${pcts.length === 1 ? "attempt" : "attempts"}`,
+    }))
+    .sort((a, b) => a.value - b.value)
+    .slice(0, 5)
+    .map((row) => ({
+      ...row,
+      tone: row.value < 75 ? "red" : row.value < 85 ? "yellow" : "teal",
+    }));
+
+  const sectionStandings = sections
+    .map((s) => ({
+      label: s.name,
+      value: s.avgScore,
+      sub: `${s.students} ${s.students === 1 ? "student" : "students"}`,
+      tone: s.avgScore < 75 ? "red" : s.avgScore < 85 ? "yellow" : "teal",
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  // Curriculum shipping state, counted the same way the Lessons tab counts it.
+  const weekStates = weeks.reduce(
+    (acc, w) => {
+      if (!isWeekPublished(w.id, publishedWeekIds)) acc.hidden += 1;
+      else if (isWeekOpen(w.id, openWeekIds)) acc.open += 1;
+      else acc.published += 1;
+      return acc;
+    },
+    { open: 0, published: 0, hidden: 0 },
+  );
+
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Total Students",
-            value: totalStudents,
-            icon: <Users className="w-5 h-5 text-primary-500" />,
-            color: "bg-primary-50 dark:bg-primary-900/20",
-          },
-          {
-            label: "Published Lessons",
-            value: publishedLessons,
-            icon: <BookOpen className="w-5 h-5 text-secondary-500" />,
-            color: "bg-secondary-50 dark:bg-secondary-900/20",
-          },
-          {
-            label: "Avg. Score",
-            value: `${avgScore}%`,
-            icon: <TrendingUp className="w-5 h-5 text-accent-500" />,
-            color: "bg-accent-50 dark:bg-accent-900/20",
-          },
-          {
-            label: "Pending Grading",
-            value: pendingCount,
-            icon: <ClipboardList className="w-5 h-5 text-science-pink" />,
-            color: "bg-pink-50 dark:bg-pink-900/20",
-          },
-        ].map((stat, i) => (
-          <Card key={i} className="p-5">
+    <div className="space-y-4">
+      <MetricRibbon
+        accent="secondary"
+        eyebrow="Live"
+        title="Teaching Desk"
+        subtitle={`${today} · ${teacherName}`}
+        metrics={metrics}
+        action={
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full sm:w-auto border-secondary-500 text-secondary-600 hover:bg-secondary-50 hover:border-secondary-600 dark:border-secondary-400 dark:text-secondary-400"
+            leftIcon={<ClipboardList className="w-4 h-4" />}
+            onClick={() => onNavigateTab("quizzes")}
+          >
+            Open grade queue
+          </Button>
+        }
+      />
+
+      {/* Tall attention column beside two shorter activity lists */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <PortalPanel className="lg:col-span-4 lg:row-span-2 flex flex-col">
+          <PanelHeader title="Needs attention" count={attention.length}>
+            <button
+              type="button"
+              onClick={() => onNavigateTab("progress")}
+              className="text-[11px] font-bold text-secondary-600 dark:text-secondary-400 hover:underline"
+            >
+              All students
+            </button>
+          </PanelHeader>
+          {attention.length > 0 ? (
+            <ul className="divide-y divide-orange-100 dark:divide-stone-700">
+              {attention.map(({ st, status }) => (
+                <li
+                  key={st.id}
+                  className="px-5 py-2.5 flex items-center gap-3 min-h-[56px]"
+                >
+                  <span className="w-7 h-7 shrink-0 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center font-black text-[11px]">
+                    {st.name.charAt(0)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                      {st.name}
+                    </span>
+                    <span className="block text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                      {st.section} · {st.progress}% of course
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold",
+                      status.bg,
+                      status.text,
+                    )}
+                  >
+                    <span
+                      className={cn("w-1.5 h-1.5 rounded-full", status.dot)}
+                      aria-hidden="true"
+                    />
+                    {status.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex-1 px-5 py-10 text-center">
+              <CheckCircle2 className="w-8 h-8 mx-auto text-secondary-400" />
+              <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+                Everyone is moving
+              </p>
+              <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                No student is failing or stalled in {scopeName.toLowerCase()}.
+              </p>
+            </div>
+          )}
+        </PortalPanel>
+
+        <PortalPanel className="lg:col-span-5">
+          <PanelHeader title="Latest submissions" count={filteredSubs.length} />
+          {filteredSubs.length > 0 ? (
+            <ul className="divide-y divide-orange-100 dark:divide-stone-700">
+              {filteredSubs.slice(0, 5).map((sub) => (
+                <li
+                  key={sub.id}
+                  className="px-5 py-2.5 flex items-center gap-3 min-h-[56px]"
+                >
+                  <span className="w-7 h-7 shrink-0 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-200 flex items-center justify-center font-black text-[11px]">
+                    {sub.student.charAt(0)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                      {sub.student}
+                    </span>
+                    <span className="block text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                      {sub.quiz} · {sub.time}
+                    </span>
+                  </span>
+                  {sub.status === "pending" ? (
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 text-[11px] text-amber-600 border-amber-300"
+                    >
+                      Pending
+                    </Badge>
+                  ) : (
+                    <span
+                      className={cn(
+                        "shrink-0 text-[13px] font-black tabular-nums",
+                        sub.score >= sub.total * 0.8
+                          ? "text-secondary-600"
+                          : sub.score >= sub.total * 0.6
+                            ? "text-accent-600"
+                            : "text-red-600",
+                      )}
+                    >
+                      {sub.score}/{sub.total}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-5 py-10 text-center">
+              <ClipboardList className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600" />
+              <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+                Nothing submitted yet
+              </p>
+              <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                Publish a quiz and student work will land here.
+              </p>
+            </div>
+          )}
+        </PortalPanel>
+
+        <PortalPanel className="lg:col-span-3">
+          <PanelHeader title="Grade queue" count={pending.length} />
+          {pending.length > 0 ? (
+            <ul className="divide-y divide-orange-100 dark:divide-stone-700">
+              {pending.slice(0, 5).map((sub) => (
+                <li
+                  key={sub.id}
+                  className="px-5 py-2.5 flex items-center gap-2 min-h-[56px]"
+                >
+                  <AlertCircle
+                    className="w-4 h-4 shrink-0 text-amber-500"
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                      {sub.student}
+                    </span>
+                    <span className="block text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                      {sub.quiz}
+                    </span>
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 text-[12px] px-3 py-1.5"
+                    onClick={() => onGrade(sub)}
+                  >
+                    Grade
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-5 py-10 text-center">
+              <CheckCircle2 className="w-8 h-8 mx-auto text-secondary-400" />
+              <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+                All caught up
+              </p>
+            </div>
+          )}
+        </PortalPanel>
+
+        {/* Wide reteach list next to the narrower standings */}
+        <PortalPanel className="lg:col-span-8">
+          <PanelHeader title="Lowest scoring quizzes" count={hardest.length}>
+            <span className="text-[11px] font-medium text-stone-400 dark:text-stone-500">
+              Class average
+            </span>
+          </PanelHeader>
+          <BarList
+            items={hardest}
+            emptyLabel="No graded quizzes yet — scores appear here once work is marked."
+          />
+        </PortalPanel>
+      </div>
+
+      {/* Full-width, short: where the curriculum actually stands */}
+      <PortalPanel>
+        <PanelHeader title="Curriculum status" count={weeks.length}>
+          <button
+            type="button"
+            onClick={() => onNavigateTab("lessons")}
+            className="text-[11px] font-bold text-secondary-600 dark:text-secondary-400 hover:underline"
+          >
+            Manage weeks
+          </button>
+        </PanelHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3">
+          {[
+            {
+              label: "Open to everyone",
+              value: weekStates.open,
+              hint: "No pre-requisites",
+              tone: "orange",
+            },
+            {
+              label: "Published in order",
+              value: weekStates.published,
+              hint: "Unlocked as students progress",
+              tone: "teal",
+            },
+            {
+              label: "Hidden",
+              value: weekStates.hidden,
+              hint: "Students cannot see these",
+              tone: "yellow",
+            },
+          ].map((cell, i) => (
             <div
+              key={cell.label}
               className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center mb-3",
-                stat.color,
+                "relative px-5 py-4 border-orange-100 dark:border-stone-700",
+                i > 0 && "border-t md:border-t-0 md:border-l",
               )}
             >
-              {stat.icon}
-            </div>
-            <p className="text-2xl font-black text-stone-900 dark:text-white">
-              {stat.value}
-            </p>
-            <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-1">
-              {stat.label}
-            </p>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="overflow-hidden">
-          <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
-              Recent Submissions
-            </h2>
-          </div>
-          <div className="divide-y divide-orange-100 dark:divide-stone-700">
-            {filteredSubs.length > 0 ? (
-              filteredSubs.slice(0, 5).map((sub) => (
-                <div
-                  key={sub.id}
-                  className="px-6 py-4 flex items-center justify-between hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
-                      {sub.student.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-stone-900 dark:text-white">
-                        {sub.student}
-                      </p>
-                      <p className="text-xs text-stone-500 dark:text-stone-400">
-                        {sub.quiz}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {sub.status === "pending" ? (
-                      <Badge
-                        variant="outline"
-                        className="text-xs text-amber-600 border-amber-300"
-                      >
-                        Pending
-                      </Badge>
-                    ) : (
-                      <span
-                        className={cn(
-                          "text-sm font-black",
-                          sub.score >= sub.total * 0.8
-                            ? "text-secondary-600"
-                            : sub.score >= sub.total * 0.6
-                              ? "text-accent-600"
-                              : "text-red-600",
-                        )}
-                      >
-                        {sub.score}/{sub.total}
-                      </span>
-                    )}
-                    <span className="text-xs text-stone-400 font-medium hidden sm:flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {sub.time}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="px-6 py-8 text-sm text-stone-400 text-center">
-                No submissions yet.
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "absolute left-0 top-4 w-[3px] h-4 rounded-r-full",
+                  TICK[cell.tone],
+                )}
+              />
+              <p className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
+                {cell.label}
               </p>
-            )}
-          </div>
-        </Card>
+              <p className="mt-1 text-[22px] leading-none font-black tabular-nums text-stone-900 dark:text-white">
+                {cell.value}
+                <span className="ml-1 text-[12px] font-bold text-stone-400">
+                  / {weeks.length} weeks
+                </span>
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-stone-500 dark:text-stone-400">
+                {cell.hint}
+              </p>
+            </div>
+          ))}
+        </div>
+      </PortalPanel>
 
-        <Card className="overflow-hidden">
-          <div className="p-6 border-b border-orange-100 dark:border-stone-700">
-            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
-              Pending To-Do
-            </h2>
-          </div>
-          <div className="p-6 space-y-3">
-            {pendingCount > 0 ? (
-              filteredSubs
-                .filter((s) => s.status === "pending")
-                .map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30"
-                  >
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                      <div>
-                        <p className="text-sm font-bold text-stone-900 dark:text-white">
-                          {sub.student}
-                        </p>
-                        <p className="text-xs text-stone-500 dark:text-stone-400">
-                          {sub.quiz}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => onGrade(sub)}
-                    >
-                      Grade
-                    </Button>
-                  </div>
-                ))
-            ) : (
-              <div className="flex flex-col items-center py-6 text-center">
-                <CheckCircle2 className="w-10 h-10 text-secondary-400 mb-2" />
-                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
-                  All caught up!
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
-      </div>
+      {/* Only worth drawing when there is more than one class to compare */}
+      {sections.length > 1 && (
+        <PortalPanel>
+          <PanelHeader title="Section standings" count={sections.length}>
+            <span className="text-[11px] font-medium text-stone-400 dark:text-stone-500">
+              Average score
+            </span>
+          </PanelHeader>
+          <BarList items={sectionStandings} />
+        </PortalPanel>
+      )}
     </div>
   );
 }
@@ -530,7 +765,7 @@ function SectionsSlot({
     : [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {sectionId ? (
         <div className="flex items-center gap-3">
           <button
@@ -541,10 +776,10 @@ function SectionsSlot({
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+            <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
               {activeSection?.name ?? "Section"}
             </h2>
-            <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
+            <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
               Roster and section details
             </p>
           </div>
@@ -552,10 +787,10 @@ function SectionsSlot({
       ) : (
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+            <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
               My Sections
             </h2>
-            <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
+            <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
               All sections overview
             </p>
           </div>
@@ -570,17 +805,17 @@ function SectionsSlot({
 
       {sectionId ? (
         <div className="space-y-4">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-stone-900 dark:text-white">
+          <PortalPanel className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
                 {activeSection?.name}
               </h3>
-              <div className="flex gap-6 text-center">
+              <div className="flex gap-5 text-center">
                 <div>
                   <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase mb-1">
                     Students
                   </p>
-                  <p className="text-2xl font-black text-stone-900 dark:text-white">
+                  <p className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
                     {rosterStudents.length}
                   </p>
                 </div>
@@ -588,7 +823,7 @@ function SectionsSlot({
                   <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase mb-1">
                     Avg Score
                   </p>
-                  <p className="text-2xl font-black text-stone-900 dark:text-white">
+                  <p className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
                     {activeSection?.avgScore ?? 0}%
                   </p>
                 </div>
@@ -599,11 +834,11 @@ function SectionsSlot({
               color="secondary"
               size="sm"
             />
-          </Card>
+          </PortalPanel>
 
-          <Card className="overflow-hidden">
-            <div className="p-6 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
-              <h3 className="text-base font-bold text-stone-900 dark:text-white">
+          <PortalPanel>
+            <div className="px-5 py-3.5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between gap-3">
+              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
                 Students
               </h3>
               <span className="text-xs font-bold text-stone-400">
@@ -625,7 +860,7 @@ function SectionsSlot({
                     {["Student", "Progress", "Avg Score", ""].map((h, i) => (
                       <th
                         key={i}
-                        className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider"
+                        className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider"
                       >
                         {h}
                       </th>
@@ -639,7 +874,7 @@ function SectionsSlot({
                         key={student.id}
                         className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
                               {student.name.charAt(0)}
@@ -649,7 +884,7 @@ function SectionsSlot({
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             <div className="w-20 hidden sm:block">
                               <ProgressBar
@@ -663,7 +898,7 @@ function SectionsSlot({
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <span
                             className={cn(
                               "text-sm font-black",
@@ -677,7 +912,7 @@ function SectionsSlot({
                             {student.avgScore}%
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-5 py-2.5 text-right">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -772,62 +1007,38 @@ function SectionsSlot({
                 </p>
               )}
             </div>
-          </Card>
+          </PortalPanel>
         </div>
       ) : displaySections.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displaySections.map((section) => (
-            <Card key={section.id} className="p-6" hoverable>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-stone-900 dark:text-white">
-                  {section.name}
-                </h3>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setConfirmingSection(section.name);
-                  }}
-                  aria-label={`Remove ${section.name}`}
-                  className="p-1.5 rounded-lg text-stone-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-sm">
-                  <span className="text-stone-500 dark:text-stone-400 font-medium">
-                    Students
-                  </span>
-                  <span className="font-bold text-stone-900 dark:text-white">
-                    {section.students}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-stone-500 dark:text-stone-400 font-medium">
-                    Avg. Score
-                  </span>
-                  <span className="font-bold text-stone-900 dark:text-white">
-                    {section.avgScore}%
-                  </span>
-                </div>
-                <ProgressBar
-                  progress={section.avgScore}
-                  color="secondary"
-                  size="sm"
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                leftIcon={<Eye className="w-4 h-4" />}
-                onClick={() => onViewSection?.(section.id)}
-              >
-                View
-              </Button>
-            </Card>
-          ))}
-        </div>
+        <PortalPanel>
+          <PanelHeader title="Sections" count={displaySections.length} />
+          <RosterList>
+            {displaySections.map((section) => (
+              <RosterRow
+                key={section.id}
+                title={section.name}
+                meta={[
+                  `${section.students} ${section.students === 1 ? "student" : "students"}`,
+                ]}
+                progress={section.avgScore}
+                progressLabel={`${section.avgScore}% avg`}
+                onOpen={() => onViewSection?.(section.id)}
+                openLabel={`Open ${section.name}`}
+                trailing={
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingSection(section.name)}
+                    aria-label={`Remove ${section.name}`}
+                    title={`Remove ${section.name}`}
+                    className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-stone-300 dark:text-stone-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                }
+              />
+            ))}
+          </RosterList>
+        </PortalPanel>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <Users className="w-10 h-10 text-stone-300 mb-3" />
@@ -940,7 +1151,7 @@ function DeleteLessonModal({
             </p>
           </div>
         </div>
-        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
           {isCustom ? (
             <>
               Permanently delete{" "}
@@ -1015,7 +1226,7 @@ function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
             </p>
           </div>
         </div>
-        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
           Restore{" "}
           <strong className="text-stone-900 dark:text-white">
             {lesson.title}
@@ -1097,7 +1308,7 @@ function ToggleLessonVisibilityModal({
             </p>
           </div>
         </div>
-        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
           {willHide ? (
             <>
               Hide{" "}
@@ -1220,6 +1431,83 @@ function CollapsibleSearch({
   );
 }
 
+/** Average completion across every lesson in a quarter, for its header. */
+function quarterProgress(weeks, getCompletion) {
+  const lessons = weeks.flatMap((w) => w.lessons);
+  if (lessons.length === 0) return 0;
+  return Math.round(
+    lessons.reduce((sum, l) => sum + getCompletion(l.id), 0) / lessons.length,
+  );
+}
+
+/**
+ * Which quarters are expanded. Every quarter starts closed on every visit: the
+ * tab should open onto its quarter headers, never onto a wall of week rows.
+ * The slot unmounts when the teacher switches tabs, so this resets each time —
+ * deliberately not remembered, since restoring a quarter left open would
+ * reintroduce exactly the landing state the grouping exists to prevent.
+ */
+function useOpenQuarters() {
+  const [openQuarters, setOpenQuarters] = useState([]);
+
+  function toggleQuarter(id) {
+    setOpenQuarters((prev) =>
+      prev.includes(id) ? prev.filter((q) => q !== id) : [...prev, id],
+    );
+  }
+
+  return [openQuarters, toggleQuarter];
+}
+
+// A week is hidden, published, or open to everyone; the pill cycles between
+// them. Text carries the state as well as colour, so it reads without hue.
+const WEEK_STATE_META = {
+  open: {
+    label: "Open",
+    hint: "No pre-requisites",
+    Icon: Users,
+    cls: "bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-950 dark:text-primary-200 dark:border-primary-800",
+  },
+  published: {
+    label: "Published",
+    hint: "Visible in order",
+    Icon: Eye,
+    cls: "bg-secondary-50 text-secondary-700 border-secondary-200 dark:bg-secondary-950 dark:text-secondary-200 dark:border-secondary-800",
+  },
+  hidden: {
+    label: "Hidden",
+    hint: "Students cannot see this week",
+    Icon: EyeOff,
+    cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800",
+  },
+};
+
+const WEEK_STATE_NEXT = {
+  open: "Hide",
+  published: "Open to everyone",
+  hidden: "Publish",
+};
+
+function WeekStatePill({ state, weekNumber, onCycle }) {
+  const meta = WEEK_STATE_META[state];
+  const next = `${WEEK_STATE_NEXT[state]} week ${weekNumber}`;
+  return (
+    <button
+      type="button"
+      onClick={onCycle}
+      title={`${meta.hint} — click to ${WEEK_STATE_NEXT[state].toLowerCase()}`}
+      aria-label={next}
+      className={cn(
+        "shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border text-[11px] font-bold transition-colors hover:brightness-95",
+        meta.cls,
+      )}
+    >
+      <meta.Icon className="w-3 h-3" aria-hidden="true" />
+      <span>{meta.label}</span>
+    </button>
+  );
+}
+
 function LessonsSlot({
   data,
   sectionId,
@@ -1234,6 +1522,7 @@ function LessonsSlot({
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [openQuarters, toggleQuarter] = useOpenQuarters();
   const [deletingLesson, setDeletingLesson] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
@@ -1404,7 +1693,7 @@ function LessonsSlot({
     : [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {expandedWeek ? (
         // ── Lesson cards for the selected week ──
         <>
@@ -1420,10 +1709,10 @@ function LessonsSlot({
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div>
-              <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+              <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
                 Week {expandedWeek.weekNumber} — {expandedWeek.title}
               </h2>
-              <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
+              <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
                 {expandedWeek.lessons.length}{" "}
                 {expandedWeek.lessons.length === 1 ? "lesson" : "lessons"}
               </p>
@@ -1468,13 +1757,12 @@ function LessonsSlot({
                 const isHidden = dbRow ? !!dbRow.is_hidden : !!lesson.isHidden;
                 const isToggling = togglingLessonId === lesson.id;
                 return (
-                  <Card
+                  <PortalPanel
                     key={lesson.id}
                     className={cn(
-                      "p-5 group/lesson-card transition-opacity",
+                      "p-5 group/lesson-card transition-colors hover:border-secondary-300 dark:hover:border-secondary-700",
                       isHidden && "opacity-60",
                     )}
-                    hoverable
                   >
                     {/* Card header: icon + action buttons */}
                     <div className="flex items-start justify-between mb-4">
@@ -1578,7 +1866,7 @@ function LessonsSlot({
                       </div>
                       <ProgressBar progress={pct} color="secondary" size="sm" />
                     </div>
-                  </Card>
+                  </PortalPanel>
                 );
               })}
             </div>
@@ -1596,11 +1884,11 @@ function LessonsSlot({
         <>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+              <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
                 Lessons
               </h2>
-              <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
-                All weeks · click a week to see its lessons
+              <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
+                Grouped by quarter · click a week to see its lessons
               </p>
             </div>
             <CollapsibleSearch
@@ -1615,98 +1903,58 @@ function LessonsSlot({
           </div>
 
           {filteredWeeks.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredWeeks.map((week) => {
-                const avgPct = week.lessons.length
-                  ? Math.round(
-                      week.lessons.reduce(
-                        (sum, l) => sum + getCompletion(l.id),
-                        0,
-                      ) / week.lessons.length,
-                    )
-                  : 0;
-                const state = getWeekState(week.id);
-                const visible = state !== "hidden";
-                const badgeMeta =
-                  state === "open"
-                    ? {
-                        cls: "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-700 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
-                        Icon: Eye,
-                        label: "No Pre-requisites",
-                        nextLabel: `Hide week ${week.weekNumber}`,
-                      }
-                    : state === "published"
-                      ? {
-                          cls: "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200",
-                          Icon: Eye,
-                          label: "Published",
-                          nextLabel: `Open week ${week.weekNumber} for all`,
-                        }
-                      : {
-                          cls: "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
-                          Icon: EyeOff,
-                          label: "Hidden",
-                          nextLabel: `Publish week ${week.weekNumber}`,
-                        };
-                return (
-                  <Card
-                    key={week.id}
-                    className={cn(
-                      "p-5 cursor-pointer transition-opacity",
-                      !visible && "opacity-60",
-                    )}
-                    hoverable
-                    onClick={() => {
-                      setExpandedWeekId(week.id);
-                      setSearch("");
-                      setSearchOpen(false);
-                    }}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-900/30 flex items-center justify-center">
-                        <BookOpen className="w-5 h-5 text-secondary-500" />
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          cycleWeekState(week.id);
-                        }}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors",
-                          badgeMeta.cls,
-                        )}
-                        title={badgeMeta.nextLabel}
-                        aria-label={badgeMeta.nextLabel}
-                      >
-                        <badgeMeta.Icon className="w-3 h-3" />
-                        {badgeMeta.label}
-                      </button>
-                    </div>
-                    <span className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1 block">
-                      Week {week.weekNumber}
-                    </span>
-                    <h3 className="text-base font-bold text-stone-900 dark:text-white mb-1">
-                      {week.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
-                      {week.lessons.length}{" "}
-                      {week.lessons.length === 1 ? "lesson" : "lessons"}
-                    </p>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
-                        <span>Avg completion</span>
-                        <span>{avgPct}%</span>
-                      </div>
-                      <ProgressBar
-                        progress={avgPct}
-                        color="secondary"
-                        size="sm"
-                      />
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+            <PortalPanel>
+              {groupByQuarter(filteredWeeks).map((quarter) => (
+                <RosterGroup
+                  key={quarter.id}
+                  label={quarter.label}
+                  rangeLabel={`Weeks ${quarter.min}\u2013${quarter.max}`}
+                  count={quarter.weeks.length}
+                  progress={quarterProgress(quarter.weeks, getCompletion)}
+                  open={!!q || openQuarters.includes(quarter.id)}
+                  onToggle={() => toggleQuarter(quarter.id)}
+                >
+                  <RosterList className="border-t border-orange-100 dark:border-stone-700">
+                    {quarter.weeks.map((week) => {
+                      const avgPct = week.lessons.length
+                        ? Math.round(
+                            week.lessons.reduce(
+                              (sum, l) => sum + getCompletion(l.id),
+                              0,
+                            ) / week.lessons.length,
+                          )
+                        : 0;
+                      const state = getWeekState(week.id);
+                      return (
+                        <RosterRow
+                          key={week.id}
+                          index={String(week.weekNumber).padStart(2, "0")}
+                          title={week.title}
+                          meta={[
+                            `${week.lessons.length} ${week.lessons.length === 1 ? "lesson" : "lessons"}`,
+                          ]}
+                          progress={avgPct}
+                          dimmed={state === "hidden"}
+                          onOpen={() => {
+                            setExpandedWeekId(week.id);
+                            setSearch("");
+                            setSearchOpen(false);
+                          }}
+                          openLabel={`Open week ${week.weekNumber}: ${week.title}`}
+                          trailing={
+                            <WeekStatePill
+                              state={state}
+                              weekNumber={week.weekNumber}
+                              onCycle={() => cycleWeekState(week.id)}
+                            />
+                          }
+                        />
+                      );
+                    })}
+                  </RosterList>
+                </RosterGroup>
+              ))}
+            </PortalPanel>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Search className="w-8 h-8 text-stone-300 mb-3" />
@@ -1858,58 +2106,85 @@ function getRubricItems(lessonId, getQuiz) {
     }));
 }
 
-function QuizCheckingSlot({ data, sectionId, onGrade }) {
+function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
   const { getQuiz } = useLessonsData();
   const [tab, setTab] = useState("pending");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [openId, setOpenId] = useState(null);
 
-  const allSubs = sectionId
+  const scoped = sectionId
     ? data.submissions.filter((s) => s.section === sectionId)
     : data.submissions;
 
   // Oldest first: students who submitted earlier have been waiting longest.
-  const pending = [...allSubs.filter((s) => s.status === "pending")].reverse();
+  const pendingAll = [...scoped.filter((s) => s.status === "pending")].reverse();
+  const pending =
+    typeFilter === "all"
+      ? pendingAll
+      : pendingAll.filter((s) =>
+          getManualQuestionTypes(s.lessonId, getQuiz).includes(typeFilter),
+        );
+
+  // Section options carry their own pending count, which the global scope
+  // pills cannot show — that is the reason this control exists as well.
+  const sectionOptions = [
+    {
+      id: "",
+      name: "All sections",
+      count: data.submissions.filter((s) => s.status === "pending").length,
+    },
+    ...data.sections.map((sec) => ({
+      id: sec.id,
+      name: sec.name,
+      count: data.submissions.filter(
+        (s) => s.section === sec.id && s.status === "pending",
+      ).length,
+    })),
+  ];
+
+  const typeOptions = [
+    { id: "all", label: "All types" },
+    ...Object.entries(MANUAL_TYPE_META).map(([id, meta]) => ({
+      id,
+      label: meta.label,
+    })),
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="text-2xl font-black text-stone-900 dark:text-white">
-            Quiz Checking
-          </h2>
-          <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
-            Manual review for essays, short answers, and case studies
-          </p>
-        </div>
-        {pending.length > 0 && (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 shrink-0">
-            <AlertCircle className="w-4 h-4 text-amber-500" />
-            <span className="text-sm font-bold text-amber-700 dark:text-amber-400">
-              {pending.length} awaiting review
-            </span>
-          </div>
+    <div className="space-y-4">
+      <TabHead
+        title="Quiz Checking"
+        subtitle="Manual review for essays, short answers, and case studies"
+      >
+        {pendingAll.length > 0 && (
+          <span className="inline-flex items-center gap-2 h-9 px-3 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-[13px] font-bold text-amber-700 dark:text-amber-200">
+            <AlertCircle className="w-4 h-4" aria-hidden="true" />
+            {pendingAll.length} awaiting review
+          </span>
         )}
-      </div>
+      </TabHead>
 
       {/* Tab switcher */}
       <div className="flex gap-1 p-1 bg-stone-100 dark:bg-stone-800 rounded-xl w-fit">
         {[
           {
             id: "pending",
-            label: `Needs Grading${pending.length ? ` (${pending.length})` : ""}`,
+            label: `Needs Grading${pendingAll.length ? ` (${pendingAll.length})` : ""}`,
           },
           {
             id: "all",
-            label: `All Submissions${allSubs.length ? ` (${allSubs.length})` : ""}`,
+            label: `All Submissions${scoped.length ? ` (${scoped.length})` : ""}`,
           },
         ].map((t) => (
           <button
             key={t.id}
+            type="button"
             onClick={() => setTab(t.id)}
+            aria-pressed={tab === t.id}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-bold transition-colors",
               tab === t.id
-                ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm"
+                ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-white"
                 : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200",
             )}
           >
@@ -1919,126 +2194,157 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
       </div>
 
       {tab === "pending" ? (
-        pending.length > 0 ? (
-          <div className="space-y-4">
-            <p className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
-              Oldest first &mdash;{" "}
-              {pending.length === 1
-                ? "1 submission"
-                : `${pending.length} submissions`}{" "}
-              to review
-            </p>
-            {pending.map((sub) => {
-              const types = getManualQuestionTypes(sub.lessonId, getQuiz);
-              const snippet = getAnswerSnippet(
-                sub.lessonId,
-                sub.answers,
-                getQuiz,
-              );
-              const wordCount = getEssayWordCount(
-                sub.lessonId,
-                sub.answers,
-                getQuiz,
-              );
-              const hasEssay = types.includes("essay");
-              const minWords = (() => {
-                const quiz = getQuiz(sub.lessonId);
-                return (
-                  quiz?.questions?.find((q) => q.type === "essay")?.minWords ??
-                  null
-                );
-              })();
+        <PortalPanel>
+          {/* Filters live in the panel header so the queue below stays quiet */}
+          <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-orange-100 dark:border-stone-700">
+            <label
+              htmlFor="qc-section"
+              className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500"
+            >
+              Section
+            </label>
+            <select
+              id="qc-section"
+              value={sectionId ?? ""}
+              onChange={(e) => onViewSection?.(e.target.value || null)}
+              className="h-9 px-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-[13px] font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+            >
+              {sectionOptions.map((opt) => (
+                <option key={opt.id || "all"} value={opt.id}>
+                  {opt.name} ({opt.count})
+                </option>
+              ))}
+            </select>
 
-              return (
-                <Card key={sub.id} className="p-5 space-y-3">
-                  {/* Student row */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm shrink-0">
+            <span
+              aria-hidden="true"
+              className="hidden sm:block w-px h-5 bg-orange-100 dark:bg-stone-700 mx-1"
+            />
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {typeOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setTypeFilter(opt.id)}
+                  aria-pressed={typeFilter === opt.id}
+                  className={cn(
+                    "h-9 px-3 rounded-full text-[12px] font-bold transition-colors",
+                    typeFilter === opt.id
+                      ? "bg-secondary-600 text-white"
+                      : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-700 hover:border-secondary-400",
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            <span className="ml-auto text-[11px] font-medium text-stone-400 dark:text-stone-500">
+              Oldest first
+            </span>
+          </div>
+
+          {pending.length > 0 ? (
+            <ul className="divide-y divide-orange-100 dark:divide-stone-700">
+              {pending.map((sub) => {
+                const types = getManualQuestionTypes(sub.lessonId, getQuiz);
+                const isOpen = openId === sub.id;
+                const snippet = isOpen
+                  ? getAnswerSnippet(sub.lessonId, sub.answers, getQuiz)
+                  : null;
+                const wordCount = isOpen
+                  ? getEssayWordCount(sub.lessonId, sub.answers, getQuiz)
+                  : 0;
+                return (
+                  <li key={sub.id}>
+                    <div className="flex items-center gap-3 pl-5 pr-3 py-2.5 min-h-[56px] hover:bg-orange-50/60 dark:hover:bg-stone-700/40 transition-colors">
+                      <span className="w-8 h-8 shrink-0 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-200 flex items-center justify-center font-black text-[11px]">
                         {sub.student.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-stone-900 dark:text-white">
-                          {sub.student}
-                        </p>
-                        <p className="text-xs text-stone-500 dark:text-stone-400">
-                          {sub.quiz}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-stone-400 font-medium hidden sm:flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {sub.time}
                       </span>
-                      <Button size="sm" onClick={() => onGrade(sub)}>
+
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(isOpen ? null : sub.id)}
+                        aria-expanded={isOpen}
+                        className="flex-1 min-w-0 text-left"
+                      >
+                        <span className="block text-[14px] font-bold text-stone-900 dark:text-white truncate">
+                          {sub.student}
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400">
+                          <span className="truncate">{sub.quiz}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="shrink-0">{sub.time}</span>
+                        </span>
+                      </button>
+
+                      <div className="hidden md:flex items-center gap-1 shrink-0">
+                        {types.map((type) => (
+                          <span
+                            key={type}
+                            className={cn(
+                              "px-1.5 py-0.5 rounded text-[11px] font-bold",
+                              MANUAL_TYPE_META[type]?.className,
+                            )}
+                          >
+                            {MANUAL_TYPE_META[type]?.label ?? type}
+                          </span>
+                        ))}
+                      </div>
+
+                      <Button
+                        size="sm"
+                        className="shrink-0 text-[12px] px-3 py-1.5"
+                        onClick={() => onGrade(sub)}
+                      >
                         Grade
                       </Button>
                     </div>
-                  </div>
 
-                  {/* Type badges + essay word count */}
-                  <div className="flex gap-2 flex-wrap">
-                    {types.map((type) => {
-                      const meta = MANUAL_TYPE_META[type] ?? {};
-                      return (
-                        <span
-                          key={type}
-                          className={cn(
-                            "px-2 py-0.5 rounded-md text-xs font-bold",
-                            meta.className,
-                          )}
-                        >
-                          {meta.label ?? type}
-                        </span>
-                      );
-                    })}
-                    {hasEssay && wordCount !== null && (
-                      <span
-                        className={cn(
-                          "px-2 py-0.5 rounded-md text-xs font-bold border",
-                          minWords && wordCount < minWords
-                            ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30"
-                            : "bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 border-stone-200 dark:border-stone-600",
+                    {/* The response only renders once the teacher asks for it */}
+                    {isOpen && (
+                      <div className="px-5 pb-4 pl-16">
+                        {snippet ? (
+                          <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-700">
+                            <p className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500 mb-1.5">
+                              Response
+                              {wordCount > 0 && ` · ${wordCount} words`}
+                            </p>
+                            <p className="text-[13px] leading-relaxed italic text-stone-700 dark:text-stone-300">
+                              &ldquo;{snippet}&rdquo;
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-[12px] text-stone-400 dark:text-stone-500">
+                            No written response to preview.
+                          </p>
                         )}
-                      >
-                        {wordCount} words
-                        {minWords && wordCount < minWords
-                          ? ` (min ${minWords})`
-                          : ""}
-                      </span>
+                      </div>
                     )}
-                  </div>
-
-                  {/* Answer snippet so teacher can gauge content at a glance */}
-                  {snippet && (
-                    <div className="p-3 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-700/60">
-                      <p className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1.5">
-                        Student&rsquo;s response
-                      </p>
-                      <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed italic">
-                        &ldquo;{snippet}&rdquo;
-                      </p>
-                    </div>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card className="p-12 text-center">
-            <CheckCircle2 className="w-12 h-12 text-secondary-400 mx-auto mb-3" />
-            <p className="text-lg font-black text-stone-700 dark:text-stone-300">
-              All caught up!
-            </p>
-            <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
-              No submissions are waiting for review.
-            </p>
-          </Card>
-        )
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="px-5 py-12 text-center">
+              <CheckCircle2 className="w-8 h-8 mx-auto text-secondary-400" />
+              <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+                {pendingAll.length === 0
+                  ? "All caught up"
+                  : "Nothing matches this filter"}
+              </p>
+              <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                {pendingAll.length === 0
+                  ? "No submissions are waiting for review."
+                  : "Try another question type or section."}
+              </p>
+            </div>
+          )}
+        </PortalPanel>
       ) : (
         /* All Submissions table */
-        <Card className="overflow-hidden">
+        <PortalPanel>
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
@@ -2054,7 +2360,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider"
+                      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider"
                     >
                       {h}
                     </th>
@@ -2062,15 +2368,15 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-                {allSubs.length > 0 ? (
-                  allSubs.map((sub) => {
+                {scoped.length > 0 ? (
+                  scoped.map((sub) => {
                     const types = getManualQuestionTypes(sub.lessonId, getQuiz);
                     return (
                       <tr
                         key={sub.id}
                         className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                               {sub.student.charAt(0)}
@@ -2080,10 +2386,10 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400">
+                        <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400">
                           {sub.quiz}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex gap-1 flex-wrap">
                             {types.map((type) => {
                               const meta = MANUAL_TYPE_META[type] ?? {};
@@ -2101,7 +2407,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                             })}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           {sub.status === "graded" ? (
                             <span
                               className={cn(
@@ -2119,7 +2425,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                             <span className="text-sm text-stone-400">—</span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-2">
                             <Badge
                               variant={
@@ -2147,7 +2453,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-stone-500 dark:text-stone-400">
+                        <td className="px-5 py-2.5 text-sm text-stone-500 dark:text-stone-400">
                           {sub.time}
                         </td>
                       </tr>
@@ -2168,8 +2474,8 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
           </div>
           {/* Mobile cards */}
           <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
-            {allSubs.length > 0 ? (
-              allSubs.map((sub) => {
+            {scoped.length > 0 ? (
+              scoped.map((sub) => {
                 const types = getManualQuestionTypes(sub.lessonId, getQuiz);
                 return (
                   <div
@@ -2254,7 +2560,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade }) {
               </p>
             )}
           </div>
-        </Card>
+        </PortalPanel>
       )}
     </div>
   );
@@ -2347,7 +2653,7 @@ function GradebookSlot({ data, sectionId }) {
     );
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Back navigation */}
         <div className="flex items-center gap-3">
           <button
@@ -2358,23 +2664,23 @@ function GradebookSlot({ data, sectionId }) {
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+            <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
               {selectedStudent.name}
             </h2>
-            <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
+            <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
               Student record · {selectedStudent.section}
             </p>
           </div>
         </div>
 
         {/* Profile + grade card */}
-        <Card className="p-6">
+        <PortalPanel className="p-5">
           <div className="flex items-center gap-5 flex-wrap">
             <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-black text-2xl shrink-0">
               {selectedStudent.name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xl font-black text-stone-900 dark:text-white">
+              <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
                 {selectedStudent.name}
               </h3>
               <p className="text-sm text-stone-500 dark:text-stone-400 font-medium mt-0.5">
@@ -2399,60 +2705,39 @@ function GradebookSlot({ data, sectionId }) {
               </div>
             )}
           </div>
-        </Card>
+        </PortalPanel>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
+        <StatStrip
+          items={[
             {
               label: "Quiz Average",
               value:
                 selectedStudent.best.size > 0
                   ? `${selectedStudent.avgScore}%`
                   : "—",
-              icon: <BarChart3 className="w-5 h-5 text-secondary-500" />,
-              bg: "bg-secondary-50 dark:bg-secondary-900/20",
+              tone: "teal",
             },
             {
               label: "Section Rank",
               value: selectedStudent.best.size > 0 ? `#${rank}` : "—",
-              icon: <Award className="w-5 h-5 text-science-pink" />,
-              bg: "bg-pink-50 dark:bg-pink-900/20",
+              tone: "pink",
             },
             {
               label: "Curriculum Progress",
               value: `${selectedStudent.progress}%`,
-              icon: <TrendingUp className="w-5 h-5 text-primary-500" />,
-              bg: "bg-primary-50 dark:bg-primary-900/20",
+              tone: "orange",
             },
             {
               label: "Quizzes Taken",
               value: `${attempted} / ${quizColumns.length}`,
-              icon: <ClipboardList className="w-5 h-5 text-accent-600" />,
-              bg: "bg-accent-50 dark:bg-accent-900/20",
+              tone: "yellow",
             },
-          ].map((stat, i) => (
-            <Card key={i} className="p-4">
-              <div
-                className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center mb-2",
-                  stat.bg,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <p className="text-xl font-black text-stone-900 dark:text-white">
-                {stat.value}
-              </p>
-              <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">
-                {stat.label}
-              </p>
-            </Card>
-          ))}
-        </div>
+          ]}
+        />
 
         {/* Curriculum progress bar */}
-        <Card className="p-5">
+        <PortalPanel className="p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-bold text-stone-700 dark:text-stone-300">
               Lessons Completed
@@ -2472,12 +2757,12 @@ function GradebookSlot({ data, sectionId }) {
             }
             size="sm"
           />
-        </Card>
+        </PortalPanel>
 
         {/* Quiz performance list */}
-        <Card className="overflow-hidden">
+        <PortalPanel>
           <div className="p-5 border-b border-orange-100 dark:border-stone-700">
-            <h3 className="text-base font-bold text-stone-900 dark:text-white">
+            <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
               Quiz Performance
             </h3>
             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
@@ -2625,7 +2910,7 @@ function GradebookSlot({ data, sectionId }) {
               </div>
             </div>
           )}
-        </Card>
+        </PortalPanel>
       </div>
     );
   }
@@ -2656,7 +2941,7 @@ function GradebookSlot({ data, sectionId }) {
     <th
       key={key}
       onClick={() => toggleSort(key)}
-      className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
+      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
     >
       <span className="flex items-center gap-1">
         {label}
@@ -2673,14 +2958,14 @@ function GradebookSlot({ data, sectionId }) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header + search */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+          <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
             Gradebook
           </h2>
-          <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
+          <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
             {sectionStudents.length} student
             {sectionStudents.length !== 1 ? "s" : ""} · click a student to see
             their full record
@@ -2697,56 +2982,31 @@ function GradebookSlot({ data, sectionId }) {
 
       {/* Class stats */}
       {sectionStudents.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            {
-              label: "Students",
-              value: sectionStudents.length,
-              icon: <Users className="w-5 h-5 text-primary-500" />,
-              bg: "bg-primary-50 dark:bg-primary-900/20",
-            },
+        <StatStrip
+          items={[
+            { label: "Students", value: sectionStudents.length, tone: "orange" },
             {
               label: "Class Average",
               value: withData.length ? `${classAvg}%` : "—",
-              icon: <BarChart3 className="w-5 h-5 text-secondary-500" />,
-              bg: "bg-secondary-50 dark:bg-secondary-900/20",
+              tone: "teal",
             },
             {
               label: "Passed (≥ 75%)",
               value: `${passCount} / ${sectionStudents.length}`,
-              icon: <CheckCircle2 className="w-5 h-5 text-accent-600" />,
-              bg: "bg-accent-50 dark:bg-accent-900/20",
+              tone: "yellow",
             },
             {
               label: "Top Score",
               value: withData.length ? `${highest}%` : "—",
-              icon: <Award className="w-5 h-5 text-science-pink" />,
-              bg: "bg-pink-50 dark:bg-pink-900/20",
+              tone: "pink",
             },
-          ].map((stat, i) => (
-            <Card key={i} className="p-4">
-              <div
-                className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center mb-2",
-                  stat.bg,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <p className="text-xl font-black text-stone-900 dark:text-white">
-                {stat.value}
-              </p>
-              <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">
-                {stat.label}
-              </p>
-            </Card>
-          ))}
-        </div>
+          ]}
+        />
       )}
 
       {/* Student roster table */}
       {sectionStudents.length > 0 ? (
-        <Card className="overflow-hidden">
+        <PortalPanel>
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
@@ -2755,16 +3015,16 @@ function GradebookSlot({ data, sectionId }) {
                   {sortTh("#", "rank")}
                   {sortTh("Student", "name")}
                   {!sectionId && (
-                    <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                    <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
                       Section
                     </th>
                   )}
                   {sortTh("Progress", "progress")}
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                  <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
                     Quizzes
                   </th>
                   {sortTh("Avg Score", "avg")}
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                  <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
                     Grade
                   </th>
                 </tr>
@@ -2782,10 +3042,10 @@ function GradebookSlot({ data, sectionId }) {
                         onClick={() => setSelectedStudentId(student.id)}
                         className="cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                       >
-                        <td className="px-6 py-4 text-sm font-black text-stone-400 dark:text-stone-500 w-12">
+                        <td className="px-5 py-2.5 text-sm font-black text-stone-400 dark:text-stone-500 w-12">
                           {rank}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                               {student.name.charAt(0)}
@@ -2804,13 +3064,13 @@ function GradebookSlot({ data, sectionId }) {
                           </div>
                         </td>
                         {!sectionId && (
-                          <td className="px-6 py-4">
+                          <td className="px-5 py-2.5">
                             <span className="text-sm font-medium text-stone-600 dark:text-stone-400">
                               {student.section}
                             </span>
                           </td>
                         )}
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-2 min-w-25">
                             <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
                               <div
@@ -2823,7 +3083,7 @@ function GradebookSlot({ data, sectionId }) {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <span className="text-sm font-bold text-stone-700 dark:text-stone-300">
                             {student.best.size}
                             <span className="text-stone-400 font-medium">
@@ -2832,7 +3092,7 @@ function GradebookSlot({ data, sectionId }) {
                             </span>
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           {student.best.size > 0 ? (
                             <span
                               className={cn("text-sm font-black", desc.color)}
@@ -2843,7 +3103,7 @@ function GradebookSlot({ data, sectionId }) {
                             <span className="text-sm text-stone-400">—</span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           {student.best.size > 0 ? (
                             <span
                               className={cn("text-xs font-bold", desc.color)}
@@ -2970,16 +3230,16 @@ function GradebookSlot({ data, sectionId }) {
               </p>
             )}
           </div>
-        </Card>
+        </PortalPanel>
       ) : (
-        <Card className="p-12 text-center">
+        <PortalPanel className="p-10 text-center">
           <Star className="w-10 h-10 text-stone-300 mx-auto mb-3" />
           <p className="text-stone-500 dark:text-stone-400 font-medium">
             {sectionId
               ? "No students in this section yet."
               : "No students yet."}
           </p>
-        </Card>
+        </PortalPanel>
       )}
     </div>
   );
@@ -3117,7 +3377,7 @@ function ProgressSlot({ data, sectionId }) {
     });
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Back nav */}
         <div className="flex items-center gap-3">
           <button
@@ -3128,24 +3388,24 @@ function ProgressSlot({ data, sectionId }) {
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+            <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
               {selectedStudent.name}
             </h2>
-            <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
+            <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
               Student progress · {selectedStudent.section}
             </p>
           </div>
         </div>
 
         {/* Profile card */}
-        <Card className="p-6">
+        <PortalPanel className="p-5">
           <div className="flex items-center gap-5 flex-wrap">
             <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-black text-2xl shrink-0">
               {selectedStudent.name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h3 className="text-xl font-black text-stone-900 dark:text-white">
+                <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
                   {selectedStudent.name}
                 </h3>
                 <span
@@ -3187,22 +3447,20 @@ function ProgressSlot({ data, sectionId }) {
               </p>
             </div>
           </div>
-        </Card>
+        </PortalPanel>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
+        <StatStrip
+          items={[
             {
               label: "Lessons Done",
               value: `${lessonsCompleted} / ${totalLessonsCount}`,
-              icon: <BookOpen className="w-5 h-5 text-secondary-500" />,
-              bg: "bg-secondary-50 dark:bg-secondary-900/20",
+              tone: "teal",
             },
             {
               label: "Quiz Attempts",
               value: studentSubs.length,
-              icon: <ClipboardList className="w-5 h-5 text-primary-500" />,
-              bg: "bg-primary-50 dark:bg-primary-900/20",
+              tone: "orange",
             },
             {
               label: "Quiz Average",
@@ -3210,39 +3468,20 @@ function ProgressSlot({ data, sectionId }) {
                 selectedStudent.avgScore > 0
                   ? `${selectedStudent.avgScore}%`
                   : "—",
-              icon: <BarChart3 className="w-5 h-5 text-accent-600" />,
-              bg: "bg-accent-50 dark:bg-accent-900/20",
+              tone: "yellow",
             },
             {
               label: "Games Played",
               value: gameLoading
                 ? "…"
                 : `${studentGames.size} / ${ACTIVE_GAMES.length}`,
-              icon: <Gamepad2 className="w-5 h-5 text-science-pink" />,
-              bg: "bg-pink-50 dark:bg-pink-900/20",
+              tone: "pink",
             },
-          ].map((stat, i) => (
-            <Card key={i} className="p-4">
-              <div
-                className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center mb-2",
-                  stat.bg,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <p className="text-xl font-black text-stone-900 dark:text-white">
-                {stat.value}
-              </p>
-              <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">
-                {stat.label}
-              </p>
-            </Card>
-          ))}
-        </div>
+          ]}
+        />
 
         {/* Curriculum progress bar */}
-        <Card className="p-5">
+        <PortalPanel className="p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-bold text-stone-700 dark:text-stone-300">
               Curriculum Progress
@@ -3262,12 +3501,12 @@ function ProgressSlot({ data, sectionId }) {
             }
             size="sm"
           />
-        </Card>
+        </PortalPanel>
 
         {/* Week-by-week quiz activity */}
-        <Card className="overflow-hidden">
+        <PortalPanel>
           <div className="p-5 border-b border-orange-100 dark:border-stone-700">
-            <h3 className="text-base font-bold text-stone-900 dark:text-white">
+            <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
               Week-by-Week Activity
             </h3>
             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
@@ -3319,13 +3558,13 @@ function ProgressSlot({ data, sectionId }) {
               );
             })}
           </div>
-        </Card>
+        </PortalPanel>
 
         {/* Quiz submission history */}
-        <Card className="overflow-hidden">
+        <PortalPanel>
           <div className="p-5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-stone-900 dark:text-white">
+              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
                 Quiz History
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
@@ -3406,13 +3645,13 @@ function ProgressSlot({ data, sectionId }) {
               <p className="text-sm text-stone-400">No quiz attempts yet.</p>
             </div>
           )}
-        </Card>
+        </PortalPanel>
 
         {/* Games activity */}
-        <Card className="overflow-hidden">
+        <PortalPanel>
           <div className="p-5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-stone-900 dark:text-white">
+              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
                 Games
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
@@ -3478,7 +3717,7 @@ function ProgressSlot({ data, sectionId }) {
               );
             })}
           </div>
-        </Card>
+        </PortalPanel>
       </div>
     );
   }
@@ -3546,7 +3785,7 @@ function ProgressSlot({ data, sectionId }) {
     <th
       key={key}
       onClick={() => toggleSort(key)}
-      className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
+      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
     >
       <span className="flex items-center gap-1">
         {label}
@@ -3563,14 +3802,14 @@ function ProgressSlot({ data, sectionId }) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header + search */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+          <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
             Student Progress
           </h2>
-          <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
+          <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
             {sectionStudents.length} student
             {sectionStudents.length !== 1 ? "s" : ""} · click a student for
             their full activity record
@@ -3587,56 +3826,23 @@ function ProgressSlot({ data, sectionId }) {
 
       {/* Section summary cards */}
       {sectionStudents.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            {
-              label: "Students",
-              value: sectionStudents.length,
-              icon: <Users className="w-5 h-5 text-primary-500" />,
-              bg: "bg-primary-50 dark:bg-primary-900/20",
-            },
+        <StatStrip
+          items={[
+            { label: "Students", value: sectionStudents.length, tone: "orange" },
             {
               label: "Avg Progress",
               value: withActivity.length ? `${avgProgress}%` : "—",
-              icon: <TrendingUp className="w-5 h-5 text-secondary-500" />,
-              bg: "bg-secondary-50 dark:bg-secondary-900/20",
+              tone: "teal",
             },
-            {
-              label: "Need Help",
-              value: needsHelp,
-              icon: <AlertCircle className="w-5 h-5 text-red-500" />,
-              bg: "bg-red-50 dark:bg-red-900/20",
-            },
-            {
-              label: "Not Started",
-              value: notStarted,
-              icon: <Clock className="w-5 h-5 text-stone-400" />,
-              bg: "bg-stone-100 dark:bg-stone-700/50",
-            },
-          ].map((stat, i) => (
-            <Card key={i} className="p-4">
-              <div
-                className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center mb-2",
-                  stat.bg,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <p className="text-xl font-black text-stone-900 dark:text-white">
-                {stat.value}
-              </p>
-              <p className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">
-                {stat.label}
-              </p>
-            </Card>
-          ))}
-        </div>
+            { label: "Need Help", value: needsHelp, tone: "pink" },
+            { label: "Not Started", value: notStarted, tone: "blue" },
+          ]}
+        />
       )}
 
       {/* Student table */}
       {sectionStudents.length > 0 ? (
-        <Card className="overflow-hidden">
+        <PortalPanel>
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
@@ -3645,7 +3851,7 @@ function ProgressSlot({ data, sectionId }) {
                   {sortTh("#", "rank")}
                   {sortTh("Student", "name")}
                   {!sectionId && (
-                    <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                    <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
                       Section
                     </th>
                   )}
@@ -3653,7 +3859,7 @@ function ProgressSlot({ data, sectionId }) {
                   {sortTh("Quiz Attempts", "attempts")}
                   {sortTh("Quiz Avg", "avg")}
                   {sortTh("Games", "games")}
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                  <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
@@ -3683,10 +3889,10 @@ function ProgressSlot({ data, sectionId }) {
                         onClick={() => setSelectedStudentId(student.id)}
                         className="cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                       >
-                        <td className="px-6 py-4 text-sm font-black text-stone-400 dark:text-stone-500 w-12">
+                        <td className="px-5 py-2.5 text-sm font-black text-stone-400 dark:text-stone-500 w-12">
                           {rank}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
                               {student.name.charAt(0)}
@@ -3697,13 +3903,13 @@ function ProgressSlot({ data, sectionId }) {
                           </div>
                         </td>
                         {!sectionId && (
-                          <td className="px-6 py-4">
+                          <td className="px-5 py-2.5">
                             <span className="text-sm font-medium text-stone-600 dark:text-stone-400">
                               {student.section}
                             </span>
                           </td>
                         )}
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <div className="flex items-center gap-2 min-w-25">
                             <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
                               <div
@@ -3716,12 +3922,12 @@ function ProgressSlot({ data, sectionId }) {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <span className="text-sm font-bold text-stone-700 dark:text-stone-300">
                             {studentSubs.length}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           {desc ? (
                             <span
                               className={cn("text-sm font-black", desc.color)}
@@ -3732,7 +3938,7 @@ function ProgressSlot({ data, sectionId }) {
                             <span className="text-sm text-stone-400">—</span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           {gameLoading ? (
                             <Loader2 className="w-3 h-3 text-stone-400 animate-spin" />
                           ) : (
@@ -3745,7 +3951,7 @@ function ProgressSlot({ data, sectionId }) {
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-2.5">
                           <span
                             className={cn(
                               "flex items-center gap-1.5 text-xs font-bold w-fit px-2.5 py-1 rounded-full",
@@ -3880,16 +4086,16 @@ function ProgressSlot({ data, sectionId }) {
               </p>
             )}
           </div>
-        </Card>
+        </PortalPanel>
       ) : (
-        <Card className="p-12 text-center">
+        <PortalPanel className="p-10 text-center">
           <TrendingUp className="w-10 h-10 text-stone-300 mx-auto mb-3" />
           <p className="text-stone-500 dark:text-stone-400 font-medium">
             {sectionId
               ? "No students in this section yet."
               : "No students yet."}
           </p>
-        </Card>
+        </PortalPanel>
       )}
     </div>
   );
@@ -3901,7 +4107,7 @@ function SettingsSlot() {
       <div className="w-16 h-16 bg-stone-100 dark:bg-stone-800 rounded-2xl flex items-center justify-center mb-4">
         <Settings className="w-8 h-8 text-stone-400" />
       </div>
-      <h2 className="text-2xl font-black text-stone-900 dark:text-white mb-2">
+      <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white mb-2">
         Settings
       </h2>
       <p className="text-stone-500 dark:text-stone-400 max-w-md">
@@ -4498,7 +4704,7 @@ function RestoreQuizModal({
             </p>
           </div>
         </div>
-        <p className="text-sm text-stone-600 dark:text-stone-300 mb-6">
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
           {isDeleted ? (
             <>
               Bring back the quiz for{" "}
@@ -4561,6 +4767,359 @@ const QUIZ_TYPE_LABELS = {
   "case-study": "Case Study",
 };
 
+// ── Per-student quiz access modal ─────────────────────────────────────────────
+//
+// Re-opens a closed quiz for chosen students only (make-up / extension), so
+// classmates who already finished stay locked out. Granting again to a
+// student who already has access replaces their end time — that's "Extend".
+
+const ACCESS_DURATIONS = [
+  { value: "24", label: "1 day" },
+  { value: "72", label: "3 days" },
+  { value: "168", label: "1 week" },
+  { value: "custom", label: "Pick a date & time" },
+  { value: "none", label: "Until I remove it" },
+];
+
+function formatAccessUntil(iso) {
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function QuizStudentAccessModal({
+  lesson,
+  quiz,
+  students,
+  studentById,
+  grants,
+  isClosedForClass,
+  nowMs,
+  onGrantsChange,
+  onClose,
+}) {
+  const [search, setSearch] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [duration, setDuration] = useState("24");
+  const [customUntil, setCustomUntil] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [removingId, setRemovingId] = useState(null);
+  const [error, setError] = useState(null);
+
+  const name = quiz?.title ?? lesson.title;
+  const q = search.trim().toLowerCase();
+  const matches = q
+    ? students.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.section.toLowerCase().includes(q),
+      )
+    : students;
+  const selected = selectedId ? studentById.get(selectedId) : null;
+  const sortedGrants = [...grants].sort((a, b) =>
+    (studentById.get(a.studentId)?.name ?? "").localeCompare(
+      studentById.get(b.studentId)?.name ?? "",
+    ),
+  );
+  const activeIds = new Set(
+    grants.filter((g) => isGrantActive(g, nowMs)).map((g) => g.studentId),
+  );
+  const isBusy = saving || removingId !== null;
+
+  async function handleGrant() {
+    if (!selected) return;
+    let openUntil = null;
+    if (duration === "custom") {
+      const at = new Date(customUntil);
+      if (!customUntil || Number.isNaN(at.getTime()) || at <= new Date()) {
+        setError("Pick a date and time in the future.");
+        return;
+      }
+      openUntil = at.toISOString();
+    } else if (duration !== "none") {
+      openUntil = new Date(
+        Date.now() + Number(duration) * 60 * 60 * 1000,
+      ).toISOString();
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      await grantQuizAccess({
+        lessonId: lesson.id,
+        studentId: selected.id,
+        openUntil,
+      });
+      onGrantsChange(await fetchQuizAccessGrants());
+      setSelectedId(null);
+    } catch (err) {
+      setError(err.message || "Failed to open the quiz.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemove(studentId) {
+    setError(null);
+    setRemovingId(studentId);
+    try {
+      await revokeQuizAccess({ lessonId: lesson.id, studentId });
+      onGrantsChange(await fetchQuizAccessGrants());
+      if (selectedId === studentId) setSelectedId(null);
+    } catch (err) {
+      setError(err.message || "Failed to remove access.");
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={!isBusy ? onClose : undefined}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quiz-access-title"
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto themed-scrollbar bg-white dark:bg-stone-800 rounded-2xl shadow-2xl border border-orange-100 dark:border-stone-700 p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          disabled={isBusy}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-4 pr-8">
+          <div className="w-10 h-10 rounded-full bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center shrink-0">
+            <CalendarClock className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+          </div>
+          <div>
+            <h2
+              id="quiz-access-title"
+              className="text-lg font-black text-stone-900 dark:text-white"
+            >
+              Open for a student
+            </h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400">{name}</p>
+          </div>
+        </div>
+
+        <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
+          Re-open this quiz for specific students only — for a make-up or a
+          later deadline. Everyone else stays locked out.
+        </p>
+
+        {!isClosedForClass && (
+          <div className="flex items-start gap-2 mb-4 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-xs font-bold">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            This quiz is open to the whole class right now. Access you give
+            here takes effect once you hide the quiz.
+          </div>
+        )}
+
+        {sortedGrants.length > 0 && (
+          <div className="mb-5">
+            <h3 className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">
+              Opened for
+            </h3>
+            <ul className="space-y-2">
+              {sortedGrants.map((g) => {
+                const st = studentById.get(g.studentId);
+                const active = isGrantActive(g, nowMs);
+                return (
+                  <li
+                    key={g.studentId}
+                    className="flex items-center gap-2 p-3 rounded-xl border border-orange-100 dark:border-stone-600"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-stone-900 dark:text-stone-100 truncate">
+                        {st.name}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs font-bold",
+                          active
+                            ? "text-secondary-700 dark:text-secondary-400"
+                            : "text-stone-400 dark:text-stone-500",
+                        )}
+                      >
+                        {!active
+                          ? `Ended ${formatAccessUntil(g.openUntil)}`
+                          : g.openUntil
+                            ? `Open until ${formatAccessUntil(g.openUntil)}`
+                            : "Open · no end date"}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedId(g.studentId);
+                        setError(null);
+                      }}
+                      disabled={isBusy}
+                      className="min-h-11 px-3 rounded-xl text-xs font-bold text-secondary-700 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 disabled:opacity-60 transition-colors"
+                    >
+                      Extend
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemove(g.studentId)}
+                      disabled={isBusy}
+                      className="flex items-center gap-1.5 min-h-11 px-3 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-60 transition-colors"
+                    >
+                      {removingId === g.studentId && (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      )}
+                      Remove
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        <h3 className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">
+          Choose a student
+        </h3>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name or section…"
+          aria-label="Search students"
+          className="w-full mb-2 px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+        />
+        <div className="themed-scrollbar space-y-2 max-h-56 overflow-y-auto pr-1 mb-4">
+          {matches.length > 0 ? (
+            matches.map((st) => {
+              const isSelected = selectedId === st.id;
+              const hasSubmitted = st.best?.has(lesson.id);
+              return (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(isSelected ? null : st.id);
+                    setError(null);
+                  }}
+                  aria-pressed={isSelected}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors",
+                    isSelected
+                      ? "border-secondary-400 bg-secondary-50 dark:bg-stone-700 dark:border-secondary-500"
+                      : "border-orange-100 dark:border-stone-600 hover:bg-orange-50/50 dark:hover:bg-stone-700",
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-stone-900 dark:text-stone-100 truncate">
+                      {st.name}
+                    </p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                      {st.section}
+                    </p>
+                  </div>
+                  {activeIds.has(st.id) && (
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400">
+                      Has access
+                    </span>
+                  )}
+                  <span
+                    className={cn(
+                      "text-xs font-bold px-2 py-0.5 rounded-full",
+                      hasSubmitted
+                        ? "bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300"
+                        : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+                    )}
+                  >
+                    {hasSubmitted ? "Submitted" : "Not taken"}
+                  </span>
+                </button>
+              );
+            })
+          ) : (
+            <p className="py-6 text-center text-sm font-medium text-stone-400">
+              No students match your search.
+            </p>
+          )}
+        </div>
+
+        <label
+          htmlFor="quiz-access-duration"
+          className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1.5"
+        >
+          Keep it open for
+        </label>
+        <select
+          id="quiz-access-duration"
+          value={duration}
+          onChange={(e) => {
+            setDuration(e.target.value);
+            setError(null);
+          }}
+          className="w-full mb-3 px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+        >
+          {ACCESS_DURATIONS.map((d) => (
+            <option key={d.value} value={d.value}>
+              {d.label}
+            </option>
+          ))}
+        </select>
+        {duration === "custom" && (
+          <>
+            <label
+              htmlFor="quiz-access-until"
+              className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1.5"
+            >
+              Open until
+            </label>
+            <input
+              id="quiz-access-until"
+              type="datetime-local"
+              value={customUntil}
+              onChange={(e) => {
+                setCustomUntil(e.target.value);
+                setError(null);
+              }}
+              className="w-full mb-3 px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+            />
+          </>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 dark:text-red-400 text-sm font-bold"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleGrant}
+          disabled={!selected || isBusy}
+          className="w-full flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl bg-secondary-500 hover:bg-secondary-600 disabled:opacity-60 text-white font-bold text-sm transition-colors"
+        >
+          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {selected
+            ? activeIds.has(selected.id)
+              ? `Update access for ${selected.name}`
+              : `Open quiz for ${selected.name}`
+            : "Choose a student first"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LessonQuizCard({
   lesson,
   quiz,
@@ -4579,9 +5138,11 @@ function LessonQuizCard({
   isCustomQuiz,
   isEdited,
   isDeleted,
+  accessCount = 0,
+  onManageAccess,
 }) {
   return (
-    <Card className={cn("p-5", isDeleted && "opacity-60")}>
+    <PortalPanel className={cn("p-5", isDeleted && "opacity-60")}>
       <div className="flex items-start justify-between mb-3">
         <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center">
           <ClipboardCheck className="w-5 h-5 text-accent-500" />
@@ -4698,6 +5259,23 @@ function LessonQuizCard({
         </div>
         <ProgressBar progress={pct} color="secondary" size="sm" />
       </div>
+      {!isDeleted && onManageAccess && (
+        <button
+          type="button"
+          onClick={onManageAccess}
+          className="flex items-center justify-between gap-2 w-full min-h-11 mb-3 px-3 py-2 rounded-xl border border-orange-100 dark:border-stone-700 text-xs font-bold text-stone-600 dark:text-stone-300 hover:bg-orange-50 dark:hover:bg-stone-700 transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-400"
+        >
+          <span className="flex items-center gap-1.5">
+            <UserCheck className="w-3.5 h-3.5" />
+            Open for a student
+          </span>
+          {accessCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border border-secondary-200 dark:border-secondary-700">
+              {accessCount} open
+            </span>
+          )}
+        </button>
+      )}
       <button
         type="button"
         onClick={onToggle}
@@ -4732,7 +5310,7 @@ function LessonQuizCard({
           />
         </>
       )}
-    </Card>
+    </PortalPanel>
   );
 }
 
@@ -4744,12 +5322,33 @@ function QuizzesManagementSlot({
   hiddenQuizLessonIds,
   onHiddenQuizLessonIdsChange,
   quizSettings,
+  quizAccessGrants = [],
+  onQuizAccessChange,
   onEditQuiz,
 }) {
   const { weeks, getQuiz, dbQuizzes, removeQuizRow } = useLessonsData();
+  const [accessLesson, setAccessLesson] = useState(null);
+  // Ticks each minute so a grant's "open" count drops when its time runs out.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const tick = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(tick);
+  }, []);
+  // data.students is already limited to this teacher's sections; grants for
+  // anyone else are ignored here.
+  const studentById = new Map(data.students.map((s) => [s.id, s]));
+  const pickerStudents = sectionId
+    ? data.students.filter((s) => s.section === sectionId)
+    : data.students;
+  function grantsForLesson(lessonId) {
+    return quizAccessGrants.filter(
+      (g) => g.lessonId === lessonId && studentById.has(g.studentId),
+    );
+  }
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [openQuarters, toggleQuarter] = useOpenQuarters();
   const [openLessonId, setOpenLessonId] = useState(null);
   const [deletingQuizLesson, setDeletingQuizLesson] = useState(null);
   const [deleteQuizLoading, setDeleteQuizLoading] = useState(false);
@@ -4868,7 +5467,7 @@ function QuizzesManagementSlot({
     : [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {expandedWeek ? (
         <>
           <div className="flex items-center gap-3 flex-wrap">
@@ -4884,10 +5483,10 @@ function QuizzesManagementSlot({
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div>
-              <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+              <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
                 Week {expandedWeek.weekNumber} — {expandedWeek.title}
               </h2>
-              <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-0.5">
+              <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
                 {expandedWeek.lessons.length}{" "}
                 {expandedWeek.lessons.length === 1 ? "quiz" : "quizzes"}
               </p>
@@ -4954,6 +5553,12 @@ function QuizzesManagementSlot({
                     pct={pct}
                     published={published}
                     onTogglePublish={() => toggleQuizHidden(lesson.id)}
+                    accessCount={
+                      grantsForLesson(lesson.id).filter((g) =>
+                        isGrantActive(g, nowMs),
+                      ).length
+                    }
+                    onManageAccess={() => setAccessLesson(lesson)}
                     currentLimit={currentLimit}
                     currentAttempts={currentAttempts}
                     currentShow={currentShow}
@@ -4988,11 +5593,11 @@ function QuizzesManagementSlot({
         <>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="text-2xl font-black text-stone-900 dark:text-white">
+              <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
                 Quizzes
               </h2>
-              <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-1">
-                All weeks · click a week to manage its quizzes
+              <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
+                Grouped by quarter · click a week to manage its quizzes
               </p>
             </div>
             <CollapsibleSearch
@@ -5007,89 +5612,61 @@ function QuizzesManagementSlot({
           </div>
 
           {filteredWeeks.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredWeeks.map((week) => {
-                const avgPct = week.lessons.length
-                  ? Math.round(
-                      week.lessons.reduce(
-                        (sum, l) => sum + getCompletion(l.id),
-                        0,
-                      ) / week.lessons.length,
-                    )
-                  : 0;
-                const published = isWeekPublished(
-                  week.id,
-                  publishedQuizWeekIds,
-                );
-                return (
-                  <Card
-                    key={week.id}
-                    className={cn(
-                      "p-5 cursor-pointer transition-opacity",
-                      !published && "opacity-60",
-                    )}
-                    hoverable
-                    onClick={() => {
-                      setExpandedWeekId(week.id);
-                      setSearch("");
-                      setSearchOpen(false);
-                    }}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center">
-                        <ClipboardCheck className="w-5 h-5 text-accent-500" />
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePublish(week.id);
-                        }}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors",
-                          published
-                            ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                            : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
-                        )}
-                        title={published ? "Click to hide" : "Click to publish"}
-                        aria-label={
-                          published
-                            ? `Hide quizzes for week ${week.weekNumber}`
-                            : `Publish quizzes for week ${week.weekNumber}`
-                        }
-                      >
-                        {published ? (
-                          <Eye className="w-3 h-3" />
-                        ) : (
-                          <EyeOff className="w-3 h-3" />
-                        )}
-                        {published ? "Published" : "Hidden"}
-                      </button>
-                    </div>
-                    <span className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1 block">
-                      Week {week.weekNumber}
-                    </span>
-                    <h3 className="text-base font-bold text-stone-900 dark:text-white mb-1">
-                      {week.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
-                      {week.lessons.length}{" "}
-                      {week.lessons.length === 1 ? "quiz" : "quizzes"}
-                    </p>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold text-stone-500 dark:text-stone-400">
-                        <span>Avg completion</span>
-                        <span>{avgPct}%</span>
-                      </div>
-                      <ProgressBar
-                        progress={avgPct}
-                        color="secondary"
-                        size="sm"
-                      />
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+            <PortalPanel>
+              {groupByQuarter(filteredWeeks).map((quarter) => (
+                <RosterGroup
+                  key={quarter.id}
+                  label={quarter.label}
+                  rangeLabel={`Weeks ${quarter.min}\u2013${quarter.max}`}
+                  count={quarter.weeks.length}
+                  progress={quarterProgress(quarter.weeks, getCompletion)}
+                  open={!!q || openQuarters.includes(quarter.id)}
+                  onToggle={() => toggleQuarter(quarter.id)}
+                >
+                  <RosterList className="border-t border-orange-100 dark:border-stone-700">
+                    {quarter.weeks.map((week) => {
+                      const avgPct = week.lessons.length
+                        ? Math.round(
+                            week.lessons.reduce(
+                              (sum, l) => sum + getCompletion(l.id),
+                              0,
+                            ) / week.lessons.length,
+                          )
+                        : 0;
+                      const published = isWeekPublished(
+                        week.id,
+                        publishedQuizWeekIds,
+                      );
+                      return (
+                        <RosterRow
+                          key={week.id}
+                          index={String(week.weekNumber).padStart(2, "0")}
+                          title={week.title}
+                          meta={[
+                            `${week.lessons.length} ${week.lessons.length === 1 ? "quiz" : "quizzes"}`,
+                          ]}
+                          progress={avgPct}
+                          dimmed={!published}
+                          onOpen={() => {
+                            setExpandedWeekId(week.id);
+                            setSearch("");
+                            setSearchOpen(false);
+                          }}
+                          openLabel={`Open week ${week.weekNumber}: ${week.title}`}
+                          trailing={
+                            <WeekStatePill
+                              state={published ? "published" : "hidden"}
+                              weekNumber={week.weekNumber}
+                              onCycle={() => togglePublish(week.id)}
+                            />
+                          }
+                        />
+                      );
+                    })}
+                  </RosterList>
+                </RosterGroup>
+              ))}
+            </PortalPanel>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Search className="w-8 h-8 text-stone-300 mb-3" />
@@ -5113,6 +5690,23 @@ function QuizzesManagementSlot({
           }}
           isLoading={deleteQuizLoading}
           error={deleteQuizError}
+        />
+      )}
+
+      {accessLesson && expandedWeek && (
+        <QuizStudentAccessModal
+          lesson={accessLesson}
+          quiz={getQuiz(accessLesson.id)}
+          students={pickerStudents}
+          studentById={studentById}
+          grants={grantsForLesson(accessLesson.id)}
+          isClosedForClass={
+            !isWeekPublished(expandedWeek.id, publishedQuizWeekIds) ||
+            isQuizLessonHidden(accessLesson.id, hiddenQuizLessonIds)
+          }
+          nowMs={nowMs}
+          onGrantsChange={onQuizAccessChange}
+          onClose={() => setAccessLesson(null)}
         />
       )}
 
@@ -5148,30 +5742,14 @@ const TAB_SLOTS = {
 };
 
 const SIDEBAR_TABS = [
-  {
-    id: "overview",
-    label: "Dashboard",
-    icon: <BarChart3 className="w-5 h-5" />,
-  },
-  { id: "sections", label: "My Sections", icon: <Users className="w-5 h-5" /> },
-  { id: "lessons", label: "Lessons", icon: <BookOpen className="w-5 h-5" /> },
-  {
-    id: "quiz-management",
-    label: "Quizzes",
-    icon: <ClipboardCheck className="w-5 h-5" />,
-  },
-  {
-    id: "quizzes",
-    label: "Quiz Checking",
-    icon: <ClipboardList className="w-5 h-5" />,
-  },
-  { id: "gradebook", label: "Gradebook", icon: <Star className="w-5 h-5" /> },
-  {
-    id: "progress",
-    label: "Student Progress",
-    icon: <TrendingUp className="w-5 h-5" />,
-  },
-  { id: "settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
+  { id: "overview", label: "Dashboard", Icon: BarChart3 },
+  { id: "sections", label: "My Sections", Icon: Users },
+  { id: "lessons", label: "Lessons", Icon: BookOpen },
+  { id: "quiz-management", label: "Quizzes", Icon: ClipboardCheck },
+  { id: "quizzes", label: "Quiz Checking", Icon: ClipboardList },
+  { id: "gradebook", label: "Gradebook", Icon: Star },
+  { id: "progress", label: "Student Progress", Icon: TrendingUp },
+  { id: "settings", label: "Settings", Icon: Settings },
 ];
 
 // --- Main page ---
@@ -5184,17 +5762,14 @@ export function TeacherPortalPage({
   onActiveTabChange,
 }) {
   const { signOut, profile, user } = useAuth();
-  const { isDark, toggle } = useTheme();
   const [activeTabLocal, setActiveTabLocal] = useState("overview");
   const activeTab = activeTabProp ?? activeTabLocal;
   const setActiveTab = onActiveTabChange ?? setActiveTabLocal;
   const [selectedSectionId, setSelectedSectionId] = useState(null);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [gradingSub, setGradingSub] = useState(null);
-  const dropdownRef = useRef(null);
 
   const storageKey = `sq_teacher_sections_${user?.id ?? "guest"}`;
   const [mySectionNames, setMySectionNamesState] = useState(() => {
@@ -5301,14 +5876,22 @@ export function TeacherPortalPage({
     };
   }, []);
 
+  const [quizAccessGrants, setQuizAccessGrants] = useState([]);
+
   useEffect(() => {
-    function handleOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    let cancelled = false;
+    const load = () =>
+      fetchQuizAccessGrants()
+        .then((grants) => {
+          if (!cancelled) setQuizAccessGrants(grants);
+        })
+        .catch((err) => console.error("Failed to load quiz access:", err));
+    load();
+    const unsub = subscribeToQuizAccess(load);
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, []);
 
   useEffect(() => {
@@ -5381,176 +5964,90 @@ export function TeacherPortalPage({
     : null;
 
   return (
-    <div className="min-h-screen font-body text-stone-800 dark:text-stone-100 bg-[#fdf6e3] dark:bg-stone-900">
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-orange-200/50 dark:border-stone-700 shadow-warm bg-[rgba(255,251,245,0.85)] dark:bg-stone-900/90">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 bg-secondary-100 dark:bg-secondary-900/30 rounded-lg text-secondary-600 dark:text-secondary-400">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <span className="font-heading font-black text-lg text-stone-900 dark:text-white">
-                Teacher Portal
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggle}
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
-                className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
-              >
-                {isDark ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </button>
-
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setProfileOpen((v) => !v)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 flex items-center justify-center font-bold text-sm">
-                    {teacherName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-bold text-stone-700 dark:text-stone-300 hidden sm:inline">
-                    {teacherName}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      "w-4 h-4 text-stone-500 transition-transform duration-200",
-                      profileOpen && "rotate-180",
-                    )}
-                  />
-                </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-stone-800 rounded-xl shadow-xl border border-orange-100 dark:border-stone-700 overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-orange-100 dark:border-stone-700">
-                      <p className="text-sm font-black text-stone-900 dark:text-white">
-                        {teacherName}
-                      </p>
-                      {profile?.email && (
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">
-                          {profile.email}
-                        </p>
-                      )}
-                      <span className="inline-block mt-1.5 text-xs font-bold text-secondary-600 dark:text-secondary-400 bg-secondary-50 dark:bg-secondary-900/30 px-2 py-0.5 rounded-md">
-                        Teacher
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        signOut();
-                        onBack();
-                      }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+    <PortalShell
+      accent="secondary"
+      brandLabel="Teacher Portal"
+      BrandIcon={GraduationCap}
+      roleLabel="Teacher"
+      items={SIDEBAR_TABS}
+      activeId={activeTab}
+      onSelect={setActiveTab}
+      userName={teacherName}
+      userEmail={profile?.email}
+      onSignOut={() => {
+        signOut();
+        onBack();
+      }}
+    >
+      {activeTab !== "settings" && !loading && !loadError && (
+        <div className="mb-4 flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.14em] mr-1">
+            Scope
+          </span>
+          {[{ id: null, name: "All" }, ...sections].map((s) => (
+            <button
+              key={s.id ?? "all"}
+              type="button"
+              onClick={() => setSelectedSectionId(s.id)}
+              aria-pressed={selectedSectionId === s.id}
+              className={cn(
+                "h-8 px-3 rounded-full text-xs font-bold transition-colors whitespace-nowrap",
+                selectedSectionId === s.id
+                  ? "bg-secondary-600 text-white"
+                  : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-700 hover:border-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-400",
+              )}
+            >
+              {s.name}
+            </button>
+          ))}
         </div>
-      </header>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-60 shrink-0">
-            <Card className="p-3 sticky top-24">
-              <div className="space-y-1">
-                {SIDEBAR_TABS.map(({ id, label, icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => setActiveTab(id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors",
-                      activeTab === id
-                        ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400"
-                        : "text-stone-600 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-secondary-600 dark:hover:text-secondary-400",
-                    )}
-                  >
-                    {icon}
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {activeTab !== "settings" && !loading && !loadError && (
-              <div className="mb-6 flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mr-1">
-                  Section
-                </span>
-                {[{ id: null, name: "All" }, ...sections].map((s) => (
-                  <button
-                    key={s.id ?? "all"}
-                    onClick={() => setSelectedSectionId(s.id)}
-                    className={cn(
-                      "px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap",
-                      selectedSectionId === s.id
-                        ? "bg-secondary-600 text-white shadow-sm"
-                        : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-600 hover:border-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-400",
-                    )}
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <Loader2 className="w-10 h-10 text-secondary-500 animate-spin mb-4" />
-                <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
-                  Loading dashboard…
-                </p>
-              </div>
-            ) : loadError ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <AlertCircle className="w-10 h-10 text-red-400 mb-4" />
-                <h2 className="text-lg font-black text-stone-700 dark:text-stone-300 mb-1">
-                  Couldn't load data
-                </h2>
-                <p className="text-sm text-stone-500 dark:text-stone-400 max-w-xs">
-                  {loadError}
-                </p>
-              </div>
-            ) : activeTab === "settings" ? (
-              <SettingsSlot />
-            ) : (
-              <ActiveSlot
-                data={slotData}
-                sectionId={selectedSectionId}
-                onGrade={setGradingSub}
-                onViewSection={(id) => setSelectedSectionId(id)}
-                onRefresh={refreshDashboard}
-                mySectionNames={mySectionNames}
-                onSectionNamesChange={setMySectionNames}
-                publishedWeekIds={publishedWeekIds}
-                onPublishedWeekIdsChange={setPublishedWeekIds}
-                openWeekIds={openWeekIds}
-                onOpenWeekIdsChange={setOpenWeekIds}
-                publishedQuizWeekIds={publishedQuizWeekIds}
-                onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
-                hiddenQuizLessonIds={hiddenQuizLessonIds}
-                onHiddenQuizLessonIdsChange={setHiddenQuizLessonIds}
-                quizSettings={quizSettings}
-                onEditLesson={onEditLesson}
-                onEditQuiz={onEditQuiz}
-              />
-            )}
-          </div>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <Loader2 className="w-10 h-10 text-secondary-500 animate-spin mb-4" />
+          <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
+            Loading your classes…
+          </p>
         </div>
-      </div>
+      ) : loadError ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <AlertCircle className="w-10 h-10 text-red-400 mb-4" />
+          <h2 className="text-lg font-black text-stone-700 dark:text-stone-300 mb-1">
+            Couldn&apos;t load data
+          </h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 max-w-xs">
+            {loadError}
+          </p>
+        </div>
+      ) : activeTab === "settings" ? (
+        <SettingsSlot />
+      ) : (
+        <ActiveSlot
+          data={slotData}
+          sectionId={selectedSectionId}
+          onGrade={setGradingSub}
+          onViewSection={(id) => setSelectedSectionId(id)}
+          onRefresh={refreshDashboard}
+          onNavigateTab={setActiveTab}
+          teacherName={teacherName}
+          mySectionNames={mySectionNames}
+          onSectionNamesChange={setMySectionNames}
+          publishedWeekIds={publishedWeekIds}
+          onPublishedWeekIdsChange={setPublishedWeekIds}
+          openWeekIds={openWeekIds}
+          onOpenWeekIdsChange={setOpenWeekIds}
+          publishedQuizWeekIds={publishedQuizWeekIds}
+          onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
+          hiddenQuizLessonIds={hiddenQuizLessonIds}
+          onHiddenQuizLessonIdsChange={setHiddenQuizLessonIds}
+          quizSettings={quizSettings}
+          quizAccessGrants={quizAccessGrants}
+          onQuizAccessChange={setQuizAccessGrants}
+          onEditLesson={onEditLesson}
+          onEditQuiz={onEditQuiz}
+        />
+      )}
 
       {gradingSub && (
         <GradeModal
@@ -5559,6 +6056,6 @@ export function TeacherPortalPage({
           onSaved={handleGraded}
         />
       )}
-    </div>
+    </PortalShell>
   );
 }
