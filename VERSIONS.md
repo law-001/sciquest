@@ -174,6 +174,10 @@
 ## VERSION_24
 - Avatar editor: nothing renders below the sticker grid any more. Removed the "sticker space is full" note, the "Editing …" card (width/height/rotation/position sliders, Bring to front, Remove sticker) and "Clear all stickers". Stickers are edited only on the preview (drag, handles, trash button, arrow keys); the `n / 6` counter still shows when the grid is full.
 - The Stickers panel no longer keeps a sticker selected, so clicking blank space in it deselects like anywhere else. Dropped the now-unused `CONTROL`, `selected` and `selectedLabel`.
+- Commit: Remove sticker edit card and controls below avatar sticker grid
 
----
-Staged changes: Remove sticker edit card and controls below avatar sticker grid
+## VERSION_25
+- Stopped `VERSIONS.md` conflicting on every merge. New `.gitattributes` sets `VERSIONS.md merge=union`, so when two branches both append entries git keeps both instead of stopping.
+- Dropped the shared "Staged changes" footer — the one line every branch rewrote, so it conflicted every time. Each entry now ends with its own `- Commit:` line instead.
+- `CLAUDE.md` version-log rules updated to match: number one past the highest in the file, a `Commit:` line per entry, no shared trailing line, and duplicate numbers after a merge are left alone.
+- Commit: Stop VERSIONS.md merge conflicts with union merge and per-entry commit lines
