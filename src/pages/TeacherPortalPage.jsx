@@ -2106,24 +2106,66 @@ function getRubricItems(lessonId, getQuiz) {
     }));
 }
 
+function ManualTypeChips({ types, className }) {
+  if (types.length === 0) return null;
+  return (
+    <span className={cn("flex items-center gap-1", className)}>
+      {types.map((type) => (
+        <span
+          key={type}
+          className={cn(
+            "px-1.5 py-0.5 rounded text-[11px] font-bold",
+            MANUAL_TYPE_META[type]?.className,
+          )}
+        >
+          {MANUAL_TYPE_META[type]?.label ?? type}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// Organised by lesson, and only lessons a teacher has to check by hand — a
+// quiz of auto-graded questions alone never needs this tab.
 function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
-  const { getQuiz } = useLessonsData();
+  const { weeks, getQuiz } = useLessonsData();
+  const [openLessonId, setOpenLessonId] = useState(null);
   const [tab, setTab] = useState("pending");
-  const [typeFilter, setTypeFilter] = useState("all");
   const [openId, setOpenId] = useState(null);
 
   const scoped = sectionId
     ? data.submissions.filter((s) => s.section === sectionId)
     : data.submissions;
 
-  // Oldest first: students who submitted earlier have been waiting longest.
-  const pendingAll = [...scoped.filter((s) => s.status === "pending")].reverse();
-  const pending =
-    typeFilter === "all"
-      ? pendingAll
-      : pendingAll.filter((s) =>
-          getManualQuestionTypes(s.lessonId, getQuiz).includes(typeFilter),
-        );
+  // Newest first, as fetched.
+  const subsByLesson = new Map();
+  for (const sub of scoped) {
+    if (!subsByLesson.has(sub.lessonId)) subsByLesson.set(sub.lessonId, []);
+    subsByLesson.get(sub.lessonId).push(sub);
+  }
+
+  // A lesson is listed when its quiz has a hand-checked question — or when it
+  // still holds ungraded work, so editing those questions out of a quiz can't
+  // strand attempts students already submitted.
+  const checkLessons = weeks.flatMap((week) =>
+    week.lessons
+      .map((lesson) => {
+        const subs = subsByLesson.get(lesson.id) ?? [];
+        return {
+          lesson,
+          week,
+          subs,
+          pending: subs.filter((s) => s.status === "pending"),
+          types: getManualQuestionTypes(lesson.id, getQuiz),
+          title: getQuiz(lesson.id)?.title ?? lesson.title,
+        };
+      })
+      .filter((item) => item.types.length > 0 || item.pending.length > 0),
+  );
+  const needsGrading = checkLessons.filter((i) => i.pending.length > 0);
+  const caughtUp = checkLessons.filter((i) => i.pending.length === 0);
+  const pendingTotal = needsGrading.reduce((sum, i) => sum + i.pending.length, 0);
+  const openItem = checkLessons.find((i) => i.lesson.id === openLessonId) ?? null;
 
   // Section options carry their own pending count, which the global scope
   // pills cannot show — that is the reason this control exists as well.
@@ -2142,114 +2184,72 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
     })),
   ];
 
-  const typeOptions = [
-    { id: "all", label: "All types" },
-    ...Object.entries(MANUAL_TYPE_META).map(([id, meta]) => ({
-      id,
-      label: meta.label,
-    })),
-  ];
+  function openLesson(lessonId) {
+    setOpenLessonId(lessonId);
+    setTab("pending");
+    setOpenId(null);
+  }
 
-  return (
-    <div className="space-y-4">
-      <TabHead
-        title="Quiz Checking"
-        subtitle="Manual review for essays, short answers, and case studies"
-      >
-        {pendingAll.length > 0 && (
-          <span className="inline-flex items-center gap-2 h-9 px-3 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-[13px] font-bold text-amber-700 dark:text-amber-200">
-            <AlertCircle className="w-4 h-4" aria-hidden="true" />
-            {pendingAll.length} awaiting review
-          </span>
-        )}
-      </TabHead>
+  // ── One lesson's submissions ───────────────────────────────────────────────
+  if (openItem) {
+    // Oldest first: students who submitted earlier have been waiting longest.
+    const pendingOldestFirst = [...openItem.pending].reverse();
+    const graded = openItem.subs.filter((s) => s.status === "graded");
+    const list = tab === "pending" ? pendingOldestFirst : graded;
 
-      {/* Tab switcher */}
-      <div className="flex gap-1 p-1 bg-stone-100 dark:bg-stone-800 rounded-xl w-fit">
-        {[
-          {
-            id: "pending",
-            label: `Needs Grading${pendingAll.length ? ` (${pendingAll.length})` : ""}`,
-          },
-          {
-            id: "all",
-            label: `All Submissions${scoped.length ? ` (${scoped.length})` : ""}`,
-          },
-        ].map((t) => (
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
-            key={t.id}
             type="button"
-            onClick={() => setTab(t.id)}
-            aria-pressed={tab === t.id}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-bold transition-colors",
-              tab === t.id
-                ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-white"
-                : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200",
-            )}
+            onClick={() => setOpenLessonId(null)}
+            aria-label="Back to lessons"
+            className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
           >
-            {t.label}
+            <ChevronLeft className="w-5 h-5" />
           </button>
-        ))}
-      </div>
-
-      {tab === "pending" ? (
-        <PortalPanel>
-          {/* Filters live in the panel header so the queue below stays quiet */}
-          <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-orange-100 dark:border-stone-700">
-            <label
-              htmlFor="qc-section"
-              className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500"
-            >
-              Section
-            </label>
-            <select
-              id="qc-section"
-              value={sectionId ?? ""}
-              onChange={(e) => onViewSection?.(e.target.value || null)}
-              className="h-9 px-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-[13px] font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
-            >
-              {sectionOptions.map((opt) => (
-                <option key={opt.id || "all"} value={opt.id}>
-                  {opt.name} ({opt.count})
-                </option>
-              ))}
-            </select>
-
-            <span
-              aria-hidden="true"
-              className="hidden sm:block w-px h-5 bg-orange-100 dark:bg-stone-700 mx-1"
-            />
-
-            <div className="flex flex-wrap items-center gap-1.5">
-              {typeOptions.map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setTypeFilter(opt.id)}
-                  aria-pressed={typeFilter === opt.id}
-                  className={cn(
-                    "h-9 px-3 rounded-full text-[12px] font-bold transition-colors",
-                    typeFilter === opt.id
-                      ? "bg-secondary-600 text-white"
-                      : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-orange-200 dark:border-stone-700 hover:border-secondary-400",
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-
-            <span className="ml-auto text-[11px] font-medium text-stone-400 dark:text-stone-500">
-              Oldest first
-            </span>
+          <div className="min-w-0">
+            <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
+              {openItem.title}
+            </h2>
+            <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
+              Week {openItem.week.weekNumber} · {openItem.lesson.title}
+            </p>
           </div>
+          <ManualTypeChips types={openItem.types} className="ml-auto" />
+        </div>
 
-          {pending.length > 0 ? (
+        <div className="flex gap-1 p-1 bg-stone-100 dark:bg-stone-800 rounded-xl w-fit">
+          {[
+            { id: "pending", label: `Needs Grading (${pendingOldestFirst.length})` },
+            { id: "graded", label: `Graded (${graded.length})` },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setTab(t.id);
+                setOpenId(null);
+              }}
+              aria-pressed={tab === t.id}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-bold transition-colors",
+                tab === t.id
+                  ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-white"
+                  : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <PortalPanel>
+          {list.length > 0 ? (
             <ul className="divide-y divide-orange-100 dark:divide-stone-700">
-              {pending.map((sub) => {
-                const types = getManualQuestionTypes(sub.lessonId, getQuiz);
+              {list.map((sub) => {
                 const isOpen = openId === sub.id;
+                const isPending = sub.status === "pending";
                 const snippet = isOpen
                   ? getAnswerSnippet(sub.lessonId, sub.answers, getQuiz)
                   : null;
@@ -2259,7 +2259,14 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
                 return (
                   <li key={sub.id}>
                     <div className="flex items-center gap-3 pl-5 pr-3 py-2.5 min-h-[56px] hover:bg-orange-50/60 dark:hover:bg-stone-700/40 transition-colors">
-                      <span className="w-8 h-8 shrink-0 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-200 flex items-center justify-center font-black text-[11px]">
+                      <span
+                        className={cn(
+                          "w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-black text-[11px]",
+                          isPending
+                            ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-200"
+                            : "bg-secondary-100 dark:bg-secondary-950 text-secondary-700 dark:text-secondary-200",
+                        )}
+                      >
                         {sub.student.charAt(0)}
                       </span>
 
@@ -2273,33 +2280,39 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
                           {sub.student}
                         </span>
                         <span className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400">
-                          <span className="truncate">{sub.quiz}</span>
+                          <span className="truncate">{sub.section}</span>
                           <span aria-hidden="true">·</span>
                           <span className="shrink-0">{sub.time}</span>
                         </span>
                       </button>
 
-                      <div className="hidden md:flex items-center gap-1 shrink-0">
-                        {types.map((type) => (
+                      {isPending ? (
+                        <Button
+                          size="sm"
+                          className="shrink-0 text-[12px] px-3 py-1.5"
+                          onClick={() => onGrade(sub)}
+                        >
+                          Grade
+                        </Button>
+                      ) : (
+                        <span className="shrink-0 flex items-center gap-2 text-[12px] font-bold">
                           <span
-                            key={type}
                             className={cn(
-                              "px-1.5 py-0.5 rounded text-[11px] font-bold",
-                              MANUAL_TYPE_META[type]?.className,
+                              "font-black tabular-nums",
+                              sub.score >= sub.total * 0.8
+                                ? "text-secondary-600"
+                                : sub.score >= sub.total * 0.6
+                                  ? "text-accent-600"
+                                  : "text-red-600",
                             )}
                           >
-                            {MANUAL_TYPE_META[type]?.label ?? type}
+                            {sub.score}/{sub.total}
                           </span>
-                        ))}
-                      </div>
-
-                      <Button
-                        size="sm"
-                        className="shrink-0 text-[12px] px-3 py-1.5"
-                        onClick={() => onGrade(sub)}
-                      >
-                        Grade
-                      </Button>
+                          <span className="px-2 py-0.5 rounded-full bg-secondary-50 dark:bg-secondary-950 text-secondary-700 dark:text-secondary-200 border border-secondary-200 dark:border-secondary-800">
+                            Graded
+                          </span>
+                        </span>
+                      )}
                     </div>
 
                     {/* The response only renders once the teacher asks for it */}
@@ -2330,238 +2343,130 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
             <div className="px-5 py-12 text-center">
               <CheckCircle2 className="w-8 h-8 mx-auto text-secondary-400" />
               <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
-                {pendingAll.length === 0
-                  ? "All caught up"
-                  : "Nothing matches this filter"}
+                {tab === "pending" ? "All caught up" : "Nothing graded yet"}
               </p>
               <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
-                {pendingAll.length === 0
-                  ? "No submissions are waiting for review."
-                  : "Try another question type or section."}
+                {tab === "pending"
+                  ? "No submissions for this lesson are waiting for review."
+                  : "Graded submissions for this lesson will appear here."}
               </p>
             </div>
           )}
         </PortalPanel>
-      ) : (
-        /* All Submissions table */
-        <PortalPanel>
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
-                  {[
-                    "Student",
-                    "Quiz",
-                    "Type",
-                    "Score",
-                    "Status",
-                    "Submitted",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-                {scoped.length > 0 ? (
-                  scoped.map((sub) => {
-                    const types = getManualQuestionTypes(sub.lessonId, getQuiz);
-                    return (
-                      <tr
-                        key={sub.id}
-                        className="hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
-                      >
-                        <td className="px-5 py-2.5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                              {sub.student.charAt(0)}
-                            </div>
-                            <span className="text-sm font-bold text-stone-900 dark:text-white">
-                              {sub.student}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-2.5 text-sm text-stone-600 dark:text-stone-400">
-                          {sub.quiz}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          <div className="flex gap-1 flex-wrap">
-                            {types.map((type) => {
-                              const meta = MANUAL_TYPE_META[type] ?? {};
-                              return (
-                                <span
-                                  key={type}
-                                  className={cn(
-                                    "px-1.5 py-0.5 rounded text-xs font-bold",
-                                    meta.className,
-                                  )}
-                                >
-                                  {meta.label ?? type}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </td>
-                        <td className="px-5 py-2.5">
-                          {sub.status === "graded" ? (
-                            <span
-                              className={cn(
-                                "text-sm font-black",
-                                sub.score >= sub.total * 0.8
-                                  ? "text-secondary-600"
-                                  : sub.score >= sub.total * 0.6
-                                    ? "text-accent-600"
-                                    : "text-red-600",
-                              )}
-                            >
-                              {sub.score}/{sub.total}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-stone-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={
-                                sub.status === "graded"
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              className={cn(
-                                "text-xs",
-                                sub.status === "pending" &&
-                                  "text-amber-600 border-amber-300",
-                              )}
-                            >
-                              {sub.status === "graded" ? "Graded" : "Pending"}
-                            </Badge>
-                            {sub.status === "pending" && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-xs px-2 h-7"
-                                onClick={() => onGrade(sub)}
-                              >
-                                Grade
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-2.5 text-sm text-stone-500 dark:text-stone-400">
-                          {sub.time}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-6 py-8 text-sm text-stone-400 text-center"
-                    >
-                      No submissions yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      </div>
+    );
+  }
+
+  // ── Lesson list ────────────────────────────────────────────────────────────
+  const renderLessonRow = (item) => {
+    const total = item.subs.length;
+    return (
+      <RosterRow
+        key={item.lesson.id}
+        title={item.title}
+        meta={[
+          `Week ${item.week.weekNumber} · ${item.lesson.title}`,
+          `${total} ${total === 1 ? "submission" : "submissions"}`,
+        ]}
+        onOpen={() => openLesson(item.lesson.id)}
+        openLabel={`Open ${item.title}`}
+        trailing={
+          <span className="flex items-center gap-2 shrink-0">
+            <ManualTypeChips types={item.types} className="hidden md:flex" />
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded-full text-[11px] font-bold border whitespace-nowrap",
+                item.pending.length > 0
+                  ? "bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-200 border-amber-200 dark:border-amber-800"
+                  : total > 0
+                    ? "bg-secondary-50 dark:bg-secondary-950 text-secondary-700 dark:text-secondary-200 border-secondary-200 dark:border-secondary-800"
+                    : "bg-stone-50 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border-stone-200 dark:border-stone-700",
+              )}
+            >
+              {item.pending.length > 0
+                ? `${item.pending.length} to grade`
+                : total > 0
+                  ? "All graded"
+                  : "No submissions"}
+            </span>
+          </span>
+        }
+      />
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <TabHead
+        title="Quiz Checking"
+        subtitle="Lessons with essay, short-answer, or case-study questions"
+      >
+        {pendingTotal > 0 && (
+          <span className="inline-flex items-center gap-2 h-9 px-3 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-[13px] font-bold text-amber-700 dark:text-amber-200">
+            <AlertCircle className="w-4 h-4" aria-hidden="true" />
+            {pendingTotal} awaiting review
+          </span>
+        )}
+      </TabHead>
+
+      <PortalPanel>
+        <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-orange-100 dark:border-stone-700">
+          <label
+            htmlFor="qc-section"
+            className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500"
+          >
+            Section
+          </label>
+          <select
+            id="qc-section"
+            value={sectionId ?? ""}
+            onChange={(e) => onViewSection?.(e.target.value || null)}
+            className="h-9 px-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-[13px] font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+          >
+            {sectionOptions.map((opt) => (
+              <option key={opt.id || "all"} value={opt.id}>
+                {opt.name} ({opt.count})
+              </option>
+            ))}
+          </select>
+          <span className="ml-auto text-[11px] font-medium text-stone-400 dark:text-stone-500">
+            {checkLessons.length}{" "}
+            {checkLessons.length === 1 ? "lesson" : "lessons"} to check by hand
+          </span>
+        </div>
+
+        {checkLessons.length === 0 ? (
+          <div className="px-5 py-12 text-center">
+            <CheckCircle2 className="w-8 h-8 mx-auto text-secondary-400" />
+            <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+              No quizzes need manual checking
+            </p>
+            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+              Add an essay, short-answer, or case-study question to a quiz and
+              its lesson will appear here.
+            </p>
           </div>
-          {/* Mobile cards */}
-          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
-            {scoped.length > 0 ? (
-              scoped.map((sub) => {
-                const types = getManualQuestionTypes(sub.lessonId, getQuiz);
-                return (
-                  <div
-                    key={sub.id}
-                    className="px-5 py-4 flex gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0 self-center">
-                      {sub.student.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <span className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                          {sub.student}
-                        </span>
-                        {sub.status === "graded" ? (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs shrink-0"
-                          >
-                            Graded
-                          </Badge>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => onGrade(sub)}
-                            className="group inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300 text-amber-600 hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors shrink-0 cursor-pointer"
-                          >
-                            <span className="group-hover:hidden">Pending</span>
-                            <span className="hidden group-hover:inline whitespace-nowrap">
-                              Grade now
-                            </span>
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-xs text-stone-600 dark:text-stone-400 mb-1.5 leading-relaxed  wrap-break-word">
-                        {sub.quiz}
-                      </p>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex gap-1 flex-wrap">
-                          {types.map((type) => {
-                            const meta = MANUAL_TYPE_META[type] ?? {};
-                            return (
-                              <span
-                                key={type}
-                                className={cn(
-                                  "px-1.5 py-0.5 rounded text-xs font-bold",
-                                  meta.className,
-                                )}
-                              >
-                                {meta.label ?? type}
-                              </span>
-                            );
-                          })}
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0 text-xs">
-                          {sub.status === "graded" ? (
-                            <span
-                              className={cn(
-                                "font-black",
-                                sub.score >= sub.total * 0.8
-                                  ? "text-secondary-600"
-                                  : sub.score >= sub.total * 0.6
-                                    ? "text-accent-600"
-                                    : "text-red-600",
-                              )}
-                            >
-                              {sub.score}/{sub.total}
-                            </span>
-                          ) : (
-                            <span className="text-stone-400">—</span>
-                          )}
-                          <span className="text-stone-400">{sub.time}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="px-5 py-8 text-sm text-stone-400 text-center">
-                No submissions yet.
-              </p>
-            )}
-          </div>
-        </PortalPanel>
-      )}
+        ) : (
+          [
+            { id: "needs", label: "Needs grading", items: needsGrading },
+            { id: "done", label: "All caught up", items: caughtUp },
+          ]
+            .filter((group) => group.items.length > 0)
+            .map((group) => (
+              <section
+                key={group.id}
+                className="border-b border-orange-100 dark:border-stone-700 last:border-b-0"
+              >
+                <h3 className="px-5 pt-4 pb-2 text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
+                  {group.label} · {group.items.length}
+                </h3>
+                <RosterList className="border-t border-orange-100 dark:border-stone-700">
+                  {group.items.map(renderLessonRow)}
+                </RosterList>
+              </section>
+            ))
+        )}
+      </PortalPanel>
     </div>
   );
 }
