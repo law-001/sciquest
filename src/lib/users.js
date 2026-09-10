@@ -2,7 +2,7 @@ import { normalizeAvatarStyle } from './avatar-personalization'
 import { getAvatar } from './avatars'
 import { supabase } from './supabase'
 
-const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, created_at'
+const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, avatar, avatar_style, created_at'
 const STAFF_COLUMNS = 'id, role, first_name, last_name, email, created_at'
 const ROLE_LABELS = { admin: 'Admin', teacher: 'Teacher', student: 'Student' }
 
@@ -38,6 +38,9 @@ function toUserRow(row, role) {
     status: 'Active',
     joined: relativeTime(row.created_at),
     section: row.section || '—',
+    // Staff rows have no picture columns; <Avatar> falls back to the initial.
+    avatar: row.avatar ?? null,
+    avatarStyle: row.avatar_style,
   }
 }
 
