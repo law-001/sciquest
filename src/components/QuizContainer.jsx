@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
+  AlertCircle,
   ArrowLeft,
   CheckCircle2,
   Clock,
@@ -151,6 +152,22 @@ function formatRemaining(totalSec) {
   return `${m}:${String(r).padStart(2, "0")}`;
 }
 
+// A personal quiz window can run for days, so this grows past m:ss.
+function formatCloseCountdown(totalSec) {
+  const s = Math.max(0, Math.floor(totalSec));
+  const days = Math.floor(s / 86400);
+  const hours = Math.floor((s % 86400) / 3600);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) {
+    const m = Math.floor((s % 3600) / 60);
+    return `${hours}:${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  }
+  return formatRemaining(s);
+}
+
+// When the floating "quiz closes in" warning appears.
+const CLOSE_WARNING_SEC = 5 * 60;
+
 // Confetti positions computed at module load — not during render — so Math.random is safe here.
 const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
   left: `${Math.random() * 100}%`,
@@ -200,6 +217,9 @@ export function QuizContainer({
   timeLimitSeconds = null,
   maxAttempts = null,
   showCorrectAnswers = true,
+  // ISO end of the student's personal access window (teacher re-opened a
+  // closed quiz for them). null = no end time applies.
+  closesAt = null,
 }) {
   const { questions } = quiz;
   const { user } = useAuth();
@@ -233,6 +253,9 @@ export function QuizContainer({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [submittedResult, setSubmittedResult] = useState(null);
+  // "closed" = server refused the attempt (quiz no longer open to this
+  // student); "failed" = any other save error. null = saved or not yet known.
+  const [saveError, setSaveError] = useState(null);
 
   // Auto-save answers on every change
   useEffect(() => {
@@ -269,21 +292,40 @@ export function QuizContainer({
       ? Math.max(0, timeLimitSeconds - Math.floor((now - startedAt) / 1000))
       : null;
 
+  const closesAtMs = closesAt ? Date.parse(closesAt) : NaN;
+  const hasCloseTime = Number.isFinite(closesAtMs);
+  const closeRemainingSec = hasCloseTime
+    ? Math.max(0, Math.floor((closesAtMs - now) / 1000))
+    : null;
+  const isClosedNow = closeRemainingSec === 0;
+
+  // Only auto-submit a quiz the student actually had open while the window
+  // was live. Someone arriving after it ended (e.g. a refresh restoring the
+  // quiz page) gets the "closed" screen, not an instant empty submission.
+  const [wasOpenOnScreen, setWasOpenOnScreen] = useState(false);
+  if (!wasOpenOnScreen && closeRemainingSec > 0) setWasOpenOnScreen(true);
+
   // Keep submit handler reachable from the timer effect without re-binding
   // it every render (which would tear down the interval).
   const handleSubmitRef = useRef(null);
 
   useEffect(() => {
-    if (!hasTimer || isSubmitted || attemptsExhausted) return;
+    if ((!hasTimer && !hasCloseTime) || isSubmitted || attemptsExhausted) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [hasTimer, isSubmitted, attemptsExhausted]);
+  }, [hasTimer, hasCloseTime, isSubmitted, attemptsExhausted]);
 
   useEffect(() => {
     if (remainingSec === 0 && !isSubmitted && !attemptsExhausted) {
-      handleSubmitRef.current?.(true);
+      handleSubmitRef.current?.("time");
     }
   }, [remainingSec, isSubmitted, attemptsExhausted]);
+
+  useEffect(() => {
+    if (isClosedNow && wasOpenOnScreen && !isSubmitted && !attemptsExhausted) {
+      handleSubmitRef.current?.("closed");
+    }
+  }, [isClosedNow, wasOpenOnScreen, isSubmitted, attemptsExhausted]);
 
   const answeredCount = questions.filter((q) =>
     isAnswered(q, answers[q.id]),
@@ -294,7 +336,9 @@ export function QuizContainer({
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
   };
 
-  const handleSubmit = (autoSubmitted = false) => {
+  // `autoSubmitReason`: null for a manual submit, "time" when the quiz time
+  // limit ran out, "closed" when the student's personal window ended.
+  const handleSubmit = (autoSubmitReason = null) => {
     if (attemptsExhausted) return;
 
     const earned = questions.reduce(
@@ -315,7 +359,8 @@ export function QuizContainer({
       autoMaxScore: autoMax,
       xpEarned,
       pendingGradeCount: pending,
-      autoSubmitted,
+      autoSubmitted: autoSubmitReason !== null,
+      autoSubmitReason,
       // Snapshot of what the student submitted, keyed by question id —
       // persisted so a teacher can review it later when grading.
       answers,
@@ -331,8 +376,22 @@ export function QuizContainer({
       /* ignore */
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setSaveError(null);
     // XP / persistence fires here on submit — not when leaving the results screen.
-    onComplete?.(result);
+    // onComplete returns the save promise for students; a rejection means the
+    // attempt never reached the gradebook.
+    const saving = onComplete?.(result);
+    saving?.catch?.((err) => {
+      // Put the answers back so nothing is lost — the draft reloads the next
+      // time the quiz opens (e.g. after the teacher re-opens it).
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(answers));
+      } catch {
+        /* quota */
+      }
+      setShowConfetti(false);
+      setSaveError(err?.code === "42501" ? "closed" : "failed");
+    });
   };
 
   useEffect(() => {
@@ -344,7 +403,7 @@ export function QuizContainer({
   };
 
   const handleRetry = () => {
-    if (attemptsExhausted) return;
+    if (attemptsExhausted || isClosedNow) return;
     setAnswers({});
     setIsSubmitted(false);
     setShowConfetti(false);
@@ -433,13 +492,29 @@ export function QuizContainer({
           </h2>
           {submittedResult?.autoSubmitted && (
             <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">
-              Auto-submitted — time ran out
+              {submittedResult.autoSubmitReason === "closed"
+                ? "Auto-submitted — the quiz closed"
+                : "Auto-submitted — time ran out"}
             </p>
           )}
           {lesson && (
             <p className="text-stone-400 text-sm font-bold uppercase tracking-wider mb-6">
               {lesson.title}
             </p>
+          )}
+
+          {saveError && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 mb-6 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-left text-sm font-bold text-red-700 dark:text-red-300"
+            >
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>
+                {saveError === "closed"
+                  ? "Not saved — this quiz closed before your answers reached the server. Your answers are kept on this device; ask your teacher to re-open the quiz."
+                  : "Not saved — we couldn't reach the server. Your answers are kept on this device; open the quiz again to resubmit."}
+              </span>
+            </div>
           )}
 
           <div className="rounded-2xl p-6 mb-8 bg-orange-50 dark:bg-stone-700/50 border border-orange-100 dark:border-stone-600">
@@ -456,22 +531,26 @@ export function QuizContainer({
               color={passed ? "secondary" : "primary"}
               size="lg"
             />
-            <div className="flex items-center justify-center gap-2 text-accent-600 font-bold mt-4">
-              <Star className="w-4 h-4 fill-current" />
-              <span>+{xpEarned} XP Earned</span>
-            </div>
-            <p className="text-xs font-bold text-stone-400 mt-2">
-              {isUnlimited
-                ? `Attempt ${priorAttempts} — unlimited attempts`
-                : `Attempt ${Math.min(priorAttempts, attemptCap)} of ${attemptCap}`}
-              {!isUnlimited && attemptsExhausted && " — no attempts left"}
-              {!isUnlimited && !attemptsExhausted && (
-                priorAttempts >= MAX_QUIZ_ATTEMPTS
-                  ? " — no more XP"
-                  : ` — ${attemptsLeft} left (reduced XP)`
-              )}
-              {isUnlimited && priorAttempts >= MAX_QUIZ_ATTEMPTS && " — no more XP"}
-            </p>
+            {!saveError && (
+              <>
+                <div className="flex items-center justify-center gap-2 text-accent-600 font-bold mt-4">
+                  <Star className="w-4 h-4 fill-current" />
+                  <span>+{xpEarned} XP Earned</span>
+                </div>
+                <p className="text-xs font-bold text-stone-400 mt-2">
+                  {isUnlimited
+                    ? `Attempt ${priorAttempts} — unlimited attempts`
+                    : `Attempt ${Math.min(priorAttempts, attemptCap)} of ${attemptCap}`}
+                  {!isUnlimited && attemptsExhausted && " — no attempts left"}
+                  {!isUnlimited && !attemptsExhausted && (
+                    priorAttempts >= MAX_QUIZ_ATTEMPTS
+                      ? " — no more XP"
+                      : ` — ${attemptsLeft} left (reduced XP)`
+                  )}
+                  {isUnlimited && priorAttempts >= MAX_QUIZ_ATTEMPTS && " — no more XP"}
+                </p>
+              </>
+            )}
             {pending > 0 && (
               <p className="text-xs font-bold text-amber-600 mt-3">
                 {pending} {pending === 1 ? "essay" : "essays"} awaiting teacher
@@ -484,7 +563,7 @@ export function QuizContainer({
             <Button variant="primary" onClick={handleDone} size="lg">
               Back to Lessons
             </Button>
-            {!attemptsExhausted && (
+            {!attemptsExhausted && !isClosedNow && !saveError && (
               <Button
                 variant="outline"
                 onClick={handleRetry}
@@ -559,7 +638,33 @@ export function QuizContainer({
     );
   }
 
+  // ── Closed screen — the personal window ended before this visit ─────────────
+  if (isClosedNow && !wasOpenOnScreen) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-4 bg-[#fdf6e3] dark:bg-stone-900">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-5 bg-stone-100 dark:bg-stone-700">
+            <Clock className="w-10 h-10 text-stone-400" />
+          </div>
+          <h2 className="text-2xl font-black text-stone-900 dark:text-stone-100 mb-2">
+            This quiz has closed
+          </h2>
+          <p className="text-stone-500 dark:text-stone-400 font-bold mb-6">
+            The time your teacher gave you for
+            {lesson ? ` "${lesson.title}"` : " this quiz"} has ended. Ask your
+            teacher if you need more time.
+          </p>
+          <Button variant="primary" size="lg" onClick={onExit}>
+            Back to Lessons
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   // ── Quiz screen (single-page) ───────────────────────────────────────────────
+  const showCloseWarning =
+    hasCloseTime && closeRemainingSec > 0 && closeRemainingSec <= CLOSE_WARNING_SEC;
   const xpPossible = autoGradableUnits(questions) * QUIZ_XP_PER_CORRECT;
 
   return (
@@ -664,6 +769,34 @@ export function QuizContainer({
               </div>
             )}
 
+            {hasCloseTime && (
+              <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
+                <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">
+                  Quiz Closes In
+                </div>
+                <span
+                  role="timer"
+                  aria-live={closeRemainingSec <= 30 ? "assertive" : "off"}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tabular-nums border",
+                    closeRemainingSec <= 60
+                      ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700 motion-safe:animate-pulse"
+                      : closeRemainingSec <= CLOSE_WARNING_SEC
+                        ? "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700"
+                        : "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700",
+                  )}
+                  title="Time until the quiz closes"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  {formatCloseCountdown(closeRemainingSec)}
+                </span>
+                <p className="mt-2 text-[11px] font-bold leading-snug text-stone-500 dark:text-stone-400">
+                  Your answers will be submitted automatically when this
+                  reaches 0:00.
+                </p>
+              </div>
+            )}
+
             <div className="px-4 py-3 rounded-2xl bg-white/70 dark:bg-stone-800/60 backdrop-blur-md border border-orange-200/60 dark:border-stone-700 shadow-sm">
               <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">
                 XP Possible
@@ -715,7 +848,7 @@ export function QuizContainer({
           <Button
             variant="primary"
             size="lg"
-            onClick={() => handleSubmit(false)}
+            onClick={() => handleSubmit()}
             disabled={answeredCount === 0 || attemptsExhausted}
             rightIcon={<CheckCircle2 className="w-5 h-5" />}
             className="ml-auto px-8"
@@ -724,6 +857,33 @@ export function QuizContainer({
           </Button>
         </div>
       </div>
+
+      {/* Floating warning for the last few minutes of a personal window —
+          fixed so it stays visible wherever the student has scrolled. The
+          spacer lets the Submit footer scroll clear of it. */}
+      {showCloseWarning && (
+        <>
+          <div aria-hidden="true" className="h-24" />
+          <div
+            className={cn(
+              "fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-md flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg",
+              closeRemainingSec <= 60
+                ? "bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800"
+                : "bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+            )}
+          >
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <p className="text-sm font-bold leading-snug">
+              Quiz closes in{" "}
+              <span className="tabular-nums">
+                {formatCloseCountdown(closeRemainingSec)}
+              </span>
+              . Your answers will be submitted automatically when time runs
+              out.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

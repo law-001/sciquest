@@ -14,6 +14,7 @@ export function LessonContentPage({
   onInteractionComplete,
   onLessonSelect,
   quizLocked = false,
+  personalQuizGrant = null,
 }) {
   const { weeks } = useLessonsData();
   const week =
@@ -36,6 +37,7 @@ export function LessonContentPage({
       onInteractionComplete={onInteractionComplete}
       onLessonSelect={onLessonSelect}
       quizLocked={quizLocked}
+      personalQuizGrant={personalQuizGrant}
     />
   );
 }
