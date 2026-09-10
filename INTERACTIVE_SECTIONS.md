@@ -248,6 +248,22 @@ Shape letters refer to the table above. **G** = worth reaching for GSAP.
 *`lesson-6` does not exist — week 2 has only lessons 4 and 5 after a content merge. The
 unused `lesson6hero` import still sits at `src/data/lessonsweek-02.js:7`.*
 
+#### Second interactives, via `customWidget`
+
+`signature` is one per lesson and both week 2 lessons already use theirs, so a lesson that
+earns a second simulation gets it as a `customWidget` block placed inside `layout[]`. Same
+`{ onSolved }` contract, same `SimLayout`, same design rules — the only differences are
+that the host is `CustomWidgetSection` (which *does* use `InteractiveFrame`, so the block
+fades in on scroll) and that a teacher can move or delete it.
+
+| Lesson | Widget id | What runs on screen | Done when | Shape |
+|---|---|---|---|---|
+| ✅ **L4** | `pour-test` | 50 mL of water poured into 50 mL of alcohol measures about 96 mL. A dashed line marks where 100 mL would have reached; a magnifier lens zooms into the real simulated particles and the small alcohol beads are visibly sitting in the gaps between the large water ones. The vessel is a volumetric flask because only a narrow neck makes a 4 mL shortfall visible | Both poured full, shortfall read, magnifier used, partial mix compared | B |
+| ✅ **L5** | `container-test` | Ice, water and steam moved between a beaker, a conical flask and a syringe. The liquid surface is found by integrating the container's own cross-section, so the same 40 mL genuinely stands twice as tall in the narrow syringe. The plunger compresses the gas and stops dead against the liquid | All three samples seen in all three containers, plunger pushed on gas and on liquid | B |
+
+Register these in `interactive/customWidgets.js` (not `signatureWidgets.js`) — that registry
+is the teacher's radio list, and a handful of entries keeps it usable.
+
 ### Week 3 — Changes in State of Matter — **next up**
 
 | Lesson | Widget | What runs on screen | Done when | Shape |

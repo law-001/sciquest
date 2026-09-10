@@ -106,6 +106,31 @@ create table if not exists public.student_achievements (
 create index if not exists student_achievements_student_idx
   on public.student_achievements(student_id);
 
+-- 3d. QUIZ STUDENT ACCESS TABLE
+--     Per-student re-open of a quiz that is closed for the class (make-up /
+--     deadline extension). `open_until` null = until the teacher removes it.
+--     Added in migrations/20260910000000_quiz_student_access.sql.
+create table if not exists public.quiz_student_access (
+  lesson_id   text not null,
+  student_id  uuid not null references public.students(id) on delete cascade,
+  open_until  timestamptz,
+  granted_by  uuid references public.staff(id) on delete set null default auth.uid(),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  primary key (lesson_id, student_id)
+);
+
+-- 3e. CURRICULUM LESSONS TABLE
+--     Which week each SEED lesson belongs to, so the server never trusts the
+--     week_id a client sends with a quiz attempt. Custom lessons carry week_id
+--     in `lessons`, which wins. Rows are seeded by
+--     migrations/20260910010000_enforce_quiz_availability.sql — adding a seed
+--     lesson means adding its row in a new migration. Read-only to clients.
+create table if not exists public.curriculum_lessons (
+  lesson_id  text primary key,
+  week_id    text not null
+);
+
 -- ============================================================
 -- 4. TRIGGER: auto-create the correct row on new auth user
 --    Reads role from user_metadata.role:
@@ -194,12 +219,73 @@ create policy "auth_read_progress"
   to authenticated
   using (true);
 
--- Quiz attempts: students can insert + read their own; all authenticated can read
--- (teachers/admins need read access for portals).
+-- Quiz availability, enforced server-side (migrations/20260910010000_enforce_quiz_availability.sql).
+-- Mirrors isQuizLocked in src/App.jsx: open to the class, or the student holds a
+-- grant that hasn't ended (+2 min grace for auto-submit). course_publish_state is
+-- defined in migrations/20260524000000_course_settings.sql.
+create or replace function public.quiz_week_for_lesson(p_lesson_id text)
+returns text
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+declare
+  v_week text;
+begin
+  select week_id into v_week from public.lessons where id = p_lesson_id;
+  if v_week is null then
+    select week_id into v_week from public.curriculum_lessons where lesson_id = p_lesson_id;
+  end if;
+  return v_week;
+end;
+$$;
+
+create or replace function public.is_quiz_open_for(
+  p_student_id uuid,
+  p_lesson_id  text,
+  p_week_id    text
+)
+returns boolean
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+declare
+  v_week      text := coalesce(public.quiz_week_for_lesson(p_lesson_id), p_week_id);
+  v_published text[];
+  v_hidden    text[];
+  v_closed    boolean;
+begin
+  select week_ids into v_published from public.course_publish_state where scope = 'quizzes';
+  select week_ids into v_hidden    from public.course_publish_state where scope = 'quizzes-individual';
+
+  v_closed :=
+       (v_published is not null and not coalesce(v_week = any(v_published), false))
+    or (v_hidden is not null and coalesce(p_lesson_id = any(v_hidden), false));
+
+  if not v_closed then
+    return true;
+  end if;
+
+  return exists (
+    select 1 from public.quiz_student_access
+    where lesson_id = p_lesson_id
+      and student_id = p_student_id
+      and (open_until is null or open_until + interval '2 minutes' > now())
+  );
+end;
+$$;
+
+-- Quiz attempts: students can insert their own, and only while the quiz is
+-- open to them; all authenticated can read (teachers/admins need read access
+-- for portals).
 create policy "own_attempt_insert"
   on public.quiz_attempts for insert
   to authenticated
-  with check (auth.uid() = student_id);
+  with check (
+    auth.uid() = student_id
+    and public.is_quiz_open_for(auth.uid(), lesson_id, week_id)
+  );
 
 create policy "auth_read_attempts"
   on public.quiz_attempts for select
@@ -224,6 +310,28 @@ create policy "auth_read_achievements"
   on public.student_achievements for select
   to authenticated
   using (true);
+
+-- Curriculum lessons: reference data, readable by everyone signed in, written only by migrations.
+alter table public.curriculum_lessons enable row level security;
+
+create policy "anyone_read_curriculum_lessons"
+  on public.curriculum_lessons for select
+  to authenticated
+  using (true);
+
+-- Quiz student access: a student reads only their own grants; staff manage all.
+alter table public.quiz_student_access enable row level security;
+
+create policy "own_read_quiz_access"
+  on public.quiz_student_access for select
+  to authenticated
+  using (auth.uid() = student_id);
+
+create policy "staff_all_quiz_access"
+  on public.quiz_student_access for all
+  to authenticated
+  using      (exists (select 1 from public.staff where id = auth.uid()))
+  with check (exists (select 1 from public.staff where id = auth.uid()));
 
 -- ============================================================
 -- 7. READABLE VIEWS
