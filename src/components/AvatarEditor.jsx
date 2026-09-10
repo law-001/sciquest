@@ -1,11 +1,10 @@
-import { useRef, useState } from 'react';
-import { Check, Image as ImageIcon, Maximize2, MoveHorizontal, MoveVertical, RotateCw, Smile, Sparkles, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, Image as ImageIcon, Maximize2, MoveHorizontal, MoveVertical, RotateCw, Smile, Sparkles, Trash2 } from 'lucide-react';
 import { Avatar, AvatarBackgroundPreview, AvatarSticker } from './Avatar';
 import { CHARACTER_AVATARS } from '../lib/avatars';
 import { AVATAR_BACKGROUNDS, AVATAR_STICKERS, MAX_STICKERS, STICKER_MAX, STICKER_MIN, constrainSticker, normalizeAvatarStyle, wrapDegrees } from '../lib/avatar-personalization';
 
 const PREVIEW_SIZE = 208;
-const CONTROL = 'min-h-11 rounded-xl border border-stone-300 dark:border-stone-600 px-3 py-2 text-sm font-bold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-primary-500 disabled:opacity-40';
 const TILE = 'relative min-h-11 flex flex-col items-center gap-1.5 rounded-xl border p-2 text-xs font-bold text-stone-700 dark:text-stone-200 focus-visible:outline-2 focus-visible:outline-primary-500';
 const TILE_ON = 'border-primary-500 bg-primary-50 dark:bg-primary-500/15 text-stone-900 dark:text-white';
 const TILE_OFF = 'border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800';
@@ -44,9 +43,18 @@ export function AvatarEditor({ avatarId, onAvatarChange, avatarStyle, onStyleCha
   const previewRef = useRef(null);
   const dragRef = useRef(null);
   const style = normalizeAvatarStyle(avatarStyle);
-  const selected = style.stickers.find((s) => s.id === selectedId);
-  const selectedLabel = AVATAR_STICKERS.find((s) => s.id === selected?.stickerId)?.label;
   const updateSticker = (id, patch) => onStyleChange({ ...style, stickers: style.stickers.map((s) => s.id === id ? constrainSticker({ ...s, ...patch }) : s) });
+
+  // Pressing anywhere except a sticker or its handles deselects, so
+  // the handles don't linger over the avatar once you've moved on.
+  useEffect(() => {
+    if (!selectedId) return;
+    const handlePointerDown = (event) => {
+      if (!event.target.closest?.('[data-keeps-sticker-selection]')) setSelectedId(null);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [selectedId]);
 
   function addSticker(stickerId) {
     if (style.stickers.length >= MAX_STICKERS) return;
@@ -133,7 +141,7 @@ export function AvatarEditor({ avatarId, onAvatarChange, avatarStyle, onStyleCha
           const isActive = s.id === selectedId;
           // The frame sits exactly where <Avatar> paints the sticker, so the
           // handles rotate with the art instead of staying screen-aligned.
-          return <div key={s.id} className="absolute" style={{ zIndex: isActive ? MAX_STICKERS + 1 : i + 1, left: `${s.x}%`, top: `${s.y}%`, width: `${s.width}%`, height: `${s.height}%`, transform: `translate(-50%, -50%) rotate(${s.rotation}deg)` }}>
+          return <div key={s.id} data-keeps-sticker-selection className="absolute" style={{ zIndex: isActive ? MAX_STICKERS + 1 : i + 1, left: `${s.x}%`, top: `${s.y}%`, width: `${s.width}%`, height: `${s.height}%`, transform: `translate(-50%, -50%) rotate(${s.rotation}deg)` }}>
             <button type="button"
               aria-label={`${label}. Drag to move, or use arrow keys.`}
               aria-pressed={isActive}
@@ -168,7 +176,7 @@ export function AvatarEditor({ avatarId, onAvatarChange, avatarStyle, onStyleCha
             {isActive && <button type="button" title="Remove"
               aria-label={`Remove ${label}`}
               className={`${HANDLE} -left-3 -top-3 bg-rose-500`}
-              onClick={() => removeSticker(s.id)}><X className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" /></button>}
+              onClick={() => removeSticker(s.id)}><Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} aria-hidden="true" /></button>}
           </div>;
         })}
       </div>
@@ -220,29 +228,6 @@ export function AvatarEditor({ avatarId, onAvatarChange, avatarStyle, onStyleCha
             <span className="leading-tight text-center">{s.label}</span>
           </button>)}
         </div>
-        {style.stickers.length >= MAX_STICKERS && <p className="text-sm text-stone-600 dark:text-stone-300">Your sticker space is full. Remove one to try another.</p>}
-
-        {style.stickers.length > 0 && <div className="space-y-3 border-t border-stone-200 dark:border-stone-700 pt-3">
-          <div className="flex flex-wrap gap-2" aria-label="Select a sticker to edit">
-            {style.stickers.map((s, i) => <button type="button" key={s.id} aria-pressed={s.id === selectedId} onClick={() => setSelectedId(s.id)}
-              className={`${CONTROL} flex items-center gap-2 ${s.id === selectedId ? 'ring-2 ring-primary-500' : ''}`}>
-              <span className="w-5 h-5" aria-hidden="true"><AvatarSticker stickerId={s.stickerId} /></span>
-              {AVATAR_STICKERS.find((item) => item.id === s.stickerId)?.label} {i + 1}
-            </button>)}
-          </div>
-          {selected && <div className="rounded-xl bg-stone-100 dark:bg-stone-800 p-4 space-y-3">
-            <p className="text-sm font-bold text-stone-900 dark:text-white">Editing {selectedLabel}</p>
-            <p className="text-xs text-stone-600 dark:text-stone-300">On the preview: drag the middle to move, the round handles to rotate, stretch or zoom, and the red X to remove.</p>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {[['width', 'Width', STICKER_MIN, STICKER_MAX], ['height', 'Height', STICKER_MIN, STICKER_MAX], ['rotation', 'Rotation', -180, 180], ['x', 'Left / right', 0, 100], ['y', 'Up / down', 0, 100]].map(([key, label, min, max]) => <label key={key} className="text-xs font-bold text-stone-700 dark:text-stone-200">{label}: {Math.round(selected[key])}{key === 'rotation' ? '°' : '%'}<input aria-label={`${selectedLabel} ${label}`} type="range" min={min} max={max} step="1" value={selected[key]} onChange={(e) => updateSticker(selected.id, { [key]: Number(e.target.value) })} className="block w-full h-11 accent-orange-500" /></label>)}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" className={CONTROL} onClick={() => onStyleChange({ ...style, stickers: [...style.stickers.filter((s) => s.id !== selectedId), selected] })}>Bring to front</button>
-              <button type="button" className={CONTROL} onClick={() => removeSticker(selectedId)}>Remove sticker</button>
-            </div>
-          </div>}
-          <button type="button" className={CONTROL} onClick={() => { onStyleChange({ ...style, stickers: [] }); setSelectedId(null); setAnnouncement('All stickers removed.'); }}>Clear all stickers</button>
-        </div>}
       </div>}
 
       <p className="shrink-0 text-xs text-stone-500 dark:text-stone-400">Nothing changes on your profile until you save.</p>
