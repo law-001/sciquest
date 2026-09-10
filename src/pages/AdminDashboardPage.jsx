@@ -408,7 +408,6 @@ function DashboardTab({
       <div className="anim-ribbon">
         <MetricRibbon
           accent="primary"
-          eyebrow="Live"
           title="Control Center"
           subtitle={`${today} · signed in as ${adminName}`}
           metrics={metrics}

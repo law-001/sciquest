@@ -152,5 +152,15 @@
 - Removed the flat "Needs Grading" queue, the question-type filter, and the "All Submissions" table (which also listed auto-graded quizzes). The section selector with per-section pending counts is kept.
 - New small `ManualTypeChips` component for the type labels, used in both views.
 
+## VERSION_19
+- Removed the pinging teal dot and "Live" label from the dashboard header (`src/components/portal/MetricRibbon.jsx`), shown on the admin Control Center and the teacher Teaching Desk.
+- Dropped the now-unused `eyebrow` prop from `MetricRibbon` and from both callers (`AdminDashboardPage.jsx`, `TeacherPortalPage.jsx`). The title's `mt-1.5` top margin went with it so the title sits at the top of the block.
+
+## VERSION_20
+- **Gradebook student record: Game Performance beside Quiz Performance** (`GradebookSlot` in `src/pages/TeacherPortalPage.jsx`). Two columns from the `lg` breakpoint up, stacked on smaller screens.
+- Game Performance lists every game with its best result, attempt count and a bar, plus a footer with total stars and games played. Game results are fetched for the open student only (`fetchGameProgressForStudents`), with loading and error states.
+- New `getGameScore()` + `GAME_SCORE_RULES`: level games score stars earned out of `totalLevels × 3`; Mystery Lab out of 9 stars; Matter State Sandbox as challenges done out of 8.
+- **Score is now the primary figure** in both panels: quiz rows lead with "4 / 10 pts" (coloured by grade) with the percentage small beside it; game rows lead with "7 / 9 stars". The quiz footer now shows total points ("12 / 40 pts") with the average % and descriptor as the secondary line.
+
 ---
-Staged changes: feat(teacher): organise Quiz Checking by lesson and list only lessons that need manual grading
+Staged changes: feat(gradebook): show game performance beside quiz performance and lead with scores instead of percentages
