@@ -1,3 +1,5 @@
+import { normalizeAvatarStyle } from './avatar-personalization'
+import { getAvatar } from './avatars'
 import { supabase } from './supabase'
 
 const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, created_at'
@@ -137,16 +139,19 @@ export async function fetchStudents() {
 
 // Updates the signed-in student's own editable fields. RLS
 // (own_student_update) restricts this to their own row.
-export async function updateStudentProfile(studentId, { firstName, lastName, avatar }) {
+export async function updateStudentProfile(studentId, { firstName, lastName, avatar, avatarStyle }) {
   if (!studentId) return
   const patch = { first_name: firstName, last_name: lastName }
   // Only touch the avatar column when the caller supplies one, so name-only
   // edits don't wipe a previously chosen avatar.
-  if (avatar !== undefined) patch.avatar = avatar
+  if (avatar !== undefined) patch.avatar = getAvatar(avatar)?.id ?? null
+  if (avatarStyle !== undefined) patch.avatar_style = normalizeAvatarStyle(avatarStyle)
   const { error } = await supabase
     .from('students')
     .update(patch)
     .eq('id', studentId)
+    .select('id')
+    .single()
   if (error) throw error
 }
 

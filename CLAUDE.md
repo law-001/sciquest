@@ -183,6 +183,33 @@ a new header.
 **Don't render the shell overlay Back button on games that have their own header.**
 Add the game's slug to `GAMES_WITH_OWN_BACK` in [src/pages/GamePlayPage.jsx](src/pages/GamePlayPage.jsx) — otherwise the dark pill overlay stacks on top of the game's own back button.
 
+### Every new game ships a Codex asset prompt
+
+Build the game with plain shapes first (inline SVG / simple canvas drawing), then
+write the art brief to `docs/asset-prompts/<game-slug>.md` so it can be pasted
+straight into Codex. Do this as part of finishing the game, not later.
+
+The prompt must contain:
+
+1. **A table of where each asset is consumed** — file + what it replaces.
+2. **Art direction** — flat vector, outline weight, and the exact hex palette the
+   game already uses (pull the values out of the game's CSS/JSX, don't invent new
+   ones). State that assets must read on both cream `#FBF5E7` and near-black
+   `#0C0A09`.
+3. **Sprite sheets, not loose files** — one SVG per sheet, a fixed grid of equal
+   cells, and an explicit list of `id="<name>"` values per sprite, because the
+   code references those ids. Give each state its own sprite (idle / active /
+   damaged) rather than asking for animation.
+4. **The registry thumbnail** (`src/assets/<game>.svg`, 480 × 320, no text).
+5. **Achievement medals** for the game's keys — 128 × 128, and say to copy an
+   existing medal in `public/achievements/` as the template so the frame and
+   ribbon match.
+6. **Rules** — SVG only, transparent backgrounds, no embedded rasters or fonts,
+   no editor metadata, inline `fill`/`stroke`, and a size budget.
+
+[docs/asset-prompts/plant-cell.md](docs/asset-prompts/plant-cell.md) is the
+worked example — copy its shape.
+
 ---
 
 ## Visual Design Spec

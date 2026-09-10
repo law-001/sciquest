@@ -50,24 +50,22 @@ export default function CellDivisionLab({
 
     setSummary({ stars, accuracy: finalRun.accuracy, problems: finalRun.problems, xpEarned });
 
+    if (stars <= 0) return;
+    const notifyCompletion = () => onProgressUpdate?.({
+      gameId: GAME_ID, challengeId: level.id, levelId: level.id,
+      completed: true, stars, xpEarned, progressSaved: Boolean(studentId),
+    });
     if (studentId) {
       recordCompletion({
         challengeId: level.id,
         score: stars,
         scoreUnit: 'stars',
         metadata: { xpEarned, accuracy: finalRun.accuracy, problems: finalRun.problems.map((p) => p.id) },
-      }).catch(() => { /* the run still ends; the hub just won't show it yet */ });
+      }).then(notifyCompletion).catch((err) => console.error('Failed to save division:', err));
+    } else {
+      notifyCompletion();
     }
 
-    onProgressUpdate?.({
-      gameId: GAME_ID,
-      challengeId: level.id,
-      levelId: level.id,
-      completed: stars > 0,
-      stars,
-      xpEarned,
-      reason: stars > 0 ? undefined : 'divisionFailed',
-    });
   }
 
   let body;

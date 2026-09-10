@@ -1,3 +1,4 @@
+import { AchievementMedal } from "./AchievementMedal";
 import React, { useState, useRef, useEffect } from "react";
 import { Bell, Star, Trophy, Sparkles, X, ChevronRight, ClipboardCheck } from "lucide-react";
 
@@ -15,7 +16,7 @@ function notifMeta(n) {
     return {
       title: n.hidden ? "Hidden Achievement Unlocked" : `Achievement: ${n.label}`,
       sub: n.amount > 0 ? `+${n.amount} XP` : null,
-      icon: <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400" />,
+      icon: n.achievementKey ? <AchievementMedal achievementKey={n.achievementKey} className="w-9 h-9" /> : <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400" />,
       iconBg: "bg-amber-500/10 dark:bg-amber-400/15",
       navigateTo: "profile",
     };

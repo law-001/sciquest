@@ -28,7 +28,9 @@ import {
   ChevronUp,
   ClipboardList,
 } from "lucide-react";
-import { isHiddenAchievement } from "../lib/achievements";
+import { ACHIEVEMENTS, isHiddenAchievement } from "../lib/achievements";
+import { visibleAchievementCatalog, currentAchievementKey } from "../lib/game-achievements";
+import { AchievementMedal } from "../components/AchievementMedal";
 import { levelFromXp, xpToNextLevel } from "../lib/xp-config";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { fetchLeaderboard } from "../lib/leaderboard";
@@ -36,7 +38,8 @@ import { fetchScreenSeconds } from "../lib/screentime";
 import { updateStudentProfile } from "../lib/users";
 import { useAuth } from "../context/AuthContext";
 import { Avatar } from "../components/Avatar";
-import { AVATARS } from "../lib/avatars";
+import { AvatarEditor } from "../components/AvatarEditor";
+import { normalizeAvatarStyle } from "../lib/avatar-personalization";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  Static catalogs (visual only — never holds user state)      */
@@ -48,25 +51,9 @@ const PERIOD_API = { "This Week": "week", Month: "month", "All Time": "all" };
 // Visual catalog. `key` matches src/lib/achievements.js — unlock
 // state comes from the DB (the unlockedAchievements prop), never
 // hardcoded here.
-const ALL_ACHIEVEMENTS = [
-  { key: "first-quiz", Icon: Trophy, label: "First Quiz", bg: "bg-amber-500/20", color: "text-amber-500", req: "Complete your first quiz" },
-  { key: "seven-day-streak", Icon: Flame, label: "7-Day Streak", bg: "bg-orange-500/20", color: "text-orange-500", req: "Maintain a 7-day learning streak" },
-  { key: "science-nerd", Icon: Shield, label: "Science Nerd", bg: "bg-teal-500/20", color: "text-teal-500", req: "Complete 10 lessons" },
-  { key: "speed-learner", Icon: Zap, label: "Speed Learner", bg: "bg-yellow-400/20", color: "text-yellow-500", req: "Finish a quiz in under 2 minutes" },
-  { key: "perfect-score", Icon: Star, label: "Perfect Score", bg: "bg-purple-500/20", color: "text-purple-500", req: "Score 100% on any quiz" },
-  { key: "bookworm", Icon: BookOpen, label: "Bookworm", bg: "bg-blue-500/20", color: "text-blue-500", req: "Complete 25 lessons" },
-  { key: "sharpshooter", Icon: Target, label: "Sharpshooter", bg: "bg-rose-500/20", color: "text-rose-500", req: "Achieve 90%+ accuracy 5 times" },
-  { key: "leaderboard-king", Icon: Crown, label: "Leaderboard King", bg: "bg-amber-400/20", color: "text-amber-500", req: "Reach #1 on the weekly leaderboard" },
-  { key: "bio-master", Icon: Dna, label: "Bio Master", bg: "bg-green-500/20", color: "text-green-500", req: "Complete all Biology lessons" },
-  { key: "physics-wizard", Icon: Atom, label: "Physics Wizard", bg: "bg-sky-500/20", color: "text-sky-500", req: "Complete all Physics lessons" },
-  { key: "earth-explorer", Icon: Globe2, label: "Earth Explorer", bg: "bg-yellow-500/20", color: "text-yellow-500", req: "Complete all Earth Science lessons" },
-  { key: "on-the-rise", Icon: TrendingUp, label: "On The Rise", bg: "bg-indigo-500/20", color: "text-indigo-500", req: "Gain 100 XP in a single day" },
-  { key: "curious-explorer", Icon: Award, label: "Curious Explorer", bg: "bg-pink-500/20", color: "text-pink-500", req: "Explore the SciQuest landing page" },
-  { key: "blacked", Icon: Star, label: "BLACKED", bg: "bg-stone-800/20", color: "text-stone-800 dark:text-stone-200", req: "Hidden — discover it for yourself" },
-  { key: "matter-state-sandbox-complete", Icon: Layers, label: "State Changer", bg: "bg-blue-500/20", color: "text-blue-500", req: "Complete all levels in Matter State Sandbox" },
-  { key: "mystery-lab-complete", Icon: FlaskConical, label: "Lab Detective", bg: "bg-teal-500/20", color: "text-teal-500", req: "Solve the Dying Pond mystery in Mystery Lab" },
-  { key: "cell-division-lab-complete", Icon: Dna, label: "Cell Splitter", bg: "bg-emerald-500/20", color: "text-emerald-500", req: "Complete your first division in Cell Division Lab" },
-];
+const ALL_ACHIEVEMENTS = ACHIEVEMENTS.map((a) => ({
+  ...a, bg: "bg-amber-500/10", color: "text-amber-500",
+}));
 
 // Icon + accent per lesson category. Categories come from
 // WEEKS_DATA[].category; anything unmapped falls back to the last entry.
@@ -250,28 +237,46 @@ function CountUp({ target, suffix = "", duration = 1400, triggered }) {
 /* ─────────────────────────────────────────────────────────── */
 /*  EditProfileModal — persists first/last name to Supabase     */
 /* ─────────────────────────────────────────────────────────── */
-function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [avatar, setAvatar] = useState(null);
-  const [pickerOpen, setPickerOpen] = useState(false);
+function EditProfileModal({ onClose, user, profile, onSaved }) {
+  const [firstName, setFirstName] = useState(profile?.first_name ?? "");
+  const [lastName, setLastName] = useState(profile?.last_name ?? "");
+  const [avatar, setAvatar] = useState(profile?.avatar ?? null);
+  const [avatarStyle, setAvatarStyle] = useState(() => normalizeAvatarStyle(profile?.avatarStyle));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const dialogRef = useRef(null);
+  const closeRef = useRef({ onClose, saving });
+  useEffect(() => { closeRef.current = { onClose, saving }; }, [onClose, saving]);
   useEffect(() => {
-    if (isOpen) {
-      setFirstName(profile?.first_name ?? "");
-      setLastName(profile?.last_name ?? "");
-      setAvatar(profile?.avatar ?? null);
-      setPickerOpen(false);
-      setError("");
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.focus();
+    function handleKey(event) {
+      if (event.key === 'Escape' && !closeRef.current.saving) {
+        event.preventDefault();
+        closeRef.current.onClose();
+      }
+      if (event.key !== 'Tab') return;
+      const controls = [...dialogRef.current.querySelectorAll('button, input, [tabindex="0"]')].filter((el) => !el.matches(':disabled') && el.getClientRects().length);
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first) { event.preventDefault(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
-  }, [isOpen, profile]);
-
-  if (!isOpen) return null;
+    const dialog = dialogRef.current;
+    dialog.addEventListener('keydown', handleKey);
+    return () => {
+      dialog.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
+  }, []);
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    if (!user?.id || saving) return;
     setSaving(true);
     setError("");
     try {
@@ -279,11 +284,14 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         avatar,
+        avatarStyle,
       });
       await onSaved?.();
       onClose();
-    } catch {
-      setError("Couldn't save your changes. Please try again.");
+    } catch (err) {
+      setError(err?.code === '42703' || err?.code === 'PGRST204'
+        ? "Picture customization isn't available yet. Your draft is still here; please try again later."
+        : "Couldn't save your changes. Your draft is still here. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -293,85 +301,27 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-stone-300/80 dark:bg-stone-950/80 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={() => { if (!saving) onClose(); }}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" aria-busy={saving} tabIndex={-1} className="relative w-full max-w-3xl max-h-[90dvh] overflow-y-auto overscroll-contain bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-black text-stone-900 dark:text-white font-heading">
+          <h2 id="edit-profile-title" className="text-xl font-black text-stone-900 dark:text-white font-heading">
             Edit Profile
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            disabled={saving}
+            className="min-h-11 flex items-center gap-2 p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" /> Close
           </button>
         </div>
 
-        <div className="flex flex-col items-center gap-4 mb-6">
-          <Avatar
-            avatarId={avatar}
-            name={firstName || profile?.first_name}
-            size={80}
-          />
-          {pickerOpen ? (
-            <div className="w-full">
-              <p className="block text-xs font-bold text-stone-500 dark:text-stone-400 tracking-widest uppercase mb-2 text-center">
-                Choose Your Avatar
-              </p>
-              <div
-                role="radiogroup"
-                aria-label="Choose your avatar"
-                className="grid grid-cols-5 gap-2"
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={avatar === null}
-                  aria-label="Initial"
-                  onClick={() => setAvatar(null)}
-                  className={`rounded-full p-0.5 transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-                    avatar === null
-                      ? "ring-2 ring-primary-500"
-                      : "ring-1 ring-stone-200 dark:ring-stone-700 hover:ring-primary-500/50"
-                  }`}
-                >
-                  <Avatar
-                    name={firstName || profile?.first_name}
-                    size={48}
-                  />
-                </button>
-                {AVATARS.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={avatar === a.id}
-                    aria-label={a.label}
-                    onClick={() => setAvatar(a.id)}
-                    className={`rounded-full p-0.5 transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-                      avatar === a.id
-                        ? "ring-2 ring-primary-500"
-                        : "ring-1 ring-stone-200 dark:ring-stone-700 hover:ring-primary-500/50"
-                    }`}
-                  >
-                    <Avatar avatarId={a.id} size={48} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setPickerOpen(true)}
-              className="text-sm font-bold text-primary-500 hover:text-primary-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg px-2 py-1"
-            >
-              Change Profile
-            </button>
-          )}
-        </div>
+        <fieldset disabled={saving} className="min-w-0 mb-6">
+          <AvatarEditor avatarId={avatar} onAvatarChange={setAvatar} avatarStyle={avatarStyle} onStyleChange={setAvatarStyle} name={firstName || profile?.first_name || ''} />
+        </fieldset>
 
         <div className="space-y-4">
           <div>
@@ -382,6 +332,7 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
               First Name
             </label>
             <input
+              disabled={saving}
               id="edit-first-name"
               type="text"
               value={firstName}
@@ -397,6 +348,7 @@ function EditProfileModal({ isOpen, onClose, user, profile, onSaved }) {
               Last Name
             </label>
             <input
+              disabled={saving}
               id="edit-last-name"
               type="text"
               value={lastName}
@@ -631,13 +583,13 @@ export function ProfilePage({
   }, [quizAttempts, completedRows]);
 
   const unlockedKeys = new Set(unlockedAchievements);
-  const visibleAchievements = ALL_ACHIEVEMENTS.filter(
+  const visibleAchievements = visibleAchievementCatalog(ALL_ACHIEVEMENTS, unlockedAchievements).filter(
     (a) => !isHiddenAchievement(a.key) || unlockedKeys.has(a.key),
   );
   const unlockedCount = visibleAchievements.filter((a) =>
     unlockedKeys.has(a.key),
   ).length;
-  const earnedBadges = ALL_ACHIEVEMENTS.filter((a) =>
+  const earnedBadges = visibleAchievements.filter((a) =>
     unlockedKeys.has(a.key),
   ).slice(0, 4);
 
@@ -650,7 +602,7 @@ export function ProfilePage({
     { label: "Quizzes Taken", value: quizzesTaken, suffix: "", Icon: Target, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
     { label: "Accuracy", value: accuracy, suffix: "%", Icon: BarChart3, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
     { label: "SciQuest Time", value: screen.value, suffix: screen.suffix, Icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-    { label: "Badges Earned", value: unlockedAchievements.length, suffix: "", Icon: Award, color: "text-primary-500", bg: "bg-primary-500/10", border: "border-primary-500/20" },
+    { label: "Badges Earned", value: unlockedCount, suffix: "", Icon: Award, color: "text-primary-500", bg: "bg-primary-500/10", border: "border-primary-500/20" },
   ];
 
   const quickStats = [
@@ -731,7 +683,7 @@ export function ProfilePage({
   // earned badge for a few seconds. Re-fires when the token changes so
   // re-clicking the same achievement notification re-triggers it.
   useEffect(() => {
-    const key = highlightAchievement?.key;
+    const key = currentAchievementKey(highlightAchievement?.key, unlockedAchievements);
     if (!key) return;
     const highlightId = setTimeout(() => setActiveHighlight(key), 0);
     const scrollId = setTimeout(() => {
@@ -746,7 +698,7 @@ export function ProfilePage({
       clearTimeout(scrollId);
       clearTimeout(clearId);
     };
-  }, [highlightAchievement?.key, highlightAchievement?.token, achievementsRef]);
+  }, [highlightAchievement?.key, highlightAchievement?.token, achievementsRef, unlockedAchievements]);
 
   // Pulse the most recent matching activity row when a lesson-XP notif
   // sent us to Recent Activity. Token re-fires for repeat clicks.
@@ -839,7 +791,7 @@ export function ProfilePage({
         >
           {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
         </span>
-        <Avatar avatarId={entry.avatar} name={entry.name} size={32} />
+        <Avatar avatarId={entry.studentId === user?.id ? profile?.avatar : entry.avatar} avatarStyle={entry.studentId === user?.id ? profile?.avatarStyle : entry.avatarStyle} name={entry.name} size={32} />
         <span
           className={`flex-1 text-sm font-bold truncate ${
             isUser
@@ -858,13 +810,12 @@ export function ProfilePage({
 
   return (
     <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-950">
-      <EditProfileModal
-        isOpen={editOpen}
+      {editOpen && <EditProfileModal
         onClose={() => setEditOpen(false)}
         user={user}
         profile={profile}
         onSaved={refreshProfile}
-      />
+      />}
 
       {/* Decorative radial glow */}
       <div
@@ -912,11 +863,10 @@ export function ProfilePage({
             }`}
           >
             <div className="flex items-start gap-4 mb-6">
-              <Avatar
-                avatarId={profile?.avatar}
-                name={displayName}
-                size={64}
-              />
+              <button type="button" onClick={() => setEditOpen(true)} className="shrink-0 flex flex-col items-center gap-1 rounded-xl focus-visible:outline-2 focus-visible:outline-primary-500" aria-label="Personalize your profile picture">
+                <Avatar avatarId={profile?.avatar} avatarStyle={profile?.avatarStyle} name={displayName} size={64} />
+                <span className="text-xs font-bold text-primary-600 dark:text-primary-400">Personalize</span>
+              </button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
                   <span className="text-xl font-black text-stone-900 dark:text-white font-heading">
@@ -976,7 +926,7 @@ export function ProfilePage({
             </p>
             {earnedBadges.length > 0 ? (
               <div className="grid grid-cols-4 gap-3">
-                {earnedBadges.map(({ key, Icon, label, bg, color }) => (
+                {earnedBadges.map(({ key, label, bg }) => (
                   <div
                     key={key}
                     className="flex flex-col items-center gap-1.5"
@@ -984,7 +934,7 @@ export function ProfilePage({
                     <div
                       className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center`}
                     >
-                      <Icon className={`w-6 h-6 ${color}`} />
+                      <AchievementMedal achievementKey={key} className="w-12 h-12" />
                     </div>
                     <span className="text-[10px] text-stone-400 dark:text-stone-500 text-center font-medium leading-tight">
                       {label}
@@ -1469,9 +1419,9 @@ export function ProfilePage({
                 {unlockedCount} / {visibleAchievements.length} unlocked
               </span>
             </div>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-x-3 gap-y-6">
               {visibleAchievements.map(
-                ({ key, Icon, label, bg, color, req }, i) => {
+                ({ key, label, bg, req, tier, maxTier, gameName, next }, i) => {
                   const unlocked = unlockedKeys.has(key);
                   return (
                     <div
@@ -1486,11 +1436,15 @@ export function ProfilePage({
                           ? `${i * 50}ms`
                           : "0ms",
                       }}
+                      tabIndex={0}
+                      aria-label={`${label}. ${req}${next ? `. Next: ${next}` : ""}`}
+                      onFocus={() => setHoveredBadge(key)}
+                      onBlur={() => setHoveredBadge(null)}
                       onMouseEnter={() => setHoveredBadge(key)}
                       onMouseLeave={() => setHoveredBadge(null)}
                     >
                       <div
-                        className={`relative w-14 h-14 rounded-2xl flex items-center justify-center cursor-default transition-transform duration-200 hover:scale-105 ${
+                        className={`relative w-16 h-16 rounded-2xl flex items-center justify-center cursor-default transition-transform duration-200 hover:scale-105 ${
                           unlocked ? bg : "bg-stone-200 dark:bg-stone-800/80"
                         } ${
                           activeHighlight === key
@@ -1498,9 +1452,7 @@ export function ProfilePage({
                             : ""
                         }`}
                       >
-                        <Icon
-                          className={`w-7 h-7 ${unlocked ? color : "text-stone-400 dark:text-stone-600"}`}
-                        />
+                        <AchievementMedal achievementKey={key} locked={!unlocked} className="w-16 h-16" />
                         {!unlocked && (
                           <div className="absolute inset-0 rounded-2xl bg-white/50 dark:bg-stone-900/50 flex items-center justify-center">
                             <Lock
@@ -1520,6 +1472,13 @@ export function ProfilePage({
                         {label}
                       </span>
 
+                      {tier && (
+                        <div className="text-center">
+                          <p className="text-[10px] text-stone-500 dark:text-stone-400">{gameName}</p>
+                          <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400">{unlocked ? `Tier ${tier} / ${maxTier}` : 'Not earned yet'}</p>
+                          <p className="text-[10px] text-stone-500 dark:text-stone-400">{unlocked ? (next ? `Next: ${next}` : 'Fully evolved') : req}</p>
+                        </div>
+                      )}
                       {hoveredBadge === key && (
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 z-20 pointer-events-none">
                           <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl p-3 shadow-2xl">
