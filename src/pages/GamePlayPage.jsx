@@ -15,7 +15,7 @@ function detectDeviceTier() {
 // Games that already render a top-left back control (either shipped and off-limits,
 // or served from a self-contained iframe). Suppressing the overlay for these
 // keeps the corner from stacking two buttons on top of one another.
-const GAMES_WITH_OWN_BACK = new Set(['matter-state-sandbox', 'food-chain-survival', 'cell-division-lab', 'quake-ready']);
+const GAMES_WITH_OWN_BACK = new Set(['matter-state-sandbox', 'food-chain-survival', 'cell-division-lab', 'quake-ready', 'plant-cell']);
 
 export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgressUpdate }) {
   const reducedMotion = useReducedMotion();

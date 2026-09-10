@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+<title id="title">First Quiz medal</title>
+<defs><linearGradient id="metal" x2="1" y2="1"><stop stop-color="#fff7df"/><stop offset=".45" stop-color="#cd9363"/><stop offset="1" stop-color="#8b642e"/></linearGradient><radialGradient id="face"><stop stop-color="#f59e0b" stop-opacity=".35"/><stop offset="1" stop-color="#172033"/></radialGradient></defs>
+<path d="m38 88-9 34 20-9 12 9 6-34m0 0 8 34 12-9 20 9-12-34" fill="#f59e0b" stroke="#172033" stroke-width="3"/>
+<path d="M64 17 98 30l10 35-15 31-29 15-29-15-15-31 10-35z" fill="url(#metal)" stroke="#172033" stroke-width="3"/>
+<path d="M64 24 92 35l9 29-13 27-24 12-24-12-13-27 9-29z" fill="#172033" stroke="#cd9363" stroke-width="1.5"/>
+<circle cx="64" cy="62" r="35" fill="url(#face)"/>
+<g fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M48 38h32v19c0 22-32 22-32 0z"/><path d="M48 43H38v10q0 12 15 12m27-22h10v10q0 12-15 12M64 74v10m-12 0h24"/><path d="m57 53 5 5 10-12" stroke="#fff"/></g>
+<circle cx="64.0" cy="103" r="3" fill="#cd9363"/></svg>

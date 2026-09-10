@@ -81,13 +81,22 @@ export function AuthProvider({ children }) {
       setProfile(staffRow)
       return staffRow
     }
-    const { data: studentRow, error } = await supabase
+    let { data: studentRow, error } = await supabase
       .from('students')
-      .select('id, first_name, last_name, email, student_number, section, avatar, created_at')
+      .select('id, first_name, last_name, email, student_number, section, avatar, avatar_style, created_at')
       .eq('id', userId)
       .maybeSingle()
+    // Keep existing profiles usable while the decoration migration rolls out.
+    if (error?.code === '42703' || error?.code === 'PGRST204') {
+      const fallback = await supabase.from('students')
+        .select('id, first_name, last_name, email, student_number, section, avatar, created_at')
+        .eq('id', userId).maybeSingle()
+      studentRow = fallback.data
+      error = fallback.error
+    }
     if (error || !studentRow) return null
-    const profileData = { ...studentRow, role: 'student' }
+    const { avatar_style, ...studentProfile } = studentRow
+    const profileData = { ...studentProfile, avatarStyle: avatar_style, role: 'student' }
     setProfile(profileData)
     return profileData
   }
