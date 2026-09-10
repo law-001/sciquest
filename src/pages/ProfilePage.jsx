@@ -238,8 +238,8 @@ function CountUp({ target, suffix = "", duration = 1400, triggered }) {
 /*  EditProfileModal — persists first/last name to Supabase     */
 /* ─────────────────────────────────────────────────────────── */
 function EditProfileModal({ onClose, user, profile, onSaved }) {
-  const [firstName, setFirstName] = useState(profile?.first_name ?? "");
-  const [lastName, setLastName] = useState(profile?.last_name ?? "");
+  const firstName = profile?.first_name ?? "";
+  const displayName = `${firstName} ${profile?.last_name ?? ""}`.trim();
   const [avatar, setAvatar] = useState(profile?.avatar ?? null);
   const [avatarStyle, setAvatarStyle] = useState(() => normalizeAvatarStyle(profile?.avatarStyle));
   const [saving, setSaving] = useState(false);
@@ -280,12 +280,7 @@ function EditProfileModal({ onClose, user, profile, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      await updateStudentProfile(user.id, {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        avatar,
-        avatarStyle,
-      });
+      await updateStudentProfile(user.id, { avatar, avatarStyle });
       await onSaved?.();
       onClose();
     } catch (err) {
@@ -304,80 +299,60 @@ function EditProfileModal({ onClose, user, profile, onSaved }) {
         onClick={() => { if (!saving) onClose(); }}
         aria-hidden="true"
       />
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" aria-busy={saving} tabIndex={-1} className="relative w-full max-w-3xl max-h-[90dvh] overflow-y-auto overscroll-contain bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 id="edit-profile-title" className="text-xl font-black text-stone-900 dark:text-white font-heading">
-            Edit Profile
-          </h2>
+      {/* Header and footer sit outside the scroll container so the student's
+          name and the Save button stay put however short the window is. */}
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" aria-busy={saving} tabIndex={-1} className="relative w-full max-w-3xl max-h-[90dvh] flex flex-col bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl">
+        <div className="shrink-0 flex items-start justify-between gap-4 p-6 border-b border-stone-200 dark:border-stone-800">
+          <div className="min-w-0">
+            <h2 id="edit-profile-title" className="text-xl font-black text-stone-900 dark:text-white font-heading">
+              Edit Profile
+            </h2>
+            {displayName && (
+              <p className="mt-1 text-sm font-bold text-stone-500 dark:text-stone-400 truncate">
+                {displayName}
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             disabled={saving}
-            className="min-h-11 flex items-center gap-2 p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="shrink-0 min-h-11 flex items-center gap-2 p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" /> Close
           </button>
         </div>
 
-        <fieldset disabled={saving} className="min-w-0 mb-6">
-          <AvatarEditor avatarId={avatar} onAvatarChange={setAvatar} avatarStyle={avatarStyle} onStyleChange={setAvatarStyle} name={firstName || profile?.first_name || ''} />
-        </fieldset>
+        {/* Wide enough for the two-column editor, the editor scrolls its own
+            choices panel; narrow enough that it stacks, this scrolls instead. */}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain md:overflow-hidden p-6">
+          <fieldset disabled={saving} className="min-w-0 md:h-full">
+            <AvatarEditor avatarId={avatar} onAvatarChange={setAvatar} avatarStyle={avatarStyle} onStyleChange={setAvatarStyle} name={firstName} />
+          </fieldset>
+        </div>
 
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="edit-first-name"
-              className="block text-xs font-bold text-stone-500 dark:text-stone-400 tracking-widest uppercase mb-2"
-            >
-              First Name
-            </label>
-            <input
-              disabled={saving}
-              id="edit-first-name"
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:border-primary-500 transition-colors"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="edit-last-name"
-              className="block text-xs font-bold text-stone-500 dark:text-stone-400 tracking-widest uppercase mb-2"
-            >
-              Last Name
-            </label>
-            <input
-              disabled={saving}
-              id="edit-last-name"
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:border-primary-500 transition-colors"
-            />
-          </div>
+        <div className="shrink-0 border-t border-stone-200 dark:border-stone-800 p-6 space-y-3">
           {error && (
             <p className="text-xs font-bold text-rose-500" role="alert">
               {error}
             </p>
           )}
-        </div>
-
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={onClose}
-            disabled={saving}
-            className="flex-1 py-3 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-500 dark:text-stone-400 font-bold text-sm hover:border-stone-400 dark:hover:border-stone-600 hover:text-stone-700 dark:hover:text-stone-300 transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || !firstName.trim()}
-            className="flex-1 py-3 rounded-xl bg-primary-500 hover:bg-primary-400 text-white font-bold text-sm transition-colors active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-          >
-            {saving ? "Saving…" : "Save Changes"}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              disabled={saving}
+              className="flex-1 py-3 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-500 dark:text-stone-400 font-bold text-sm hover:border-stone-400 dark:hover:border-stone-600 hover:text-stone-700 dark:hover:text-stone-300 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 py-3 rounded-xl bg-primary-500 hover:bg-primary-400 text-white font-bold text-sm transition-colors active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            >
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

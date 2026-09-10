@@ -119,10 +119,18 @@ export function PlantView({
     : co2 < 55
       ? { asset: 'stoma-part-open.png', label: 'PART OPEN' }
       : { asset: 'stoma-wide-open.png', label: 'WIDE OPEN' };
-  // Blend adjacent visual stages continuously across five health states.
-  // This avoids a visible snap when health or turgor crosses a threshold.
+  // Five sprite stages, upright to fully wilted. Blending them across a whole
+  // stage each way left two half-transparent sprites on screen nearly always,
+  // so the window showed straight through the plant. Instead a sprite holds
+  // solid and only dissolves inside a short eased band at the boundary.
+  const FADE_BAND = 0.3;
   const plantStage = droop * 4;
-  const plantWeight = (index) => Math.max(0, 1 - Math.abs(plantStage - index));
+  const stageIndex = Math.min(3, Math.floor(plantStage));
+  const fade = clamp01((plantStage - stageIndex - (1 - FADE_BAND)) / FADE_BAND);
+  const blend = fade * fade * (3 - 2 * fade);
+  const plantWeight = (index) => (
+    index === stageIndex ? 1 - blend : index === stageIndex + 1 ? blend : 0
+  );
 
   const weatherWord = weather === 'rain' ? ' It is raining.'
     : weather === 'drought' ? ' The soil is cracked and dry.'
@@ -208,7 +216,7 @@ export function PlantView({
       </g>
 
       {/* One coherent plant sprite keeps the botanical proportions intact. */}
-      <g className="pc-plant__whole">
+      <g className="pc-plant__whole" transform={`translate(0 ${(droop * 2).toFixed(2)})`}>
         <image
           href="/games/plant-cell/art/plant-healthy.png"
           x="160" y="25" width="88" height="132"
