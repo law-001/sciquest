@@ -51,5 +51,18 @@
 - Architecture section updated to what was actually built: `SimLayout` + `stageMedia`, the `{ onSolved }` contract, why `InteractiveFrame` is not used, and the `mergeWeeks` carry-over that must not regress.
 - Added the hard-won build constraints: one rAF loop read through refs, and the React Compiler lint rules (no ref writes during render, no synchronous setState in an effect) which are errors here, not warnings.
 
+## VERSION_8
+- Avatar editor: pressing anywhere off a sticker now deselects it (handles + dashed outline disappear). `AvatarEditor.jsx` listens for `pointerdown` on the document while a sticker is selected; presses on a sticker frame or inside the Stickers panel (marked `data-keeps-sticker-selection`) keep the selection.
+
+## VERSION_9
+- Avatar editor: the red remove handle on a selected sticker now shows a trash icon (`Trash2`) instead of an X. Help text in the Stickers panel updated to match.
+
+## VERSION_10
+- Avatar editor: removed the row of placed-sticker chips ("Flower Bunch 1", "Heart 2", …) from the Stickers panel. Stickers are selected by clicking (or tabbing to) them on the preview; the edit card and "Clear all stickers" stay.
+
+## VERSION_11
+- Avatar editor: nothing renders below the sticker grid any more. Removed the "sticker space is full" note, the "Editing …" card (width/height/rotation/position sliders, Bring to front, Remove sticker) and "Clear all stickers". Stickers are edited only on the preview (drag, handles, trash button, arrow keys); the `n / 6` counter still shows when the grid is full.
+- The Stickers panel no longer keeps a sticker selected, so clicking blank space in it deselects like anywhere else. Dropped the now-unused `CONTROL`, `selected` and `selectedLabel`.
+
 ---
-Staged changes: Add Plant Cell: Keep the Cell Alive game (3 levels) with registry, XP and achievement wiring
+Staged changes: Remove sticker edit card and controls below avatar sticker grid
