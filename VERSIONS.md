@@ -144,5 +144,13 @@
 - A student who reaches the quiz page after their window already ended sees "This quiz has closed" instead of an instant empty submission. Retry is hidden once the window has closed.
 - If the server refuses an attempt, the results screen shows "Not saved" with the reason, hides the XP/attempt line and Retry, and restores the answers to the device so they reload when the quiz opens again.
 
+## VERSION_18
+- **Quiz Checking is now organised by lesson** (`QuizCheckingSlot` in `src/pages/TeacherPortalPage.jsx`).
+- Only lessons whose quiz has a hand-checked question (essay, short answer, case study) are listed. A lesson that still has ungraded submissions stays listed even if those questions were edited out, so no student work is stranded.
+- Lesson list is split into **Needs grading** and **All caught up**, each in curriculum order. Each row shows the quiz title, week + lesson, submission count, question-type chips, and a status pill ("N to grade" / "All graded" / "No submissions").
+- Clicking a lesson opens its submissions with **Needs Grading** (oldest first, Grade button, response preview) and **Graded** (score + Graded label) tabs, plus a back button.
+- Removed the flat "Needs Grading" queue, the question-type filter, and the "All Submissions" table (which also listed auto-graded quizzes). The section selector with per-section pending counts is kept.
+- New small `ManualTypeChips` component for the type labels, used in both views.
+
 ---
-Staged changes: feat(quizzes): enforce quiz availability in RLS and auto-submit when a student's personal window ends
+Staged changes: feat(teacher): organise Quiz Checking by lesson and list only lessons that need manual grading
