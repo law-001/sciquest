@@ -7,96 +7,49 @@
 - `MaterialsList.jsx` Open/Save are real `<button>`s with Opening…/Saving… busy labels; both are used by `MaterialsPanel` and the `materials` lesson slot.
 
 ## VERSION_2
-- Plant Cell object view: replaced the five-way sprite blend in `src/games/plant-cell/ui/PlantView.jsx` that kept two half-transparent plants on screen almost all the time (the window showed through the plant).
-- Each wilt stage now holds fully solid and only cross-dissolves inside a short smoothstep-eased band at the stage boundary (`FADE_BAND`).
-- The whole plant now settles ~2px downward as droop rises, so wilting reads as motion rather than a dissolve.
-- Added eased `transition` rules for `.pc-plant__whole` in `src/games/plant-cell/styles.css`, disabled under `prefers-reduced-motion`.
+- Signature interactives, wave 0 + first 5 lessons (see `INTERACTIVE_SECTIONS.md`).
+- New: `signatureWidgets.js` (lazy registry, separate from `CUSTOM_WIDGETS` so the teacher picker stays small) and `SignatureWidgetSection.jsx` (host block, fixed `blockId: "signature"`, 25 XP each).
+- `LessonTemplate.jsx` renders the pinned block after the `layout[]` sections and before `MaterialsPanel`; it sits outside `layout[]`, so teachers can't reorder or delete it.
+- `LessonsDataContext.mergeWeeks()` now carries `signature` from the static seed onto a teacher's DB override row — without it, the widget would vanish the first time a lesson was edited.
+- Five widgets: `ModelMatchBenchWidget` (L1 model-type matching), `MethodSequencerWidget` (L2 step ordering, a wrong order runs and reports what broke), `ModelLimitsExplorerWidget` (L3 globe vs flat map trade-off), `ParticleTheorySandboxWidget` (L4 two sliders prove the five statements), `StateChangeJourneyWidget` (L5 six changes of state across -20 to 120 °C).
+- `signature: { ... }` blocks added to lessons 1-3 (`lessonsweek-01.js`) and 4-5 (`lessonsweek-02.js`).
+- No migration needed — `lesson_interactions.block_type` is plain `text`.
 
 ## VERSION_3
-- Plant Cell result screen now works like the sandbox's `SuccessModal`: it overlays the finished level instead of replacing the whole view with a card on an empty page.
-- `src/games/plant-cell/index.jsx` keeps the level component mounted during the `results` stage (its sim loop already halts when the run is over) and renders `ResultsScreen` on top.
-- `ResultsScreen.jsx` is now a real dialog — `role="dialog"`, `aria-modal`, autofocus on the first button, Tab focus trap, Escape returns to the level list. The separate "What just happened" card is merged into the one modal card as a tinted note box.
-- `styles.css`: `.pc-results` became a dimmed blurred backdrop reusing the shared `sq-modal-backdrop-in` / `sq-modal-card-in` keyframes; new `.pc-results__card` and `.pc-results__note`; actions right-aligned; `.pc-root` given `position: relative` to anchor the overlay.
-
+- Rebuilt all five signature interactives as animated visual simulations. The previous set were matching/ordering/multiple-choice tasks — that work belongs to the quiz section, so it is gone.
+- `ModelGalleryWidget` (L1): four models that actually run — a suspension bridge whose deck sags under a crossing truck with a live load gauge, an atom with two orbiting electron shells, a population formula plotting itself year by year, a hurricane tracking up a coast inside a widening forecast cone. All SVG, one shared clock.
+- `InvestigationRunWidget` (L2): a fair test that plays out. Set hours of light, press run, and 14 days animate — sun arcs overhead, stems climb against a ruler, leaf pairs unfold every 4 cm, and the graph plots both pots day by day. The conclusion is computed from the heights that came out.
+- `GlobeUnrollWidget` (L3): a globe that unrolls into a Mercator map. Same lat/long coastlines projected two ways and blended by the slider, so Greenland genuinely inflates; the "times too big" readout is a shoelace area measured off the on-screen shape.
+- `ParticleLabWidget` (L4): canvas particle simulation with real velocities and motion trails. Cold locks them into a vibrating lattice, warm breaks them loose but keeps them pooled, hot sends them filling the box.
+- `StateChangeLabWidget` (L5): a beaker on a burner. Hold to heat or cool — the thermometer climbs and stalls at 0 °C and 100 °C (latent heat), lattice bonds draw and break, bubbles form and rise while boiling, and a vacuum pump forces sublimation and deposition.
+- `SignatureWidgetSection` no longer uses `InteractiveFrame`: that shell holds content at `opacity: 0` until an IntersectionObserver fires, which can leave a block invisible. The signature block now paints unconditionally.
+- Widget ids renamed in `signatureWidgets.js` and the lesson data: `model-gallery`, `investigation-run`, `globe-unroll`, `particle-lab`, `state-change-lab`. Old widget files deleted.
+- Every widget respects `prefers-reduced-motion` by rendering one representative frame instead of looping.
 
 ## VERSION_4
-- Cut the six science characters out of `public/avatars/science/setofcharacters-cutout.png` into individual centred 512x512 transparent PNGs in `public/avatars/characters/` (sun, fox, astronaut, robot, frog, owl).
-- Added `scripts/cut-avatar-sheet.py`: locates each character by its alpha channel, crops to a tight bounding box and scales it into a square canvas using a premultiplied-alpha LANCZOS resize (the source alpha is hard 0/255, so this is also what anti-aliases the edges). Per-character `TWEAKS` shrink the fox and owl so their ears and cape stop clipping the circular crop, and push the three busts down so shoulders reach the bottom of the circle.
-- `src/lib/avatars.js`: `CHARACTER_AVATARS` now points at the individual PNGs via a `file` field instead of sprite-sheet `col`/`row` coordinates. Ids are unchanged so saved student avatars still resolve; the `cat` entry is relabelled "Curious Fox" because the artwork is a fox.
-- `src/components/Avatar.jsx`: new `ImageLayer` handles loading and failure for every image layer — it fades in on decode and unmounts on error so a missing file falls back to the layer beneath instead of a broken-image icon. Characters render `object-contain` full-bleed. Removed the now-dead `Sprite` component and the sprite fallbacks for missing sheets.
-- Added `src/lib/avatar-export.js`: `renderAvatarToCanvas` flattens background, character and stickers onto a circular 512x512 canvas mirroring the DOM layout, and `downloadAvatarPng` saves it. Individual layers degrade if an asset fails rather than failing the export.
-- `src/components/AvatarEditor.jsx`: added a "Download PNG (512px)" button under the live preview, with a disabled "Preparing…" state and a screen-reader status message on success or failure.
-- `public/avatars/README.md`: documented the characters folder and the cut script.
-
+- Bridge hangers fixed (`ModelGalleryWidget`): deck and main cable are both quadratic curves, so each hanger is now drawn between the two curves evaluated at the same x. They no longer punch through the cable above or hang below the deck, and the truck rides on the deck wherever the sag puts it.
+- Chart overlap fixed (`InvestigationRunWidget`): the graph is its own SVG in the side panel instead of a corner of the pot scene, so its title can never land on the axis. Pot labels were being drawn below the viewBox and clipped — pot base moved up and the box grew to 342.
+- New `SimLayout.jsx` + `stageMedia.js`: every simulation is now picture-left / controls-right on `lg` and up, stacked below it. The stage is capped at `58vh` so a sim can't push its own controls off the bottom — no more scrolling between the thing you're steering and the control that steers it.
+- Side panels rewritten compact: smaller checklists, tighter type, controls grouped. `SignatureWidgetSection` chrome trimmed (`p-4 sm:p-5`, shorter intro/instruction spacing).
+- Responsive throughout: single column on phones, two on tablet landscape and up; canvases use `object-fit: contain` so clamping the height letterboxes rather than stretching; all tap targets stay `min-h-11`.
 
 ## VERSION_5
-- Fixed a latent invisible-avatar bug in `ImageLayer` (`src/components/Avatar.jsx`): the layer only became opaque once `onLoad` fired, but a cached image can already be `complete` before React attaches the handler, stranding the image at `opacity-0`. Dropped the opacity gate — the background layer beneath already covers the loading moment — and kept the on-error unmount, now keyed by `src` so swapping character or background re-tries the new file.
-
+- Simulation and control columns are now the same height. `SimLayout` gives the grid one explicit height on `lg` and up (`lg:h-[62vh]`) which both columns fill — the picture letterboxes inside its share, the panel scrolls inside its own. Below `lg` the fixed height is dropped so the stacked layout is not squeezed.
+- The control panel got its own bordered surface matching the stage, so the equal heights actually read as equal.
+- `stageMedia.js` switched from a `vh` cap to `maxHeight: 100%`, so the picture sizes to the row the grid hands it rather than to the viewport directly.
+- `ModelGalleryWidget`'s stage column is a flex column now — its job line sits above the picture without stopping the column filling the row.
+- Lesson content container widened from `max-w-7xl` to `max-w-[1600px]` (`LessonTemplate.jsx:359`).
 
 ## VERSION_6
-- Re-cut the character PNGs so busts are no longer visibly cut off inside the circular avatar crop. Five of the six characters are drawn as busts whose artwork ends in a flat edge; centring them left that edge sitting inside the circle, which read as the character being sliced.
-- `scripts/cut-avatar-sheet.py`: replaced `TWEAKS` with `LAYOUT`, which gives each character an anchor and a target size. Busts are sized by width and sat flush on the bottom of the canvas, where the circular crop narrows to nothing and hides the flat edge. The sun is a radial object with no flat edge, so it stays centred and fits whole.
-- Target widths tuned per silhouette (fox 410, astronaut 400, robot 400, frog 425, owl 395) — the owl's cape is the widest shape and clips above 395.
-
+- Lesson content container narrowed from `max-w-[1600px]` to `max-w-[1440px]` (`LessonTemplate.jsx:359`) — 1600 read too wide; this sits between it and the original `max-w-7xl` (1280px).
 
 ## VERSION_7
-- Optimized every avatar asset. The picker was loading 9.1MB of images; it now loads 584KB for the same content, with no visible quality change.
-- Moved the full-resolution originals to `assets-src/avatars/` (outside `public/`, which ships verbatim) and replaced `scripts/cut-avatar-sheet.py` with `scripts/build-avatar-assets.py`, which builds all three asset kinds.
-- Everything is now WebP: its alpha is stored losslessly, so the cutout edges are bit-identical to the source while the flat artwork compresses far better than PNG. Palette-quantised PNG was measured first and rejected — it dithered visible mottling into the flat fills.
-- Characters 512x512 WebP q90 (1016KB -> 173KB). Backgrounds pre-cropped square at 512 and WebP q85 (6.9MB -> 224KB) — they are only ever drawn as a cover fill behind the circular crop, so the full 750x876 source was never visible. Sticker sheet down to 768x768 WebP q90 (1.2MB -> 153KB), which still gives about one screen pixel per source pixel at the largest sticker size.
-- Updated the four config sites that name these files: `src/lib/avatars.js`, `src/lib/avatar-personalization.js`, `src/components/Avatar.jsx`, `src/lib/avatar-export.js`.
-- Rewrote `public/avatars/README.md` around the new build step.
-
-## VERSION_8
-- Reworked the Edit Profile picture editor (`src/components/AvatarEditor.jsx`) from one long scrolling column into three tabs — Character, Background, Stickers — so the modal no longer scrolls past three stacked numbered sections to reach the sticker controls.
-- The preview column is now sticky on desktop and carries the small "beside your name" sample and the download button, so the result stays visible while any tab is being used.
-- Characters, backgrounds and stickers now use one shared tile shape at a 56px preview, replacing the mix of a picture grid and a row of text buttons. Selection is shown by border, tint and a check badge rather than the old "(selected)" text appended to every label, which screen readers already got from `aria-pressed`.
-- Character tiles now render against the currently chosen background, so the pairing is visible before committing to it.
-- Clicking a sticker on the preview jumps to the Stickers tab with that sticker selected; the tab shows a count badge. Tablist supports arrow-key navigation.
-
-
-## VERSION_9
-- Removed the "Download PNG" button from the profile picture editor and deleted `src/lib/avatar-export.js`, the canvas compositing module that only existed to serve it.
-- Removed the "Pictures" group from the character picker. The `profile` picture avatar stays in the catalog so any student who already selected it keeps it — the editor just opens on the Characters group instead of a group with no visible chip.
-- Names are now display-only. `EditProfileModal` no longer holds `firstName` / `lastName` state or renders the two text inputs; it shows the student's full name in the modal header instead.
-- Restructured the modal into a fixed header, a scrolling middle and a fixed footer. Previously the whole dialog scrolled, so on a short window the name fields and the Save button were below the fold; now the name and the Cancel / Save buttons stay put at any window height and only the picture editor scrolls.
-- `updateStudentProfile` (`src/lib/users.js`) now only writes the columns the caller supplies, mirroring how the avatar column was already handled. Without this the picture-only save would have overwritten both name columns with `undefined`.
-- Save is no longer disabled on an empty first name, since the name can no longer be edited here.
-
-
-## VERSION_10
-- Removed the Characters / Science group chips from the picture picker. With only one group left there was nothing to switch between, so the character grid is now the whole panel and the `category` state is gone.
-- Removed `SVG_AVATARS` from `src/lib/avatars.js` — the eight lucide glyph avatars (atom, flask, microscope, dna, leaf, globe, telescope, rocket) drawn on a brand gradient.
-- `CHARACTER_AVATARS` is now exported and is what the picker renders directly, instead of filtering the full catalog by category.
-- Dropped the matching dead `Glyph` branch from `src/components/Avatar.jsx`.
-- `IMAGE_AVATARS` (`profile`) stays in the catalog but is not offered in the picker, so a student who selected it before still resolves to it.
-- KNOWN EFFECT: a student whose saved `students.avatar` is one of the eight removed glyph ids now falls back to their initial letter, because `getAvatar` no longer resolves those ids. Nothing errors and the row is untouched — picking any character overwrites it.
-
-
-## VERSION_11
-- Confined the Edit Profile scrollbar to the choices grid. The modal body was the scroll container, so on a tall tab the tab bar and the live preview scrolled away with the tiles.
-- On desktop the modal body no longer scrolls (`md:overflow-hidden` in `EditProfileModal`); the active tab panel is the scroll container instead, via the shared `PANEL` class in `src/components/AvatarEditor.jsx`. The tab bar, the preview column and the "nothing changes until you save" note are all `shrink-0` and stay put.
-- Below the `md` breakpoint the editor stacks into one column, where a short inner scroll area would be worse than scrolling the sheet, so the modal body keeps scrolling as before.
-- Dropped `md:sticky md:top-0` from the preview column — nothing scrolls past it any more.
-
-
-## VERSION_12
-- Fixed the horizontal scrollbar that appeared under the choices grid. Setting `overflow-y` makes CSS compute `overflow-x` from `visible` to `auto`, so the selected tile's check badge — offset `-top-1.5 -right-1.5`, deliberately outside the tile — was enough to raise a sideways bar whenever the rightmost tile was selected.
-- Moved the check badge inside the tile (`top-1 right-1`) and pinned `md:overflow-x-hidden` on the panel, so only up/down scrolling is possible. Both are `md:`-scoped because only the desktop layout sets `overflow-y`; on mobile the panel stays unclipped so tile focus outlines are not cut off.
-- Gave the scrollable panel a branded focus ring instead of the browser's default black outline, which was showing because the panel is focusable so keyboard users can reach the scroll area.
-
-
-## VERSION_13
-- Replaced the twelve avatar stickers with the supplied `STICKERS.png` sheet: heart, sunglasses, flower, ribbon bow, bow tie, flower bunch, speech bubble, star, sparkles, graduation cap, potion and party hat.
-- The new art is a 3x4 grid whose sprites vary widely in shape (the sunglasses are 2.8x wider than tall, the potion is nearly twice as tall as wide). The avatar draws one sheet cell into a square box, so `build_stickers` now cuts each sprite to its own bounding box and re-lays them out on a 4x3 grid of 256px SQUARE cells, fit and centred. Dropping the sheet in as-is would have stretched every sprite.
-- Kept the 4x3 output shape so the existing `backgroundSize: 400% 300%` maths in `src/components/Avatar.jsx` still holds; only the file name changed, to `stickers/stickers.webp` (1024x768, 120KB).
-- Source moved to `assets-src/avatars/stickers.png`; the stray upload at `public/avatars/STICKERS.png` and the superseded `science-stickers.webp` are gone.
-- KNOWN EFFECT: `heart`, `glasses`, `flower`, `star` and `sparkles` kept their ids, so saved profiles using those keep their stickers. The other seven old ids (`crown`, `leaf`, `rocket`, `atom`, `lightning`, `music`, `rainbow`) no longer exist and `normalizeAvatarStyle` drops them from a saved profile on load. Nothing errors; those students simply have fewer stickers.
-
-## VERSION_14
-- Fixed sticker saving with a forward-only database migration accepting the new sticker catalog and independent width/height (12-48%), while retaining legacy IDs and square sizes. Updated the schema snapshot to match. Applied this migration file to the linked database; all 17 read-only validator checks passed.
-- Isolated avatar artwork stacking so it cannot cover editor controls; selected sticker handles stay above overlapping stickers.
-- Made stretch, zoom and rotation relative to the initial grab point, preventing jumps. Zoom preserves proportions at size limits, and lost pointer capture ends dragging.
+- `INTERACTIVE_SECTIONS.md` rewritten around the visual-first direction. Retitled "Per-Lesson Signature Simulations".
+- Opens with the rule that decides every design: show the object, do not ask about it. Multiple choice, matching, bucket-sorting, card-ordering and fill-in-the-blank are named as banned — the quiz section already does assessment. Test given: strip every word from the widget and the science should still be visible.
+- The ten question-shaped archetypes are replaced by six simulation shapes — Live Sim, Apparatus, Run & Record, Morph, Dissect, Cascade — each anchored to a shipped example.
+- All 54 remaining lessons redesigned as animated simulations, described by what runs on screen rather than what the student is asked.
+- Architecture section updated to what was actually built: `SimLayout` + `stageMedia`, the `{ onSolved }` contract, why `InteractiveFrame` is not used, and the `mergeWeeks` carry-over that must not regress.
+- Added the hard-won build constraints: one rAF loop read through refs, and the React Compiler lint rules (no ref writes during render, no synchronous setState in an effect) which are errors here, not warnings.
 
 ---
-Staged changes: Fix sticker persistence and preview manipulation
+Staged changes: Add Plant Cell: Keep the Cell Alive game (3 levels) with registry, XP and achievement wiring

@@ -18,6 +18,7 @@ import { cn } from "../lib/utils";
 
 // ── Slot imports ──
 import { SLOT_MAP } from './slotMap'
+import SignatureWidgetSection from './lesson-slots/interactive/SignatureWidgetSection'
 export { SLOT_MAP }
 
 function ReferencesSection({ references }) {
@@ -355,7 +356,7 @@ export function LessonTemplate({
       )}
 
       {/* ── Page Body ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* ── Sidebar TOC ── */}
           <aside className="hidden lg:block w-56 shrink-0">
@@ -508,6 +509,19 @@ export function LessonTemplate({
                 );
               })}
             </div>
+
+            {/* The lesson's own pinned interactive. It lives outside layout[] so
+                a teacher can't reorder or delete it. */}
+            {lesson.signature?.widgetId && (
+              <div className="mt-16">
+                <SignatureWidgetSection
+                  id="signature-interactive"
+                  lessonId={lesson.id}
+                  signature={lesson.signature}
+                  onInteractionComplete={onInteractionComplete}
+                />
+              </div>
+            )}
 
             {/* Teacher-attached videos and handouts. Renders nothing when the
                 lesson has none, so every existing lesson is unaffected. */}
