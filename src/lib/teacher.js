@@ -49,28 +49,64 @@ function scorePct({ score, maxScore }) {
   return maxScore ? Math.round((score / maxScore) * 100) : 0
 }
 
-// One aggregate read for the whole teacher portal. Sections are derived from
-// the students.section column (there is no sections table); lesson titles and
-// categories come from the static curriculum.
-export async function fetchTeacherDashboard() {
-  const [studentsRes, progressRes, attemptsRes] = await Promise.all([
-    supabase.from('students').select('id, first_name, last_name, email, section, avatar, avatar_style'),
-    supabase.from('student_progress').select('student_id, lesson_id').eq('completed', true),
-    supabase
-      .from('quiz_attempts')
-      .select('id, student_id, lesson_id, score, max_score, pending_grade_count, answers, submitted_at')
-      .order('submitted_at', { ascending: false }),
-  ])
-  if (studentsRes.error) throw studentsRes.error
-  if (progressRes.error) throw progressRes.error
-  if (attemptsRes.error) throw attemptsRes.error
+const PAGE_SIZE = 1000
 
-  const progressRows = progressRes.data ?? []
-  const attemptRows = attemptsRes.data ?? []
+// PostgREST caps every response (Supabase default: 1000 rows), so a plain
+// select silently drops whatever is past the cap. Pages until an empty page;
+// the offset advances by what actually came back, so a lower server cap
+// still reads everything. `buildQuery` must apply a stable order.
+async function fetchAllPages(buildQuery) {
+  const rows = []
+  for (;;) {
+    const { data, error } = await buildQuery().range(
+      rows.length,
+      rows.length + PAGE_SIZE - 1,
+    )
+    if (error) throw error
+    if (!data?.length) return rows
+    rows.push(...data)
+  }
+}
+
+// One aggregate read for the teacher portal, limited to the sections the
+// teacher handles (`sectionNames`). Progress and attempts are filtered
+// through the students join, so the request carries section names rather
+// than every student id. Lesson titles and categories come from the static
+// curriculum.
+export async function fetchTeacherDashboard(sectionNames) {
+  const [studentRows, progressRows, attemptRows] = sectionNames.length
+    ? await Promise.all([
+        fetchAllPages(() =>
+          supabase
+            .from('students')
+            .select('id, first_name, last_name, email, section')
+            .in('section', sectionNames)
+            .order('id'),
+        ),
+        fetchAllPages(() =>
+          supabase
+            .from('student_progress')
+            .select('student_id, lesson_id, students!inner(section)')
+            .eq('completed', true)
+            .in('students.section', sectionNames)
+            .order('id'),
+        ),
+        fetchAllPages(() =>
+          supabase
+            .from('quiz_attempts')
+            .select(
+              'id, student_id, lesson_id, score, max_score, pending_grade_count, answers, submitted_at, students!inner(section)',
+            )
+            .in('students.section', sectionNames)
+            .order('submitted_at', { ascending: false })
+            .order('id'),
+        ),
+      ])
+    : [[], [], []]
 
   // Build per-student accumulators.
   const byId = new Map()
-  for (const s of studentsRes.data ?? []) {
+  for (const s of studentRows) {
     byId.set(s.id, {
       id: s.id,
       name: fullName(s),
@@ -244,12 +280,13 @@ export async function fetchDistinctSections() {
 }
 
 // Clears a student's section assignment so they no longer appear in any
-// teacher's section roster.
+// teacher's section roster. An RPC, not an update: RLS only lets a student
+// update their own row, and the function checks the caller handles that
+// student's section.
 export async function removeStudentFromSection(studentId) {
-  const { error } = await supabase
-    .from('students')
-    .update({ section: null })
-    .eq('id', studentId)
+  const { error } = await supabase.rpc('remove_student_from_section', {
+    p_student_id: studentId,
+  })
   if (error) throw error
 }
 

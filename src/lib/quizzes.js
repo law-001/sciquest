@@ -63,32 +63,16 @@ export async function upsertQuiz(quiz) {
   return data
 }
 
-// isStatic=true → soft-delete via upsert (creates row if needed, sets is_hidden).
-// quizSnapshot is the current quiz data used to populate required fields on insert.
-// isStatic=false → hard-delete the custom quiz row.
-export async function deleteQuiz(lessonId, { isStatic = false, quizSnapshot = null } = {}) {
+// Hard-deletes a custom quiz row. Seed quizzes are hidden per section instead
+// (quizzes-individual in publishedWeeks.js); any soft-deleted before that
+// come back through restoreStaticQuiz.
+export async function deleteQuiz(lessonId) {
   if (!supabase) throw new Error('[quizzes] Supabase not configured')
-  if (isStatic) {
-    const row = {
-      lesson_id: lessonId,
-      title: quizSnapshot?.title ?? '',
-      description: quizSnapshot?.description ?? null,
-      time_limit: quizSnapshot?.timeLimit ?? 900,
-      questions: quizSnapshot?.questions ?? [],
-      is_custom: false,
-      is_hidden: true,
-    }
-    const { error } = await supabase
-      .from('quizzes')
-      .upsert(row, { onConflict: 'lesson_id' })
-    if (error) throw error
-  } else {
-    const { error } = await supabase
-      .from('quizzes')
-      .delete()
-      .eq('lesson_id', lessonId)
-    if (error) throw error
-  }
+  const { error } = await supabase
+    .from('quizzes')
+    .delete()
+    .eq('lesson_id', lessonId)
+  if (error) throw error
 }
 
 // Deletes the DB row so the static seed shows again for students.

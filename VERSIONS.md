@@ -163,6 +163,38 @@
 - **Score is now the primary figure** in both panels: quiz rows lead with "4 / 10 pts" (coloured by grade) with the percentage small beside it; game rows lead with "7 / 9 stars". The quiz footer now shows total points ("12 / 40 pts") with the average % and descriptor as the secondary line.
 
 ## VERSION_21
+- **Publishing is now per section, limited to the teacher's own sections.** Before, every publish / hide / open toggle wrote one global row, so a teacher changed it for every section, and RLS let any staff member do it.
+- New migration `supabase/migrations/20260911000000_section_publish_state.sql` (+ `schema.sql` snapshot):
+  - `teacher_sections` — the "My Sections" list, moved out of browser localStorage so the server can check it. The old local list is imported on the teacher's first load.
+  - `section_publish_state` — per-section override for each scope (`lessons`, `open`, `quizzes`, `quizzes-individual`, new `lessons-individual`). A section with no row inherits the global `course_publish_state` row, which is now admin-only to write.
+  - `can_manage_section()` / `can_manage_student()` / `publish_ids_for()` / `is_staff_admin()` helpers. RLS on `section_publish_state` only accepts writes for sections in the teacher's `teacher_sections`.
+  - `is_quiz_open_for()` reads the student's own section state.
+  - `quiz_student_access` (per-student quiz re-open) writes are limited to teachers of that student's section.
+  - Lessons hidden with the old global `lessons.is_hidden` toggle move into the global `lessons-individual` default, so no section sees a change on deploy.
+- `src/lib/publishedWeeks.js` rewritten around one `{ global, sections }` state: `fetchPublishState`, `resolvePublishIds`, `saveSectionPublishIds`, `withSectionPublishIds`, `subscribeToPublishState`. `isQuizLessonHidden` → `isLessonHidden`.
+- `src/lib/sections.js`: `fetchTeacherSections`, `addTeacherSection`, `removeTeacherSection`.
+- Teacher portal (`TeacherPortalPage.jsx`): Lessons and Quizzes toggles apply to the section picked under Scope, or every section the teacher handles under "All". Weeks that differ between sections show a grey **Mixed** pill. A note above each list names the sections a toggle will change; with no sections added, toggles are disabled and it links to My Sections. The lesson eye-toggle confirm names the sections too. A refused save shows a red dismissible banner and reloads the real state. The Overview's curriculum counts follow the same scope (and add a Mixed cell when needed).
+- The trash button on **seed** lessons and quizzes (which hid them for every section) is gone — hiding is the per-section toggle. Trash now only deletes custom lessons/quizzes. `deleteLesson` / `deleteQuiz` are hard-delete only; `setLessonHidden` removed.
+- Students: `App.jsx` resolves publish state for the student's `profile.section`; new `HiddenLessonsFilter` (`LessonsDataContext.jsx`) drops lessons hidden for that section from `weeks`. Publish state is re-fetched on sign-in.
+
+## VERSION_22
+- Production-readiness pass over the teacher portal.
+- `supabase/functions/invite-teacher/index.ts`: removed the `http://localhost:5173` fallback for `SITE_URL`. The function now returns a 500 "SITE_URL is not set" instead of emailing teachers a link to localhost.
+- "Show correct answers" switch (`QuizShowAnswersControl` in `TeacherPortalPage.jsx`): the knob classes `translate-x-18px` / `translate-x-2px` aren't valid Tailwind v4 and compiled to nothing, so the knob never moved. Now `translate-x-4.5` (18px, on) / `translate-x-0.5` (2px, off).
+
+## VERSION_23
+- **Production blockers from the teacher-portal review, fixed.**
+- New migration `supabase/migrations/20260911010000_sections_table.sql`: the `sections` table (signup dropdown + "Add Section") had no migration — it only existed as a comment. Creates it where missing, with RLS (anyone reads, staff insert — a teacher can only record `created_by_role = 'teacher'` — admins delete), and backfills every section name students already have. Adds `is_staff()`.
+- New migration `supabase/migrations/20260911020000_student_data_access.sql`:
+  - `students`, `student_progress`, `quiz_attempts`, `student_achievements` are readable only by the student themself or staff. Before, every signed-in student could read every classmate's email, student number, progress and quiz answers.
+  - `leaderboard_entries(p_since)` RPC returns only what the leaderboard shows (name, avatar, lesson + quiz XP, achievement keys). `src/lib/leaderboard.js` now uses it and still adds achievement XP from the JS catalog.
+  - `remove_student_from_section(p_student_id)` RPC: the roster remove button silently did nothing (RLS blocked the update with no error). It now works for students in the caller's own sections and errors otherwise.
+- `src/lib/teacher.js`: `fetchTeacherDashboard(sectionNames)` loads only the teacher's sections (progress/attempts filtered through the `students!inner` join) and pages past Supabase's 1000-row response cap (`fetchAllPages`). `removeStudentFromSection` calls the RPC.
+- `TeacherPortalPage.jsx`: loads My Sections first, then the dashboard for those sections; re-fetches the dashboard after a section is added or removed.
+- `schema.sql` snapshot updated to match.
+
+---
+Staged changes: fix(security): scope student data reads to owner/staff, add sections migration, paginate teacher dashboard, fix roster remove
 - Avatar editor: pressing anywhere off a sticker now deselects it (handles + dashed outline disappear). `AvatarEditor.jsx` listens for `pointerdown` on the document while a sticker is selected; presses on a sticker frame or inside the Stickers panel (marked `data-keeps-sticker-selection`) keep the selection.
 
 ## VERSION_22
