@@ -30,6 +30,7 @@ import {
   RotateCcw,
   CalendarClock,
   UserCheck,
+  CircleDashed,
 } from "lucide-react";
 import {
   BarList,
@@ -57,34 +58,28 @@ import {
   removeStudentFromSection,
   fetchGameProgressForStudents,
 } from "../lib/teacher";
-import { fetchAllSections, createSection } from "../lib/sections";
+import {
+  fetchAllSections,
+  createSection,
+  fetchTeacherSections,
+  addTeacherSection,
+  removeTeacherSection,
+} from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
 import { useLessonsData } from "../context/LessonsDataContext";
-import {
-  deleteLesson,
-  upsertLesson,
-  restoreStaticLesson,
-  setLessonHidden,
-} from "../lib/lessons";
+import { deleteLesson, restoreStaticLesson } from "../lib/lessons";
 import { deleteQuiz, restoreStaticQuiz } from "../lib/quizzes";
 import {
-  getPublishedWeekIds,
-  savePublishedWeekIds,
+  getCachedPublishState,
+  fetchPublishState,
+  resolvePublishIds,
+  withSectionPublishIds,
+  saveSectionPublishIds,
   isWeekPublished,
   isWeekOpen,
-  getPublishedQuizWeekIds,
-  savePublishedQuizWeekIds,
-  getOpenWeekIds,
-  saveOpenWeekIds,
-  getHiddenQuizLessonIds,
-  saveHiddenQuizLessonIds,
-  isQuizLessonHidden,
-  fetchPublishedWeekIds,
-  fetchPublishedQuizWeekIds,
-  fetchOpenWeekIds,
-  fetchHiddenQuizLessonIds,
-  subscribeToPublishedState,
+  isLessonHidden,
+  subscribeToPublishState,
 } from "../lib/publishedWeeks";
 import {
   getCachedQuizSettings,
@@ -113,8 +108,8 @@ function OverviewSlot({
   data,
   sectionId,
   onGrade,
-  publishedWeekIds,
-  openWeekIds,
+  publishState,
+  publishSections,
   onNavigateTab,
   teacherName,
 }) {
@@ -130,9 +125,13 @@ function OverviewSlot({
   const totalStudents = sectionId
     ? (sections.find((s) => s.id === sectionId)?.students ?? 0)
     : sections.reduce((sum, s) => sum + s.students, 0);
+  // Counted the same way the Lessons tab shows it, for the sections in scope.
+  const weekStateById = new Map(
+    weeks.map((w) => [w.id, weekStateAcross(publishState, publishSections, w.id)]),
+  );
   const publishedLessons = weeks.reduce(
     (sum, w) =>
-      sum + (isWeekPublished(w.id, publishedWeekIds) ? w.lessons.length : 0),
+      sum + (weekStateById.get(w.id) !== "hidden" ? w.lessons.length : 0),
     0,
   );
   const totalLessons = weeks.reduce((s, w) => s + w.lessons.length, 0);
@@ -232,12 +231,10 @@ function OverviewSlot({
   // Curriculum shipping state, counted the same way the Lessons tab counts it.
   const weekStates = weeks.reduce(
     (acc, w) => {
-      if (!isWeekPublished(w.id, publishedWeekIds)) acc.hidden += 1;
-      else if (isWeekOpen(w.id, openWeekIds)) acc.open += 1;
-      else acc.published += 1;
+      acc[weekStateById.get(w.id)] += 1;
       return acc;
     },
-    { open: 0, published: 0, hidden: 0 },
+    { open: 0, published: 0, hidden: 0, mixed: 0 },
   );
 
   return (
@@ -443,7 +440,12 @@ function OverviewSlot({
             Manage weeks
           </button>
         </PanelHeader>
-        <div className="grid grid-cols-1 md:grid-cols-3">
+        <div
+          className={cn(
+            "grid grid-cols-1",
+            weekStates.mixed ? "md:grid-cols-4" : "md:grid-cols-3",
+          )}
+        >
           {[
             {
               label: "Open to everyone",
@@ -463,6 +465,16 @@ function OverviewSlot({
               hint: "Students cannot see these",
               tone: "yellow",
             },
+            ...(weekStates.mixed
+              ? [
+                  {
+                    label: "Mixed",
+                    value: weekStates.mixed,
+                    hint: "Differs between your sections",
+                    tone: "pink",
+                  },
+                ]
+              : []),
           ].map((cell, i) => (
             <div
               key={cell.label}
@@ -720,18 +732,15 @@ function SectionsSlot({
   const [confirmingSection, setConfirmingSection] = useState(null);
 
   const dataByName = new Map(data.sections.map((s) => [s.name, s]));
-  const displaySections =
-    mySectionNames !== null
-      ? mySectionNames.map(
-          (name) =>
-            dataByName.get(name) ?? {
-              id: name,
-              name,
-              students: 0,
-              avgScore: 0,
-            },
-        )
-      : data.sections;
+  const displaySections = mySectionNames.map(
+    (name) =>
+      dataByName.get(name) ?? {
+        id: name,
+        name,
+        students: 0,
+        avgScore: 0,
+      },
+  );
 
   useEffect(() => {
     if (!sectionId && displaySections.length === 0) setAddModalOpen(true);
@@ -739,7 +748,7 @@ function SectionsSlot({
   }, []);
 
   function handleAddSection(name) {
-    const next = [...new Set([...(mySectionNames ?? []), name])];
+    const next = [...new Set([...mySectionNames, name])];
     onSectionNamesChange(next);
   }
 
@@ -1101,7 +1110,7 @@ function SectionsSlot({
                 className="flex-1 bg-red-500! hover:bg-red-600!"
                 onClick={() => {
                   const next = (
-                    mySectionNames ?? displaySections.map((s) => s.name)
+                    mySectionNames
                   ).filter((n) => n !== confirmingSection);
                   onSectionNamesChange(next);
                   setConfirmingSection(null);
@@ -1121,7 +1130,6 @@ function SectionsSlot({
 
 function DeleteLessonModal({
   lesson,
-  isCustom,
   onConfirm,
   onClose,
   isLoading,
@@ -1143,32 +1151,19 @@ function DeleteLessonModal({
           </div>
           <div>
             <h2 className="text-lg font-black text-stone-900 dark:text-white">
-              {isCustom ? "Delete Lesson" : "Hide Lesson"}
+              Delete Lesson
             </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">
-              {isCustom ? "This cannot be undone" : "Can be restored later"}
+              This cannot be undone
             </p>
           </div>
         </div>
         <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
-          {isCustom ? (
-            <>
-              Permanently delete{" "}
-              <strong className="text-stone-900 dark:text-white">
-                {lesson.title}
-              </strong>
-              ? It will be removed from all student views immediately.
-            </>
-          ) : (
-            <>
-              Hide{" "}
-              <strong className="text-stone-900 dark:text-white">
-                {lesson.title}
-              </strong>{" "}
-              from students? The original content is preserved — you can restore
-              it from the Lesson Editor later.
-            </>
-          )}
+          Permanently delete{" "}
+          <strong className="text-stone-900 dark:text-white">
+            {lesson.title}
+          </strong>
+          ? It will be removed for every section immediately.
         </p>
         <div className="flex gap-3">
           <Button
@@ -1184,11 +1179,7 @@ function DeleteLessonModal({
             disabled={isLoading}
             className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold text-sm transition-colors"
           >
-            {isLoading
-              ? "Deleting…"
-              : isCustom
-                ? "Delete Permanently"
-                : "Hide Lesson"}
+            {isLoading ? "Deleting…" : "Delete Permanently"}
           </button>
         </div>
         {error && (
@@ -1266,6 +1257,7 @@ function RestoreDefaultModal({ lesson, onConfirm, onClose, isLoading, error }) {
 function ToggleLessonVisibilityModal({
   lesson,
   isCurrentlyHidden,
+  scopeLabel,
   onConfirm,
   onClose,
   isLoading,
@@ -1302,8 +1294,8 @@ function ToggleLessonVisibilityModal({
             </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400">
               {willHide
-                ? "Students won't see this lesson"
-                : "Students will see this lesson"}
+                ? `Students in ${scopeLabel} won't see this lesson`
+                : `Students in ${scopeLabel} will see this lesson`}
             </p>
           </div>
         </div>
@@ -1314,8 +1306,8 @@ function ToggleLessonVisibilityModal({
               <strong className="text-stone-900 dark:text-white">
                 {lesson.title}
               </strong>{" "}
-              from students? You can publish it again from this page at any
-              time.
+              from students in {scopeLabel}? You can publish it again from this
+              page at any time.
             </>
           ) : (
             <>
@@ -1323,7 +1315,7 @@ function ToggleLessonVisibilityModal({
               <strong className="text-stone-900 dark:text-white">
                 {lesson.title}
               </strong>{" "}
-              to students?
+              to students in {scopeLabel}?
             </>
           )}
         </p>
@@ -1479,26 +1471,115 @@ const WEEK_STATE_META = {
     Icon: EyeOff,
     cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800",
   },
+  mixed: {
+    label: "Mixed",
+    hint: "Differs between your sections",
+    Icon: CircleDashed,
+    cls: "bg-stone-50 text-stone-600 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-600",
+  },
 };
 
 const WEEK_STATE_NEXT = {
   open: "Hide",
   published: "Open to everyone",
   hidden: "Publish",
+  mixed: "Publish",
 };
 
-function WeekStatePill({ state, weekNumber, onCycle }) {
+// Publishing acts on the sections in scope: the one picked in the Scope bar,
+// or every section the teacher handles under "All". With none (no section
+// added yet) the global default is shown read-only.
+function sectionsOrDefault(sections) {
+  return sections.length ? sections : [null];
+}
+
+function publishScopeLabel(sections, sectionId) {
+  if (sectionId) return sectionId;
+  return sections.length === 1
+    ? sections[0]
+    : `all ${sections.length} of your sections`;
+}
+
+function weekStateIn(publishState, section, weekId) {
+  if (!isWeekPublished(weekId, resolvePublishIds(publishState, section, "lessons")))
+    return "hidden";
+  if (isWeekOpen(weekId, resolvePublishIds(publishState, section, "open")))
+    return "open";
+  return "published";
+}
+
+// One state when every section in scope agrees, "mixed" when they differ —
+// showing one section's state for all of them would misreport the rest.
+function weekStateAcross(publishState, sections, weekId) {
+  const states = new Set(
+    sectionsOrDefault(sections).map((s) => weekStateIn(publishState, s, weekId)),
+  );
+  return states.size === 1 ? [...states][0] : "mixed";
+}
+
+function quizWeekStateAcross(publishState, sections, weekId) {
+  const states = new Set(
+    sectionsOrDefault(sections).map((s) =>
+      isWeekPublished(weekId, resolvePublishIds(publishState, s, "quizzes"))
+        ? "published"
+        : "hidden",
+    ),
+  );
+  return states.size === 1 ? [...states][0] : "mixed";
+}
+
+// Names the sections a publish toggle will change, so a teacher with several
+// sections never flips one she didn't mean to.
+function PublishScopeNote({ sections, sectionId, onManageSections }) {
+  if (!sections.length) {
+    return (
+      <div className="flex items-center gap-2 flex-wrap px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-sm font-bold">
+        <AlertCircle className="w-4 h-4 shrink-0" />
+        You can only publish for sections you handle. Add one in My Sections
+        first.
+        {onManageSections && (
+          <button
+            type="button"
+            onClick={onManageSections}
+            className="underline hover:no-underline"
+          >
+            Open My Sections
+          </button>
+        )}
+      </div>
+    );
+  }
+  return (
+    <p className="text-[12px] font-medium text-stone-500 dark:text-stone-400">
+      Publish, hide and open changes apply to{" "}
+      <strong className="font-bold text-stone-700 dark:text-stone-200">
+        {publishScopeLabel(sections, sectionId)}
+      </strong>
+      {!sectionId && sections.length > 1
+        ? " — pick one under Scope to change just that section."
+        : "."}
+    </p>
+  );
+}
+
+function WeekStatePill({ state, weekNumber, onCycle, disabled = false }) {
   const meta = WEEK_STATE_META[state];
   const next = `${WEEK_STATE_NEXT[state]} week ${weekNumber}`;
   return (
     <button
       type="button"
       onClick={onCycle}
-      title={`${meta.hint} — click to ${WEEK_STATE_NEXT[state].toLowerCase()}`}
-      aria-label={next}
+      disabled={disabled}
+      title={
+        disabled
+          ? `${meta.hint} — add a section in My Sections to publish`
+          : `${meta.hint} — click to ${WEEK_STATE_NEXT[state].toLowerCase()}`
+      }
+      aria-label={disabled ? `Week ${weekNumber}: ${meta.label}` : next}
       className={cn(
         "shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border text-[11px] font-bold transition-colors hover:brightness-95",
         meta.cls,
+        disabled && "opacity-60 cursor-not-allowed",
       )}
     >
       <meta.Icon className="w-3 h-3" aria-hidden="true" />
@@ -1510,14 +1591,14 @@ function WeekStatePill({ state, weekNumber, onCycle }) {
 function LessonsSlot({
   data,
   sectionId,
-  publishedWeekIds,
-  onPublishedWeekIdsChange,
-  openWeekIds,
-  onOpenWeekIdsChange,
+  publishState,
+  publishSections,
+  onUpdatePublishIds,
+  onNavigateTab,
   onEditLesson,
 }) {
   const { weeksWithHidden: weeks, dbLessons } = useLessonsData();
-  const { user } = useAuth();
+  const canPublish = publishSections.length > 0;
   const [expandedWeekId, setExpandedWeekId] = useState(null);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1528,84 +1609,35 @@ function LessonsSlot({
   const [restoringLesson, setRestoringLesson] = useState(null);
   const [restoreLoading, setRestoreLoading] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
-  const [togglingLessonId, setTogglingLessonId] = useState(null);
-  // Tracked separately from togglingLessonId so the spinner only appears
-  // while the actual UPDATE is in flight, not while the confirm dialog is open.
   const [pendingVisibilityLesson, setPendingVisibilityLesson] = useState(null);
 
-  // Per-lesson publish/hide toggle.
-  // For an existing DB row we do a partial UPDATE so a stale local snapshot
-  // (e.g. before another teacher's save has been pushed via Realtime) can't
-  // overwrite their edits — only is_hidden changes.
-  // For a static lesson with no DB row yet, we seed one with the static
-  // content; once the row exists, future toggles take the UPDATE path.
-  async function handleToggleLessonHidden(lesson) {
-    if (togglingLessonId) return;
-    setTogglingLessonId(lesson.id);
-    try {
-      const dbRow = dbLessons.get(lesson.id);
-      const nextHidden = !(dbRow ? dbRow.is_hidden : lesson.isHidden);
-      if (dbRow) {
-        await setLessonHidden(lesson.id, nextHidden);
-      } else {
-        await upsertLesson({
-          id: lesson.id,
-          week_id: lesson.weekId,
-          lesson_number: lesson.lessonNumber,
-          title: lesson.title,
-          badge: lesson.badge || null,
-          subtitle: lesson.subtitle || null,
-          read_time: lesson.readTime || "~15 min read",
-          xp: lesson.xp || 50,
-          hero_image_url: lesson.heroImage || null,
-          hero_image_alt: lesson.heroImageAlt || null,
-          sections: lesson.sections || [],
-          references: lesson.references || [],
-          layout: lesson.layout || [],
-          is_custom: false,
-          is_hidden: nextHidden,
-          created_by: user?.id || null,
-        });
-      }
-    } catch (err) {
-      console.error("Failed to toggle lesson visibility:", err);
-    } finally {
-      setTogglingLessonId(null);
-    }
+  // Shown as hidden if any section in scope hides it, so publishing from
+  // here always brings every one of those sections in line.
+  function isLessonHiddenInScope(lessonId) {
+    return sectionsOrDefault(publishSections).some((s) =>
+      isLessonHidden(
+        lessonId,
+        resolvePublishIds(publishState, s, "lessons-individual"),
+      ),
+    );
   }
 
+  function toggleLessonHidden(lesson) {
+    const hide = !isLessonHiddenInScope(lesson.id);
+    onUpdatePublishIds("lessons-individual", (current) => {
+      const next = new Set(current ?? []);
+      if (hide) next.add(lesson.id);
+      else next.delete(lesson.id);
+      return next;
+    });
+  }
+
+  // Only custom lessons can be deleted; seed lessons are hidden per section.
   async function handleDeleteConfirm(lesson) {
     setDeleteLoading(true);
     setDeleteError(null);
     try {
-      const dbRow = dbLessons.get(lesson.id);
-      if (dbRow?.is_custom) {
-        // Custom lesson — hard delete
-        await deleteLesson(lesson.id, { isStatic: false });
-      } else if (dbRow) {
-        // Forked static lesson (has DB row but not custom) — soft-delete via UPDATE
-        await deleteLesson(lesson.id, { isStatic: true });
-      } else {
-        // Pure static lesson — no DB row yet; upsert with is_hidden=true
-        await upsertLesson({
-          id: lesson.id,
-          week_id: lesson.weekId,
-          lesson_number: lesson.lessonNumber,
-          title: lesson.title,
-          badge: lesson.badge || null,
-          subtitle: lesson.subtitle || null,
-          read_time: lesson.readTime || "~15 min read",
-          xp: lesson.xp || 50,
-          hero_image_url: lesson.heroImage || null,
-          hero_image_alt: lesson.heroImageAlt || null,
-          sections: lesson.sections || [],
-          references: lesson.references || [],
-          layout: lesson.layout || [],
-          is_custom: false,
-          is_hidden: true,
-          created_by: user?.id || null,
-        });
-      }
+      await deleteLesson(lesson.id);
       setDeletingLesson(null);
     } catch (err) {
       setDeleteError(err.message || "Failed to delete lesson.");
@@ -1631,34 +1663,32 @@ function LessonsSlot({
   //   hidden    → not in publish set, not in open set        (locked for everyone)
   //   published → in publish set, not in open set            (locked until previous week is done)
   //   open      → in publish set AND in open set             (accessible regardless of prior progress)
+  // With several sections in scope a week can also be "mixed"; cycling from
+  // there publishes it for all of them.
   function getWeekState(weekId) {
-    if (!isWeekPublished(weekId, publishedWeekIds)) return "hidden";
-    if (isWeekOpen(weekId, openWeekIds)) return "open";
-    return "published";
+    return weekStateAcross(publishState, publishSections, weekId);
   }
 
   function cycleWeekState(weekId) {
-    const state = getWeekState(weekId);
-    const publishBase = publishedWeekIds ?? new Set(weeks.map((w) => w.id));
-    const nextPublish = new Set(publishBase);
-    const nextOpen = new Set(openWeekIds ?? []);
+    const target = {
+      hidden: "published",
+      published: "open",
+      open: "hidden",
+      mixed: "published",
+    }[getWeekState(weekId)];
 
-    if (state === "hidden") {
-      // hidden → published
-      nextPublish.add(weekId);
-      nextOpen.delete(weekId);
-    } else if (state === "published") {
-      // published → open
-      nextPublish.add(weekId);
-      nextOpen.add(weekId);
-    } else {
-      // open → hidden
-      nextPublish.delete(weekId);
-      nextOpen.delete(weekId);
-    }
-
-    onPublishedWeekIdsChange(nextPublish);
-    onOpenWeekIdsChange(nextOpen);
+    onUpdatePublishIds("lessons", (current) => {
+      const next = new Set(current ?? weeks.map((w) => w.id));
+      if (target === "hidden") next.delete(weekId);
+      else next.add(weekId);
+      return next;
+    });
+    onUpdatePublishIds("open", (current) => {
+      const next = new Set(current ?? []);
+      if (target === "open") next.add(weekId);
+      else next.delete(weekId);
+      return next;
+    });
   }
 
   // Build a lookup from lesson id → activity data (completion map).
@@ -1738,6 +1768,12 @@ function LessonsSlot({
             </div>
           </div>
 
+          <PublishScopeNote
+            sections={publishSections}
+            sectionId={sectionId}
+            onManageSections={() => onNavigateTab?.("sections")}
+          />
+
           {getWeekState(expandedWeek.id) === "hidden" && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-sm font-bold">
               <EyeOff className="w-4 h-4 shrink-0" />
@@ -1753,8 +1789,7 @@ function LessonsSlot({
                 const dbRow = dbLessons.get(lesson.id);
                 const isCustomLesson = !!dbRow?.is_custom;
                 const isEdited = !!dbRow && !dbRow.is_custom;
-                const isHidden = dbRow ? !!dbRow.is_hidden : !!lesson.isHidden;
-                const isToggling = togglingLessonId === lesson.id;
+                const isHidden = isLessonHiddenInScope(lesson.id);
                 return (
                   <PortalPanel
                     key={lesson.id}
@@ -1772,8 +1807,14 @@ function LessonsSlot({
                         <div className="flex items-center gap-0.5 opacity-0 group-hover/lesson-card:opacity-100 focus-within:opacity-100 transition-opacity duration-150">
                           <button
                             onClick={() => setPendingVisibilityLesson(lesson)}
-                            disabled={isToggling}
-                            title={isHidden ? "Publish lesson" : "Hide lesson"}
+                            disabled={!canPublish}
+                            title={
+                              !canPublish
+                                ? "Add a section in My Sections to publish"
+                                : isHidden
+                                  ? "Publish lesson"
+                                  : "Hide lesson"
+                            }
                             aria-label={
                               isHidden ? "Publish lesson" : "Hide lesson"
                             }
@@ -1783,7 +1824,7 @@ function LessonsSlot({
                               isHidden
                                 ? "text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                                 : "text-secondary-500 hover:text-secondary-600 dark:text-secondary-400 dark:hover:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-900/20",
-                              isToggling && "opacity-60 cursor-not-allowed",
+                              !canPublish && "opacity-60 cursor-not-allowed",
                             )}
                           >
                             {isHidden ? (
@@ -1815,21 +1856,19 @@ function LessonsSlot({
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => {
-                              setDeleteError(null);
-                              setDeletingLesson(lesson);
-                            }}
-                            title={
-                              isCustomLesson ? "Delete lesson" : "Hide lesson"
-                            }
-                            className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            aria-label={
-                              isCustomLesson ? "Delete lesson" : "Hide lesson"
-                            }
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {isCustomLesson && (
+                            <button
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeletingLesson(lesson);
+                              }}
+                              title="Delete lesson"
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              aria-label="Delete lesson"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1901,6 +1940,12 @@ function LessonsSlot({
             />
           </div>
 
+          <PublishScopeNote
+            sections={publishSections}
+            sectionId={sectionId}
+            onManageSections={() => onNavigateTab?.("sections")}
+          />
+
           {filteredWeeks.length > 0 ? (
             <PortalPanel>
               {groupByQuarter(filteredWeeks).map((quarter) => (
@@ -1945,6 +1990,7 @@ function LessonsSlot({
                               state={state}
                               weekNumber={week.weekNumber}
                               onCycle={() => cycleWeekState(week.id)}
+                              disabled={!canPublish}
                             />
                           }
                         />
@@ -1968,7 +2014,6 @@ function LessonsSlot({
       {deletingLesson && (
         <DeleteLessonModal
           lesson={deletingLesson}
-          isCustom={!!dbLessons.get(deletingLesson.id)?.is_custom}
           onConfirm={handleDeleteConfirm}
           onClose={() => {
             setDeletingLesson(null);
@@ -1992,26 +2037,18 @@ function LessonsSlot({
         />
       )}
 
-      {pendingVisibilityLesson &&
-        (() => {
-          const lesson = pendingVisibilityLesson;
-          const dbRow = dbLessons.get(lesson.id);
-          const isCurrentlyHidden = dbRow
-            ? !!dbRow.is_hidden
-            : !!lesson.isHidden;
-          return (
-            <ToggleLessonVisibilityModal
-              lesson={lesson}
-              isCurrentlyHidden={isCurrentlyHidden}
-              isLoading={togglingLessonId === lesson.id}
-              onClose={() => setPendingVisibilityLesson(null)}
-              onConfirm={async () => {
-                await handleToggleLessonHidden(lesson);
-                setPendingVisibilityLesson(null);
-              }}
-            />
-          );
-        })()}
+      {pendingVisibilityLesson && (
+        <ToggleLessonVisibilityModal
+          lesson={pendingVisibilityLesson}
+          isCurrentlyHidden={isLessonHiddenInScope(pendingVisibilityLesson.id)}
+          scopeLabel={publishScopeLabel(publishSections, sectionId)}
+          onClose={() => setPendingVisibilityLesson(null)}
+          onConfirm={() => {
+            toggleLessonHidden(pendingVisibilityLesson);
+            setPendingVisibilityLesson(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -4673,7 +4710,7 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
           <span
             className={cn(
               "inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
-              enabled ? "translate-x-18px" : "translate-x-2px",
+              enabled ? "translate-x-4.5" : "translate-x-0.5",
             )}
           />
         </button>
@@ -4695,7 +4732,6 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
 function DeleteQuizModal({
   lesson,
   quiz,
-  isCustom,
   onConfirm,
   onClose,
   isLoading,
@@ -4711,12 +4747,10 @@ function DeleteQuizModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-black text-stone-900 dark:text-white mb-2">
-          {isCustom ? "Delete Quiz" : "Hide Quiz from Students"}
+          Delete Quiz
         </h2>
         <p className="text-sm text-stone-500 dark:text-stone-400 mb-5">
-          {isCustom
-            ? `Permanently delete the quiz for "${quiz?.title ?? lesson.title}"? This cannot be undone.`
-            : `Hide the quiz for "${quiz?.title ?? lesson.title}" from students? The original quiz is preserved — use the restore button on this card to bring it back.`}
+          {`Permanently delete the quiz for "${quiz?.title ?? lesson.title}"? It is removed for every section. This cannot be undone.`}
         </p>
         {error && (
           <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 dark:text-red-400 text-sm font-bold">
@@ -4731,7 +4765,7 @@ function DeleteQuizModal({
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-bold text-sm transition-colors"
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isCustom ? "Delete permanently" : "Hide from students"}
+            Delete permanently
           </button>
           <button
             onClick={onClose}
@@ -5217,6 +5251,7 @@ function LessonQuizCard({
   pct,
   published,
   onTogglePublish,
+  canPublish = true,
   currentLimit,
   currentAttempts,
   currentShow,
@@ -5273,12 +5308,12 @@ function LessonQuizCard({
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          {(quiz || isCustomQuiz) && (
+          {isCustomQuiz && (
             <button
               onClick={onDelete}
-              title={isCustomQuiz ? "Delete quiz" : "Hide quiz"}
+              title="Delete quiz"
               className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              aria-label={isCustomQuiz ? "Delete quiz" : "Hide quiz"}
+              aria-label="Delete quiz"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -5292,14 +5327,20 @@ function LessonQuizCard({
         <button
           type="button"
           onClick={onTogglePublish}
+          disabled={!canPublish}
           className={cn(
             "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors shrink-0",
             published
               ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
               : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-200",
+            !canPublish && "opacity-60 cursor-not-allowed",
           )}
           title={
-            published ? "Click to hide this quiz" : "Click to publish this quiz"
+            !canPublish
+              ? "Add a section in My Sections to publish"
+              : published
+                ? "Click to hide this quiz"
+                : "Click to publish this quiz"
           }
           aria-label={
             published
@@ -5407,16 +5448,17 @@ function LessonQuizCard({
 function QuizzesManagementSlot({
   data,
   sectionId,
-  publishedQuizWeekIds,
-  onPublishedQuizWeekIdsChange,
-  hiddenQuizLessonIds,
-  onHiddenQuizLessonIdsChange,
+  publishState,
+  publishSections,
+  onUpdatePublishIds,
+  onNavigateTab,
   quizSettings,
   quizAccessGrants = [],
   onQuizAccessChange,
   onEditQuiz,
 }) {
   const { weeks, getQuiz, dbQuizzes, removeQuizRow } = useLessonsData();
+  const canPublish = publishSections.length > 0;
   const [accessLesson, setAccessLesson] = useState(null);
   // Ticks each minute so a grant's "open" count drops when its time runs out.
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -5455,14 +5497,8 @@ function QuizzesManagementSlot({
     if (!deletingQuizLesson) return;
     setDeleteQuizError(null);
     setDeleteQuizLoading(true);
-    const dbRow = dbQuizzes.get(deletingQuizLesson.id);
-    const isCustom = !!dbRow?.is_custom;
     try {
-      const currentQuiz = getQuiz(deletingQuizLesson.id);
-      await deleteQuiz(deletingQuizLesson.id, {
-        isStatic: !isCustom,
-        quizSnapshot: currentQuiz,
-      });
+      await deleteQuiz(deletingQuizLesson.id);
       setDeletingQuizLesson(null);
     } catch (err) {
       setDeleteQuizError(err.message || "Failed to delete quiz.");
@@ -5490,25 +5526,39 @@ function QuizzesManagementSlot({
     }
   }
 
+  // "Mixed" (published in some sections only) publishes it for all of them.
   function togglePublish(weekId) {
-    const base = publishedQuizWeekIds ?? new Set(weeks.map((w) => w.id));
-    const next = new Set(base);
-    if (next.has(weekId)) {
-      next.delete(weekId);
-    } else {
-      next.add(weekId);
-    }
-    onPublishedQuizWeekIdsChange(next);
+    const publish =
+      quizWeekStateAcross(publishState, publishSections, weekId) !==
+      "published";
+    onUpdatePublishIds("quizzes", (current) => {
+      const next = new Set(current ?? weeks.map((w) => w.id));
+      if (publish) next.add(weekId);
+      else next.delete(weekId);
+      return next;
+    });
   }
 
-  function toggleQuizHidden(lessonId) {
-    const next = new Set(hiddenQuizLessonIds ?? []);
-    if (next.has(lessonId)) {
-      next.delete(lessonId);
-    } else {
-      next.add(lessonId);
-    }
-    onHiddenQuizLessonIdsChange(next);
+  // Open in every section in scope — the card's "Published" state.
+  function isQuizPublishedInScope(weekId, lessonId) {
+    return sectionsOrDefault(publishSections).every(
+      (s) =>
+        isWeekPublished(weekId, resolvePublishIds(publishState, s, "quizzes")) &&
+        !isLessonHidden(
+          lessonId,
+          resolvePublishIds(publishState, s, "quizzes-individual"),
+        ),
+    );
+  }
+
+  function toggleQuizHidden(weekId, lessonId) {
+    const hide = isQuizPublishedInScope(weekId, lessonId);
+    onUpdatePublishIds("quizzes-individual", (current) => {
+      const next = new Set(current ?? []);
+      if (hide) next.add(lessonId);
+      else next.delete(lessonId);
+      return next;
+    });
   }
 
   const activityById = new Map(data.lessons.map((l) => [l.id, l]));
@@ -5603,7 +5653,14 @@ function QuizzesManagementSlot({
             </div>
           </div>
 
-          {!isWeekPublished(expandedWeek.id, publishedQuizWeekIds) && (
+          <PublishScopeNote
+            sections={publishSections}
+            sectionId={sectionId}
+            onManageSections={() => onNavigateTab?.("sections")}
+          />
+
+          {quizWeekStateAcross(publishState, publishSections, expandedWeek.id) ===
+            "hidden" && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-sm font-bold">
               <EyeOff className="w-4 h-4 shrink-0" />
               Quizzes for this week are hidden from students. You can still edit
@@ -5619,9 +5676,10 @@ function QuizzesManagementSlot({
                 const types = quiz?.questions
                   ? [...new Set(quiz.questions.map((qs) => qs.type))]
                   : [];
-                const published =
-                  isWeekPublished(expandedWeek.id, publishedQuizWeekIds) &&
-                  !isQuizLessonHidden(lesson.id, hiddenQuizLessonIds);
+                const published = isQuizPublishedInScope(
+                  expandedWeek.id,
+                  lesson.id,
+                );
                 const currentLimit = getQuizTimeLimit(quizSettings, lesson.id);
                 const currentAttempts = getQuizMaxAttempts(
                   quizSettings,
@@ -5642,7 +5700,10 @@ function QuizzesManagementSlot({
                     types={types}
                     pct={pct}
                     published={published}
-                    onTogglePublish={() => toggleQuizHidden(lesson.id)}
+                    onTogglePublish={() =>
+                      toggleQuizHidden(expandedWeek.id, lesson.id)
+                    }
+                    canPublish={canPublish}
                     accessCount={
                       grantsForLesson(lesson.id).filter((g) =>
                         isGrantActive(g, nowMs),
@@ -5701,6 +5762,12 @@ function QuizzesManagementSlot({
             />
           </div>
 
+          <PublishScopeNote
+            sections={publishSections}
+            sectionId={sectionId}
+            onManageSections={() => onNavigateTab?.("sections")}
+          />
+
           {filteredWeeks.length > 0 ? (
             <PortalPanel>
               {groupByQuarter(filteredWeeks).map((quarter) => (
@@ -5723,9 +5790,10 @@ function QuizzesManagementSlot({
                             ) / week.lessons.length,
                           )
                         : 0;
-                      const published = isWeekPublished(
+                      const state = quizWeekStateAcross(
+                        publishState,
+                        publishSections,
                         week.id,
-                        publishedQuizWeekIds,
                       );
                       return (
                         <RosterRow
@@ -5736,7 +5804,7 @@ function QuizzesManagementSlot({
                             `${week.lessons.length} ${week.lessons.length === 1 ? "quiz" : "quizzes"}`,
                           ]}
                           progress={avgPct}
-                          dimmed={!published}
+                          dimmed={state === "hidden"}
                           onOpen={() => {
                             setExpandedWeekId(week.id);
                             setSearch("");
@@ -5745,9 +5813,10 @@ function QuizzesManagementSlot({
                           openLabel={`Open week ${week.weekNumber}: ${week.title}`}
                           trailing={
                             <WeekStatePill
-                              state={published ? "published" : "hidden"}
+                              state={state}
                               weekNumber={week.weekNumber}
                               onCycle={() => togglePublish(week.id)}
+                              disabled={!canPublish}
                             />
                           }
                         />
@@ -5772,7 +5841,6 @@ function QuizzesManagementSlot({
         <DeleteQuizModal
           lesson={deletingQuizLesson}
           quiz={getQuiz(deletingQuizLesson.id)}
-          isCustom={!!dbQuizzes.get(deletingQuizLesson.id)?.is_custom}
           onConfirm={handleDeleteQuizConfirm}
           onClose={() => {
             setDeletingQuizLesson(null);
@@ -5791,8 +5859,7 @@ function QuizzesManagementSlot({
           studentById={studentById}
           grants={grantsForLesson(accessLesson.id)}
           isClosedForClass={
-            !isWeekPublished(expandedWeek.id, publishedQuizWeekIds) ||
-            isQuizLessonHidden(accessLesson.id, hiddenQuizLessonIds)
+            !isQuizPublishedInScope(expandedWeek.id, accessLesson.id)
           }
           nowMs={nowMs}
           onGrantsChange={onQuizAccessChange}
@@ -5844,6 +5911,33 @@ const SIDEBAR_TABS = [
 
 // --- Main page ---
 
+// "My Sections" used to live in this browser's localStorage, which the server
+// could not check. The first load carries that list into teacher_sections,
+// then drops the local copy.
+async function loadTeacherSections(teacherId) {
+  const legacyKey = `sq_teacher_sections_${teacherId}`;
+  const names = await fetchTeacherSections(teacherId);
+  let legacy = [];
+  try {
+    legacy = JSON.parse(localStorage.getItem(legacyKey) ?? "[]");
+  } catch {
+    /* corrupt entry — nothing to carry over */
+  }
+  const carried = Array.isArray(legacy)
+    ? legacy.filter((name) => typeof name === "string" && name)
+    : [];
+  if (!names.length && carried.length) {
+    await Promise.all(carried.map((name) => addTeacherSection(teacherId, name)));
+    names.push(...carried);
+  }
+  try {
+    localStorage.removeItem(legacyKey);
+  } catch {
+    /* storage disabled */
+  }
+  return names;
+}
+
 export function TeacherPortalPage({
   onBack,
   onEditLesson,
@@ -5861,64 +5955,33 @@ export function TeacherPortalPage({
   const [loadError, setLoadError] = useState(null);
   const [gradingSub, setGradingSub] = useState(null);
 
-  const storageKey = `sq_teacher_sections_${user?.id ?? "guest"}`;
-  const [mySectionNames, setMySectionNamesState] = useState(() => {
-    try {
-      const val = localStorage.getItem(
-        `sq_teacher_sections_${user?.id ?? "guest"}`,
-      );
-      return val ? JSON.parse(val) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Sections this teacher handles, stored in teacher_sections so RLS can
+  // check every publish write against it. Loaded with the dashboard.
+  const [mySectionNames, setMySectionNamesState] = useState([]);
+  const [portalError, setPortalError] = useState(null);
 
-  function setMySectionNames(next) {
+  async function setMySectionNames(next) {
+    const prev = mySectionNames;
     setMySectionNamesState(next);
-    localStorage.setItem(storageKey, JSON.stringify(next));
+    if (!next.includes(selectedSectionId)) setSelectedSectionId(null);
+    const added = next.filter((name) => !prev.includes(name));
+    const removed = prev.filter((name) => !next.includes(name));
+    try {
+      await Promise.all([
+        ...added.map((name) => addTeacherSection(user.id, name)),
+        ...removed.map((name) => removeTeacherSection(user.id, name)),
+      ]);
+      refreshDashboard(next);
+    } catch (err) {
+      console.error("Failed to save sections:", err);
+      setMySectionNamesState(prev);
+      setPortalError("Couldn't save your sections. Please try again.");
+    }
   }
 
-  const [publishedWeekIds, setPublishedWeekIdsState] = useState(() =>
-    getPublishedWeekIds(),
+  const [publishState, setPublishState] = useState(() =>
+    getCachedPublishState(),
   );
-
-  function setPublishedWeekIds(ids) {
-    setPublishedWeekIdsState(ids);
-    savePublishedWeekIds(ids).catch((err) => {
-      console.error("Failed to save published week ids:", err);
-    });
-  }
-
-  const [publishedQuizWeekIds, setPublishedQuizWeekIdsState] = useState(() =>
-    getPublishedQuizWeekIds(),
-  );
-
-  function setPublishedQuizWeekIds(ids) {
-    setPublishedQuizWeekIdsState(ids);
-    savePublishedQuizWeekIds(ids).catch((err) => {
-      console.error("Failed to save published quiz week ids:", err);
-    });
-  }
-
-  const [hiddenQuizLessonIds, setHiddenQuizLessonIdsState] = useState(() =>
-    getHiddenQuizLessonIds(),
-  );
-
-  function setHiddenQuizLessonIds(ids) {
-    setHiddenQuizLessonIdsState(ids);
-    saveHiddenQuizLessonIds(ids).catch((err) => {
-      console.error("Failed to save hidden quiz lesson ids:", err);
-    });
-  }
-
-  const [openWeekIds, setOpenWeekIdsState] = useState(() => getOpenWeekIds());
-
-  function setOpenWeekIds(ids) {
-    setOpenWeekIdsState(ids);
-    saveOpenWeekIds(ids).catch((err) => {
-      console.error("Failed to save open week ids:", err);
-    });
-  }
 
   const [quizSettings, setQuizSettings] = useState(() =>
     getCachedQuizSettings(),
@@ -5928,28 +5991,16 @@ export function TeacherPortalPage({
   // teachers' edits show up live in this portal too.
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      fetchPublishedWeekIds(),
-      fetchPublishedQuizWeekIds(),
-      fetchOpenWeekIds(),
-      fetchHiddenQuizLessonIds(),
-      fetchQuizSettings(),
-    ])
-      .then(([lessons, quizzes, open, hiddenQuizzes, settings]) => {
+    Promise.all([fetchPublishState(), fetchQuizSettings()])
+      .then(([publish, settings]) => {
         if (cancelled) return;
-        setPublishedWeekIdsState(lessons);
-        setPublishedQuizWeekIdsState(quizzes);
-        setOpenWeekIdsState(open);
-        setHiddenQuizLessonIdsState(hiddenQuizzes);
+        setPublishState(publish);
         setQuizSettings(settings);
       })
       .catch((err) => console.error("Failed to load course settings:", err));
 
-    const unsubPublish = subscribeToPublishedState((scope, ids) => {
-      if (scope === "lessons") setPublishedWeekIdsState(ids);
-      else if (scope === "quizzes") setPublishedQuizWeekIdsState(ids);
-      else if (scope === "open") setOpenWeekIdsState(ids);
-      else if (scope === "quizzes-individual") setHiddenQuizLessonIdsState(ids);
+    const unsubPublish = subscribeToPublishState((next) => {
+      if (!cancelled) setPublishState(next);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
       fetchQuizSettings()
@@ -5985,11 +6036,14 @@ export function TeacherPortalPage({
   }, []);
 
   useEffect(() => {
+    if (!user?.id) return;
     let cancelled = false;
-    fetchTeacherDashboard()
-      .then((result) => {
+    loadTeacherSections(user.id)
+      .then(async (names) => {
+        const result = await fetchTeacherDashboard(names);
         if (!cancelled) {
           setData(result);
+          setMySectionNamesState(names);
           setLoading(false);
         }
       })
@@ -6002,13 +6056,15 @@ export function TeacherPortalPage({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.id]);
 
   // Silent re-fetch after a grade is saved — no spinner, the table just
   // updates in place and the submission flips from pending to graded.
-  async function refreshDashboard() {
+  // Also runs after the section list changes, since the dashboard only holds
+  // the teacher's own sections.
+  async function refreshDashboard(sectionNames = mySectionNames) {
     try {
-      setData(await fetchTeacherDashboard());
+      setData(await fetchTeacherDashboard(sectionNames));
     } catch (err) {
       setLoadError(err.message ?? "Failed to load dashboard");
     }
@@ -6026,18 +6082,48 @@ export function TeacherPortalPage({
 
   const ActiveSlot = TAB_SLOTS[activeTab] ?? OverviewSlot;
   const allSections = data?.sections ?? [];
-  const sections =
-    mySectionNames !== null
-      ? mySectionNames.map(
-          (name) =>
-            allSections.find((s) => s.name === name) ?? {
-              id: name,
-              name,
-              students: 0,
-              avgScore: 0,
-            },
-        )
-      : allSections;
+  const sections = mySectionNames.map(
+    (name) =>
+      allSections.find((s) => s.name === name) ?? {
+        id: name,
+        name,
+        students: 0,
+        avgScore: 0,
+      },
+  );
+
+  // What a publish toggle changes: the section picked under Scope, or every
+  // section this teacher handles under "All".
+  const publishSections = selectedSectionId
+    ? [selectedSectionId]
+    : mySectionNames;
+
+  // Applies one scope change to every section in publishSections.
+  // Optimistic; if a write is refused (RLS: a section she doesn't handle) the
+  // real state is reloaded and the teacher is told.
+  function updatePublishIds(scope, updater) {
+    const writes = publishSections.map((section) => ({
+      section,
+      ids: updater(resolvePublishIds(publishState, section, scope)),
+    }));
+    setPublishState((prev) =>
+      writes.reduce(
+        (acc, w) => withSectionPublishIds(acc, w.section, scope, w.ids),
+        prev,
+      ),
+    );
+    Promise.all(
+      writes.map((w) => saveSectionPublishIds(w.section, scope, w.ids)),
+    ).catch((err) => {
+      console.error("Failed to save publish state:", err);
+      setPortalError(
+        "Couldn't save that change — you can only publish for sections you handle.",
+      );
+      fetchPublishState()
+        .then(setPublishState)
+        .catch(() => {});
+    });
+  }
 
   // Scope all slot data to only the teacher's assigned sections so "All"
   // aggregates across their sections only, not the entire database.
@@ -6093,6 +6179,24 @@ export function TeacherPortalPage({
         </div>
       )}
 
+      {portalError && (
+        <div
+          role="alert"
+          className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-400 text-sm font-bold"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="flex-1">{portalError}</span>
+          <button
+            type="button"
+            onClick={() => setPortalError(null)}
+            aria-label="Dismiss"
+            className="p-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <Loader2 className="w-10 h-10 text-secondary-500 animate-spin mb-4" />
@@ -6123,14 +6227,9 @@ export function TeacherPortalPage({
           teacherName={teacherName}
           mySectionNames={mySectionNames}
           onSectionNamesChange={setMySectionNames}
-          publishedWeekIds={publishedWeekIds}
-          onPublishedWeekIdsChange={setPublishedWeekIds}
-          openWeekIds={openWeekIds}
-          onOpenWeekIdsChange={setOpenWeekIds}
-          publishedQuizWeekIds={publishedQuizWeekIds}
-          onPublishedQuizWeekIdsChange={setPublishedQuizWeekIds}
-          hiddenQuizLessonIds={hiddenQuizLessonIds}
-          onHiddenQuizLessonIdsChange={setHiddenQuizLessonIds}
+          publishState={publishState}
+          publishSections={publishSections}
+          onUpdatePublishIds={updatePublishIds}
           quizSettings={quizSettings}
           quizAccessGrants={quizAccessGrants}
           onQuizAccessChange={setQuizAccessGrants}

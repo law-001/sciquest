@@ -32,6 +32,19 @@ begin
 end;
 $$;
 
+-- True for any teacher/admin. plpgsql so it can be defined before `staff`.
+-- Added in migrations/20260911010000_sections_table.sql.
+create or replace function public.is_staff()
+returns boolean
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+begin
+  return exists (select 1 from public.staff where id = auth.uid());
+end;
+$$;
+
 -- 1. STUDENTS TABLE
 create table if not exists public.students (
   id              uuid references auth.users(id) on delete cascade primary key,
@@ -131,6 +144,31 @@ create table if not exists public.curriculum_lessons (
   week_id    text not null
 );
 
+-- 3f. TEACHER SECTIONS TABLE
+--     The sections each teacher handles (teacher portal "My Sections").
+--     Publishing and per-student quiz grants are limited to these.
+--     Added in migrations/20260911000000_section_publish_state.sql.
+create table if not exists public.teacher_sections (
+  teacher_id  uuid not null references public.staff(id) on delete cascade,
+  section     text not null,
+  created_at  timestamptz not null default now(),
+  primary key (teacher_id, section)
+);
+
+-- 3g. SECTION PUBLISH STATE TABLE
+--     A section's override of a course_publish_state scope. No row for a
+--     scope = inherit the global row; no global row = built-in default.
+--     Added in migrations/20260911000000_section_publish_state.sql.
+create table if not exists public.section_publish_state (
+  section     text not null,
+  scope       text not null check (scope in (
+                'lessons', 'open', 'quizzes', 'quizzes-individual', 'lessons-individual'
+              )),
+  item_ids    text[] not null default '{}',
+  updated_at  timestamptz not null default now(),
+  primary key (section, scope)
+);
+
 -- ============================================================
 -- 4. TRIGGER: auto-create the correct row on new auth user
 --    Reads role from user_metadata.role:
@@ -185,11 +223,13 @@ alter table public.student_progress     enable row level security;
 alter table public.quiz_attempts        enable row level security;
 alter table public.student_achievements enable row level security;
 
--- Students: authenticated users can read all student rows.
-create policy "auth_read_students"
+-- Students: a student reads their own row; staff read all
+-- (migrations/20260911020000_student_data_access.sql). The leaderboard goes
+-- through leaderboard_entries() instead.
+create policy "own_or_staff_read_students"
   on public.students for select
   to authenticated
-  using (true);
+  using (id = auth.uid() or public.is_staff());
 
 -- Students: a student can update their own row.
 create policy "own_student_update"
@@ -214,10 +254,10 @@ create policy "own_progress_all"
   using (auth.uid() = student_id)
   with check (auth.uid() = student_id);
 
-create policy "auth_read_progress"
+create policy "own_or_staff_read_progress"
   on public.student_progress for select
   to authenticated
-  using (true);
+  using (student_id = auth.uid() or public.is_staff());
 
 -- Quiz availability, enforced server-side (migrations/20260910010000_enforce_quiz_availability.sql).
 -- Mirrors isQuizLocked in src/App.jsx: open to the class, or the student holds a
@@ -240,6 +280,70 @@ begin
 end;
 $$;
 
+-- Section-scoped publishing (migrations/20260911000000_section_publish_state.sql).
+create or replace function public.is_staff_admin()
+returns boolean
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+begin
+  return exists (select 1 from public.staff where id = auth.uid() and role = 'admin');
+end;
+$$;
+
+create or replace function public.can_manage_section(p_section text)
+returns boolean
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+begin
+  return public.is_staff_admin() or exists (
+    select 1 from public.teacher_sections
+    where teacher_id = auth.uid() and section = p_section
+  );
+end;
+$$;
+
+create or replace function public.can_manage_student(p_student_id uuid)
+returns boolean
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+begin
+  return public.is_staff_admin() or exists (
+    select 1
+    from public.students s
+    join public.teacher_sections ts on ts.section = s.section
+    where s.id = p_student_id and ts.teacher_id = auth.uid()
+  );
+end;
+$$;
+
+-- Section row wins; a section that never touched this scope inherits the
+-- global row. Null means neither exists (caller applies the default).
+create or replace function public.publish_ids_for(p_section text, p_scope text)
+returns text[]
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+declare
+  v_ids text[];
+begin
+  select item_ids into v_ids
+  from public.section_publish_state
+  where section = p_section and scope = p_scope;
+  if found then
+    return v_ids;
+  end if;
+  select week_ids into v_ids from public.course_publish_state where scope = p_scope;
+  return v_ids;
+end;
+$$;
+
 create or replace function public.is_quiz_open_for(
   p_student_id uuid,
   p_lesson_id  text,
@@ -252,12 +356,14 @@ security definer set search_path = public
 as $$
 declare
   v_week      text := coalesce(public.quiz_week_for_lesson(p_lesson_id), p_week_id);
+  v_section   text;
   v_published text[];
   v_hidden    text[];
   v_closed    boolean;
 begin
-  select week_ids into v_published from public.course_publish_state where scope = 'quizzes';
-  select week_ids into v_hidden    from public.course_publish_state where scope = 'quizzes-individual';
+  select section into v_section from public.students where id = p_student_id;
+  v_published := public.publish_ids_for(v_section, 'quizzes');
+  v_hidden    := public.publish_ids_for(v_section, 'quizzes-individual');
 
   v_closed :=
        (v_published is not null and not coalesce(v_week = any(v_published), false))
@@ -287,10 +393,10 @@ create policy "own_attempt_insert"
     and public.is_quiz_open_for(auth.uid(), lesson_id, week_id)
   );
 
-create policy "auth_read_attempts"
+create policy "own_or_staff_read_attempts"
   on public.quiz_attempts for select
   to authenticated
-  using (true);
+  using (student_id = auth.uid() or public.is_staff());
 
 -- Quiz attempts: staff (teachers + admins) can grade — set score,
 -- xp_awarded, and clear pending_grade_count from the Teacher Portal.
@@ -306,10 +412,10 @@ create policy "own_achievements_all"
   using (auth.uid() = student_id)
   with check (auth.uid() = student_id);
 
-create policy "auth_read_achievements"
+create policy "own_or_staff_read_achievements"
   on public.student_achievements for select
   to authenticated
-  using (true);
+  using (student_id = auth.uid() or public.is_staff());
 
 -- Curriculum lessons: reference data, readable by everyone signed in, written only by migrations.
 alter table public.curriculum_lessons enable row level security;
@@ -327,11 +433,183 @@ create policy "own_read_quiz_access"
   to authenticated
   using (auth.uid() = student_id);
 
-create policy "staff_all_quiz_access"
-  on public.quiz_student_access for all
+create policy "staff_read_quiz_access"
+  on public.quiz_student_access for select
   to authenticated
-  using      (exists (select 1 from public.staff where id = auth.uid()))
-  with check (exists (select 1 from public.staff where id = auth.uid()));
+  using (exists (select 1 from public.staff where id = auth.uid()));
+
+-- Only teachers of the student's section (or an admin) can grant/revoke.
+create policy "section_staff_insert_quiz_access"
+  on public.quiz_student_access for insert
+  to authenticated
+  with check (public.can_manage_student(student_id));
+
+create policy "section_staff_update_quiz_access"
+  on public.quiz_student_access for update
+  to authenticated
+  using      (public.can_manage_student(student_id))
+  with check (public.can_manage_student(student_id));
+
+create policy "section_staff_delete_quiz_access"
+  on public.quiz_student_access for delete
+  to authenticated
+  using (public.can_manage_student(student_id));
+
+-- Teacher sections: a teacher manages her own list; admins see and edit all.
+-- NOTE: self-assigned — any teacher can add any section. Tighten before
+-- production if an admin should assign sections instead.
+alter table public.teacher_sections enable row level security;
+
+create policy "own_read_teacher_sections"
+  on public.teacher_sections for select
+  to authenticated
+  using (teacher_id = auth.uid() or public.is_staff_admin());
+
+create policy "own_insert_teacher_sections"
+  on public.teacher_sections for insert
+  to authenticated
+  with check (
+    (teacher_id = auth.uid() and exists (select 1 from public.staff where id = auth.uid()))
+    or public.is_staff_admin()
+  );
+
+create policy "own_delete_teacher_sections"
+  on public.teacher_sections for delete
+  to authenticated
+  using (teacher_id = auth.uid() or public.is_staff_admin());
+
+-- Section publish state: everyone signed in reads (students need their own
+-- section's); only that section's teachers or an admin write.
+-- course_publish_state (the global default) is admin-write-only; its policies
+-- live in the migrations.
+alter table public.section_publish_state enable row level security;
+
+create policy "anyone_read_section_publish_state"
+  on public.section_publish_state for select
+  to authenticated
+  using (true);
+
+create policy "section_staff_insert_publish_state"
+  on public.section_publish_state for insert
+  to authenticated
+  with check (public.can_manage_section(section));
+
+create policy "section_staff_update_publish_state"
+  on public.section_publish_state for update
+  to authenticated
+  using      (public.can_manage_section(section))
+  with check (public.can_manage_section(section));
+
+create policy "section_staff_delete_publish_state"
+  on public.section_publish_state for delete
+  to authenticated
+  using (public.can_manage_section(section));
+
+-- Sections (migrations/20260911010000_sections_table.sql): signup lists them
+-- before an account exists, so anon can read; staff create; admins delete.
+create table if not exists public.sections (
+  id               uuid primary key default gen_random_uuid(),
+  name             text not null unique,
+  created_by_role  text not null check (created_by_role in ('admin', 'teacher')),
+  created_at       timestamptz not null default now()
+);
+
+alter table public.sections enable row level security;
+
+create policy "sections_select"
+  on public.sections for select
+  to anon, authenticated
+  using (true);
+
+create policy "sections_insert"
+  on public.sections for insert
+  to authenticated
+  with check (
+    public.is_staff()
+    and (created_by_role = 'teacher' or public.is_staff_admin())
+  );
+
+create policy "sections_delete"
+  on public.sections for delete
+  to authenticated
+  using (public.is_staff_admin());
+
+-- Leaderboard (migrations/20260911020000_student_data_access.sql): what the
+-- leaderboard shows, without exposing other students' rows. Achievement XP
+-- is added client-side from the keys.
+create or replace function public.leaderboard_entries(p_since timestamptz default null)
+returns table (
+  student_id        uuid,
+  first_name        text,
+  last_name         text,
+  avatar            text,
+  avatar_style      jsonb,
+  progress_xp       bigint,
+  achievement_keys  text[]
+)
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+#variable_conflict use_column
+begin
+  return query
+  with lesson_xp as (
+    select sp.student_id as sid, sum(sp.xp_awarded)::bigint as xp
+    from public.student_progress sp
+    where sp.completed
+      and (p_since is null or coalesce(sp.completed_at, sp.created_at) >= p_since)
+    group by sp.student_id
+  ),
+  quiz_xp as (
+    select qa.student_id as sid, sum(qa.xp_awarded)::bigint as xp
+    from public.quiz_attempts qa
+    where p_since is null or qa.submitted_at >= p_since
+    group by qa.student_id
+  ),
+  ach as (
+    select sa.student_id as sid, array_agg(sa.achievement_key) as keys
+    from public.student_achievements sa
+    where p_since is null or sa.unlocked_at >= p_since
+    group by sa.student_id
+  )
+  select
+    s.id,
+    s.first_name,
+    s.last_name,
+    s.avatar,
+    s.avatar_style,
+    coalesce(l.xp, 0) + coalesce(q.xp, 0),
+    coalesce(a.keys, '{}'::text[])
+  from public.students s
+  left join lesson_xp l on l.sid = s.id
+  left join quiz_xp   q on q.sid = s.id
+  left join ach       a on a.sid = s.id
+  where l.sid is not null or q.sid is not null or a.sid is not null;
+end;
+$$;
+
+revoke execute on function public.leaderboard_entries(timestamptz) from public, anon;
+grant execute on function public.leaderboard_entries(timestamptz) to authenticated;
+
+-- Teacher portal roster "remove": only for students in a section the caller
+-- handles (students' own-row update policy can't allow it).
+create or replace function public.remove_student_from_section(p_student_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if not public.can_manage_student(p_student_id) then
+    raise exception 'You can only remove students from sections you handle'
+      using errcode = '42501';
+  end if;
+  update public.students set section = null where id = p_student_id;
+end;
+$$;
+
+revoke execute on function public.remove_student_from_section(uuid) from public, anon;
+grant execute on function public.remove_student_from_section(uuid) to authenticated;
 
 -- ============================================================
 -- 7. READABLE VIEWS

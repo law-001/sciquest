@@ -10,7 +10,9 @@
 //   supabase functions deploy invite-teacher
 //
 // Set SITE_URL in Supabase Dashboard → Project Settings → Edge Functions → Secrets
-// (e.g. https://your-app.vercel.app or http://localhost:5173 for local dev)
+// to the deployed app URL (e.g. https://your-app.vercel.app). It is required:
+// without it the function refuses to send, rather than mailing a link that
+// points at a developer's machine.
 
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
@@ -37,7 +39,8 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  const siteUrl = Deno.env.get('SITE_URL') ?? 'http://localhost:5173'
+  const siteUrl = Deno.env.get('SITE_URL')
+  if (!siteUrl) return json({ error: 'Server misconfigured: SITE_URL is not set' }, 500)
 
   // 1. Identify the caller from their JWT.
   const caller = createClient(supabaseUrl, anonKey, {
