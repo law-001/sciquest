@@ -291,14 +291,16 @@ export async function removeStudentFromSection(studentId) {
 }
 
 // Fetches completed game_progress rows for a list of student IDs.
-// Used by the teacher's Progress view to show per-student game activity.
+// The teacher Gradebook grades game work from these, so it pages: a whole
+// section's rows can pass the 1000-row cap and would silently drop scores.
 export async function fetchGameProgressForStudents(studentIds) {
   if (!studentIds.length) return []
-  const { data, error } = await supabase
-    .from('game_progress')
-    .select('student_id, game_id, challenge_id, best_score, score_unit, attempts, metadata')
-    .in('student_id', studentIds)
-    .eq('completed', true)
-  if (error) throw error
-  return data ?? []
+  return fetchAllPages(() =>
+    supabase
+      .from('game_progress')
+      .select('student_id, game_id, challenge_id, best_score, score_unit, attempts, metadata')
+      .in('student_id', studentIds)
+      .eq('completed', true)
+      .order('id'),
+  )
 }

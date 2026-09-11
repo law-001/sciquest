@@ -9,7 +9,6 @@ import {
   Eye,
   EyeOff,
   Edit2,
-  TrendingUp,
   Clock,
   CheckCircle2,
   Star,
@@ -24,7 +23,6 @@ import {
   X,
   Award,
   Trash2,
-  Gamepad2,
   Search,
   ClipboardCheck,
   RotateCcw,
@@ -264,7 +262,7 @@ function OverviewSlot({
           <PanelHeader title="Needs attention" count={attention.length}>
             <button
               type="button"
-              onClick={() => onNavigateTab("progress")}
+              onClick={() => onNavigateTab("gradebook")}
               className="text-[11px] font-bold text-secondary-600 dark:text-secondary-400 hover:underline"
             >
               All students
@@ -2524,72 +2522,103 @@ function gradeDescriptor(pct) {
   };
 }
 
+// One screen for grades and progress (it used to be two: Gradebook and
+// Student Progress). The grade shown here combines quizzes and games — see
+// computeGrade.
 function GradebookSlot({ data, sectionId }) {
+  const { weeks } = useLessonsData();
+  const totalLessonsCount = weeks.reduce((sum, w) => sum + w.lessons.length, 0);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
-  // Game rows for the open student record: { studentId, byGame, failed? }.
-  // Keyed by student so a stale result never shows under another name.
-  const [studentGames, setStudentGames] = useState(null);
-
-  useEffect(() => {
-    if (!selectedStudentId) return;
-    let cancelled = false;
-    fetchGameProgressForStudents([selectedStudentId])
-      .then((rows) => {
-        if (cancelled) return;
-        const byGame = new Map();
-        for (const row of rows) {
-          if (!byGame.has(row.game_id)) byGame.set(row.game_id, []);
-          byGame.get(row.game_id).push(row);
-        }
-        setStudentGames({ studentId: selectedStudentId, byGame });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setStudentGames({
-            studentId: selectedStudentId,
-            byGame: new Map(),
-            failed: true,
-          });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedStudentId]);
   const [sortKey, setSortKey] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
+  // Game rows for the listed students: { key, byStudent, failed? }, with
+  // byStudent = Map<studentId, Map<gameId, row[]>>. `key` is the id list the
+  // rows were fetched for, so a stale result never grades another section.
+  const [gameState, setGameState] = useState(null);
 
   const sectionStudents = sectionId
     ? data.students.filter((s) => s.section === sectionId)
     : data.students;
   const { quizColumns } = data;
+  const idsKey = sectionStudents.map((s) => s.id).join(",");
 
-  const withData = sectionStudents.filter((s) => s.best.size > 0);
-  const classAvg = withData.length
-    ? Math.round(
-        withData.reduce((sum, s) => sum + s.avgScore, 0) / withData.length,
-      )
-    : 0;
-  const passCount = sectionStudents.filter((s) => s.avgScore >= 75).length;
-  const highest = withData.length
-    ? Math.max(...withData.map((s) => s.avgScore))
-    : 0;
+  useEffect(() => {
+    if (!idsKey) return;
+    let cancelled = false;
+    fetchGameProgressForStudents(idsKey.split(","))
+      .then((rows) => {
+        if (cancelled) return;
+        const byStudent = new Map();
+        for (const row of rows) {
+          if (!byStudent.has(row.student_id))
+            byStudent.set(row.student_id, new Map());
+          const byGame = byStudent.get(row.student_id);
+          if (!byGame.has(row.game_id)) byGame.set(row.game_id, []);
+          byGame.get(row.game_id).push(row);
+        }
+        setGameState({ key: idsKey, byStudent });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGameState({ key: idsKey, byStudent: new Map(), failed: true });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [idsKey]);
 
-  const pendingNames = new Set(
-    data.submissions
-      .filter(
-        (s) =>
-          s.status === "pending" && (!sectionId || s.section === sectionId),
-      )
-      .map((s) => s.student),
+  const gamesLoading = Boolean(idsKey) && gameState?.key !== idsKey;
+  const gamesFailed = !gamesLoading && Boolean(gameState?.failed);
+  const gamesByStudent =
+    gamesLoading || !gameState ? new Map() : gameState.byStudent;
+
+  // Submissions arrive newest first; keep that order per student.
+  const subsByStudent = new Map();
+  for (const sub of data.submissions) {
+    const key = `${sub.student}|${sub.section}`;
+    if (!subsByStudent.has(key)) subsByStudent.set(key, []);
+    subsByStudent.get(key).push(sub);
+  }
+
+  const records = new Map(
+    sectionStudents.map((student) => {
+      const subs = subsByStudent.get(`${student.name}|${student.section}`) ?? [];
+      const grade = computeGrade(student, gamesByStudent.get(student.id));
+      const hasActivity = subs.length > 0 || grade.game !== null;
+      return [
+        student.id,
+        {
+          subs,
+          grade,
+          hasPending: subs.some((s) => s.status === "pending"),
+          // engagementStatus reads avgScore; hand it the combined grade so
+          // "Needs Help" follows the same number as the Grade column.
+          status: engagementStatus(
+            { progress: student.progress, avgScore: grade.final ?? 0 },
+            hasActivity,
+          ),
+        },
+      ];
+    }),
   );
 
   const rankMap = new Map(
     [...sectionStudents]
-      .sort((a, b) => b.avgScore - a.avgScore)
+      .sort(
+        (a, b) =>
+          (records.get(b.id).grade.final ?? -1) -
+          (records.get(a.id).grade.final ?? -1),
+      )
       .map((s, i) => [s.id, i + 1]),
   );
+
+  function openOnKey(e, studentId) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    setSelectedStudentId(studentId);
+  }
 
   // ── Student detail view ──────────────────────────────────────────────────
   const selectedStudent = sectionStudents.find(
@@ -2597,28 +2626,50 @@ function GradebookSlot({ data, sectionId }) {
   );
 
   if (selectedStudent) {
-    const rank = rankMap.get(selectedStudent.id) ?? "—";
-    const desc = gradeDescriptor(selectedStudent.avgScore);
-    const hasPending = pendingNames.has(selectedStudent.name);
-    const attempted = quizColumns.filter((q) =>
+    const { subs: studentSubs, grade, status } = records.get(
+      selectedStudent.id,
+    );
+    const rank = grade.final !== null ? rankMap.get(selectedStudent.id) : null;
+    const desc = grade.final !== null ? gradeDescriptor(grade.final) : null;
+    const pendingSubs = studentSubs.filter((s) => s.status === "pending");
+    const lastSub = studentSubs[0] ?? null;
+    const lessonsCompleted = Math.round(
+      (selectedStudent.progress / 100) * totalLessonsCount,
+    );
+
+    const takenQuizzes = quizColumns.filter((q) =>
       selectedStudent.best.has(q.id),
-    ).length;
-    const notAttempted = quizColumns.filter(
+    );
+    const untakenQuizzes = quizColumns.filter(
       (q) => !selectedStudent.best.has(q.id),
     );
+    const attempted = takenQuizzes.length;
     const bestCells = [...selectedStudent.best.values()];
     const quizPointsEarned = bestCells.reduce((sum, b) => sum + b.score, 0);
     const quizPointsMax = bestCells.reduce((sum, b) => sum + b.maxScore, 0);
 
-    const gamesLoading = studentGames?.studentId !== selectedStudent.id;
+    const studentGames = gamesByStudent.get(selectedStudent.id) ?? new Map();
     const gameScores = ACTIVE_GAMES.map((game) => {
-      const rows = (gamesLoading ? null : studentGames.byGame.get(game.id)) ?? [];
+      const rows = studentGames.get(game.id) ?? [];
       return { game, rows, ...getGameScore(game, rows) };
     });
-    const gamesPlayed = gameScores.filter((g) => g.rows.length > 0).length;
+    const playedGames = gameScores.filter((g) => g.rows.length > 0);
+    const unplayedGames = gameScores.filter((g) => g.rows.length === 0);
     const starGames = gameScores.filter((g) => g.unit === "stars");
     const starsEarned = starGames.reduce((sum, g) => sum + g.earned, 0);
     const starsMax = starGames.reduce((sum, g) => sum + g.max, 0);
+
+    const weightLabel = (w) => `${Math.round(w * 100)}%`;
+    let gradeNote = null;
+    if (gamesLoading) gradeNote = "Loading game results…";
+    else if (gamesFailed)
+      gradeNote = "Game results couldn't load — grade uses quizzes only";
+    else if (grade.quiz !== null && grade.game !== null)
+      gradeNote = `Grade = Quizzes ${grade.quiz}% × ${weightLabel(GRADE_WEIGHTS.quiz)} + Games ${grade.game}% × ${weightLabel(GRADE_WEIGHTS.game)}`;
+    else if (grade.quiz !== null)
+      gradeNote = `Grade = Quizzes ${grade.quiz}% only — no games played yet`;
+    else if (grade.game !== null)
+      gradeNote = `Grade = Games ${grade.game}% only — no quizzes taken yet`;
 
     return (
       <div className="space-y-4">
@@ -2646,57 +2697,96 @@ function GradebookSlot({ data, sectionId }) {
           <div className="flex items-center gap-5 flex-wrap">
             <Avatar avatarId={selectedStudent.avatar} avatarStyle={selectedStudent.avatarStyle} name={selectedStudent.name} size={64} />
             <div className="flex-1 min-w-0">
-              <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
-                {selectedStudent.name}
-              </h3>
-              <p className="text-sm text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                {selectedStudent.section} · Rank #{rank}{" "}
-                {sectionId ? "in section" : "overall"}
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
+                  {selectedStudent.name}
+                </h3>
+                <span
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold",
+                    status.bg,
+                    status.text,
+                  )}
+                >
+                  <span
+                    className={cn("w-1.5 h-1.5 rounded-full", status.dot)}
+                  />
+                  {status.label}
+                </span>
+              </div>
+              <p className="text-sm text-stone-500 dark:text-stone-400 font-medium">
+                {selectedStudent.section}
+                {rank !== null &&
+                  ` · Rank #${rank} ${sectionId ? "in section" : "overall"}`}
               </p>
-              {hasPending && (
+              {lastSub && (
+                <p className="text-xs text-stone-400 font-medium mt-1 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Last quiz: {lastSub.time}
+                </p>
+              )}
+              {pendingSubs.length > 0 && (
                 <p className="text-xs font-bold text-amber-500 flex items-center gap-1 mt-1">
                   <AlertCircle className="w-3 h-3" />
-                  Has ungraded submission — average may change after grading
+                  {pendingSubs.length} submission
+                  {pendingSubs.length !== 1 ? "s" : ""} awaiting grade — grade
+                  may change after grading
                 </p>
               )}
             </div>
-            {selectedStudent.best.size > 0 && (
-              <div className="text-right shrink-0">
-                <p className={cn("text-4xl font-black", desc.color)}>
-                  {selectedStudent.avgScore}%
+            <div className="text-right shrink-0">
+              {desc ? (
+                <>
+                  <p className={cn("text-4xl font-black tabular-nums", desc.color)}>
+                    {grade.final}%
+                  </p>
+                  <p className={cn("text-sm font-bold mt-0.5", desc.color)}>
+                    {desc.label}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm font-bold text-stone-400">
+                  No grade yet
                 </p>
-                <p className={cn("text-sm font-bold mt-0.5", desc.color)}>
-                  {desc.label}
-                </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+          {gradeNote && (
+            <p className="mt-4 pt-3 border-t border-orange-100 dark:border-stone-700 text-xs font-medium text-stone-500 dark:text-stone-400">
+              {gradeNote}
+            </p>
+          )}
         </PortalPanel>
 
         {/* Stat cards */}
         <StatStrip
           items={[
             {
-              label: "Quiz Average",
-              value:
-                selectedStudent.best.size > 0
-                  ? `${selectedStudent.avgScore}%`
-                  : "—",
+              label: "Grade",
+              value: desc ? `${grade.final}%` : "—",
+              hint: desc ? desc.short : "Quizzes + games",
               tone: "teal",
             },
             {
-              label: "Section Rank",
-              value: selectedStudent.best.size > 0 ? `#${rank}` : "—",
-              tone: "pink",
-            },
-            {
-              label: "Curriculum Progress",
-              value: `${selectedStudent.progress}%`,
+              label: "Quiz Average",
+              value: grade.quiz !== null ? `${grade.quiz}%` : "—",
+              hint: `${attempted} / ${quizColumns.length} quizzes taken`,
               tone: "orange",
             },
             {
-              label: "Quizzes Taken",
-              value: `${attempted} / ${quizColumns.length}`,
+              label: "Game Score",
+              value: gamesLoading
+                ? "…"
+                : grade.game !== null
+                  ? `${grade.game}%`
+                  : "—",
+              hint: `${grade.gamesPlayed} / ${ACTIVE_GAMES.length} games played`,
+              tone: "pink",
+            },
+            {
+              label: "Lessons Done",
+              value: `${lessonsCompleted} / ${totalLessonsCount}`,
+              hint: `${selectedStudent.progress}% of curriculum`,
               tone: "yellow",
             },
           ]}
@@ -2706,9 +2796,10 @@ function GradebookSlot({ data, sectionId }) {
         <PortalPanel className="p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-bold text-stone-700 dark:text-stone-300">
-              Lessons Completed
+              Curriculum Progress
             </p>
             <span className="text-sm font-black text-stone-900 dark:text-white">
+              {lessonsCompleted} of {totalLessonsCount} lessons ·{" "}
               {selectedStudent.progress}%
             </span>
           </div>
@@ -2717,7 +2808,7 @@ function GradebookSlot({ data, sectionId }) {
             color={
               selectedStudent.progress >= 75
                 ? "secondary"
-                : selectedStudent.progress >= 50
+                : selectedStudent.progress >= 40
                   ? "accent"
                   : "primary"
             }
@@ -2727,168 +2818,172 @@ function GradebookSlot({ data, sectionId }) {
 
         {/* Quiz and game performance — side by side from lg up, stacked below */}
         <div className="grid gap-4 lg:grid-cols-2 items-start">
-        {/* Quiz performance list */}
-        <PortalPanel>
-          <div className="p-5 border-b border-orange-100 dark:border-stone-700">
-            <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
-              Quiz Performance
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-              Best attempt per quiz
-            </p>
-          </div>
+          {/* Quiz performance list */}
+          <PortalPanel>
+            <div className="p-5 border-b border-orange-100 dark:border-stone-700">
+              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
+                Quiz Performance
+              </h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
+                Best attempt per quiz
+              </p>
+            </div>
 
-          {quizColumns.length > 0 ? (
-            <div className="divide-y divide-orange-100 dark:divide-stone-700">
-              {quizColumns.map((q, idx) => {
-                const cell = selectedStudent.best.get(q.id) ?? null;
-                const pct =
-                  cell && cell.maxScore
+            {takenQuizzes.length > 0 ? (
+              <div className="divide-y divide-orange-100 dark:divide-stone-700">
+                {takenQuizzes.map((q, idx) => {
+                  const cell = selectedStudent.best.get(q.id);
+                  const pct = cell.maxScore
                     ? Math.round((cell.score / cell.maxScore) * 100)
-                    : null;
-                const d = pct !== null ? gradeDescriptor(pct) : null;
-                const isPending = data.submissions.some(
-                  (s) =>
-                    s.lessonId === q.id &&
-                    s.student === selectedStudent.name &&
-                    s.status === "pending",
-                );
+                    : 0;
+                  const d = gradeDescriptor(pct);
+                  const isPending = pendingSubs.some((s) => s.lessonId === q.id);
 
-                return (
-                  <div key={q.id} className="p-5">
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <span className="text-xs font-black text-stone-400 dark:text-stone-500 mt-0.5 shrink-0 w-5 text-right">
-                          {idx + 1}.
-                        </span>
-                        <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-snug">
-                          {q.title}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2.5 shrink-0">
-                        {cell ? (
-                          <>
-                            <span
-                              className={cn(
-                                "text-lg leading-none font-black tabular-nums",
-                                d?.color,
-                              )}
-                            >
-                              {cell.score}
-                              <span className="text-xs font-bold text-stone-400">
-                                {" "}/ {cell.maxScore} pts
+                  return (
+                    <div key={q.id} className="p-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <span className="text-xs font-black text-stone-400 dark:text-stone-500 mt-0.5 shrink-0 w-5 text-right">
+                            {idx + 1}.
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-stone-800 dark:text-stone-200 leading-snug">
+                              {q.title}
+                            </p>
+                            {isPending && (
+                              <p className="text-xs font-bold text-amber-500 flex items-center gap-1 mt-0.5">
+                                <AlertCircle className="w-3 h-3" />
+                                Awaiting grade
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2.5 shrink-0">
+                              <span
+                                className={cn(
+                                  "text-lg leading-none font-black tabular-nums",
+                                  d.color,
+                                )}
+                              >
+                                {cell.score}
+                                <span className="text-xs font-bold text-stone-400">
+                                  {" "}/ {cell.maxScore} pts
+                                </span>
                               </span>
-                            </span>
-                            <span className="text-xs font-medium tabular-nums text-stone-400">
-                              {pct}%
-                            </span>
-                            <span
-                              className={cn(
-                                "text-xs font-bold px-2 py-0.5 rounded-md border",
-                                pct >= 90
-                                  ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30"
-                                  : pct >= 85
-                                    ? "bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700"
-                                    : pct >= 80
-                                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/30"
-                                      : pct >= 75
-                                        ? "bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-500 border-accent-200 dark:border-accent-700"
-                                        : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/30",
-                              )}
-                            >
-                              {d?.short}
-                            </span>
-                          </>
-                        ) : isPending ? (
-                          <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            Awaiting grade
-                          </span>
-                        ) : (
-                          <span className="text-xs text-stone-400 italic">
-                            Not attempted
-                          </span>
-                        )}
+                              <span className="text-xs font-medium tabular-nums text-stone-400">
+                                {pct}%
+                              </span>
+                              <span
+                                className={cn(
+                                  "text-xs font-bold px-2 py-0.5 rounded-md border",
+                                  pct >= 90
+                                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30"
+                                    : pct >= 85
+                                      ? "bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700"
+                                      : pct >= 80
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/30"
+                                        : pct >= 75
+                                          ? "bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-500 border-accent-200 dark:border-accent-700"
+                                          : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/30",
+                                )}
+                              >
+                                {d.short}
+                              </span>
+                        </div>
+                      </div>
+                      {/* Score bar */}
+                      <div className="pl-8">
+                        <div className="h-2 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all",
+                              pct >= 75 ? "bg-secondary-400" : "bg-red-400",
+                            )}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                    {/* Score bar */}
-                    <div className="pl-8">
-                      <div className="h-2 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            !cell
-                              ? "w-0"
-                              : pct >= 75
-                                ? "bg-secondary-400"
-                                : "bg-red-400",
-                          )}
-                          style={{ width: cell ? `${pct}%` : "0%" }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-8 text-center">
-              <p className="text-sm text-stone-400">No quizzes recorded yet.</p>
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-8 text-center">
+                <p className="text-sm text-stone-400">No quizzes taken yet.</p>
+              </div>
+            )}
 
-          {/* Footer summary */}
-          {selectedStudent.best.size > 0 && (
-            <div className="p-5 border-t border-orange-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/40">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <div className="space-y-0.5">
-                  <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Total score
-                  </p>
-                  <p className="text-xs text-stone-400">
-                    Based on {selectedStudent.best.size} quiz
-                    {selectedStudent.best.size !== 1 ? "zes" : ""} ·{" "}
-                    {notAttempted.length > 0
-                      ? `${notAttempted.length} not attempted`
-                      : "all quizzes attempted"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      "text-3xl font-black tabular-nums",
-                      gradeDescriptor(selectedStudent.avgScore).color,
-                    )}
-                  >
-                    {quizPointsEarned}
-                    <span className="text-base font-bold text-stone-400">
-                      {" "}/ {quizPointsMax} pts
+            {/* Not attempted — collapsed by default, inside this panel */}
+            {untakenQuizzes.length > 0 && (
+              <details className="group border-t border-orange-100 dark:border-stone-700">
+                <summary className="flex items-center justify-between gap-3 px-5 min-h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary-400 transition-colors">
+                  Not attempted · {untakenQuizzes.length}
+                  <ChevronDown className="w-4 h-4 transition-transform motion-reduce:transition-none group-open:rotate-180" />
+                </summary>
+                <ul className="divide-y divide-orange-100 dark:divide-stone-700 border-t border-orange-100 dark:border-stone-700">
+                  {untakenQuizzes.map((q) => (
+                    <li
+                      key={q.id}
+                      className="px-5 py-3 text-sm font-medium text-stone-500 dark:text-stone-400"
+                    >
+                      {q.title}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+
+            {/* Footer summary */}
+            {grade.quiz !== null && (
+              <div className="p-5 border-t border-orange-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/40">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                      Total score
+                    </p>
+                    <p className="text-xs text-stone-400">
+                      Based on {attempted} quiz
+                      {attempted !== 1 ? "zes" : ""} ·{" "}
+                      {untakenQuizzes.length > 0
+                        ? `${untakenQuizzes.length} not attempted`
+                        : "all quizzes attempted"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "text-3xl font-black tabular-nums",
+                        gradeDescriptor(grade.quiz).color,
+                      )}
+                    >
+                      {quizPointsEarned}
+                      <span className="text-base font-bold text-stone-400">
+                        {" "}/ {quizPointsMax} pts
+                      </span>
                     </span>
-                  </span>
-                  <div>
-                    <p
-                      className={cn(
-                        "text-sm font-black",
-                        gradeDescriptor(selectedStudent.avgScore).color,
-                      )}
-                    >
-                      {selectedStudent.avgScore}% avg ·{" "}
-                      {gradeDescriptor(selectedStudent.avgScore).short}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xs font-bold",
-                        gradeDescriptor(selectedStudent.avgScore).color,
-                      )}
-                    >
-                      {gradeDescriptor(selectedStudent.avgScore).label}
-                    </p>
+                    <div>
+                      <p
+                        className={cn(
+                          "text-sm font-black",
+                          gradeDescriptor(grade.quiz).color,
+                        )}
+                      >
+                        {grade.quiz}% avg · {gradeDescriptor(grade.quiz).short}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs font-bold",
+                          gradeDescriptor(grade.quiz).color,
+                        )}
+                      >
+                        {gradeDescriptor(grade.quiz).label}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </PortalPanel>
+            )}
+          </PortalPanel>
 
           {/* Game performance */}
           <PortalPanel>
@@ -2910,16 +3005,19 @@ function GradebookSlot({ data, sectionId }) {
               <div className="p-8 text-center">
                 <p className="text-sm text-stone-400">Loading game results…</p>
               </div>
-            ) : studentGames.failed ? (
+            ) : gamesFailed ? (
               <div className="p-8 text-center">
                 <p className="text-sm text-stone-400">
                   Couldn&apos;t load game results.
                 </p>
               </div>
+            ) : playedGames.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-sm text-stone-400">No games played yet.</p>
+              </div>
             ) : (
               <div className="divide-y divide-orange-100 dark:divide-stone-700">
-                {gameScores.map(({ game, rows, earned, max, unit }, idx) => {
-                  const played = rows.length > 0;
+                {playedGames.map(({ game, rows, earned, max, unit }, idx) => {
                   const pct = max ? Math.round((earned / max) * 100) : 0;
                   const attempts = rows.reduce(
                     (sum, r) => sum + (r.attempts ?? 1),
@@ -2937,30 +3035,20 @@ function GradebookSlot({ data, sectionId }) {
                               {game.title}
                             </p>
                             <p className="text-xs text-stone-400 font-medium mt-0.5">
-                              {played
-                                ? `${attempts} ${attempts === 1 ? "attempt" : "attempts"}`
-                                : game.category}
+                              {attempts} {attempts === 1 ? "attempt" : "attempts"}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2.5 shrink-0">
-                          {played ? (
-                            <>
-                              <span className="text-lg leading-none font-black tabular-nums text-stone-900 dark:text-white">
-                                {earned}
-                                <span className="text-xs font-bold text-stone-400">
-                                  {" "}/ {max} {unit}
-                                </span>
-                              </span>
-                              <span className="text-xs font-medium tabular-nums text-stone-400">
-                                {pct}%
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-stone-400 italic">
-                              Not played yet
+                          <span className="text-lg leading-none font-black tabular-nums text-stone-900 dark:text-white">
+                            {earned}
+                            <span className="text-xs font-bold text-stone-400">
+                              {" "}/ {max} {unit}
                             </span>
-                          )}
+                          </span>
+                          <span className="text-xs font-medium tabular-nums text-stone-400">
+                            {pct}%
+                          </span>
                         </div>
                       </div>
                       <div className="pl-8">
@@ -2977,7 +3065,32 @@ function GradebookSlot({ data, sectionId }) {
               </div>
             )}
 
-            {!gamesLoading && !studentGames.failed && (
+            {/* Not played yet — collapsed by default, inside this panel */}
+            {!gamesLoading && !gamesFailed && unplayedGames.length > 0 && (
+              <details className="group border-t border-orange-100 dark:border-stone-700">
+                <summary className="flex items-center justify-between gap-3 px-5 min-h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary-400 transition-colors">
+                  Not played yet · {unplayedGames.length}
+                  <ChevronDown className="w-4 h-4 transition-transform motion-reduce:transition-none group-open:rotate-180" />
+                </summary>
+                <ul className="divide-y divide-orange-100 dark:divide-stone-700 border-t border-orange-100 dark:border-stone-700">
+                  {unplayedGames.map(({ game }) => (
+                    <li
+                      key={game.id}
+                      className="px-5 py-3 flex items-center justify-between gap-3"
+                    >
+                      <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
+                        {game.title}
+                      </span>
+                      <span className="text-xs text-stone-400">
+                        {game.category}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+
+            {!gamesLoading && !gamesFailed && (
               <div className="p-5 border-t border-orange-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/40">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="space-y-0.5">
@@ -2985,7 +3098,8 @@ function GradebookSlot({ data, sectionId }) {
                       Total stars
                     </p>
                     <p className="text-xs text-stone-400">
-                      {gamesPlayed} of {gameScores.length} games played
+                      {grade.gamesPlayed} of {gameScores.length} games played
+                      {grade.game !== null && ` · ${grade.game}% game score`}
                     </p>
                   </div>
                   <span className="text-3xl font-black tabular-nums text-stone-900 dark:text-white">
@@ -3009,29 +3123,63 @@ function GradebookSlot({ data, sectionId }) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(key);
-      setSortDir(key === "name" ? "asc" : "desc");
+      setSortDir(key === "name" || key === "rank" ? "asc" : "desc");
     }
   }
 
   const displayed = sectionStudents
     .filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
+      const ga = records.get(a.id).grade;
+      const gb = records.get(b.id).grade;
       let v = 0;
       if (sortKey === "name") v = a.name.localeCompare(b.name);
-      else if (sortKey === "avg") v = a.avgScore - b.avgScore;
+      else if (sortKey === "rank") v = rankMap.get(a.id) - rankMap.get(b.id);
       else if (sortKey === "progress") v = a.progress - b.progress;
-      else if (sortKey === "rank")
-        v = (rankMap.get(a.id) ?? 99) - (rankMap.get(b.id) ?? 99);
+      else if (sortKey === "quiz") v = (ga.quiz ?? -1) - (gb.quiz ?? -1);
+      else if (sortKey === "game") v = (ga.game ?? -1) - (gb.game ?? -1);
+      else if (sortKey === "grade") v = (ga.final ?? -1) - (gb.final ?? -1);
       return sortDir === "asc" ? v : -v;
     });
+
+  // Class-level stats
+  const finals = sectionStudents
+    .map((s) => records.get(s.id).grade.final)
+    .filter((v) => v !== null);
+  const classAvg = finals.length
+    ? Math.round(finals.reduce((sum, v) => sum + v, 0) / finals.length)
+    : null;
+  const passCount = finals.filter((v) => v >= 75).length;
+  const withActivity = sectionStudents.filter(
+    (s) => s.progress > 0 || records.get(s.id).grade.final !== null,
+  );
+  const avgProgress = withActivity.length
+    ? Math.round(
+        withActivity.reduce((sum, s) => sum + s.progress, 0) /
+          withActivity.length,
+      )
+    : null;
+  const notStarted = sectionStudents.filter(
+    (s) => records.get(s.id).status.label === "Not Started",
+  ).length;
 
   const sortTh = (label, key) => (
     <th
       key={key}
-      onClick={() => toggleSort(key)}
-      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
+      aria-sort={
+        sortKey === key
+          ? sortDir === "asc"
+            ? "ascending"
+            : "descending"
+          : undefined
+      }
+      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider"
     >
-      <span className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => toggleSort(key)}
+        className="flex items-center gap-1 uppercase tracking-wider rounded select-none hover:text-stone-700 dark:hover:text-stone-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-400 transition-colors"
+      >
         {label}
         {sortKey === key && (
           <ChevronDown
@@ -3041,8 +3189,22 @@ function GradebookSlot({ data, sectionId }) {
             )}
           />
         )}
-      </span>
+      </button>
     </th>
+  );
+
+  const statusPill = (status, className) => (
+    <span
+      className={cn(
+        "flex items-center gap-1.5 text-xs font-bold w-fit rounded-full",
+        status.bg,
+        status.text,
+        className,
+      )}
+    >
+      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", status.dot)} />
+      {status.label}
+    </span>
   );
 
   return (
@@ -3055,12 +3217,13 @@ function GradebookSlot({ data, sectionId }) {
           </h2>
           <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
             {sectionStudents.length} student
-            {sectionStudents.length !== 1 ? "s" : ""} · click a student to see
-            their full record
+            {sectionStudents.length !== 1 ? "s" : ""} · grades combine quizzes
+            and games · click a student for their full record
           </p>
         </div>
         <input
           type="text"
+          aria-label="Search student"
           placeholder="Search student…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -3072,24 +3235,39 @@ function GradebookSlot({ data, sectionId }) {
       {sectionStudents.length > 0 && (
         <StatStrip
           items={[
-            { label: "Students", value: sectionStudents.length, tone: "orange" },
             {
               label: "Class Average",
-              value: withData.length ? `${classAvg}%` : "—",
+              value: gamesLoading ? "…" : classAvg !== null ? `${classAvg}%` : "—",
+              hint: "Quizzes + games",
               tone: "teal",
             },
             {
               label: "Passed (≥ 75%)",
-              value: `${passCount} / ${sectionStudents.length}`,
+              value: gamesLoading
+                ? "…"
+                : `${passCount} / ${sectionStudents.length}`,
               tone: "yellow",
             },
             {
-              label: "Top Score",
-              value: withData.length ? `${highest}%` : "—",
+              label: "Avg Progress",
+              value: avgProgress !== null ? `${avgProgress}%` : "—",
+              hint: "Lessons completed",
+              tone: "orange",
+            },
+            {
+              label: "Not Started",
+              value: gamesLoading ? "…" : notStarted,
               tone: "pink",
             },
           ]}
         />
+      )}
+
+      {gamesFailed && (
+        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" />
+          Game results couldn&apos;t load — grades below use quizzes only.
+        </p>
       )}
 
       {/* Student roster table */}
@@ -3108,30 +3286,33 @@ function GradebookSlot({ data, sectionId }) {
                     </th>
                   )}
                   {sortTh("Progress", "progress")}
+                  {sortTh("Quizzes", "quiz")}
+                  {sortTh("Games", "game")}
+                  {sortTh("Grade", "grade")}
                   <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
-                    Quizzes
-                  </th>
-                  {sortTh("Avg Score", "avg")}
-                  <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
-                    Grade
+                    Status
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
                 {displayed.length > 0 ? (
                   displayed.map((student) => {
-                    const rank = rankMap.get(student.id) ?? "—";
-                    const desc = gradeDescriptor(student.avgScore);
-                    const hasPending = pendingNames.has(student.name);
+                    const { grade, hasPending, status } = records.get(
+                      student.id,
+                    );
+                    const desc =
+                      grade.final !== null ? gradeDescriptor(grade.final) : null;
 
                     return (
                       <tr
                         key={student.id}
+                        tabIndex={0}
                         onClick={() => setSelectedStudentId(student.id)}
-                        className="cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
+                        onKeyDown={(e) => openOnKey(e, student.id)}
+                        className="cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 focus-visible:outline-none focus-visible:bg-orange-50 dark:focus-visible:bg-stone-700 transition-colors"
                       >
                         <td className="px-5 py-2.5 text-sm font-black text-stone-400 dark:text-stone-500 w-12">
-                          {rank}
+                          {desc ? rankMap.get(student.id) : "—"}
                         </td>
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
@@ -3169,42 +3350,71 @@ function GradebookSlot({ data, sectionId }) {
                             </span>
                           </div>
                         </td>
-                        <td className="px-5 py-2.5">
-                          <span className="text-sm font-bold text-stone-700 dark:text-stone-300">
-                            {student.best.size}
-                            <span className="text-stone-400 font-medium">
-                              {" "}
-                              / {quizColumns.length}
-                            </span>
-                          </span>
-                        </td>
-                        <td className="px-5 py-2.5">
-                          {student.best.size > 0 ? (
-                            <span
-                              className={cn("text-sm font-black", desc.color)}
+                        <td className="px-5 py-2.5 whitespace-nowrap">
+                          {grade.quiz !== null ? (
+                            <p
+                              className={cn(
+                                "text-sm font-black",
+                                gradeDescriptor(grade.quiz).color,
+                              )}
                             >
-                              {student.avgScore}%
-                            </span>
+                              {grade.quiz}%
+                            </p>
                           ) : (
-                            <span className="text-sm text-stone-400">—</span>
+                            <p className="text-sm text-stone-400">—</p>
+                          )}
+                          <p className="text-xs font-medium text-stone-400">
+                            {student.best.size} / {quizColumns.length} taken
+                          </p>
+                        </td>
+                        <td className="px-5 py-2.5 whitespace-nowrap">
+                          {gamesLoading ? (
+                            <Loader2 className="w-3 h-3 text-stone-400 animate-spin" />
+                          ) : (
+                            <>
+                              {grade.game !== null ? (
+                                <p
+                                  className={cn(
+                                    "text-sm font-black",
+                                    gradeDescriptor(grade.game).color,
+                                  )}
+                                >
+                                  {grade.game}%
+                                </p>
+                              ) : (
+                                <p className="text-sm text-stone-400">—</p>
+                              )}
+                              <p className="text-xs font-medium text-stone-400">
+                                {grade.gamesPlayed} / {ACTIVE_GAMES.length}{" "}
+                                played
+                              </p>
+                            </>
                           )}
                         </td>
-                        <td className="px-5 py-2.5">
-                          {student.best.size > 0 ? (
-                            <span
-                              className={cn("text-xs font-bold", desc.color)}
-                            >
-                              {desc.short}
-                              <span className="hidden lg:inline text-stone-400 font-medium">
-                                {" "}
-                                · {desc.label}
-                              </span>
-                            </span>
+                        <td className="px-5 py-2.5 whitespace-nowrap">
+                          {gamesLoading ? (
+                            <Loader2 className="w-3 h-3 text-stone-400 animate-spin" />
+                          ) : desc ? (
+                            <>
+                              <p className={cn("text-sm font-black", desc.color)}>
+                                {grade.final}%
+                              </p>
+                              <p className={cn("text-xs font-bold", desc.color)}>
+                                {desc.short}
+                                <span className="hidden xl:inline text-stone-400 font-medium">
+                                  {" "}
+                                  · {desc.label}
+                                </span>
+                              </p>
+                            </>
                           ) : (
                             <span className="text-xs text-stone-400">
                               No data
                             </span>
                           )}
+                        </td>
+                        <td className="px-5 py-2.5">
+                          {statusPill(status, "px-2.5 py-1")}
                         </td>
                       </tr>
                     );
@@ -3212,7 +3422,7 @@ function GradebookSlot({ data, sectionId }) {
                 ) : (
                   <tr>
                     <td
-                      colSpan={sectionId ? 6 : 7}
+                      colSpan={sectionId ? 7 : 8}
                       className="px-6 py-8 text-sm text-stone-400 text-center"
                     >
                       No students match your search.
@@ -3226,19 +3436,22 @@ function GradebookSlot({ data, sectionId }) {
           <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
             {displayed.length > 0 ? (
               displayed.map((student) => {
-                const rank = rankMap.get(student.id) ?? "—";
-                const desc = gradeDescriptor(student.avgScore);
-                const hasPending = pendingNames.has(student.name);
+                const { grade, hasPending, status } = records.get(student.id);
+                const desc =
+                  grade.final !== null ? gradeDescriptor(grade.final) : null;
                 return (
                   <div
                     key={student.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedStudentId(student.id)}
-                    className="px-5 py-4 cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors space-y-2"
+                    onKeyDown={(e) => openOnKey(e, student.id)}
+                    className="px-5 py-4 cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 focus-visible:outline-none focus-visible:bg-orange-50 dark:focus-visible:bg-stone-700 transition-colors space-y-2"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-xs font-black text-stone-400 dark:text-stone-500 w-5 shrink-0">
-                          {rank}
+                          {desc ? rankMap.get(student.id) : "—"}
                         </span>
                         <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={28} />
                         <div className="min-w-0">
@@ -3257,14 +3470,16 @@ function GradebookSlot({ data, sectionId }) {
                           )}
                         </div>
                       </div>
-                      {student.best.size > 0 ? (
+                      {gamesLoading ? (
+                        <Loader2 className="w-3 h-3 text-stone-400 animate-spin shrink-0" />
+                      ) : desc ? (
                         <span
                           className={cn(
-                            "text-xs font-bold shrink-0",
+                            "text-sm font-black shrink-0 tabular-nums",
                             desc.color,
                           )}
                         >
-                          {desc.short}
+                          {grade.final}% {desc.short}
                         </span>
                       ) : (
                         <span className="text-xs text-stone-400 shrink-0">
@@ -3283,27 +3498,27 @@ function GradebookSlot({ data, sectionId }) {
                         {student.progress}%
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 pl-12 text-xs text-stone-500 dark:text-stone-400">
+                    <div className="flex items-center gap-2 pl-12 text-xs text-stone-500 dark:text-stone-400 flex-wrap">
                       <span>
-                        Quizzes:{" "}
+                        Quizzes{" "}
                         <span className="font-bold text-stone-700 dark:text-stone-300">
-                          {student.best.size}
-                        </span>
-                        <span className="text-stone-400">
-                          {" "}
-                          / {quizColumns.length}
+                          {grade.quiz !== null ? `${grade.quiz}%` : "—"}
                         </span>
                       </span>
-                      {student.best.size > 0 && (
-                        <>
-                          <span className="text-stone-300 dark:text-stone-600">
-                            ·
-                          </span>
-                          <span className={cn("font-black", desc.color)}>
-                            {student.avgScore}%
-                          </span>
-                        </>
-                      )}
+                      <span className="text-stone-300 dark:text-stone-600">
+                        ·
+                      </span>
+                      <span>
+                        Games{" "}
+                        <span className="font-bold text-stone-700 dark:text-stone-300">
+                          {gamesLoading
+                            ? "…"
+                            : grade.game !== null
+                              ? `${grade.game}%`
+                              : "—"}
+                        </span>
+                      </span>
+                      {statusPill(status, "ml-auto px-2 py-0.5")}
                     </div>
                   </div>
                 );
@@ -3353,6 +3568,33 @@ function getGameScore(game, rows) {
   return { earned: Math.min(earned, rule.max), max: rule.max, unit: rule.unit };
 }
 
+// How much each part counts toward a student's grade. Must add up to 1.
+const GRADE_WEIGHTS = { quiz: 0.5, game: 0.5 };
+
+// A student's grade from quizzes and games together, as whole percentages.
+// quiz = mean of the best attempt on each quiz taken (student.avgScore);
+// game = mean of each played game's earned / max — the % the Game
+// Performance panel shows. A part with no data yet is left out rather than
+// counted as 0, so a student who has only taken quizzes is graded on quizzes
+// alone. `final` is null until there is something to grade.
+function computeGrade(student, byGame) {
+  const quiz = student.best.size > 0 ? student.avgScore : null;
+  const gamePcts = ACTIVE_GAMES.filter((game) => byGame?.get(game.id)?.length).map(
+    (game) => {
+      const { earned, max } = getGameScore(game, byGame.get(game.id));
+      return max ? (earned / max) * 100 : 0;
+    },
+  );
+  const game = gamePcts.length
+    ? Math.round(gamePcts.reduce((sum, p) => sum + p, 0) / gamePcts.length)
+    : null;
+  const final =
+    quiz !== null && game !== null
+      ? Math.round(quiz * GRADE_WEIGHTS.quiz + game * GRADE_WEIGHTS.game)
+      : (quiz ?? game);
+  return { quiz, game, final, gamesPlayed: gamePcts.length };
+}
+
 function engagementStatus(student, hasSubs) {
   if (!hasSubs && student.progress === 0)
     return {
@@ -3381,823 +3623,6 @@ function engagementStatus(student, hasSubs) {
     text: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-50 dark:bg-blue-900/20",
   };
-}
-
-function ProgressSlot({ data, sectionId }) {
-  const { weeks } = useLessonsData();
-  const totalLessonsCount = weeks.reduce((sum, w) => sum + w.lessons.length, 0);
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [sortKey, setSortKey] = useState("progress");
-  const [sortDir, setSortDir] = useState("desc");
-  const [search, setSearch] = useState("");
-  // gameProgress: Map<studentId, Map<gameId, row[]>>
-  const [gameProgress, setGameProgress] = useState(new Map());
-  const [gameLoading, setGameLoading] = useState(false);
-
-  // Fetch game data whenever the section changes.
-  useEffect(() => {
-    const ids = (
-      sectionId
-        ? data.students.filter((s) => s.section === sectionId)
-        : data.students
-    ).map((s) => s.id);
-    if (!ids.length) {
-      setGameProgress(new Map());
-      return;
-    }
-    let cancelled = false;
-    setGameLoading(true);
-    fetchGameProgressForStudents(ids)
-      .then((rows) => {
-        if (cancelled) return;
-        const byStudent = new Map();
-        for (const row of rows) {
-          if (!byStudent.has(row.student_id))
-            byStudent.set(row.student_id, new Map());
-          const byGame = byStudent.get(row.student_id);
-          if (!byGame.has(row.game_id)) byGame.set(row.game_id, []);
-          byGame.get(row.game_id).push(row);
-        }
-        setGameProgress(byStudent);
-      })
-      .catch(() => {
-        if (!cancelled) setGameProgress(new Map());
-      })
-      .finally(() => {
-        if (!cancelled) setGameLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionId]);
-
-  const sectionStudents = sectionId
-    ? data.students.filter((s) => s.section === sectionId)
-    : data.students;
-
-  // ── Student detail view ──────────────────────────────────────────────────
-  const selectedStudent = sectionStudents.find(
-    (s) => s.id === selectedStudentId,
-  );
-
-  if (selectedStudent) {
-    const studentSubs = data.submissions.filter(
-      (s) =>
-        s.student === selectedStudent.name &&
-        s.section === selectedStudent.section,
-    );
-    const studentGames = gameProgress.get(selectedStudent.id) ?? new Map();
-    const lessonsCompleted = Math.round(
-      (selectedStudent.progress / 100) * totalLessonsCount,
-    );
-    const lastSub = studentSubs[0] ?? null;
-    const hasSubs = studentSubs.length > 0;
-    const status = engagementStatus(selectedStudent, hasSubs);
-    const pendingSubs = studentSubs.filter((s) => s.status === "pending");
-
-    // Week-by-week quiz engagement (from student.best which tracks quiz scores)
-    const weekBreakdown = weeks.map((week) => {
-      const lessonResults = week.lessons.map((lesson) => {
-        const cell = selectedStudent.best.get(lesson.id) ?? null;
-        return {
-          id: lesson.id,
-          title: lesson.title,
-          cell,
-          pct:
-            cell && cell.maxScore
-              ? Math.round((cell.score / cell.maxScore) * 100)
-              : null,
-        };
-      });
-      const attempted = lessonResults.filter((r) => r.pct !== null).length;
-      const weekAvg = attempted
-        ? Math.round(
-            lessonResults
-              .filter((r) => r.pct !== null)
-              .reduce((s, r) => s + r.pct, 0) / attempted,
-          )
-        : null;
-      return { week, lessonResults, attempted, weekAvg };
-    });
-
-    return (
-      <div className="space-y-4">
-        {/* Back nav */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSelectedStudentId(null)}
-            aria-label="Back to student list"
-            className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-orange-50 dark:hover:bg-stone-700 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
-              {selectedStudent.name}
-            </h2>
-            <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
-              Student progress · {selectedStudent.section}
-            </p>
-          </div>
-        </div>
-
-        {/* Profile card */}
-        <PortalPanel className="p-5">
-          <div className="flex items-center gap-5 flex-wrap">
-            <Avatar avatarId={selectedStudent.avatar} avatarStyle={selectedStudent.avatarStyle} name={selectedStudent.name} size={64} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
-                  {selectedStudent.name}
-                </h3>
-                <span
-                  className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold",
-                    status.bg,
-                    status.text,
-                  )}
-                >
-                  <span
-                    className={cn("w-1.5 h-1.5 rounded-full", status.dot)}
-                  />
-                  {status.label}
-                </span>
-              </div>
-              <p className="text-sm text-stone-500 dark:text-stone-400 font-medium">
-                {selectedStudent.section}
-              </p>
-              {lastSub && (
-                <p className="text-xs text-stone-400 font-medium mt-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Last active: {lastSub.time}
-                </p>
-              )}
-              {pendingSubs.length > 0 && (
-                <p className="text-xs font-bold text-amber-500 flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {pendingSubs.length} submission
-                  {pendingSubs.length !== 1 ? "s" : ""} awaiting grade
-                </p>
-              )}
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-4xl font-black text-stone-900 dark:text-white">
-                {selectedStudent.progress}%
-              </p>
-              <p className="text-sm font-bold text-stone-500 dark:text-stone-400 mt-0.5">
-                curriculum done
-              </p>
-            </div>
-          </div>
-        </PortalPanel>
-
-        {/* Stat cards */}
-        <StatStrip
-          items={[
-            {
-              label: "Lessons Done",
-              value: `${lessonsCompleted} / ${totalLessonsCount}`,
-              tone: "teal",
-            },
-            {
-              label: "Quiz Attempts",
-              value: studentSubs.length,
-              tone: "orange",
-            },
-            {
-              label: "Quiz Average",
-              value:
-                selectedStudent.avgScore > 0
-                  ? `${selectedStudent.avgScore}%`
-                  : "—",
-              tone: "yellow",
-            },
-            {
-              label: "Games Played",
-              value: gameLoading
-                ? "…"
-                : `${studentGames.size} / ${ACTIVE_GAMES.length}`,
-              tone: "pink",
-            },
-          ]}
-        />
-
-        {/* Curriculum progress bar */}
-        <PortalPanel className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-bold text-stone-700 dark:text-stone-300">
-              Curriculum Progress
-            </p>
-            <span className="text-sm font-black text-stone-900 dark:text-white">
-              {lessonsCompleted} of {totalLessonsCount} lessons
-            </span>
-          </div>
-          <ProgressBar
-            progress={selectedStudent.progress}
-            color={
-              selectedStudent.progress >= 75
-                ? "secondary"
-                : selectedStudent.progress >= 40
-                  ? "accent"
-                  : "primary"
-            }
-            size="sm"
-          />
-        </PortalPanel>
-
-        {/* Week-by-week quiz activity */}
-        <PortalPanel>
-          <div className="p-5 border-b border-orange-100 dark:border-stone-700">
-            <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
-              Week-by-Week Activity
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-              Quiz performance per week — lesson progress tracked separately
-            </p>
-          </div>
-          <div className="divide-y divide-orange-100 dark:divide-stone-700">
-            {weekBreakdown.map(({ week, attempted, weekAvg }) => {
-              const d = weekAvg !== null ? gradeDescriptor(weekAvg) : null;
-              return (
-                <div
-                  key={week.id}
-                  className="px-5 py-4 flex items-center gap-4"
-                >
-                  <div className="w-14 shrink-0 text-center">
-                    <p className="text-xs font-black text-stone-400 dark:text-stone-500 uppercase">
-                      Wk {week.weekNumber}
-                    </p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-stone-800 dark:text-stone-200 truncate">
-                      {week.title}
-                    </p>
-                    <p className="text-xs text-stone-400 font-medium mt-0.5">
-                      {week.lessons.length} lesson
-                      {week.lessons.length !== 1 ? "s" : ""}
-                      {attempted > 0
-                        ? ` · ${attempted} quiz${attempted !== 1 ? "zes" : ""} taken`
-                        : ""}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {weekAvg !== null ? (
-                      <>
-                        <p className={cn("text-sm font-black", d?.color)}>
-                          {weekAvg}%
-                        </p>
-                        <p className={cn("text-xs font-bold", d?.color)}>
-                          {d?.short}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-xs text-stone-400 italic">
-                        No quiz yet
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </PortalPanel>
-
-        {/* Quiz submission history */}
-        <PortalPanel>
-          <div className="p-5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
-                Quiz History
-              </h3>
-              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                All attempts · newest first
-              </p>
-            </div>
-            <span className="text-xs font-bold text-stone-400">
-              {studentSubs.length} total
-            </span>
-          </div>
-          {studentSubs.length > 0 ? (
-            <div className="divide-y divide-orange-100 dark:divide-stone-700">
-              {studentSubs.slice(0, 15).map((sub) => {
-                const pct =
-                  sub.status === "graded" && sub.total
-                    ? Math.round((sub.score / sub.total) * 100)
-                    : null;
-                const d = pct !== null ? gradeDescriptor(pct) : null;
-                return (
-                  <div
-                    key={sub.id}
-                    className="px-5 py-4 flex items-center justify-between gap-4"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={cn(
-                          "w-2 h-2 rounded-full shrink-0",
-                          sub.status === "pending"
-                            ? "bg-amber-400"
-                            : pct !== null && pct >= 75
-                              ? "bg-secondary-400"
-                              : "bg-red-400",
-                        )}
-                      />
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-stone-800 dark:text-stone-200 truncate">
-                          {sub.quiz}
-                        </p>
-                        <p className="text-xs text-stone-400 font-medium flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {sub.time}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      {sub.status === "pending" ? (
-                        <Badge
-                          variant="outline"
-                          className="text-xs text-amber-600 border-amber-300"
-                        >
-                          Pending
-                        </Badge>
-                      ) : (
-                        <>
-                          <span className="text-xs text-stone-400">
-                            {sub.score}/{sub.total}
-                          </span>
-                          <span className={cn("text-sm font-black", d?.color)}>
-                            {pct}%
-                          </span>
-                          <span className={cn("text-xs font-bold", d?.color)}>
-                            {d?.short}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              {studentSubs.length > 15 && (
-                <p className="px-5 py-3 text-xs text-stone-400 font-medium text-center">
-                  Showing 15 of {studentSubs.length} attempts
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="p-8 text-center">
-              <p className="text-sm text-stone-400">No quiz attempts yet.</p>
-            </div>
-          )}
-        </PortalPanel>
-
-        {/* Games activity */}
-        <PortalPanel>
-          <div className="p-5 border-b border-orange-100 dark:border-stone-700 flex items-center justify-between">
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
-                Games
-              </h3>
-              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                Challenges completed per game
-              </p>
-            </div>
-            {gameLoading && (
-              <Loader2 className="w-4 h-4 text-secondary-500 animate-spin" />
-            )}
-          </div>
-          <div className="divide-y divide-orange-100 dark:divide-stone-700">
-            {ACTIVE_GAMES.map((game) => {
-              const rows = studentGames.get(game.id) ?? [];
-              const played = rows.length > 0;
-              const totalAttempts = rows.reduce(
-                (sum, r) => sum + (r.attempts ?? 1),
-                0,
-              );
-              const bestScore =
-                rows.length > 0
-                  ? Math.max(...rows.map((r) => r.best_score ?? 0))
-                  : null;
-
-              return (
-                <div
-                  key={game.id}
-                  className={cn(
-                    "px-5 py-4 flex items-center gap-4",
-                    !played && "opacity-50",
-                  )}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-700 flex items-center justify-center shrink-0">
-                    <Gamepad2 className="w-5 h-5 text-stone-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-stone-800 dark:text-stone-200">
-                      {game.title}
-                    </p>
-                    <p className="text-xs text-stone-400 font-medium mt-0.5">
-                      {game.category} · ~{game.estimatedMinutes} min
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {played ? (
-                      <>
-                        <p className="text-sm font-black text-secondary-600 dark:text-secondary-400">
-                          {rows.length} challenge
-                          {rows.length !== 1 ? "s" : ""} done
-                        </p>
-                        <p className="text-xs text-stone-400 font-medium">
-                          {totalAttempts} attempt
-                          {totalAttempts !== 1 ? "s" : ""}
-                          {bestScore !== null ? ` · best: ${bestScore}★` : ""}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-xs text-stone-400 italic">
-                        Not played yet
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </PortalPanel>
-      </div>
-    );
-  }
-
-  // ── Class list view ──────────────────────────────────────────────────────
-
-  const progressRankMap = new Map(
-    [...sectionStudents]
-      .sort((a, b) => b.progress - a.progress)
-      .map((s, i) => [s.id, i + 1]),
-  );
-
-  function toggleSort(key) {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortKey(key);
-      setSortDir(key === "name" ? "asc" : "desc");
-    }
-  }
-
-  const displayed = sectionStudents
-    .filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      let v = 0;
-      if (sortKey === "name") v = a.name.localeCompare(b.name);
-      else if (sortKey === "progress") v = a.progress - b.progress;
-      else if (sortKey === "avg") v = a.avgScore - b.avgScore;
-      else if (sortKey === "attempts")
-        v =
-          data.submissions.filter(
-            (s) => s.student === a.name && s.section === a.section,
-          ).length -
-          data.submissions.filter(
-            (s) => s.student === b.name && s.section === b.section,
-          ).length;
-      else if (sortKey === "games")
-        v =
-          (gameProgress.get(a.id)?.size ?? 0) -
-          (gameProgress.get(b.id)?.size ?? 0);
-      return sortDir === "asc" ? v : -v;
-    });
-
-  // Class-level stats
-  const withActivity = sectionStudents.filter(
-    (s) => s.progress > 0 || s.best.size > 0,
-  );
-  const avgProgress = withActivity.length
-    ? Math.round(
-        withActivity.reduce((sum, s) => sum + s.progress, 0) /
-          withActivity.length,
-      )
-    : 0;
-  const needsHelp = sectionStudents.filter(
-    (s) => s.avgScore > 0 && s.avgScore < 75,
-  ).length;
-  const notStarted = sectionStudents.filter(
-    (s) =>
-      s.progress === 0 &&
-      !data.submissions.some(
-        (sub) => sub.student === s.name && sub.section === s.section,
-      ),
-  ).length;
-
-  const sortTh = (label, key) => (
-    <th
-      key={key}
-      onClick={() => toggleSort(key)}
-      className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {sortKey === key && (
-          <ChevronDown
-            className={cn(
-              "w-3 h-3 transition-transform",
-              sortDir === "asc" && "rotate-180",
-            )}
-          />
-        )}
-      </span>
-    </th>
-  );
-
-  return (
-    <div className="space-y-4">
-      {/* Header + search */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="font-heading text-[22px] leading-tight font-black text-stone-900 dark:text-white">
-            Student Progress
-          </h2>
-          <p className="mt-0.5 text-[13px] font-medium text-stone-500 dark:text-stone-400">
-            {sectionStudents.length} student
-            {sectionStudents.length !== 1 ? "s" : ""} · click a student for
-            their full activity record
-          </p>
-        </div>
-        <input
-          type="text"
-          placeholder="Search student…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-900 dark:text-white placeholder:font-medium placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:focus:ring-secondary-600 w-52"
-        />
-      </div>
-
-      {/* Section summary cards */}
-      {sectionStudents.length > 0 && (
-        <StatStrip
-          items={[
-            { label: "Students", value: sectionStudents.length, tone: "orange" },
-            {
-              label: "Avg Progress",
-              value: withActivity.length ? `${avgProgress}%` : "—",
-              tone: "teal",
-            },
-            { label: "Need Help", value: needsHelp, tone: "pink" },
-            { label: "Not Started", value: notStarted, tone: "blue" },
-          ]}
-        />
-      )}
-
-      {/* Student table */}
-      {sectionStudents.length > 0 ? (
-        <PortalPanel>
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-stone-50 dark:bg-stone-800 border-b border-orange-100 dark:border-stone-700">
-                  {sortTh("#", "rank")}
-                  {sortTh("Student", "name")}
-                  {!sectionId && (
-                    <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
-                      Section
-                    </th>
-                  )}
-                  {sortTh("Progress", "progress")}
-                  {sortTh("Quiz Attempts", "attempts")}
-                  {sortTh("Quiz Avg", "avg")}
-                  {sortTh("Games", "games")}
-                  <th className="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
-                {displayed.length > 0 ? (
-                  displayed.map((student) => {
-                    const rank = progressRankMap.get(student.id) ?? "—";
-                    const studentSubs = data.submissions.filter(
-                      (s) =>
-                        s.student === student.name &&
-                        s.section === student.section,
-                    );
-                    const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
-                    const status = engagementStatus(
-                      student,
-                      studentSubs.length > 0,
-                    );
-                    const desc =
-                      student.avgScore > 0
-                        ? gradeDescriptor(student.avgScore)
-                        : null;
-
-                    return (
-                      <tr
-                        key={student.id}
-                        onClick={() => setSelectedStudentId(student.id)}
-                        className="cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
-                      >
-                        <td className="px-5 py-2.5 text-sm font-black text-stone-400 dark:text-stone-500 w-12">
-                          {rank}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          <div className="flex items-center gap-3">
-                            <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
-                            <p className="text-sm font-bold text-stone-900 dark:text-white">
-                              {student.name}
-                            </p>
-                          </div>
-                        </td>
-                        {!sectionId && (
-                          <td className="px-5 py-2.5">
-                            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">
-                              {student.section}
-                            </span>
-                          </td>
-                        )}
-                        <td className="px-5 py-2.5">
-                          <div className="flex items-center gap-2 min-w-25">
-                            <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-secondary-400 dark:bg-secondary-500 transition-all"
-                                style={{ width: `${student.progress}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-bold text-stone-600 dark:text-stone-400 whitespace-nowrap">
-                              {student.progress}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-2.5">
-                          <span className="text-sm font-bold text-stone-700 dark:text-stone-300">
-                            {studentSubs.length}
-                          </span>
-                        </td>
-                        <td className="px-5 py-2.5">
-                          {desc ? (
-                            <span
-                              className={cn("text-sm font-black", desc.color)}
-                            >
-                              {student.avgScore}%
-                            </span>
-                          ) : (
-                            <span className="text-sm text-stone-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          {gameLoading ? (
-                            <Loader2 className="w-3 h-3 text-stone-400 animate-spin" />
-                          ) : (
-                            <span className="text-sm font-bold text-stone-700 dark:text-stone-300">
-                              {gamesPlayed}
-                              <span className="text-stone-400 font-medium">
-                                {" "}
-                                / {ACTIVE_GAMES.length}
-                              </span>
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          <span
-                            className={cn(
-                              "flex items-center gap-1.5 text-xs font-bold w-fit px-2.5 py-1 rounded-full",
-                              status.bg,
-                              status.text,
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "w-1.5 h-1.5 rounded-full shrink-0",
-                                status.dot,
-                              )}
-                            />
-                            {status.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={sectionId ? 7 : 8}
-                      className="px-6 py-8 text-sm text-stone-400 text-center"
-                    >
-                      No students match your search.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          {/* Mobile cards */}
-          <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
-            {displayed.length > 0 ? (
-              displayed.map((student) => {
-                const rank = progressRankMap.get(student.id) ?? "—";
-                const studentSubs = data.submissions.filter(
-                  (s) =>
-                    s.student === student.name && s.section === student.section,
-                );
-                const gamesPlayed = gameProgress.get(student.id)?.size ?? 0;
-                const status = engagementStatus(
-                  student,
-                  studentSubs.length > 0,
-                );
-                const desc =
-                  student.avgScore > 0
-                    ? gradeDescriptor(student.avgScore)
-                    : null;
-                return (
-                  <div
-                    key={student.id}
-                    onClick={() => setSelectedStudentId(student.id)}
-                    className="px-5 py-4 cursor-pointer hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors space-y-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs font-black text-stone-400 dark:text-stone-500 w-5 shrink-0">
-                          {rank}
-                        </span>
-                        <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={28} />
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                            {student.name}
-                          </p>
-                          {!sectionId && (
-                            <p className="text-xs font-medium text-stone-500 dark:text-stone-400 truncate">
-                              {student.section}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <span
-                        className={cn(
-                          "flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full shrink-0",
-                          status.bg,
-                          status.text,
-                        )}
-                      >
-                        <span
-                          className={cn("w-1.5 h-1.5 rounded-full", status.dot)}
-                        />
-                        {status.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 pl-12">
-                      <div className="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-secondary-400 dark:bg-secondary-500 transition-all"
-                          style={{ width: `${student.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-bold text-stone-600 dark:text-stone-400 whitespace-nowrap">
-                        {student.progress}%
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 pl-12 text-xs text-stone-500 dark:text-stone-400 flex-wrap">
-                      <span>
-                        {studentSubs.length} attempt
-                        {studentSubs.length !== 1 ? "s" : ""}
-                      </span>
-                      <span className="text-stone-300 dark:text-stone-600">
-                        ·
-                      </span>
-                      {desc ? (
-                        <span className={cn("font-black", desc.color)}>
-                          {student.avgScore}%
-                        </span>
-                      ) : (
-                        <span>—</span>
-                      )}
-                      <span className="text-stone-300 dark:text-stone-600">
-                        ·
-                      </span>
-                      {gameLoading ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <span>
-                          {gamesPlayed} / {ACTIVE_GAMES.length} games
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="px-5 py-8 text-sm text-stone-400 text-center">
-                No students match your search.
-              </p>
-            )}
-          </div>
-        </PortalPanel>
-      ) : (
-        <PortalPanel className="p-10 text-center">
-          <TrendingUp className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-stone-500 dark:text-stone-400 font-medium">
-            {sectionId
-              ? "No students in this section yet."
-              : "No students yet."}
-          </p>
-        </PortalPanel>
-      )}
-    </div>
-  );
 }
 
 function SettingsSlot() {
@@ -5875,7 +5300,6 @@ const TAB_SLOTS = {
   "quiz-management": QuizzesManagementSlot,
   quizzes: QuizCheckingSlot,
   gradebook: GradebookSlot,
-  progress: ProgressSlot,
   settings: SettingsSlot,
 };
 
@@ -5886,7 +5310,6 @@ const SIDEBAR_TABS = [
   { id: "quiz-management", label: "Quizzes", Icon: ClipboardCheck },
   { id: "quizzes", label: "Quiz Checking", Icon: ClipboardList },
   { id: "gradebook", label: "Gradebook", Icon: Star },
-  { id: "progress", label: "Student Progress", Icon: TrendingUp },
   { id: "settings", label: "Settings", Icon: Settings },
 ];
 
