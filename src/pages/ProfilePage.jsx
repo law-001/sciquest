@@ -583,7 +583,8 @@ export function ProfilePage({
   const quickStats = [
     {
       label: "Global Rank",
-      value: userRank ? `#${userRank}` : "Unranked",
+      // Ranks past 10 stay hidden here too, matching the leaderboard.
+      value: !userRank ? "Unranked" : userRank <= 10 ? `#${userRank}` : "Outside top 10",
       color: "text-amber-500",
     },
     {
@@ -729,6 +730,24 @@ export function ProfilePage({
     { length: TOP_N - topBoard.length },
     (_, i) => topBoard.length + i,
   );
+  // A student outside the top 10 sees their own row below it, without their
+  // rank number — just the XP gap to 10th place. A 0-XP student isn't on the
+  // board at all, so they get a stand-in row.
+  const selfOutsideTop =
+    isStudent &&
+    topBoard.length === TOP_N &&
+    !topBoard.some((e) => e.studentId === user?.id)
+      ? (board.find((e) => e.studentId === user?.id) ?? {
+          studentId: user?.id,
+          name: "You",
+          avatar: null,
+          avatarStyle: null,
+          xp: 0,
+        })
+      : null;
+  const xpToTopTen = selfOutsideTop
+    ? Math.max(1, topBoard[TOP_N - 1].xp - selfOutsideTop.xp + 1)
+    : 0;
 
   const rankBadgeClass = (rank) =>
     rank === 1
@@ -739,8 +758,9 @@ export function ProfilePage({
           ? "bg-linear-to-br from-orange-300 to-orange-800 text-white ring-1 ring-orange-700"
           : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-300";
 
-  const renderBoardRow = (entry, i) => {
+  const renderBoardRow = (entry, i, xpNeeded = 0) => {
     const isUser = entry.studentId === user?.id;
+    const isOutsideTop = xpNeeded > 0;
     return (
       <div
         key={entry.studentId}
@@ -757,22 +777,38 @@ export function ProfilePage({
           transitionDelay: leaderboardTriggered ? `${200 + i * 80}ms` : "0ms",
         }}
       >
-        <span
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${rankBadgeClass(
-            entry.rank,
-          )}`}
-        >
-          {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
-        </span>
+        {isOutsideTop ? (
+          <span
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary-500/15 text-primary-600 dark:text-primary-300"
+            aria-label="Outside the top 10"
+          >
+            <TrendingUp className="w-4 h-4" aria-hidden="true" />
+          </span>
+        ) : (
+          <span
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${rankBadgeClass(
+              entry.rank,
+            )}`}
+          >
+            {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
+          </span>
+        )}
         <Avatar avatarId={entry.studentId === user?.id ? profile?.avatar : entry.avatar} avatarStyle={entry.studentId === user?.id ? profile?.avatarStyle : entry.avatarStyle} name={entry.name} size={32} />
-        <span
-          className={`flex-1 text-sm font-bold truncate ${
-            isUser
-              ? "text-primary-600 dark:text-primary-300"
-              : "text-stone-700 dark:text-stone-200"
-          }`}
-        >
-          {isUser ? "You" : entry.name}
+        <span className="flex-1 min-w-0">
+          <span
+            className={`block text-sm font-bold truncate ${
+              isUser
+                ? "text-primary-600 dark:text-primary-300"
+                : "text-stone-700 dark:text-stone-200"
+            }`}
+          >
+            {isUser ? "You" : entry.name}
+          </span>
+          {isOutsideTop && (
+            <span className="block text-xs font-semibold text-stone-500 dark:text-stone-400 truncate">
+              {xpNeeded.toLocaleString()} XP to reach the top 10
+            </span>
+          )}
         </span>
         <span className="text-sm font-black text-stone-900 dark:text-white font-heading tabular-nums shrink-0">
           {entry.xp.toLocaleString()} XP
@@ -1231,6 +1267,17 @@ export function ProfilePage({
                         </span>
                       </div>
                     ))}
+                    {selfOutsideTop && (
+                      <>
+                        <p
+                          aria-hidden="true"
+                          className="text-center text-stone-300 dark:text-stone-700 text-xs leading-none"
+                        >
+                          ···
+                        </p>
+                        {renderBoardRow(selfOutsideTop, TOP_N, xpToTopTen)}
+                      </>
+                    )}
                   </>
                 )}
               </div>

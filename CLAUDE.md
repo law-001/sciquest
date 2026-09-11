@@ -234,27 +234,3 @@ SciQuest uses a **warm cream background** (`#FAF7F2`) with **orange, teal, and y
 - Sliders must respond to keyboard arrow keys
 
 **Accessibility & performance:** keyboard access for everything interactive, labels on inputs, 4.5:1 contrast, visible focus, respect `prefers-reduced-motion`. Below the fold use `loading="lazy"` + explicit image dimensions; animate only `transform`/`opacity`; never import a whole library for one function.
-
----
-
-## Version log — track every change in `VERSIONS.md` (non-negotiable)
-
-Keep a `VERSIONS.md` at the repo root. After **any** change to source or config, update it automatically as part of finishing the change.
-
-- **Create it if missing** — first change starts at `VERSION_1`.
-- **Append, never replace.** Each change is a **new** entry numbered one past the highest number in the file. The log only grows — never overwrite, renumber, or reorder existing entries. Newest at the bottom.
-- **One entry per change** — a short bullet list of what changed/was added/was fixed. Enough to know what happened without the diff.
-- **Each entry ends with its own `Commit:` line** — one ready-to-paste commit message for that version.
-- **Never add a shared trailing line** (like a "Staged changes" footer) that every entry has to rewrite. `.gitattributes` merges this file with `merge=union`, so two branches' entries are both kept without a conflict — but a line both sides edit gets duplicated. If a merge leaves two entries with the same number, leave them; the next entry just goes one past the highest.
-
-```markdown
-# Versions
-
-## VERSION_1
-- Initial setup: <what was built>.
-- Commit: <one-line commit message>
-
-## VERSION_2
-- Added leaderboard: <what changed / which files>.
-- Commit: <one-line commit message>
-```
