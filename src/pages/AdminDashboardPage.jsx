@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
+import { Avatar } from "../components/Avatar";
 import {
   MetricRibbon,
   PanelHeader,
@@ -468,9 +469,7 @@ function DashboardTab({
                     >
                       <td className="px-5 py-2.5 max-w-0 w-full">
                         <div className="flex items-center gap-2.5">
-                          <span className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-200 flex items-center justify-center font-black text-[11px] shrink-0">
-                            {user.name.charAt(0)}
-                          </span>
+                          <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={28} />
                           <span className="min-w-0">
                             <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
                               {user.name}
@@ -526,9 +525,7 @@ function DashboardTab({
                 {recentUsers.map((user) => (
                   <div key={user.id} className="roster-row px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-200 flex items-center justify-center font-black text-[11px] shrink-0">
-                        {user.name.charAt(0)}
-                      </span>
+                      <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={32} />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-bold text-stone-900 dark:text-white truncate">
                           {user.name}
@@ -855,9 +852,7 @@ function UsersTab() {
                       className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                          {user.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={28} />
                         <div>
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {user.name}
@@ -942,9 +937,7 @@ function UsersTab() {
                   >
                     <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                          {user.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={32} />
                         <div>
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {user.name}
@@ -1026,9 +1019,7 @@ function UsersTab() {
                 className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                    {user.name.charAt(0)}
-                  </div>
+                  <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={36} />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
@@ -1274,9 +1265,7 @@ function ResetDataTab() {
                   >
                     <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                          {user.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={32} />
                         <div>
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {user.name}
@@ -1338,9 +1327,7 @@ function ResetDataTab() {
                 className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                    {user.name.charAt(0)}
-                  </div>
+                  <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={36} />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
@@ -1938,9 +1925,7 @@ function StudentsTab() {
                       className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                          {student.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={28} />
                         <div>
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {student.name}
@@ -2023,9 +2008,7 @@ function StudentsTab() {
                   >
                     <td className="px-5 py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                          {student.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                         <div>
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {student.name}
@@ -2099,9 +2082,7 @@ function StudentsTab() {
                 className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                    {student.name.charAt(0)}
-                  </div>
+                  <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={36} />
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
                       {student.name}

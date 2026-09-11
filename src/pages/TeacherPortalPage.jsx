@@ -48,6 +48,7 @@ import {
 import { TICK } from "../components/portal/tones";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
+import { Avatar } from "../components/Avatar";
 import ProgressBar from "../components/ProgressBar";
 import { cn } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
@@ -276,9 +277,7 @@ function OverviewSlot({
                   key={st.id}
                   className="px-5 py-2.5 flex items-center gap-3 min-h-[56px]"
                 >
-                  <span className="w-7 h-7 shrink-0 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center font-black text-[11px]">
-                    {st.name.charAt(0)}
-                  </span>
+                  <Avatar avatarId={st.avatar} avatarStyle={st.avatarStyle} name={st.name} size={28} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
                       {st.name}
@@ -325,9 +324,7 @@ function OverviewSlot({
                   key={sub.id}
                   className="px-5 py-2.5 flex items-center gap-3 min-h-[56px]"
                 >
-                  <span className="w-7 h-7 shrink-0 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-200 flex items-center justify-center font-black text-[11px]">
-                    {sub.student.charAt(0)}
-                  </span>
+                  <Avatar avatarId={sub.avatar} avatarStyle={sub.avatarStyle} name={sub.student} size={28} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
                       {sub.student}
@@ -884,9 +881,7 @@ function SectionsSlot({
                       >
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
-                              {student.name.charAt(0)}
-                            </div>
+                            <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                             <span className="text-sm font-bold text-stone-900 dark:text-white">
                               {student.name}
                             </span>
@@ -959,9 +954,7 @@ function SectionsSlot({
                     className="px-5 py-4 flex items-center justify-between gap-3 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                        {student.name.charAt(0)}
-                      </div>
+                      <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
                           {student.name}
@@ -2295,16 +2288,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
                 return (
                   <li key={sub.id}>
                     <div className="flex items-center gap-3 pl-5 pr-3 py-2.5 min-h-[56px] hover:bg-orange-50/60 dark:hover:bg-stone-700/40 transition-colors">
-                      <span
-                        className={cn(
-                          "w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-black text-[11px]",
-                          isPending
-                            ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-200"
-                            : "bg-secondary-100 dark:bg-secondary-950 text-secondary-700 dark:text-secondary-200",
-                        )}
-                      >
-                        {sub.student.charAt(0)}
-                      </span>
+                      <Avatar avatarId={sub.avatar} avatarStyle={sub.avatarStyle} name={sub.student} size={32} />
 
                       <button
                         type="button"
@@ -2660,9 +2644,7 @@ function GradebookSlot({ data, sectionId }) {
         {/* Profile + grade card */}
         <PortalPanel className="p-5">
           <div className="flex items-center gap-5 flex-wrap">
-            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-black text-2xl shrink-0">
-              {selectedStudent.name.charAt(0)}
-            </div>
+            <Avatar avatarId={selectedStudent.avatar} avatarStyle={selectedStudent.avatarStyle} name={selectedStudent.name} size={64} />
             <div className="flex-1 min-w-0">
               <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
                 {selectedStudent.name}
@@ -3153,9 +3135,7 @@ function GradebookSlot({ data, sectionId }) {
                         </td>
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                              {student.name.charAt(0)}
-                            </div>
+                            <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                             <div>
                               <p className="text-sm font-bold text-stone-900 dark:text-white">
                                 {student.name}
@@ -3260,9 +3240,7 @@ function GradebookSlot({ data, sectionId }) {
                         <span className="text-xs font-black text-stone-400 dark:text-stone-500 w-5 shrink-0">
                           {rank}
                         </span>
-                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-[10px] shrink-0">
-                          {student.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={28} />
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
                             {student.name}
@@ -3527,9 +3505,7 @@ function ProgressSlot({ data, sectionId }) {
         {/* Profile card */}
         <PortalPanel className="p-5">
           <div className="flex items-center gap-5 flex-wrap">
-            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-black text-2xl shrink-0">
-              {selectedStudent.name.charAt(0)}
-            </div>
+            <Avatar avatarId={selectedStudent.avatar} avatarStyle={selectedStudent.avatarStyle} name={selectedStudent.name} size={64} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <h3 className="text-xl font-black tabular-nums text-stone-900 dark:text-white">
@@ -4021,9 +3997,7 @@ function ProgressSlot({ data, sectionId }) {
                         </td>
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-xs shrink-0">
-                              {student.name.charAt(0)}
-                            </div>
+                            <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                             <p className="text-sm font-bold text-stone-900 dark:text-white">
                               {student.name}
                             </p>
@@ -4140,9 +4114,7 @@ function ProgressSlot({ data, sectionId }) {
                         <span className="text-xs font-black text-stone-400 dark:text-stone-500 w-5 shrink-0">
                           {rank}
                         </span>
-                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center font-bold text-[10px] shrink-0">
-                          {student.name.charAt(0)}
-                        </div>
+                        <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={28} />
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
                             {student.name}
@@ -4658,19 +4630,28 @@ function QuizAttemptsControl({ lessonId, currentAttempts }) {
 }
 
 function QuizShowAnswersControl({ lessonId, currentShow }) {
-  // currentShow defaults to true upstream — treat undefined as on.
-  const enabled = currentShow !== false;
+  // currentShow defaults to true upstream — treat undefined as on. Held
+  // locally so the switch flips on click; the parent's copy only refreshes
+  // when realtime echoes the save back, which may never arrive.
+  const [enabled, setEnabled] = useState(currentShow !== false);
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
 
+  useEffect(() => {
+    setEnabled(currentShow !== false);
+  }, [currentShow]);
+
   async function handleToggle() {
     if (saving) return;
+    const next = !enabled;
+    setEnabled(next);
     setSaving(true);
     try {
-      await saveQuizShowAnswers(lessonId, !enabled);
+      await saveQuizShowAnswers(lessonId, next);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
     } catch (err) {
+      setEnabled(!next);
       console.error("Failed to save show-answers setting:", err);
     } finally {
       setSaving(false);
@@ -4710,7 +4691,7 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
           <span
             className={cn(
               "inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
-              enabled ? "translate-x-4.5" : "translate-x-0.5",
+              enabled ? "translate-x-[18px]" : "translate-x-[2px]",
             )}
           />
         </button>

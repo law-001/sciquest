@@ -98,15 +98,6 @@ export default function PlantCellGame({
     body = <LevelSelect progressByLevel={progressByLevel} onSelect={openLevel} onExit={onExit} />;
   } else if (stage === 'brief') {
     body = <EducationalModal level={level} onStart={startLevel} onExit={backToLevels} />;
-  } else if (stage === 'results') {
-    body = (
-      <ResultsScreen
-        level={level}
-        result={result}
-        onReplay={startLevel}
-        onExit={backToLevels}
-      />
-    );
   } else if (level.id === 'l1') {
     body = (
       <PowerTheCell
@@ -143,5 +134,19 @@ export default function PlantCellGame({
     );
   }
 
-  return <div className="pc-root">{body}</div>;
+  // The level component stays mounted behind the debrief — its sim loop already
+  // stops once the run is over, so the last frame holds under the modal.
+  return (
+    <div className="pc-root">
+      {body}
+      {stage === 'results' && result && (
+        <ResultsScreen
+          level={level}
+          result={result}
+          onReplay={startLevel}
+          onExit={backToLevels}
+        />
+      )}
+    </div>
+  );
 }

@@ -195,3 +195,40 @@
 
 ---
 Staged changes: fix(security): scope student data reads to owner/staff, add sections migration, paginate teacher dashboard, fix roster remove
+- Avatar editor: pressing anywhere off a sticker now deselects it (handles + dashed outline disappear). `AvatarEditor.jsx` listens for `pointerdown` on the document while a sticker is selected; presses on a sticker frame or inside the Stickers panel (marked `data-keeps-sticker-selection`) keep the selection.
+
+## VERSION_22
+- Avatar editor: the red remove handle on a selected sticker now shows a trash icon (`Trash2`) instead of an X. Help text in the Stickers panel updated to match.
+
+## VERSION_23
+- Avatar editor: removed the row of placed-sticker chips ("Flower Bunch 1", "Heart 2", …) from the Stickers panel. Stickers are selected by clicking (or tabbing to) them on the preview; the edit card and "Clear all stickers" stay.
+
+## VERSION_24
+- Avatar editor: nothing renders below the sticker grid any more. Removed the "sticker space is full" note, the "Editing …" card (width/height/rotation/position sliders, Bring to front, Remove sticker) and "Clear all stickers". Stickers are edited only on the preview (drag, handles, trash button, arrow keys); the `n / 6` counter still shows when the grid is full.
+- The Stickers panel no longer keeps a sticker selected, so clicking blank space in it deselects like anywhere else. Dropped the now-unused `CONTROL`, `selected` and `selectedLabel`.
+- Commit: Remove sticker edit card and controls below avatar sticker grid
+
+## VERSION_25
+- Stopped `VERSIONS.md` conflicting on every merge. New `.gitattributes` sets `VERSIONS.md merge=union`, so when two branches both append entries git keeps both instead of stopping.
+- Dropped the shared "Staged changes" footer — the one line every branch rewrote, so it conflicted every time. Each entry now ends with its own `- Commit:` line instead.
+- `CLAUDE.md` version-log rules updated to match: number one past the highest in the file, a `Commit:` line per entry, no shared trailing line, and duplicate numbers after a merge are left alone.
+- Commit: Stop VERSIONS.md merge conflicts with union merge and per-entry commit lines
+
+## VERSION_26
+- Teacher quiz modal: fixed the "Show correct answers" switch (`QuizShowAnswersControl` in `src/pages/TeacherPortalPage.jsx`).
+- The switch now holds its own on/off state and flips immediately on click (reverting if the save fails). Before, it only redrew when Supabase realtime echoed the save back to the parent, so it could look stuck until a reload. Same pattern as the Attempts control above it.
+- The knob now slides: `translate-x-2px` / `translate-x-18px` aren't Tailwind classes and compiled to nothing; replaced with `translate-x-[2px]` / `translate-x-[18px]`.
+- Commit: Fix teacher quiz "Show correct answers" switch not flipping or sliding
+
+## VERSION_27
+- Student profile pictures now show in the teacher and admin portals instead of a plain initial.
+- `src/lib/users.js` (admin) and `src/lib/teacher.js` (teacher portal) now select `avatar` + `avatar_style` from `students` and pass them on as `avatar` / `avatarStyle`. Staff rows get `null`, so teachers still show their initial.
+- Every student initial circle in `AdminDashboardPage.jsx` (Users, Recent Users, Remove User, Students roster) and `TeacherPortalPage.jsx` (dashboard roster, Students, Gradebook, Quiz Checking, the student profile cards) is now the shared `<Avatar>` at the same size (28 / 32 / 36 / 64 px). Teacher-only circles on the admin Teachers screens are unchanged.
+- No migration: staff can already read `students`, and the avatar columns exist.
+- Commit: Show student profile pictures in teacher and admin portals
+
+## VERSION_28
+- Student profile pictures on quiz submissions: the dashboard "Latest submissions" list and the Quiz Checking submission rows (`TeacherPortalPage.jsx`) now show the student's `<Avatar>` instead of an initial. Quiz Checking's amber/teal pending-vs-graded tint on the initial is gone; the "Needs Grading" / "Graded" tabs and grade labels still carry that state in text.
+- `fetchTeacherDashboard()` (`src/lib/teacher.js`) attaches `avatar` / `avatarStyle` to each submission from the student it belongs to.
+- Every remaining initial circle is a staff member (admin Teachers screens, the portal's own user badge) or the hardcoded landing-page leaderboard sample — none has a student picture to show, so they are unchanged.
+- Commit: Show student profile pictures on quiz submission rows

@@ -112,6 +112,8 @@ export async function fetchTeacherDashboard(sectionNames) {
       name: fullName(s),
       email: s.email ?? '—',
       section: s.section || 'Unassigned',
+      avatar: s.avatar ?? null,
+      avatarStyle: s.avatar_style,
       completedCount: 0,
       best: new Map(), // lesson_id → { score, maxScore }
     })
@@ -143,6 +145,8 @@ export async function fetchTeacherDashboard(sectionNames) {
         name: st.name,
         email: st.email,
         section: st.section,
+        avatar: st.avatar,
+        avatarStyle: st.avatarStyle,
         progress: TOTAL_LESSONS ? Math.round((st.completedCount / TOTAL_LESSONS) * 100) : 0,
         avgScore,
         best: st.best,
@@ -212,6 +216,8 @@ export async function fetchTeacherDashboard(sectionNames) {
     return {
       id: a.id,
       student: st?.name ?? 'Unknown',
+      avatar: st?.avatar ?? null,
+      avatarStyle: st?.avatarStyle,
       section: st?.section ?? 'Unassigned',
       quiz: LESSON_INDEX.get(a.lesson_id)?.title ?? a.lesson_id,
       lessonId: a.lesson_id,

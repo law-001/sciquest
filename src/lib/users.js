@@ -2,7 +2,7 @@ import { normalizeAvatarStyle } from './avatar-personalization'
 import { getAvatar } from './avatars'
 import { supabase } from './supabase'
 
-const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, created_at'
+const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, avatar, avatar_style, created_at'
 const STAFF_COLUMNS = 'id, role, first_name, last_name, email, created_at'
 const ROLE_LABELS = { admin: 'Admin', teacher: 'Teacher', student: 'Student' }
 
@@ -38,6 +38,9 @@ function toUserRow(row, role) {
     status: 'Active',
     joined: relativeTime(row.created_at),
     section: row.section || '—',
+    // Staff rows have no picture columns; <Avatar> falls back to the initial.
+    avatar: row.avatar ?? null,
+    avatarStyle: row.avatar_style,
   }
 }
 
@@ -141,9 +144,11 @@ export async function fetchStudents() {
 // (own_student_update) restricts this to their own row.
 export async function updateStudentProfile(studentId, { firstName, lastName, avatar, avatarStyle }) {
   if (!studentId) return
-  const patch = { first_name: firstName, last_name: lastName }
-  // Only touch the avatar column when the caller supplies one, so name-only
-  // edits don't wipe a previously chosen avatar.
+  // Only touch a column when the caller supplies it, so a picture-only edit
+  // doesn't wipe the stored name and a name-only edit doesn't wipe the avatar.
+  const patch = {}
+  if (firstName !== undefined) patch.first_name = firstName
+  if (lastName !== undefined) patch.last_name = lastName
   if (avatar !== undefined) patch.avatar = getAvatar(avatar)?.id ?? null
   if (avatarStyle !== undefined) patch.avatar_style = normalizeAvatarStyle(avatarStyle)
   const { error } = await supabase
