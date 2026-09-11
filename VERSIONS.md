@@ -200,3 +200,11 @@
 - `fetchTeacherDashboard()` (`src/lib/teacher.js`) attaches `avatar` / `avatarStyle` to each submission from the student it belongs to.
 - Every remaining initial circle is a staff member (admin Teachers screens, the portal's own user badge) or the hardcoded landing-page leaderboard sample — none has a student picture to show, so they are unchanged.
 - Commit: Show student profile pictures on quiz submission rows
+
+## VERSION_29
+- Contact form now really sends: `ContactPage.jsx` had a fake `setTimeout` submit. It now saves name / email / message (plus `user_id` when signed in) through `submitContactMessage`, clears the fields on success, and shows an inline error if the insert fails.
+- New `contact_messages` table (`supabase/migrations/20260911000000_contact_messages.sql`, mirrored in `schema.sql`). RLS: anyone may insert (unread, own or null `user_id`); only admins may read / update / delete. Flagged tighten-before-production: anonymous insert has no rate limit.
+- New API module `src/lib/contactMessages.js` (submit, list, unread count, mark read/unread, delete).
+- New admin **Messages** tab (`src/components/admin/MessagesTab.jsx`): inbox list + reading pane (stacked on mobile), search, All/Unread filters, unread dot + "New" label, relative times, Reply (mailto), Mark read/unread, Delete with inline confirm, loading skeleton, empty and error states.
+- `PortalShell` nav items accept an optional `badge` count (pill when expanded, dot when collapsed); the admin Messages item shows the unread count.
+- Commit: Save contact messages to Supabase and add admin Messages inbox tab

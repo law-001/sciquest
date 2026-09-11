@@ -54,8 +54,10 @@ function readCollapsed() {
 function NavList({ items, activeId, onSelect, expanded, tone, onPick }) {
   return (
     <nav className="flex flex-col gap-0.5 py-1" aria-label="Portal sections">
-      {items.map(({ id, label, Icon }) => {
+      {items.map(({ id, label, Icon, badge }) => {
         const isActive = activeId === id;
+        const hasBadge = badge > 0;
+        const fullLabel = hasBadge ? `${label} (${badge} new)` : label;
         return (
           <button
             key={id}
@@ -65,8 +67,8 @@ function NavList({ items, activeId, onSelect, expanded, tone, onPick }) {
               if (onPick) onPick();
             }}
             aria-current={isActive ? "page" : undefined}
-            aria-label={label}
-            title={expanded ? undefined : label}
+            aria-label={fullLabel}
+            title={expanded ? undefined : fullLabel}
             className={cn(
               "relative flex items-center h-11 rounded-xl text-sm font-bold transition-colors duration-200",
               expanded ? "gap-3 px-3" : "justify-center px-0",
@@ -82,6 +84,14 @@ function NavList({ items, activeId, onSelect, expanded, tone, onPick }) {
             />
             <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={2} />
             {expanded && <span className="truncate">{label}</span>}
+            {hasBadge && expanded && (
+              <span className="ml-auto min-w-5.5 h-5.5 px-1.5 rounded-full bg-primary-700 text-white text-[11px] font-black tabular-nums flex items-center justify-center">
+                {badge > 99 ? "99+" : badge}
+              </span>
+            )}
+            {hasBadge && !expanded && (
+              <span className="absolute top-2 right-3 w-2.5 h-2.5 rounded-full bg-primary-600 ring-2 ring-white dark:ring-stone-950" />
+            )}
           </button>
         );
       })}

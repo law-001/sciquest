@@ -3,10 +3,17 @@ import { Mail, MessageSquare, Send, User, Sparkles } from 'lucide-react';
 import  Card  from '../components/Card';
 import  Input  from '../components/Input';
 import  Button  from '../components/Button';
+import { useAuth } from '../context/AuthContext';
+import { submitContactMessage } from '../lib/contactMessages';
+
+const EMPTY_FORM = { name: '', email: '', message: '' };
 
 export function ContactPage() {
+  const { user } = useAuth();
+  const [form, setForm] = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -14,14 +21,22 @@ export function ContactPage() {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleChange = (field) => (e) =>
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setSubmitError(null);
+    try {
+      await submitContactMessage({ ...form, userId: user?.id ?? null });
+      setForm(EMPTY_FORM);
       setIsSubmitted(true);
-    }, 1500);
+    } catch {
+      setSubmitError("Your message couldn't be sent. Check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,6 +107,9 @@ export function ContactPage() {
                       label="Your Name"
                       placeholder="Albert Einstein"
                       icon={<User className="w-5 h-5" />}
+                      value={form.name}
+                      onChange={handleChange('name')}
+                      maxLength={100}
                       required
                     />
                     <Input
@@ -99,20 +117,36 @@ export function ContactPage() {
                       type="email"
                       placeholder="albert@physics.lab"
                       icon={<Mail className="w-5 h-5" />}
+                      value={form.email}
+                      onChange={handleChange('email')}
+                      maxLength={254}
                       required
                     />
                   </div>
 
                   <div className="w-full">
-                    <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1.5 font-heading">
+                    <label
+                      htmlFor="contact-message"
+                      className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1.5 font-heading"
+                    >
                       Your Message
                     </label>
                     <textarea
+                      id="contact-message"
                       className="w-full rounded-xl border-2 border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 px-4 py-3 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all min-h-150px resize-y"
                       placeholder="Tell us what's on your mind..."
+                      value={form.message}
+                      onChange={handleChange('message')}
+                      maxLength={5000}
                       required
                     />
                   </div>
+
+                  {submitError && (
+                    <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
+                      {submitError}
+                    </p>
+                  )}
 
                   <Button
                     type="submit"
