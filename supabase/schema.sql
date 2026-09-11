@@ -154,6 +154,17 @@ create table if not exists public.curriculum_lessons (
   week_id    text not null
 );
 
+-- 3f. CONTACT MESSAGES TABLE
+--     Sent from the public Contact page, read in the admin Messages tab.
+--     Added in migrations/20260911000000_contact_messages.sql.
+create table if not exists public.contact_messages (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null check (char_length(btrim(name)) between 1 and 100),
+  email       text not null check (char_length(email) between 3 and 254 and email like '%@%'),
+  message     text not null check (char_length(btrim(message)) between 1 and 5000),
+  user_id     uuid references auth.users(id) on delete set null,
+  is_read     boolean not null default false,
+  created_at  timestamptz not null default now()
 -- 3f. TEACHER SECTIONS TABLE
 --     The sections each teacher handles (teacher portal "My Sections").
 --     Publishing and per-student quiz grants are limited to these.
@@ -620,6 +631,24 @@ $$;
 
 revoke execute on function public.remove_student_from_section(uuid) from public, anon;
 grant execute on function public.remove_student_from_section(uuid) to authenticated;
+
+-- Contact messages: anyone may send (unread, own user_id or none); only admins read/manage.
+-- TIGHTEN BEFORE PRODUCTION: anonymous insert has no rate limit.
+alter table public.contact_messages enable row level security;
+
+create policy "anyone_insert_contact_message"
+  on public.contact_messages for insert
+  to anon, authenticated
+  with check (
+    is_read = false
+    and (user_id is null or user_id = auth.uid())
+  );
+
+create policy "admin_all_contact_messages"
+  on public.contact_messages for all
+  to authenticated
+  using      (exists (select 1 from public.staff where id = auth.uid() and role = 'admin'))
+  with check (exists (select 1 from public.staff where id = auth.uid() and role = 'admin'));
 
 -- ============================================================
 -- 7. READABLE VIEWS

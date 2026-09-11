@@ -57,6 +57,8 @@ import {
   createSection,
   deleteSection,
 } from "../lib/sections";
+import { countUnreadContactMessages } from "../lib/contactMessages";
+import { MessagesTab } from "../components/admin/MessagesTab";
 import { useAuth } from "../context/AuthContext";
 import { WEEKS_DATA } from "../data/lessonsweek-01";
 import { QUIZZES_DATA } from "../data/quizzesweek-01";
@@ -2859,6 +2861,7 @@ const SIDEBAR_ITEMS = [
   { id: "sections", label: "Sections", Icon: FolderOpen },
   { id: "lessons", label: "Lessons", Icon: BookOpen },
   { id: "quizzes", label: "Quizzes", Icon: HelpCircle },
+  { id: "messages", label: "Messages", Icon: Mail },
   { id: "reset-data", label: "Reset Data", Icon: Eraser },
   { id: "settings", label: "Settings", Icon: Settings },
 ];
@@ -2874,6 +2877,7 @@ const ADMIN_TAB_MAP = {
   sections: SectionsTab,
   lessons: LessonsTab,
   quizzes: QuizzesTab,
+  messages: MessagesTab,
   settings: SettingsTab,
 };
 
@@ -2886,9 +2890,17 @@ export function AdminDashboardPage({ onNavigate }) {
   const [counts, setCounts] = useState(null);
   const [sectionData, setSectionData] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    countUnreadContactMessages()
+      .then((n) => {
+        if (!cancelled) setUnreadMessages(n);
+      })
+      .catch(() => {
+        /* badge just stays hidden */
+      });
     Promise.all([
       fetchRecentUsers(5),
       fetchDashboardCounts(),
@@ -2954,7 +2966,9 @@ export function AdminDashboardPage({ onNavigate }) {
       brandLabel="Admin Portal"
       BrandIcon={Shield}
       roleLabel="Admin"
-      items={SIDEBAR_ITEMS}
+      items={SIDEBAR_ITEMS.map((item) =>
+        item.id === "messages" ? { ...item, badge: unreadMessages } : item,
+      )}
       activeId={activeTab}
       onSelect={setActiveTab}
       userName={adminName}
@@ -2972,6 +2986,7 @@ export function AdminDashboardPage({ onNavigate }) {
         teachers={teachers}
         totalLessons={totalLessons}
         adminName={adminName}
+        onUnreadCountChange={setUnreadMessages}
       />
     </PortalShell>
   );
