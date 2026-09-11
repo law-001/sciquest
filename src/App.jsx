@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
@@ -32,18 +32,14 @@ import {
 import { levelFromXp } from "./lib/xp-config";
 import { addScreenSeconds } from "./lib/screentime";
 import {
-  getPublishedWeekIds,
-  getPublishedQuizWeekIds,
-  getOpenWeekIds,
-  getHiddenQuizLessonIds,
-  fetchPublishedWeekIds,
-  fetchPublishedQuizWeekIds,
-  fetchOpenWeekIds,
-  fetchHiddenQuizLessonIds,
+  getCachedPublishState,
+  fetchPublishState,
+  resolvePublishIds,
   isWeekPublished,
-  isQuizLessonHidden,
-  subscribeToPublishedState,
+  isLessonHidden,
+  subscribeToPublishState,
 } from "./lib/publishedWeeks";
+import { HiddenLessonsFilter } from "./context/LessonsDataContext";
 import {
   getCachedQuizSettings,
   fetchQuizSettings,
@@ -193,16 +189,7 @@ function AppContent() {
   const [editingQuizLessonId, setEditingQuizLessonId] = useState(null);
   const [editingQuizWeekId, setEditingQuizWeekId] = useState(null);
   const [teacherPortalTab, setTeacherPortalTab] = useState("overview");
-  const [publishedWeekIds, setPublishedWeekIds] = useState(() =>
-    getPublishedWeekIds(),
-  );
-  const [publishedQuizWeekIds, setPublishedQuizWeekIds] = useState(() =>
-    getPublishedQuizWeekIds(),
-  );
-  const [hiddenQuizLessonIds, setHiddenQuizLessonIds] = useState(() =>
-    getHiddenQuizLessonIds(),
-  );
-  const [openWeekIds, setOpenWeekIds] = useState(() => getOpenWeekIds());
+  const [publishState, setPublishState] = useState(() => getCachedPublishState());
   const [quizSettings, setQuizSettings] = useState(() => getCachedQuizSettings());
   const [quizAccessGrants, setQuizAccessGrants] = useState([]);
   // Ticks each minute so a personal quiz grant's end time closes the quiz
@@ -220,6 +207,19 @@ function AppContent() {
 
   const isLoggedIn = !!user;
   const isStudent = profile?.role === "student";
+
+  // A student gets their own section's publish state; everyone else (visitors,
+  // staff) gets the global default.
+  const publishSection = isStudent ? (profile?.section ?? null) : null;
+  const publishedWeekIds = resolvePublishIds(publishState, publishSection, "lessons");
+  const openWeekIds = resolvePublishIds(publishState, publishSection, "open");
+  const publishedQuizWeekIds = resolvePublishIds(publishState, publishSection, "quizzes");
+  const hiddenQuizLessonIds = resolvePublishIds(publishState, publishSection, "quizzes-individual");
+  // Memoised: it feeds HiddenLessonsFilter, which rebuilds `weeks` when it changes.
+  const hiddenLessonIds = useMemo(
+    () => resolvePublishIds(publishState, publishSection, "lessons-individual"),
+    [publishState, publishSection],
+  );
 
   // When the user is not a logged-in student, treat progress as empty so stale
   // state from a previous session never leaks into non-student views.
@@ -405,35 +405,24 @@ function AppContent() {
     return () => clearInterval(id);
   }, [user?.id, isStudent]);
 
-  // Pull the global publish state + per-quiz timer config on mount, then
-  // subscribe to realtime changes so a teacher's toggle on one device
-  // propagates to every open client.
+  // Pull publish state + per-quiz timer config, then subscribe to realtime
+  // changes so a teacher's toggle on one device propagates to every open
+  // client. Re-runs on sign-in: publish rows are only readable by signed-in
+  // users, so a load made before signing in came back empty.
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      fetchPublishedWeekIds(),
-      fetchPublishedQuizWeekIds(),
-      fetchOpenWeekIds(),
-      fetchHiddenQuizLessonIds(),
-      fetchQuizSettings(),
-    ])
-      .then(([lessons, quizzes, open, hiddenQuizzes, settings]) => {
+    Promise.all([fetchPublishState(), fetchQuizSettings()])
+      .then(([publish, settings]) => {
         if (cancelled) return;
-        setPublishedWeekIds(lessons);
-        setPublishedQuizWeekIds(quizzes);
-        setOpenWeekIds(open);
-        setHiddenQuizLessonIds(hiddenQuizzes);
+        setPublishState(publish);
         setQuizSettings(settings);
       })
       .catch((err) => {
         console.error("Failed to load course settings:", err);
       });
 
-    const unsubPublish = subscribeToPublishedState((scope, ids) => {
-      if (scope === "lessons") setPublishedWeekIds(ids);
-      else if (scope === "quizzes") setPublishedQuizWeekIds(ids);
-      else if (scope === "open") setOpenWeekIds(ids);
-      else if (scope === "quizzes-individual") setHiddenQuizLessonIds(ids);
+    const unsubPublish = subscribeToPublishState((next) => {
+      if (!cancelled) setPublishState(next);
     });
     const unsubQuiz = subscribeToQuizSettings(() => {
       // Pull a fresh map rather than patching in place — keeps the cached
@@ -446,7 +435,7 @@ function AppContent() {
       unsubPublish();
       unsubQuiz();
     };
-  }, []);
+  }, [user?.id]);
 
   // Quizzes a teacher re-opened for this student only. RLS returns just the
   // signed-in student's rows.
@@ -744,7 +733,7 @@ function AppContent() {
 
   const isQuizClosedForClass = (weekId, lessonId) =>
     !isWeekPublished(weekId, publishedQuizWeekIds) ||
-    isQuizLessonHidden(lessonId, hiddenQuizLessonIds);
+    isLessonHidden(lessonId, hiddenQuizLessonIds);
 
   // The teacher's per-student grant, but only when it's what keeps the quiz
   // open — null when the quiz is open for the whole class anyway.
@@ -1307,7 +1296,11 @@ function AppContent() {
         />
       )}
 
-      <main className="grow">{renderView()}</main>
+      <main className="grow">
+        <HiddenLessonsFilter hiddenLessonIds={hiddenLessonIds}>
+          {renderView()}
+        </HiddenLessonsFilter>
+      </main>
 
       <AuthModal
         isOpen={isAuthModalOpen}

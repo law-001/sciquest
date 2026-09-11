@@ -69,3 +69,35 @@ export async function deleteSection(id) {
   const { error } = await supabase.from('sections').delete().eq('id', id)
   if (error) throw error
 }
+
+// The sections a teacher handles — the "My Sections" tab. RLS limits
+// publishing to these (can_manage_section), so this is the list the server
+// checks, not just a display preference.
+export async function fetchTeacherSections(teacherId) {
+  const { data, error } = await supabase
+    .from('teacher_sections')
+    .select('section')
+    .eq('teacher_id', teacherId)
+    .order('section')
+  if (error) throw error
+  return (data ?? []).map((row) => row.section)
+}
+
+export async function addTeacherSection(teacherId, section) {
+  const { error } = await supabase
+    .from('teacher_sections')
+    .upsert(
+      { teacher_id: teacherId, section },
+      { onConflict: 'teacher_id,section', ignoreDuplicates: true },
+    )
+  if (error) throw error
+}
+
+export async function removeTeacherSection(teacherId, section) {
+  const { error } = await supabase
+    .from('teacher_sections')
+    .delete()
+    .eq('teacher_id', teacherId)
+    .eq('section', section)
+  if (error) throw error
+}

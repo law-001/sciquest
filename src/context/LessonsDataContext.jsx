@@ -267,6 +267,24 @@ export function LessonsDataProvider({ children }) {
   return <LessonsDataCtx.Provider value={value}>{children}</LessonsDataCtx.Provider>
 }
 
+// Drops lessons hidden for the viewer's section from `weeks`. Wraps the app's
+// views so every page reading `weeks` agrees on what the student can see;
+// `weeksWithHidden` stays complete for the teacher tools.
+export function HiddenLessonsFilter({ hiddenLessonIds, children }) {
+  const ctx = useContext(LessonsDataCtx)
+  const value = useMemo(() => {
+    if (!hiddenLessonIds?.size) return ctx
+    return {
+      ...ctx,
+      weeks: ctx.weeks.map((week) => ({
+        ...week,
+        lessons: week.lessons.filter((l) => !hiddenLessonIds.has(l.id)),
+      })),
+    }
+  }, [ctx, hiddenLessonIds])
+  return <LessonsDataCtx.Provider value={value}>{children}</LessonsDataCtx.Provider>
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 export function useLessonsData() {
   return useContext(LessonsDataCtx)
