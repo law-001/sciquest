@@ -241,6 +241,19 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - `PortalShell` nav items accept an optional `badge` count (pill when expanded, dot when collapsed); the admin Messages item shows the unread count.
 - Commit: Save contact messages to Supabase and add admin Messages inbox tab
 
+## VERSION_30
+- Profile leaderboard (`ProfilePage.jsx`) now always shows exactly 10 slots: top 10 students, with unfilled slots rendered as blank numbered rows. Removed the extra "you" row shown below the list when the signed-in student ranked outside the top slice, and the "No XP earned in this period yet." empty message (an empty period now shows 10 blank slots).
+- Commit: Show fixed top-10 leaderboard with blank placeholder slots
+
+## VERSION_31
+- Profile leaderboard (`ProfilePage.jsx`): rank 2 badge is now a silver gradient, rank 3 a bronze gradient (rank 1 gold unchanged).
+- Loading now shows 10 pulsing skeleton rows (pulse off under reduced motion) instead of plain "Loading leaderboard…" text.
+- Unfilled slots are dashed-outline rows labelled "Open spot", so they can't be mistaken for loading. A fully empty period also shows "No one has earned XP this week/this month yet. Be the first!" above the slots.
+- Commit: Add silver/bronze rank badges, skeleton loading, and empty-state text to leaderboard
+
+## VERSION_32
+- Profile leaderboard (`ProfilePage.jsx`): open podium spots now use the same rank badge as filled ones — #2 silver, #3 bronze, and #1 gold with the crown when the board is empty. Open spots 4–10 keep the plain grey number.
+- Commit: Show gold/silver/bronze badges on open podium leaderboard spots
 ## VERSION_29
 - Merged the teacher portal's **Gradebook** and **Student Progress** screens into one **Gradebook** (`TeacherPortalPage.jsx`). The "Student Progress" sidebar tab and `ProgressSlot` are gone; the dashboard's "All students" link now opens the Gradebook.
 - The grade (and its DepEd descriptor: O / VS / S / FS / DNME) now combines quizzes and games: `computeGrade()` = quiz average × `GRADE_WEIGHTS.quiz` + game score × `GRADE_WEIGHTS.game` (50/50). Quiz average = mean best % over quizzes taken; game score = mean earned/max % over games played. A part with no data yet is left out instead of counted as 0.
