@@ -240,3 +240,17 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - New admin **Messages** tab (`src/components/admin/MessagesTab.jsx`): inbox list + reading pane (stacked on mobile), search, All/Unread filters, unread dot + "New" label, relative times, Reply (mailto), Mark read/unread, Delete with inline confirm, loading skeleton, empty and error states.
 - `PortalShell` nav items accept an optional `badge` count (pill when expanded, dot when collapsed); the admin Messages item shows the unread count.
 - Commit: Save contact messages to Supabase and add admin Messages inbox tab
+
+## VERSION_29
+- Merged the teacher portal's **Gradebook** and **Student Progress** screens into one **Gradebook** (`TeacherPortalPage.jsx`). The "Student Progress" sidebar tab and `ProgressSlot` are gone; the dashboard's "All students" link now opens the Gradebook.
+- The grade (and its DepEd descriptor: O / VS / S / FS / DNME) now combines quizzes and games: `computeGrade()` = quiz average × `GRADE_WEIGHTS.quiz` + game score × `GRADE_WEIGHTS.game` (50/50). Quiz average = mean best % over quizzes taken; game score = mean earned/max % over games played. A part with no data yet is left out instead of counted as 0.
+- Class list: rank, progress, quizzes (avg + taken), games (score + played), combined grade, and engagement status; every column sortable (sort headers are now real buttons) and rows open with Enter/Space. Stats: Class Average, Passed (≥ 75%), Avg Progress, Not Started. "Needs Help" / "On Track" now follow the combined grade.
+- Student record: combined grade with the formula spelled out, status, rank, last quiz, pending warning; Quiz Performance + Game Performance; Week-by-Week Activity + Quiz History. The duplicate games list from the old progress screen was dropped.
+- `fetchGameProgressForStudents()` (`src/lib/teacher.js`) now pages past the 1000-row cap, since grades depend on every row.
+- Commit: Merge Gradebook and Student Progress; grade combines quizzes and games
+
+## VERSION_30
+- Gradebook student record (`TeacherPortalPage.jsx`): removed the Week-by-Week Activity and Quiz History panels.
+- Quiz Performance now lists only the quizzes the student has taken (with an "Awaiting grade" note when one is pending). Untaken quizzes sit in a collapsible "Not attempted · N" section at the bottom of the same panel, collapsed by default.
+- Game Performance now lists only the games played; unplayed games are in a collapsible "Not played yet · N" section in the same panel. Both use native `<details>`, so they're keyboard-accessible, and the chevron doesn't animate for reduced motion.
+- Commit: Gradebook record: show only taken quizzes/played games, collapse the rest
