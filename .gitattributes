@@ -1,3 +1,0 @@
-# Every branch appends to the end of the version log, so git would otherwise
-# stop on a conflict at every merge. Union keeps both sides' entries.
-VERSIONS.md merge=union
