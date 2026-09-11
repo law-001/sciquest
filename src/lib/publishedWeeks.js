@@ -1,42 +1,77 @@
-// Global publish state — stored in Supabase so a teacher's toggle takes
-// effect for every device, not just the one that flipped it. A small
-// localStorage cache keeps the first paint fast on reload.
+// Publish state, per section. A section can override any scope; a scope the
+// section never touched inherits the global course_publish_state row (the
+// admin-set default), and with no row at either level the built-in default
+// applies. RLS only lets a teacher write the sections she handles
+// (teacher_sections). A small localStorage cache keeps the first paint fast
+// on reload.
 //
-// The "null" sentinel returned from the cache means "no row yet", which
-// `isWeekPublished` treats as "all published" (preserves the original
-// default before this table existed).
+// Scopes, and what their ids are:
+//   lessons             week ids whose lessons are published
+//   open                week ids open regardless of the previous week
+//   quizzes             week ids whose quizzes are published
+//   quizzes-individual  lesson ids whose quiz is hidden
+//   lessons-individual  lesson ids that are hidden
+//
+// resolvePublishIds returns null for "no row anywhere", which
+// isWeekPublished treats as "all published" and the open / hidden checks
+// treat as empty.
 
 import { supabase } from './supabase'
 
-const LESSONS_CACHE = 'sq_published_weeks'
-const QUIZZES_CACHE = 'sq_published_quiz_weeks'
-const OPEN_CACHE = 'sq_open_weeks'
-const HIDDEN_QUIZZES_CACHE = 'sq_hidden_quiz_lessons'
+const CACHE_KEY = 'sq_publish_state'
 
-function readCache(key) {
+function emptyState() {
+  return { global: {}, sections: {} }
+}
+
+function readCache() {
   try {
-    const val = localStorage.getItem(key)
-    return val !== null ? new Set(JSON.parse(val)) : null
+    const val = localStorage.getItem(CACHE_KEY)
+    return val !== null ? JSON.parse(val) : emptyState()
   } catch {
-    return null
+    return emptyState()
   }
 }
 
-function writeCache(key, ids) {
+function writeCache(state) {
   try {
-    if (ids === null) localStorage.removeItem(key)
-    else localStorage.setItem(key, JSON.stringify([...ids]))
+    localStorage.setItem(CACHE_KEY, JSON.stringify(state))
   } catch {
     /* quota */
   }
 }
 
-export function getPublishedWeekIds() {
-  return readCache(LESSONS_CACHE)
+export function getCachedPublishState() {
+  return readCache()
 }
 
-export function getPublishedQuizWeekIds() {
-  return readCache(QUIZZES_CACHE)
+export async function fetchPublishState() {
+  const [globalRes, sectionRes] = await Promise.all([
+    supabase.from('course_publish_state').select('scope, week_ids'),
+    supabase.from('section_publish_state').select('section, scope, item_ids'),
+  ])
+  if (globalRes.error) throw globalRes.error
+  if (sectionRes.error) throw sectionRes.error
+
+  const state = emptyState()
+  for (const row of globalRes.data ?? []) {
+    state.global[row.scope] = row.week_ids ?? []
+  }
+  for (const row of sectionRes.data ?? []) {
+    state.sections[row.section] ??= {}
+    state.sections[row.section][row.scope] = row.item_ids ?? []
+  }
+  writeCache(state)
+  return state
+}
+
+// `section` null (a signed-out visitor, a student with no section, staff)
+// reads the global default.
+export function resolvePublishIds(state, section, scope) {
+  const ids =
+    (section != null ? state.sections[section]?.[scope] : undefined) ??
+    state.global[scope]
+  return ids ? new Set(ids) : null
 }
 
 export function isWeekPublished(weekId, publishedIds) {
@@ -44,125 +79,50 @@ export function isWeekPublished(weekId, publishedIds) {
   return publishedIds.has(weekId)
 }
 
-// "Open for all" is opt-in per week — default (no row, or week not in set)
-// is `false`, so the normal previous-week prerequisite still applies.
-export function getOpenWeekIds() {
-  return readCache(OPEN_CACHE)
-}
-
 export function isWeekOpen(weekId, openIds) {
   if (!openIds) return false
   return openIds.has(weekId)
 }
 
-// Per-quiz hiding is opt-in by lesson id — default (no row, or lesson not in
-// set) is `false`, so a quiz stays visible as long as its week is published.
-export function getHiddenQuizLessonIds() {
-  return readCache(HIDDEN_QUIZZES_CACHE)
-}
-
-export function isQuizLessonHidden(lessonId, hiddenIds) {
+export function isLessonHidden(lessonId, hiddenIds) {
   if (!hiddenIds) return false
   return hiddenIds.has(lessonId)
 }
 
-async function fetchScope(scope) {
-  const { data, error } = await supabase
-    .from('course_publish_state')
-    .select('week_ids')
-    .eq('scope', scope)
-    .maybeSingle()
-  if (error) throw error
-  if (!data) return null
-  return new Set(data.week_ids ?? [])
+// Copy of `state` with one section's scope replaced — the optimistic update
+// applied before the write lands.
+export function withSectionPublishIds(state, section, scope, ids) {
+  return {
+    ...state,
+    sections: {
+      ...state.sections,
+      [section]: { ...state.sections[section], [scope]: [...ids] },
+    },
+  }
 }
 
-export async function fetchPublishedWeekIds() {
-  const ids = await fetchScope('lessons')
-  writeCache(LESSONS_CACHE, ids)
-  return ids
-}
-
-export async function fetchPublishedQuizWeekIds() {
-  const ids = await fetchScope('quizzes')
-  writeCache(QUIZZES_CACHE, ids)
-  return ids
-}
-
-export async function fetchOpenWeekIds() {
-  const ids = await fetchScope('open')
-  writeCache(OPEN_CACHE, ids)
-  return ids
-}
-
-export async function fetchHiddenQuizLessonIds() {
-  const ids = await fetchScope('quizzes-individual')
-  writeCache(HIDDEN_QUIZZES_CACHE, ids)
-  return ids
-}
-
-async function upsertScope(scope, ids) {
-  const arr = ids ? [...ids] : []
+export async function saveSectionPublishIds(section, scope, ids) {
   const { error } = await supabase
-    .from('course_publish_state')
+    .from('section_publish_state')
     .upsert(
-      { scope, week_ids: arr, updated_at: new Date().toISOString() },
-      { onConflict: 'scope' },
+      { section, scope, item_ids: [...ids], updated_at: new Date().toISOString() },
+      { onConflict: 'section,scope' },
     )
   if (error) throw error
 }
 
-export async function savePublishedWeekIds(ids) {
-  writeCache(LESSONS_CACHE, ids)
-  await upsertScope('lessons', ids)
-}
-
-export async function savePublishedQuizWeekIds(ids) {
-  writeCache(QUIZZES_CACHE, ids)
-  await upsertScope('quizzes', ids)
-}
-
-export async function saveOpenWeekIds(ids) {
-  writeCache(OPEN_CACHE, ids)
-  await upsertScope('open', ids)
-}
-
-export async function saveHiddenQuizLessonIds(ids) {
-  writeCache(HIDDEN_QUIZZES_CACHE, ids)
-  await upsertScope('quizzes-individual', ids)
-}
-
-// Subscribe to realtime updates so toggles made on one device propagate
-// to every other open client within seconds. Returns an unsubscribe fn.
-export function subscribeToPublishedState(onChange) {
+// Refetches the whole state on any change to either table, so toggles made
+// on one device reach every open client. Returns an unsubscribe fn.
+export function subscribeToPublishState(onChange) {
+  const refetch = () => {
+    fetchPublishState().then(onChange).catch(() => {})
+  }
   // Channel names must be unique per subscriber — duplicate names across
   // components silently break Supabase realtime.
   const channel = supabase
-    .channel(`course_publish_state_changes_${Math.random().toString(36).slice(2)}`)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'course_publish_state' },
-      (payload) => {
-        const row = payload.new ?? payload.old
-        if (!row?.scope) return
-        const ids = payload.eventType === 'DELETE'
-          ? null
-          : new Set(row.week_ids ?? [])
-        const cacheKey =
-          row.scope === 'lessons'
-            ? LESSONS_CACHE
-            : row.scope === 'quizzes'
-              ? QUIZZES_CACHE
-              : row.scope === 'open'
-                ? OPEN_CACHE
-                : row.scope === 'quizzes-individual'
-                  ? HIDDEN_QUIZZES_CACHE
-                  : null
-        if (!cacheKey) return
-        writeCache(cacheKey, ids)
-        onChange(row.scope, ids)
-      },
-    )
+    .channel(`publish_state_changes_${Math.random().toString(36).slice(2)}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'course_publish_state' }, refetch)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'section_publish_state' }, refetch)
     .subscribe()
   return () => { supabase.removeChannel(channel) }
 }

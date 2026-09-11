@@ -13,9 +13,9 @@
 //       (b) the teacher flagged it "open for all" (openIds set),
 //       (c) every lesson in the previous week has a submitted quiz attempt.
 //
-// `publishedIds` is the Set returned by getPublishedWeekIds(); a null
+// `publishedIds` is resolvePublishIds(state, section, 'lessons'); a null
 // value means "all published" (default before any teacher toggle).
-// `openIds` is the Set returned by getOpenWeekIds(); null/empty means
+// `openIds` is resolvePublishIds(state, section, 'open'); null/empty means
 // "no week is open-for-all" (the default).
 
 import { isWeekPublished, isWeekOpen } from './publishedWeeks'

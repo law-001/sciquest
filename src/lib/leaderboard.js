@@ -7,10 +7,10 @@ import { totalAchievementXp } from './achievements'
 // XP is computed the SAME way the profile's "Total XP" is —
 // lesson xp_awarded + quiz xp_awarded + the achievement-bonus XP from
 // src/lib/achievements.js — so a student's rank always matches the
-// total shown on their own profile. Achievement XP values live only
-// in the JS catalog (never the DB), so this aggregation runs
-// client-side; RLS already lets any authenticated user read every
-// student's progress/attempts/achievement rows.
+// total shown on their own profile. Students can't read each other's rows,
+// so the leaderboard_entries RPC returns per-student lesson + quiz XP and
+// achievement keys; achievement XP values live only in the JS catalog, so
+// they are added here.
 function cutoffMs(period) {
   if (period === 'week') return Date.now() - 7 * 86_400_000
   if (period === 'month') return Date.now() - 30 * 86_400_000
@@ -19,64 +19,19 @@ function cutoffMs(period) {
 
 export async function fetchLeaderboard(period = 'all') {
   const since = cutoffMs(period)
-  const within = (ts) =>
-    since == null || (ts != null && new Date(ts).getTime() >= since)
+  const { data, error } = await supabase.rpc('leaderboard_entries', {
+    p_since: since == null ? null : new Date(since).toISOString(),
+  })
+  if (error) throw error
 
-  const [studentsRes, progressRes, attemptsRes, achRes] = await Promise.all([
-    supabase.from('students').select('id, first_name, last_name, avatar, avatar_style'),
-    supabase
-      .from('student_progress')
-      .select('student_id, xp_awarded, completed_at, created_at')
-      .eq('completed', true),
-    supabase.from('quiz_attempts').select('student_id, xp_awarded, submitted_at'),
-    supabase
-      .from('student_achievements')
-      .select('student_id, achievement_key, unlocked_at'),
-  ])
-  if (studentsRes.error?.code === '42703' || studentsRes.error?.code === 'PGRST204') {
-    const fallback = await supabase.from('students').select('id, first_name, last_name, avatar')
-    studentsRes.data = fallback.data
-    studentsRes.error = fallback.error
-  }
-  for (const r of [studentsRes, progressRes, attemptsRes, achRes]) {
-    if (r.error) throw r.error
-  }
-
-  const acc = new Map() // student_id → { xp, keys[] }
-  const ensure = (id) => {
-    let a = acc.get(id)
-    if (!a) {
-      a = { xp: 0, keys: [] }
-      acc.set(id, a)
-    }
-    return a
-  }
-  for (const p of progressRes.data ?? []) {
-    if (within(p.completed_at ?? p.created_at)) {
-      ensure(p.student_id).xp += p.xp_awarded ?? 0
-    }
-  }
-  for (const a of attemptsRes.data ?? []) {
-    if (within(a.submitted_at)) ensure(a.student_id).xp += a.xp_awarded ?? 0
-  }
-  for (const ach of achRes.data ?? []) {
-    if (within(ach.unlocked_at)) {
-      ensure(ach.student_id).keys.push(ach.achievement_key)
-    }
-  }
-
-  const rows = (studentsRes.data ?? [])
-    .map((s) => {
-      const a = acc.get(s.id) ?? { xp: 0, keys: [] }
-      return {
-        studentId: s.id,
-        name:
-          `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || 'Student',
-        avatar: s.avatar ?? null,
-        avatarStyle: s.avatar_style,
-        xp: a.xp + totalAchievementXp(a.keys),
-      }
-    })
+  const rows = (data ?? [])
+    .map((s) => ({
+      studentId: s.student_id,
+      name: `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || 'Student',
+      avatar: s.avatar ?? null,
+      avatarStyle: s.avatar_style,
+      xp: Number(s.progress_xp ?? 0) + totalAchievementXp(s.achievement_keys ?? []),
+    }))
     .filter((r) => r.xp > 0)
     .sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name))
 
