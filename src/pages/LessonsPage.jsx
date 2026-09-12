@@ -446,10 +446,13 @@ export function LessonsPage({
               lessonsPassed.includes(l.id),
             ).length;
             const totalLessons = week.lessons.length;
-            const weekProgress = Math.round(
-              (completedCount / totalLessons) * 100,
-            );
-            const isFullyDone = completedCount === totalLessons;
+            // Examination weeks carry no lessons — guard the division so the
+            // card shows 0% instead of NaN%.
+            const weekProgress = totalLessons
+              ? Math.round((completedCount / totalLessons) * 100)
+              : 0;
+            const isFullyDone =
+              totalLessons > 0 && completedCount === totalLessons;
 
             return (
               <div

@@ -1,158 +1,139 @@
-// Week 13 quizzes — Grade 7 Science: Cell Parts and Functions
+// Week 13 quizzes — Grade 7 Science: Plant and Animal Cell
 
 export const QUIZZES_WEEK_13 = {
-  // ── Lesson 37: Cell Membrane and Cell Wall — multiple-choice ─────────────
-  "lesson-37": {
-    lessonId: "lesson-37",
-    title: "Cell Membrane and Cell Wall",
-    description: "Test your knowledge of the structure and function of the cell membrane and cell wall.",
-    timeLimit: 900,
+  // ── w13-l1: Plant and Animal Cell — mixed ─────────────────────────────────
+  "w13-l1": {
+    lessonId: "w13-l1",
+    title: "Plant and Animal Cell",
+    description:
+      "Test your ability to compare plant and animal cells and to explain how each unique structure suits the way the organism lives.",
+    timeLimit: 1200,
     questions: [
       {
         id: "q1",
-        type: "multiple-choice",
-        question: "Which of the following best describes the property of selective permeability?",
-        options: [
-          "The membrane allows all molecules to pass through freely",
-          "The membrane blocks all molecules from entering the cell",
-          "The membrane allows some substances through while restricting others",
-          "The membrane only allows water to pass through",
+        type: "matching",
+        question:
+          "Match each structure to the cell type or types in which it is found.",
+        leftItems: [
+          "Chloroplast",
+          "Centriole",
+          "Central vacuole",
+          "Mitochondria",
+          "Cell wall (cellulose)",
+          "Cell membrane",
         ],
-        correctAnswer: "The membrane allows some substances through while restricting others",
-        points: 5,
+        rightItems: [
+          "Plant Cell Only",
+          "Animal Cell Only",
+          "Both Plant and Animal Cells",
+        ],
+        correctPairs: {
+          Chloroplast: "Plant Cell Only",
+          Centriole: "Animal Cell Only",
+          "Central vacuole": "Plant Cell Only",
+          Mitochondria: "Both Plant and Animal Cells",
+          "Cell wall (cellulose)": "Plant Cell Only",
+          "Cell membrane": "Both Plant and Animal Cells",
+        },
+        points: 15,
       },
       {
         id: "q2",
-        type: "multiple-choice",
-        question: "What is the cell membrane primarily made of?",
-        options: [
-          "Cellulose fibers",
-          "A phospholipid bilayer with embedded proteins",
-          "Chitin and peptidoglycan",
-          "Starch and glycogen",
-        ],
-        correctAnswer: "A phospholipid bilayer with embedded proteins",
+        type: "identification",
+        question:
+          "What plant organelle contains chlorophyll and is the site where photosynthesis takes place?",
+        correctAnswer: "chloroplast",
+        acceptedAnswers: ["chloroplast", "chloroplasts"],
         points: 5,
       },
       {
         id: "q3",
-        type: "multiple-choice",
-        question: "Which of the following statements about the cell wall is correct?",
-        options: [
-          "The cell wall is found in all animal cells",
-          "The cell wall is selectively permeable like the cell membrane",
-          "The cell wall in plant cells is made of cellulose and provides rigid support",
-          "The cell wall replaces the cell membrane in plant cells",
-        ],
-        correctAnswer: "The cell wall in plant cells is made of cellulose and provides rigid support",
+        type: "identification",
+        question:
+          "What is the name of the pressure exerted by water in the central vacuole against the cell wall, which keeps non-woody plants firm and upright?",
+        correctAnswer: "turgor pressure",
+        acceptedAnswers: ["turgor pressure", "turgor"],
         points: 5,
       },
       {
         id: "q4",
-        type: "multiple-choice",
-        question: "A student places a plant cell in salty water. Water leaves the cell through the membrane. What process is this an example of?",
-        options: [
-          "Diffusion",
-          "Active transport",
-          "Osmosis",
-          "Endocytosis",
-        ],
-        correctAnswer: "Osmosis",
+        type: "identification",
+        question:
+          "What tough carbohydrate makes up the plant cell wall and gives it its strength?",
+        correctAnswer: "cellulose",
+        acceptedAnswers: ["cellulose"],
         points: 5,
       },
       {
         id: "q5",
-        type: "multiple-choice",
-        question: "Which cell type does NOT have a cell wall?",
-        options: [
-          "Bacterial cell",
-          "Plant cell",
-          "Animal cell",
-          "Fungal cell",
+        type: "identification",
+        question:
+          "What type of plastid stores starch in plant roots and tubers such as potatoes?",
+        correctAnswer: "leucoplast",
+        acceptedAnswers: [
+          "leucoplast",
+          "leucoplasts",
+          "amyloplast",
+          "amyloplasts",
         ],
-        correctAnswer: "Animal cell",
         points: 5,
       },
-    ],
-  },
-
-  // ── Lesson 38: Nucleus and Cell Organelles — true-false ──────────────────
-  "lesson-38": {
-    lessonId: "lesson-38",
-    title: "Nucleus and Cell Organelles",
-    description: "Test your understanding of the nucleus and major cell organelles.",
-    timeLimit: 900,
-    questions: [
       {
-        id: "q1",
-        type: "true-false",
-        question: "The mitochondria is often called the 'powerhouse of the cell' because it produces ATP through cellular respiration.",
-        correctAnswer: true,
+        id: "q6",
+        type: "multiple-choice",
+        question:
+          "A plant cell and an animal cell are both placed in pure distilled water. The plant cell swells firm and stops; the animal cell swells and bursts. Which structure explains the difference?",
+        options: [
+          "The nucleus",
+          "The cell wall",
+          "The mitochondria",
+          "The ribosomes",
+        ],
+        correctAnswer: "The cell wall",
         points: 5,
-        explanation: "Mitochondria use oxygen and glucose to produce ATP (adenosine triphosphate) — the cell's main energy currency — through the process of cellular respiration.",
+        explanation:
+          "The rigid cellulose cell wall resists the outward pressure once the plant cell is full, so swelling safely stops. The animal cell has only a flexible membrane with nothing to resist the pressure, so it keeps expanding until it ruptures.",
       },
       {
-        id: "q2",
-        type: "true-false",
-        question: "The Golgi apparatus is responsible for producing energy for the cell.",
-        correctAnswer: false,
+        id: "q7",
+        type: "multiple-choice",
+        question:
+          "A potted plant droops after three days without water, then stands fully upright a few hours after being watered, with no visible damage. What happened?",
+        options: [
+          "The chloroplasts were destroyed and then regrew",
+          "The central vacuoles lost water and turgor pressure, then refilled",
+          "The cell walls dissolved and then reformed",
+          "The mitochondria stopped and then restarted",
+        ],
+        correctAnswer:
+          "The central vacuoles lost water and turgor pressure, then refilled",
         points: 5,
-        explanation: "The Golgi apparatus sorts, modifies, and packages proteins for transport — it does not produce energy. Energy production is the job of the mitochondria.",
+        explanation:
+          "Wilting is a loss of turgor pressure, not damage. When the vacuoles lose water the cells go limp; refilling them restores the pressure and the plant stands again.",
       },
       {
-        id: "q3",
-        type: "true-false",
-        question: "Ribosomes are found only in eukaryotic cells and are absent in prokaryotic cells.",
-        correctAnswer: false,
-        points: 5,
-        explanation: "Ribosomes are found in ALL cells — both prokaryotic and eukaryotic. They are the universal site of protein synthesis. However, prokaryotic and eukaryotic ribosomes differ in size and structure.",
+        id: "q8",
+        type: "ordering",
+        question:
+          "Arrange the events of lysosome function in the correct order:",
+        items: [
+          "A white blood cell detects and engulfs a bacterium by phagocytosis",
+          "A membrane-bound phagosome forms around the captured bacterium",
+          "Lysosomes move toward the phagosome through the cytoplasm",
+          "The lysosome membrane fuses with the phagosome membrane",
+          "Digestive enzymes are released onto the bacterium",
+          "The broken-down fragments are recycled or expelled from the cell",
+        ],
+        points: 15,
       },
       {
-        id: "q4",
-        type: "true-false",
-        question: "The nucleolus, found inside the nucleus, is responsible for producing ribosomes.",
-        correctAnswer: true,
-        points: 5,
-        explanation: "The nucleolus is a dense region inside the nucleus where ribosomal RNA (rRNA) is transcribed and ribosome subunits are assembled before being exported to the cytoplasm.",
-      },
-      {
-        id: "q5",
-        type: "true-false",
-        question: "Lysosomes use digestive enzymes to break down old organelles, bacteria, and waste materials inside the cell.",
-        correctAnswer: true,
-        points: 5,
-        explanation: "Lysosomes are membrane-bound sacs containing powerful hydrolytic (digestive) enzymes. They break down cellular waste, old organelles (autophagy), and foreign particles like bacteria engulfed by immune cells.",
-      },
-    ],
-  },
-
-  // ── Lesson 39: Cytoplasm and Cytoskeleton — short-answer ─────────────────
-  "lesson-39": {
-    lessonId: "lesson-39",
-    title: "Cytoplasm and Cytoskeleton",
-    description: "Answer questions that demonstrate your understanding of cytoplasm and cytoskeleton function.",
-    timeLimit: 900,
-    questions: [
-      {
-        id: "q1",
+        id: "q9",
         type: "short-answer",
-        question: "Explain the difference between cytoplasm and cytosol, and describe the role of cytoplasm in cell function.",
+        question:
+          "Leaves are green, carrots are orange, and potato flesh is white — yet all three are made of plant cells. Explain what causes the three different colours.",
         points: 10,
-        rubric: "Should mention that cytosol is the liquid portion of the cytoplasm (water-based solution of salts, proteins, and sugars). Cytoplasm includes the cytosol plus all organelles suspended within it. Should explain that cytoplasm provides the medium for chemical reactions, suspends organelles, and fills the cell between the membrane and nucleus.",
-      },
-      {
-        id: "q2",
-        type: "short-answer",
-        question: "Describe two specific roles of the cytoskeleton and explain why the cytoskeleton is described as 'dynamic' rather than rigid.",
-        points: 10,
-        rubric: "Should identify two roles from: maintaining cell shape, anchoring organelles, enabling cell movement via cilia/flagella, separating chromosomes during cell division, or intracellular transport. Should explain that the cytoskeleton is dynamic because it is constantly being assembled and disassembled — this allows cells to change shape, divide, and move.",
-      },
-      {
-        id: "q3",
-        type: "short-answer",
-        question: "Compare cilia and flagella — describe a structural difference and give one example of where each is found in the human body.",
-        points: 10,
-        rubric: "Should state that cilia are short and numerous while flagella are long and usually single per cell. Both are made of microtubule bundles. Example of cilia: cells lining the trachea/respiratory tract that sweep mucus upward. Example of flagella: the tail of a sperm cell that propels it toward the egg.",
+        rubric:
+          "Should explain that the difference is the type of plastid present. Leaves are packed with chloroplasts containing the green pigment chlorophyll; carrots contain chromoplasts holding orange carotenoid pigments; potato flesh contains colourless leucoplasts full of stored starch. All three are members of the plastid family.",
       },
     ],
   },

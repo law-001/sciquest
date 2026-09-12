@@ -1,450 +1,543 @@
-// Week 16: Cell Reproduction: Meiosis — Grade 7 Science
+// Week 16: Science Fair and Fertilization — Grade 7 Science
+//
+// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 16.
+//   Lesson 1 — 2nd Performance Task in Science 7: Math and Science Fair 2025
+//   Lesson 2 — Fertilization
 
+import classroom from "../assets/classroom.webp";
 import microscope from "../assets/week1/Microscopic.jpg";
-import equation from "../assets/week1/equation.jpg";
-import simulation from "../assets/week1/simulation.jpg";
-import lab from "../assets/lab.jpg";
 
 export const week16 = {
   id: "week-16",
   weekNumber: 16,
-  title: "Cell Reproduction: Meiosis",
+  title: "Science Fair and Fertilization",
   category: "Life Science",
   description:
-    "Understand meiosis — the process that produces sex cells — and how it differs from mitosis.",
-  icon: "Shuffle",
-  color: "secondary",
+    "Plan and build an investigation for the Math and Science Fair, then study fertilization — the moment two gametes fuse and a new organism begins.",
+  icon: "Heart",
+  color: "accent",
   isLocked: false,
   lessons: [
+    // ═══════════════════════════════════════════════════
+    // LESSON 1 — 2nd Performance Task: Math and Science Fair 2025
+    // ═══════════════════════════════════════════════════
     {
-      id: "lesson-46",
+      id: "w16-l1",
       weekId: "week-16",
-      lessonNumber: 46,
-      title: "Introduction to Meiosis",
-      badge: "Lesson 1",
-      subtitle: "What meiosis is and why it matters for reproduction",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: microscope,
-      heroImageAlt: "Microscopic view of dividing cells undergoing meiosis",
+      lessonNumber: 1,
+      title: "2nd Performance Task in Science 7: Math and Science Fair 2025",
+      badge: "Performance Task",
+      subtitle:
+        "Design, run, and present your own scientific investigation — bringing together everything you have learned about the scientific method, measurement, and data.",
+      readTime: "~15 min read",
+      xp: 100,
+      heroImage: classroom,
+      heroImageAlt:
+        "Classroom set up with student science fair project displays",
+
       sections: [
-        "What Is Meiosis?",
-        "Key Terms",
-        "Key Concepts",
-        "Real-World Applications",
+        "The Task",
+        "Choosing Your Project",
+        "What You Will Need",
+        "Building Your Project",
+        "Your Display Board",
+        "How You Will Be Graded",
+        "Tips for Fair Day",
       ],
+
+      references: [
+        {
+          label: "Science Buddies — Science Fair Project Guide",
+          url: "https://www.sciencebuddies.org/science-fair-projects/science-fair",
+        },
+        {
+          label: "Science Buddies — Display Board Tips",
+          url: "https://www.sciencebuddies.org/science-fair-projects/project-display-boards",
+        },
+      ],
+
       layout: [
         {
           type: "intro",
-          heading: "What Is Meiosis?",
+          heading: "The Task",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Meiosis</strong> is a special type of cell division that produces sex cells, also called <strong class='text-primary-700'>gametes</strong> — sperm in males and eggs in females. Unlike mitosis, which produces two identical daughter cells, meiosis produces four genetically unique daughter cells.",
-              "Meiosis starts with one <strong class='text-primary-700'>diploid</strong> cell (2n), meaning it has two full sets of chromosomes. In humans, this means 46 chromosomes. After meiosis, each resulting cell is <strong class='text-primary-700'>haploid</strong> (n), meaning it has only half the chromosomes — 23 in humans. When a sperm and egg combine during fertilization, the full 46-chromosome count is restored.",
-              "Meiosis involves two rounds of cell division and introduces genetic variation through a process called <strong class='text-primary-700'>crossing over</strong>, where chromosomes exchange segments of DNA. This is why children look similar to — but not identical to — their parents.",
+              "The <strong class='text-primary-700'>Math and Science Fair 2025</strong> is your chance to run a real investigation from beginning to end. You choose the question, design the experiment, collect the data, analyse it, and present your conclusions to judges and classmates.",
+              "This task pulls together everything from the first term: the <strong class='text-primary-700'>steps of scientific investigation</strong> from Week 5, controlling <strong class='text-primary-700'>variables</strong> for a fair test, accurate <strong class='text-primary-700'>measurement</strong> in SI units, and honest <strong class='text-primary-700'>data recording</strong>. The science content can come from any topic you have studied.",
+              "You will produce three things: a working investigation, a <strong class='text-primary-700'>display board</strong>, and a short <strong class='text-primary-700'>oral presentation</strong> explaining what you did and what you found.",
             ],
             didYouKnow:
-              "A human female is born with all the eggs she will ever have — about 1 to 2 million immature egg cells are present at birth, though most are never released!",
+              "Many working scientists trace their careers to a school science fair. The point is not to discover something nobody knows — it is to experience the full process of finding something out for yourself.",
           },
         },
+
+        {
+          type: "reasonCards",
+          heading: "Choosing Your Project",
+          data: {
+            intro:
+              "A good science fair question is testable, safe, and genuinely interesting to you. Here are five directions drawn from topics you have already studied.",
+            reasons: [
+              {
+                num: 1,
+                title: "States of Matter",
+                color: "primary",
+                desc: "Investigate what changes a melting or freezing point",
+                content:
+                  "Which substance melts ice fastest — table salt, sugar, or sand? Measure the time to melt equal ice cubes with equal masses of each, keeping temperature constant.",
+              },
+              {
+                num: 2,
+                title: "Solubility and Concentration",
+                color: "secondary",
+                desc: "Test what controls how much or how fast something dissolves",
+                content:
+                  "Does water temperature change how much sugar can dissolve? Measure the maximum mass that dissolves in a fixed volume at 10, 30, 50, and 70 °C, then plot a solubility curve.",
+              },
+              {
+                num: 3,
+                title: "Acids and Bases",
+                color: "accent",
+                desc: "Measure pH effects on something you can observe",
+                content:
+                  "Does the pH of water affect how fast a bean seed germinates? Water identical seed trays with solutions at different pH and count germinated seeds each day.",
+              },
+              {
+                num: 4,
+                title: "Cells and Living Things",
+                color: "primary",
+                desc: "Investigate a living process you can measure",
+                content:
+                  "Does light colour affect plant growth? Grow identical seedlings under red, blue, and white light, measuring height every day for two weeks.",
+              },
+              {
+                num: 5,
+                title: "Everyday Science",
+                color: "secondary",
+                desc: "Test a claim somebody makes about a household product",
+                content:
+                  "Which brand of paper towel absorbs the most water? Measure the mass of water absorbed by equal-sized pieces of three brands, repeating each test five times.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "keyTerms",
+          heading: "What You Will Need",
+          data: {
+            terms: [
+              {
+                term: "A testable question",
+                desc: "Specific enough to answer with one experiment. 'Does X affect Y?' is the right shape. 'How does nature work?' is not.",
+              },
+              {
+                term: "A written hypothesis",
+                desc: "An 'If… then… because…' prediction based on what you already know, written BEFORE you collect any data.",
+              },
+              {
+                term: "Materials you can actually obtain",
+                desc: "Everything must be safe, affordable, and available at home or school. Check with your teacher before buying anything.",
+              },
+              {
+                term: "A measuring instrument",
+                desc: "A ruler, balance, thermometer, stopwatch, or graduated cylinder — whatever your dependent variable requires. Record in SI units.",
+              },
+              {
+                term: "A data table and graph",
+                desc: "Prepared before you start, with columns for every trial. A line graph for change over time, a bar graph for comparing groups.",
+              },
+              {
+                term: "A logbook",
+                desc: "A notebook where you record what you did each day, including mistakes. Judges value an honest logbook highly.",
+              },
+              {
+                term: "A display board",
+                desc: "A tri-fold board, cartolina, or digital poster presenting your whole investigation visually.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "timeline",
+          heading: "Building Your Project",
+          data: {
+            intro:
+              "Follow the same seven steps you learned in Week 5. Do not skip ahead — judges can always tell when the hypothesis was written after the results.",
+            steps: [
+              {
+                num: 1,
+                title: "Choose and Narrow Your Question",
+                color: "primary",
+                description:
+                  "Pick a topic that genuinely interests you, then narrow it until it can be answered by changing one variable and measuring another. Get your question approved by your teacher before going further.",
+                tip: "If you cannot name your independent and dependent variable in one sentence, the question is still too broad.",
+              },
+              {
+                num: 2,
+                title: "Research the Background",
+                color: "secondary",
+                description:
+                  "Find out what is already known. Read at least three reliable sources and write down what you learn, keeping a record of where each fact came from for your bibliography.",
+                tip: "Background research is what turns a guess into an informed hypothesis.",
+              },
+              {
+                num: 3,
+                title: "Write Your Hypothesis and Plan",
+                color: "accent",
+                description:
+                  "Write your prediction as an 'If… then… because…' statement. Then list your independent variable, dependent variable, and every controlled variable, plus a numbered procedure.",
+                tip: "Write the procedure so precisely that a classmate could run your experiment without asking you anything.",
+              },
+              {
+                num: 4,
+                title: "Run the Experiment — At Least Three Trials",
+                color: "primary",
+                description:
+                  "Carry out your procedure exactly as written, recording every measurement immediately in your data table. Repeat the whole experiment at least three times.",
+                tip: "Record results honestly, including ones that surprise you. Unexpected data is the most interesting kind.",
+              },
+              {
+                num: 5,
+                title: "Analyse Your Data",
+                color: "secondary",
+                description:
+                  "Calculate the mean of your trials, then build a graph. Label both axes with the quantity and its unit, and give the graph a clear title.",
+                tip: "The graph is the single most looked-at item on your board. Make it large and clear.",
+              },
+              {
+                num: 6,
+                title: "Draw a Conclusion",
+                color: "accent",
+                description:
+                  "State plainly whether the data supported your hypothesis. Explain what the numbers show, mention anything that could have caused error, and suggest one follow-up investigation.",
+                tip: "A rejected hypothesis honestly reported scores higher than a supported one with doctored data.",
+              },
+              {
+                num: 7,
+                title: "Build the Board and Rehearse",
+                color: "primary",
+                description:
+                  "Assemble your display board and practise explaining your project in about two minutes. Rehearse in front of someone who does not know the topic.",
+                tip: "Judges ask questions. Practise explaining WHY you chose your controlled variables.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "conceptList",
+          heading: "Your Display Board",
+          data: {
+            concepts: [
+              "Title — large, readable from two metres away, stating your question clearly.",
+              "Question and Hypothesis — your testable question and your 'If… then… because…' prediction.",
+              "Materials and Procedure — a numbered list precise enough for someone to repeat your work.",
+              "Variables — your independent variable, dependent variable, and controlled variables, clearly labelled.",
+              "Data Table — your actual recorded measurements, with units on every column heading.",
+              "Graph — large, titled, with both axes labelled including units. This is the centrepiece of the board.",
+              "Conclusion — what the data showed, whether the hypothesis was supported, and sources of error.",
+              "Photographs — pictures of your set-up running, which prove you actually did the work.",
+              "Bibliography — the sources you used for your background research.",
+            ],
+          },
+        },
+
+        {
+          type: "comparison",
+          heading: "How You Will Be Graded",
+          data: {
+            intro:
+              "The project is marked out of 100 points. Note that the investigation itself carries more weight than the board — a beautiful board over weak science will not score well.",
+            left: {
+              label: "Investigation — 60 points",
+              color: "primary",
+              items: [
+                "Testable question and hypothesis written correctly (10 pts)",
+                "Fair test: one variable changed, others controlled (15 pts)",
+                "At least three trials, with data accurately recorded in SI units (15 pts)",
+                "Correct analysis — mean calculated and graph properly built (10 pts)",
+                "Conclusion follows honestly from the data (10 pts)",
+              ],
+            },
+            right: {
+              label: "Presentation — 40 points",
+              color: "secondary",
+              items: [
+                "Display board complete with all required sections (15 pts)",
+                "Board is neat, readable, and well organised (10 pts)",
+                "Oral presentation is clear and answers judges' questions (10 pts)",
+                "Logbook and bibliography included (5 pts)",
+              ],
+            },
+          },
+        },
+
+        {
+          type: "applications",
+          heading: "Tips for Fair Day",
+          data: {
+            apps: [
+              {
+                title: "Know Your Numbers",
+                description:
+                  "Judges will ask what your results actually were. Be able to state your key measurement and your mean without reading from the board.",
+                icon: "🔢",
+                color: "border-l-primary-500",
+              },
+              {
+                title: "Explain Your Controls",
+                description:
+                  "The most common judging question is 'what did you keep the same, and why?' Being able to answer that shows you understand fair testing.",
+                icon: "⚖️",
+                color: "border-l-secondary-500",
+              },
+              {
+                title: "Admit What Went Wrong",
+                description:
+                  "Every real experiment has sources of error. Naming yours honestly demonstrates scientific maturity rather than weakness.",
+                icon: "📋",
+                color: "border-l-accent-500",
+              },
+              {
+                title: "Arrive Early and Set Up Carefully",
+                description:
+                  "Bring tape, scissors, and spare copies of your graph. Set up before the judging starts, and stand beside your board ready to talk.",
+                icon: "🎪",
+                color: "border-l-primary-500",
+              },
+            ],
+          },
+        },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════
+    // LESSON 2 — Fertilization
+    // ═══════════════════════════════════════════════════
+    {
+      id: "w16-l2",
+      weekId: "week-16",
+      lessonNumber: 2,
+      title: "Fertilization",
+      badge: "Lesson 2",
+      subtitle:
+        "See how a sperm and an egg — each carrying half a set of chromosomes — fuse into a single cell that becomes an entirely new organism.",
+      readTime: "~15 min read",
+      xp: 50,
+      heroImage: microscope,
+      heroImageAlt:
+        "Microscopic image of a sperm cell approaching an egg cell during fertilization",
+
+      sections: [
+        "Overview",
+        "Key Terms",
+        "Steps of Fertilization",
+        "Internal vs. External Fertilization",
+        "Key Concepts",
+        "Applications",
+      ],
+
+      references: [
+        {
+          label: "Khan Academy — Fertilization and Development",
+          url: "https://www.khanacademy.org/science/biology/developmental-biology",
+        },
+        {
+          label: "Britannica — Fertilization",
+          url: "https://www.britannica.com/science/fertilization-reproduction",
+        },
+      ],
+
+      layout: [
+        {
+          type: "intro",
+          heading: "Overview",
+          data: {
+            paragraphs: [
+              "<strong class='text-primary-700'>Fertilization</strong> is the process by which a sperm cell and an egg cell fuse to form a single new cell called a <strong class='text-primary-700'>zygote</strong>. This is the moment a new organism begins.",
+              "Last lesson you saw that meiosis produces haploid gametes with 23 chromosomes each. Fertilization is the other half of that arrangement: 23 from the sperm plus 23 from the egg restores the full <strong class='text-primary-700'>diploid</strong> set of 46. This is why halving during meiosis was necessary in the first place — without it, the chromosome number would double every generation.",
+              "Once formed, the zygote immediately begins dividing by <strong class='text-primary-700'>mitosis</strong>, becoming an embryo and eventually a complete organism — every cell of which traces back to that one fused cell.",
+            ],
+            didYouKnow:
+              "A single human male produces around 1,500 sperm cells every second — over 500 billion in a lifetime — yet only one is needed to fertilise an egg.",
+          },
+        },
+
         {
           type: "keyTerms",
           heading: "Key Terms",
           data: {
             terms: [
               {
-                term: "Meiosis",
-                desc: "A type of cell division that produces four haploid sex cells (gametes) from one diploid parent cell, involving two rounds of division.",
+                term: "Fertilization",
+                desc: "The fusion of a sperm cell and an egg cell to form a zygote, which develops into a new organism.",
               },
               {
-                term: "Gamete",
-                desc: "A sex cell (sperm or egg) that contains half the normal number of chromosomes (haploid).",
+                term: "Zygote",
+                desc: "The single diploid cell formed when sperm and egg fuse — the first cell of a new organism.",
               },
               {
-                term: "Haploid (n)",
-                desc: "A cell containing only one set of chromosomes — half the number found in a typical body cell. In humans, n = 23.",
+                term: "Sperm",
+                desc: "The male gamete: small, with a flagellum for swimming, carrying the father's genetic contribution.",
               },
               {
-                term: "Diploid (2n)",
-                desc: "A cell containing two complete sets of chromosomes — the normal number for body cells. In humans, 2n = 46.",
+                term: "Egg (Ovum)",
+                desc: "The female gamete: much larger than sperm, containing nutrients to support the early embryo.",
               },
               {
-                term: "Chromosome",
-                desc: "A structure inside the cell nucleus made of DNA and protein that carries genetic information. Humans have 46 chromosomes arranged in 23 pairs.",
+                term: "Internal Fertilization",
+                desc: "Fertilization occurring inside the body of the female. Common in mammals, birds, and reptiles.",
               },
               {
-                term: "Crossing Over",
-                desc: "The exchange of DNA segments between homologous chromosomes during Prophase I of meiosis, creating genetic variation in offspring.",
+                term: "External Fertilization",
+                desc: "Fertilization occurring outside the body, usually in water. Common in fish, frogs, and many aquatic animals.",
+              },
+              {
+                term: "Embryo",
+                desc: "The developing organism in the early stages after the zygote begins dividing by mitosis.",
+              },
+              {
+                term: "Fertilization Membrane",
+                desc: "A barrier that forms around the egg the instant one sperm enters, preventing any other sperm from getting in.",
+              },
+              {
+                term: "Differentiation",
+                desc: "The process by which dividing embryo cells become specialised into muscle, nerve, skin, and every other cell type.",
               },
             ],
           },
         },
+
+        {
+          type: "timeline",
+          heading: "Steps of Fertilization",
+          data: {
+            intro:
+              "From the moment a sperm reaches an egg, a precisely ordered sequence produces a new organism.",
+            steps: [
+              {
+                num: 1,
+                title: "Sperm Travel Toward the Egg",
+                color: "primary",
+                description:
+                  "Millions of sperm cells move toward the egg, each propelled by its flagellum. In internal fertilization they travel through the female reproductive tract; in external fertilization they swim through water.",
+                tip: "Only a tiny fraction of the sperm released ever reach the egg at all.",
+              },
+              {
+                num: 2,
+                title: "One Sperm Penetrates the Egg",
+                color: "secondary",
+                description:
+                  "A single sperm breaks through the egg's outer layer. Its genetic material — 23 chromosomes in humans — enters and fuses with the egg's own 23 chromosomes.",
+                tip: "The instant one sperm enters, the fertilization membrane forms and blocks every other sperm.",
+              },
+              {
+                num: 3,
+                title: "The Zygote Forms",
+                color: "accent",
+                description:
+                  "The fused cell is now a zygote — a single diploid cell with the full 46 chromosomes, half from each parent, carrying a complete and entirely new genetic blueprint.",
+                tip: "This is the only moment in a person's life when they consist of exactly one cell.",
+              },
+              {
+                num: 4,
+                title: "Mitosis Begins",
+                color: "primary",
+                description:
+                  "The zygote starts dividing by mitosis — first into 2 cells, then 4, then 8, and onward. These early divisions happen rapidly, and every cell carries identical DNA.",
+                tip: "Mitosis, not meiosis, does all the work from here — which is why every body cell has the same genes.",
+              },
+              {
+                num: 5,
+                title: "The Embryo Develops",
+                color: "secondary",
+                description:
+                  "As division continues, cells begin to differentiate — becoming muscle, nerve, skin, and other specialised types. The developing organism is now called an embryo.",
+                tip: "In humans, by week 8 the embryo is called a fetus and has recognisable body structures.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "comparison",
+          heading: "Internal vs. External Fertilization",
+          data: {
+            intro:
+              "Both achieve the same fusion, but the strategies differ — and each is a trade-off between safety and numbers.",
+            left: {
+              label: "Internal Fertilization",
+              color: "primary",
+              items: [
+                "Occurs inside the body of the female",
+                "Few eggs produced, but each is well protected",
+                "The embryo develops inside the mother or inside a shelled egg",
+                "High survival rate per offspring",
+                "Examples: humans, dogs, whales, birds, reptiles",
+              ],
+            },
+            right: {
+              label: "External Fertilization",
+              color: "secondary",
+              items: [
+                "Occurs outside the body, almost always in water",
+                "Huge numbers of eggs released at once",
+                "Eggs and embryos are exposed to predators and conditions",
+                "Very low survival rate per offspring — numbers compensate",
+                "Examples: frogs, salmon, sea urchins, most fish",
+              ],
+            },
+          },
+        },
+
         {
           type: "conceptList",
           heading: "Key Concepts",
           data: {
             concepts: [
-              "Meiosis produces FOUR daughter cells, compared to mitosis which produces only two.",
-              "All four daughter cells resulting from meiosis are haploid (n), meaning they have half the chromosomes of the parent cell.",
-              "Each daughter cell produced by meiosis is genetically unique — no two cells are identical.",
-              "Meiosis involves TWO rounds of cell division: Meiosis I (reduces chromosome number) and Meiosis II (separates sister chromatids).",
-              "Meiosis occurs only in the gonads — the ovaries (in females) and testes (in males).",
-              "Crossing over during Prophase I and independent assortment during Metaphase I are the two main sources of genetic variation in meiosis.",
+              "Fertilization joins two haploid gametes (n = 23 each) into one diploid zygote (2n = 46).",
+              "The halving done by meiosis and the doubling done by fertilization balance each other exactly — this keeps the chromosome number constant across generations.",
+              "Half of a zygote's chromosomes come from the mother and half from the father, which is why offspring resemble both.",
+              "Only one sperm fertilises the egg. The fertilization membrane forms immediately to block all others.",
+              "The zygote is the first cell of a new organism and divides by mitosis, not meiosis.",
+              "External fertilization requires water so that sperm can swim to the eggs, which is why it is restricted to aquatic animals.",
+              "Errors in chromosome number that arose during meiosis show up in the zygote, which is why many early pregnancies do not continue.",
             ],
           },
         },
-        {
-          type: "applications",
-          heading: "Real-World Applications",
-          data: {
-            apps: [
-              {
-                title: "Understanding Fertility and Infertility",
-                description:
-                  "Doctors study meiosis to understand why some individuals cannot produce healthy gametes, helping develop treatments for infertility such as hormone therapy or IVF.",
-                icon: "🏥",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Genetic Diversity in Populations",
-                description:
-                  "Because meiosis creates genetically unique gametes, sexual reproduction produces diverse offspring — no two siblings (except identical twins) are genetically the same.",
-                icon: "🌍",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Understanding Evolution",
-                description:
-                  "Genetic variation produced by meiosis is the raw material for natural selection and evolution. Populations with more variation adapt more successfully to changing environments.",
-                icon: "🔬",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Genetic Counseling",
-                description:
-                  "Genetic counselors use knowledge of meiosis to advise families about the risk of passing on inherited diseases and chromosomal abnormalities to future children.",
-                icon: "🧬",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      id: "lesson-47",
-      weekId: "week-16",
-      lessonNumber: 47,
-      title: "Stages of Meiosis",
-      badge: "Lesson 2",
-      subtitle: "Walking through each phase of Meiosis I and Meiosis II",
-      readTime: "~14 min read",
-      xp: 50,
-      heroImage: simulation,
-      heroImageAlt:
-        "Simulation diagram of chromosomes during the stages of meiosis",
-      sections: [
-        "Overview of Meiosis Stages",
-        "Timeline of Meiosis",
-        "Visual Summary",
-        "Applications",
-      ],
-      layout: [
-        {
-          type: "intro",
-          heading: "Overview of Meiosis Stages",
-          data: {
-            paragraphs: [
-              "Meiosis is divided into two main rounds of division: <strong class='text-primary-700'>Meiosis I</strong> and <strong class='text-primary-700'>Meiosis II</strong>. Before either round begins, DNA replication occurs during the S phase of interphase, just as it does before mitosis.",
-              "<strong class='text-primary-700'>Meiosis I</strong> is the reduction division — it separates homologous chromosome pairs so that each resulting cell has half the original number of chromosomes. This is where <strong class='text-primary-700'>crossing over</strong> occurs during Prophase I, shuffling genetic information between homologous chromosomes and creating new combinations of traits.",
-              "<strong class='text-primary-700'>Meiosis II</strong> is very similar to mitosis — it separates sister chromatids from each other. The result is four haploid cells, each genetically unique. In males, all four cells become sperm. In females, one cell becomes the egg and the other three become polar bodies that are discarded.",
-            ],
-            didYouKnow:
-              "During crossing over in Prophase I, chromosomes can exchange hundreds of DNA segments simultaneously — this single event can create millions of possible genetic combinations!",
-          },
-        },
-        {
-          type: "timeline",
-          heading: "Timeline of Meiosis",
-          data: {
-            intro:
-              "Follow the step-by-step progression of meiosis from the first phase through the final production of four haploid cells.",
-            steps: [
-              {
-                num: 1,
-                title: "Prophase I",
-                color: "primary",
-                description:
-                  "Chromosomes condense and pair up with their homologous partners to form bivalents. Crossing over occurs — homologous chromosomes exchange DNA segments at points called chiasmata. This is the most important source of genetic variation in meiosis.",
-                tip: "Crossing over only happens in Meiosis I, not in Meiosis II or in mitosis.",
-              },
-              {
-                num: 2,
-                title: "Metaphase I",
-                color: "secondary",
-                description:
-                  "Homologous chromosome pairs line up along the middle (metaphase plate) of the cell. The orientation of each pair is random — this is called independent assortment and is another source of genetic variation.",
-                tip: "The random orientation of chromosome pairs can produce over 8 million different chromosome combinations in human gametes.",
-              },
-              {
-                num: 3,
-                title: "Anaphase I & Telophase I",
-                color: "accent",
-                description:
-                  "Homologous chromosomes are pulled to opposite poles of the cell. The cell then divides into two cells, each with half the original chromosome number (haploid) but with chromosomes still consisting of two sister chromatids.",
-                tip: "After Telophase I, two haploid cells exist, but their chromosomes are still doubled (each made of two chromatids).",
-              },
-              {
-                num: 4,
-                title: "Prophase II",
-                color: "primary",
-                description:
-                  "The two cells from Meiosis I each enter Meiosis II. Chromosomes condense again. No new crossing over occurs in Prophase II — DNA is not replicated before Meiosis II begins.",
-                tip: "Meiosis II is much like mitosis but starts with haploid cells rather than diploid cells.",
-              },
-              {
-                num: 5,
-                title: "Metaphase II & Anaphase II",
-                color: "secondary",
-                description:
-                  "In each of the two cells, chromosomes align at the metaphase plate. Sister chromatids are then pulled apart to opposite poles of the cell, just as in mitosis.",
-                tip: "At the end of Anaphase II, each pole of each cell contains individual chromosomes — no longer paired.",
-              },
-              {
-                num: 6,
-                title: "Telophase II — Final Result",
-                color: "accent",
-                description:
-                  "Each cell completes division, producing a total of four haploid daughter cells. Every cell is genetically unique due to crossing over and independent assortment that occurred in Meiosis I.",
-                tip: "The four resulting cells are now ready to become functional gametes — sperm or eggs.",
-              },
-            ],
-          },
-        },
-        {
-          type: "imageCards",
-          heading: "Visual Summary",
-          data: {
-            cards: [
-              {
-                title: "Meiosis I: Reduction Division",
-                label: "Meiosis I",
-                variant: "primary",
-                color: "primary",
-                desc: "Crossing over shuffles DNA; homologous pairs separate, halving the chromosome number.",
-                image: simulation,
-                imageAlt:
-                  "Diagram showing chromosomes crossing over and separating during Meiosis I",
-                examples: [
-                  "Crossing over in Prophase I",
-                  "Homologs separate in Anaphase I",
-                  "Two haploid cells formed",
-                ],
-              },
-              {
-                title: "Meiosis II: Chromatid Separation",
-                label: "Meiosis II",
-                variant: "secondary",
-                color: "secondary",
-                desc: "Similar to mitosis — sister chromatids are pulled apart in each of the two haploid cells.",
-                image: microscope,
-                imageAlt:
-                  "Microscope view of chromatids separating during Meiosis II",
-                examples: [
-                  "No DNA replication before Meiosis II",
-                  "Sister chromatids pulled apart",
-                  "Four cells produced total",
-                ],
-              },
-              {
-                title: "Final Result: Four Haploid Cells",
-                label: "End Product",
-                variant: "primary",
-                color: "primary",
-                desc: "Four genetically unique haploid cells — each destined to become a sperm or egg cell.",
-                image: equation,
-                imageAlt:
-                  "Equation diagram showing one diploid cell becoming four haploid cells",
-                examples: [
-                  "Each cell has n = 23 chromosomes (in humans)",
-                  "All four cells are genetically different",
-                  "Ready to participate in fertilization",
-                ],
-              },
-            ],
-          },
-        },
+
         {
           type: "applications",
           heading: "Applications",
           data: {
             apps: [
               {
-                title: "Fertility Treatment",
+                title: "In Vitro Fertilization (IVF)",
                 description:
-                  "Understanding the stages of meiosis helps doctors diagnose problems in egg or sperm development and design treatments such as IVF or ICSI to help people conceive.",
+                  "Eggs are fertilised by sperm in a laboratory dish and the resulting embryo is transferred to the uterus, helping people who cannot conceive naturally.",
                 icon: "🏥",
                 color: "border-l-primary-500",
               },
               {
-                title: "Chromosomal Abnormalities",
+                title: "Conserving Endangered Species",
                 description:
-                  "If chromosomes fail to separate properly during Anaphase I or II (nondisjunction), gametes may have too many or too few chromosomes — leading to conditions like Down syndrome (trisomy 21).",
-                icon: "🧬",
+                  "Scientists use artificial fertilization to help endangered animals reproduce in captivity, preserving species that would otherwise vanish.",
+                icon: "🌿",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Genetic Disease Inheritance",
+                title: "Animal Husbandry",
                 description:
-                  "Knowing which stage of meiosis errors occur helps geneticists predict the probability of inheriting genetic disorders and counsel families about their risks.",
-                icon: "🔬",
+                  "Farmers use artificial insemination to breed livestock with desirable traits far more efficiently than natural mating allows.",
+                icon: "🐄",
                 color: "border-l-accent-500",
               },
               {
-                title: "Reproductive Medicine",
+                title: "Understanding Early Development",
                 description:
-                  "Researchers use detailed knowledge of meiosis stages to improve techniques for freezing eggs and sperm, extending the window for biological reproduction.",
-                icon: "💊",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      id: "lesson-48",
-      weekId: "week-16",
-      lessonNumber: 48,
-      title: "Comparing Mitosis and Meiosis",
-      badge: "Lesson 3",
-      subtitle: "Key differences and similarities between mitosis and meiosis",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: lab,
-      heroImageAlt: "Lab diagram comparing mitosis and meiosis side by side",
-      sections: [
-        "Mitosis vs. Meiosis",
-        "Comparison Chart",
-        "Why Variation Matters",
-        "Applications",
-      ],
-      layout: [
-        {
-          type: "intro",
-          heading: "Mitosis vs. Meiosis",
-          data: {
-            paragraphs: [
-              "<strong class='text-primary-700'>Mitosis</strong> and <strong class='text-primary-700'>meiosis</strong> are both types of cell division, but they serve very different purposes. Mitosis is used for growth, repair, and asexual reproduction — it produces two genetically identical diploid daughter cells. Meiosis is used for sexual reproduction — it produces four genetically unique haploid daughter cells.",
-              "Both processes begin with DNA replication during the S phase of interphase. After DNA is copied, mitosis undergoes one round of division while meiosis undergoes two rounds. In mitosis, there is no crossing over and no reduction in chromosome number. In meiosis, crossing over occurs during Prophase I, and the chromosome number is halved.",
-              "Understanding the differences between these two processes is fundamental to understanding how living things grow, heal, and reproduce.",
-            ],
-            didYouKnow:
-              "Your body performs mitosis billions of times every day — your skin alone replaces about 30,000 to 40,000 dead cells every hour through mitosis!",
-          },
-        },
-        {
-          type: "comparison",
-          heading: "Comparison Chart",
-          data: {
-            intro:
-              "Compare the key features of mitosis and meiosis side by side.",
-            left: {
-              label: "Mitosis",
-              color: "primary",
-              items: [
-                "Produces 2 daughter cells",
-                "Daughter cells are diploid (2n)",
-                "Daughter cells are genetically identical",
-                "Only ONE round of cell division",
-                "Purpose: growth, repair, and asexual reproduction",
-              ],
-            },
-            right: {
-              label: "Meiosis",
-              color: "secondary",
-              items: [
-                "Produces 4 daughter cells",
-                "Daughter cells are haploid (n)",
-                "Daughter cells are genetically unique",
-                "TWO rounds of cell division (I and II)",
-                "Purpose: sexual reproduction — produces gametes",
-              ],
-            },
-          },
-        },
-        {
-          type: "reasonCards",
-          heading: "Why Variation Matters",
-          data: {
-            intro:
-              "Genetic variation produced by meiosis is essential for life on Earth. Here are four key reasons why.",
-            reasons: [
-              {
-                num: 1,
-                title: "Adaptation to Changing Environments",
-                color: "primary",
-                desc: "Varied offspring can survive new conditions",
-                content:
-                  "When environments change — due to climate, new predators, or disease — genetically varied populations are more likely to have some individuals that can survive and reproduce.",
-              },
-              {
-                num: 2,
-                title: "Disease Resistance",
-                color: "secondary",
-                desc: "No single pathogen can wipe out a diverse population",
-                content:
-                  "Genetic variation means that a new virus or bacterial infection is unlikely to kill every individual in a population — some will have natural resistance due to different gene combinations.",
-              },
-              {
-                num: 3,
-                title: "Driving Evolution",
-                color: "accent",
-                desc: "Variation is the raw material for natural selection",
-                content:
-                  "Natural selection acts on genetic differences produced by meiosis. Over time, beneficial traits become more common in a population — this is how species evolve and new species arise.",
-              },
-              {
-                num: 4,
-                title: "Uniqueness of Individuals",
-                color: "primary",
-                desc: "Every person (except identical twins) is genetically unique",
-                content:
-                  "The crossing over and independent assortment in meiosis produce such enormous variation that it is virtually impossible for the same gamete combination to occur twice — making every individual one-of-a-kind.",
-              },
-            ],
-          },
-        },
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Understanding Heredity",
-                description:
-                  "Knowing how meiosis produces genetic variation helps explain why children resemble but are not identical to their parents, and how traits are passed from generation to generation.",
-                icon: "🧬",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Genetic Counseling",
-                description:
-                  "Genetic counselors apply knowledge of meiosis and mitosis to advise families about inherited conditions and the probability of passing on genetic disorders.",
-                icon: "🏥",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Selective Breeding",
-                description:
-                  "Farmers and breeders use their understanding of meiosis and genetic variation to selectively breed animals and plants with desirable traits over many generations.",
-                icon: "🌾",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Evolutionary Biology",
-                description:
-                  "Scientists study meiosis to understand how genetic diversity fuels evolution, how new species arise, and how populations adapt over thousands of generations.",
+                  "Studying fertilization and the first divisions helps doctors understand why some pregnancies fail at the earliest stages.",
                 icon: "🔬",
                 color: "border-l-primary-500",
               },

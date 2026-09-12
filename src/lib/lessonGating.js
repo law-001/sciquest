@@ -35,7 +35,11 @@ export function isLessonUnlocked(weekLessons, lessonId, lessonsPassed) {
 }
 
 export function isWeekFullyCompleted(week, lessonsPassed) {
-  if (!week?.lessons?.length) return false
+  if (!week?.lessons) return false
+  // Weeks 10 and 20 are periodical-examination weeks and carry no lessons, so
+  // there is no quiz a student could submit to "complete" them. Treat a
+  // lesson-less week as done, or it would permanently lock every week after it.
+  if (week.lessons.length === 0) return true
   return week.lessons.every((l) => lessonsPassed.includes(l.id))
 }
 

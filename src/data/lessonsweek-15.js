@@ -1,44 +1,62 @@
-// Week 15: Cell Reproduction: Mitosis — Grade 7 Science
+// Week 15: Cell Division — Grade 7 Science
+//
+// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 15.
+//   Lesson 1 — Mitosis Cell Division
+//   Lesson 2 — Meiosis Cell Division
 
+import celldivision from "../assets/celldivision.png";
 import microscope from "../assets/week1/Microscopic.jpg";
 import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
-import flowchart from "../assets/flowchart.jpg";
 
 export const week15 = {
   id: "week-15",
   weekNumber: 15,
-  title: "Cell Reproduction: Mitosis",
+  title: "Cell Division",
   category: "Life Science",
   description:
-    "Understand the cell cycle and the stages of mitosis — the process by which cells divide to support growth and repair.",
-  icon: "Copy",
+    "Walk through mitosis stage by stage, then follow meiosis through both of its divisions — and see exactly why one makes copies and the other makes variety.",
+  icon: "Shuffle",
   color: "primary",
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════
-    // LESSON 43 — The Cell Cycle
+    // LESSON 1 — Mitosis Cell Division
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-43",
+      id: "w15-l1",
       weekId: "week-15",
-      lessonNumber: 43,
-      title: "The Cell Cycle",
-      badge: "Lesson 43",
+      lessonNumber: 1,
+      title: "Mitosis Cell Division",
+      badge: "Lesson 1",
       subtitle:
-        "Understand the ordered phases of a cell's life and what happens at each stage before and during division.",
-      readTime: "~12 min read",
+        "Follow the four stages of mitosis — prophase, metaphase, anaphase, telophase — and see how one cell produces two perfect copies of itself.",
+      readTime: "~16 min read",
       xp: 50,
-      heroImage: flowchart,
+      heroImage: celldivision,
       heroImageAlt:
-        "Circular diagram of the cell cycle showing interphase and mitotic phase",
+        "Microscope images showing the four stages of mitosis in dividing cells",
 
       sections: [
         "Overview",
-        "Key Concepts",
-        "Phases of the Cell Cycle",
-        "Real-World Applications",
+        "Key Terms",
+        "The Four Stages of Mitosis",
+        "Cytokinesis in Plants and Animals",
+        "Key Ideas",
+        "Mitosis in Real Life",
+        "Applications",
+      ],
+
+      references: [
+        {
+          label: "Khan Academy — Mitosis",
+          url: "https://www.khanacademy.org/science/biology/cell-division",
+        },
+        {
+          label: "Britannica — Mitosis",
+          url: "https://www.britannica.com/science/mitosis",
+        },
       ],
 
       layout: [
@@ -47,190 +65,67 @@ export const week15 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "The <strong class='text-primary-700'>cell cycle</strong> is the ordered sequence of events that a cell goes through from its formation until it divides into two daughter cells. The cycle has two main stages: <strong class='text-primary-700'>interphase</strong> — where the cell grows and prepares — and the <strong class='text-primary-700'>mitotic phase</strong> — where it actually divides.",
-              "Most of a cell's life is spent in interphase, not in active division. During this time, the cell carries out its normal functions, grows larger, and — most critically — copies all of its DNA so that each daughter cell will receive a complete set of genetic instructions. A system of <strong class='text-primary-700'>checkpoints</strong> ensures the cell is ready at each stage before proceeding.",
+              "<strong class='text-primary-700'>Mitosis</strong> is the process by which one cell divides its nucleus to produce two nuclei, each holding an identical copy of the cell's DNA. Scientists divide it into four stages — <strong class='text-primary-700'>Prophase, Metaphase, Anaphase, and Telophase</strong> — remembered by the mnemonic PMAT.",
+              "The result of mitosis, followed by cytokinesis, is two <strong class='text-primary-700'>genetically identical daughter cells</strong>, each with the same chromosome number as the parent. In human body cells that means each daughter receives all 46 chromosomes — a complete and accurate copy.",
+              "Remember that the DNA was already copied during S phase of interphase, before mitosis started. Mitosis does not copy DNA; it <em>separates</em> copies that already exist.",
             ],
             didYouKnow:
-              "Cancer is essentially a disease of the cell cycle. Cancer cells have mutations that disable the checkpoint system, allowing them to divide without limit and without completing the preparation phases correctly.",
+              "Your body produces about 3.8 million new red blood cells every second. Bone marrow cells are almost permanently in the cell cycle to keep up with that demand.",
           },
         },
 
         {
           type: "keyTerms",
-          heading: "Key Concepts",
+          heading: "Key Terms",
           data: {
             terms: [
               {
-                term: "Cell Cycle",
-                desc: "The series of ordered events in a cell's life, from its creation through growth, DNA replication, and division into two daughter cells.",
-              },
-              {
-                term: "Interphase",
-                desc: "The longest phase of the cell cycle, during which the cell grows, carries out normal functions, and duplicates its DNA in preparation for division.",
-              },
-              {
                 term: "Mitosis",
-                desc: "The phase of cell division in which the nucleus divides, distributing one complete copy of DNA to each of the two forming daughter cells.",
+                desc: "Division of the nucleus producing two genetically identical nuclei, each with the full chromosome number.",
               },
               {
-                term: "Cytokinesis",
-                desc: "The final step of cell division in which the cytoplasm splits, physically separating the two daughter cells.",
+                term: "Prophase",
+                desc: "The first stage: chromosomes condense and become visible, spindle fibres form, and the nuclear membrane breaks down.",
               },
               {
-                term: "DNA Replication",
-                desc: "The process during the S phase of interphase in which the cell makes an exact copy of all its DNA, so each daughter cell will receive a full genome.",
+                term: "Metaphase",
+                desc: "The second stage: chromosomes line up along the centre of the cell, attached to spindle fibres from both poles.",
               },
               {
-                term: "G1 Phase",
-                desc: "The first growth phase of interphase; the cell grows in size, carries out normal metabolic activities, and produces proteins needed for DNA replication.",
+                term: "Anaphase",
+                desc: "The third stage: sister chromatids are pulled apart to opposite poles as the spindle fibres shorten.",
               },
               {
-                term: "S Phase",
-                desc: "The synthesis phase of interphase; the cell replicates (copies) all of its DNA so that each daughter cell will receive a complete and identical genome.",
+                term: "Telophase",
+                desc: "The fourth stage: nuclear membranes reform around each set of chromosomes, which then decondense back into chromatin.",
               },
               {
-                term: "G2 Phase",
-                desc: "The second growth phase of interphase; the cell continues to grow and produces proteins and organelles needed for the upcoming cell division.",
+                term: "Spindle Fibre",
+                desc: "A microtubule made of the protein tubulin that extends from the poles and attaches to a chromosome to pull it apart.",
               },
               {
-                term: "Checkpoint",
-                desc: "A regulatory control point in the cell cycle where the cell checks whether it has properly completed the previous phase before proceeding to the next one.",
+                term: "Metaphase Plate",
+                desc: "The imaginary line across the middle of the cell where chromosomes align during metaphase.",
+              },
+              {
+                term: "Cleavage Furrow",
+                desc: "The inward pinch of the cell membrane that divides an animal cell during cytokinesis.",
+              },
+              {
+                term: "Cell Plate",
+                desc: "The new wall that forms down the middle of a dividing plant cell during cytokinesis.",
+              },
+              {
+                term: "Diploid (2n)",
+                desc: "Having the full set of chromosomes — two of each kind. Human body cells are diploid with 46 chromosomes.",
               },
             ],
-          },
-        },
-
-        {
-          type: "timeline",
-          heading: "Phases of the Cell Cycle",
-          data: {
-            intro:
-              "The cell cycle is divided into distinct phases, each with a specific purpose. The first three phases (G1, S, G2) make up interphase, followed by the mitotic phase.",
-            steps: [
-              {
-                num: 1,
-                title: "G1 Phase (First Growth)",
-                color: "primary",
-                description:
-                  "The cell grows in size and carries out its normal functions. It produces proteins, organelles, and other materials needed for DNA replication. A checkpoint at the end of G1 checks that the cell is large enough and the environment is favorable for division.",
-                tip: "Cells that are not going to divide exit the cycle here and enter G0 — a resting state. Most neurons in your brain are permanently in G0.",
-              },
-              {
-                num: 2,
-                title: "S Phase (DNA Synthesis)",
-                color: "secondary",
-                description:
-                  "The cell replicates all of its DNA, creating two identical copies of every chromosome. After S phase, the cell contains twice the normal amount of DNA. Each duplicated chromosome consists of two identical sister chromatids held together.",
-                tip: "S phase stands for 'synthesis' — referring to the synthesis (copying) of new DNA strands.",
-              },
-              {
-                num: 3,
-                title: "G2 Phase (Second Growth)",
-                color: "accent",
-                description:
-                  "The cell continues to grow and synthesizes proteins needed for mitosis, including the components of the spindle apparatus. A checkpoint verifies that DNA replication was completed correctly before the cell proceeds to divide.",
-                tip: "If DNA errors are detected at the G2 checkpoint, the cycle pauses to allow repair. Unrepaired DNA errors can lead to mutations.",
-              },
-              {
-                num: 4,
-                title: "Mitosis",
-                color: "primary",
-                description:
-                  "The nucleus divides through four stages (prophase, metaphase, anaphase, telophase), separating the duplicated chromosomes into two identical nuclei. The spindle apparatus attaches to chromosomes and pulls them apart.",
-                tip: "Mitosis is often remembered using the mnemonic PMAT — Prophase, Metaphase, Anaphase, Telophase.",
-              },
-              {
-                num: 5,
-                title: "Cytokinesis",
-                color: "secondary",
-                description:
-                  "The cytoplasm divides, completing the formation of two genetically identical daughter cells. In animal cells, the cell membrane pinches inward (cleavage furrow). In plant cells, a new cell wall forms down the middle (cell plate).",
-                tip: "Cytokinesis overlaps with the end of mitosis (telophase). The result is two cells, each with a complete nucleus and a full set of organelles.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "applications",
-          heading: "Real-World Applications",
-          data: {
-            apps: [
-              {
-                title: "Cancer Treatment",
-                description:
-                  "Chemotherapy drugs target rapidly dividing cancer cells by disrupting the cell cycle — some prevent DNA replication in S phase, others block spindle formation during mitosis.",
-                icon: "💊",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Wound Healing",
-                description:
-                  "When you cut your skin, surrounding cells activate their cell cycles to divide and replace the lost cells. Understanding this process helps scientists develop treatments to speed wound healing.",
-                icon: "🩹",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Understanding Aging",
-                description:
-                  "As cells age, their DNA accumulates damage and their checkpoints become less effective. Research into the cell cycle is helping scientists understand — and potentially slow — the aging process.",
-                icon: "⏳",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Stem Cell Therapy",
-                description:
-                  "Stem cells are controlled through their cell cycle to differentiate into specific tissues for regenerative medicine — treating conditions from spinal cord injuries to heart damage.",
-                icon: "🔬",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-
-    // ═══════════════════════════════════════════════════
-    // LESSON 44 — Stages of Mitosis
-    // ═══════════════════════════════════════════════════
-    {
-      id: "lesson-44",
-      weekId: "week-15",
-      lessonNumber: 44,
-      title: "Stages of Mitosis",
-      badge: "Lesson 44",
-      subtitle:
-        "Walk through each stage of mitosis and understand exactly what happens to the chromosomes at each step.",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: microscope,
-      heroImageAlt:
-        "Microscope images showing four stages of mitosis in dividing cells",
-
-      sections: [
-        "Overview",
-        "Stages of Mitosis",
-        "Key Ideas",
-        "Real-World Applications",
-      ],
-
-      layout: [
-        {
-          type: "intro",
-          heading: "Overview",
-          data: {
-            paragraphs: [
-              "Mitosis is the process by which one cell divides its nucleus to produce two nuclei, each containing an identical copy of the cell's DNA. Scientists divide mitosis into four stages — <strong class='text-primary-700'>Prophase, Metaphase, Anaphase, and Telophase</strong> — remembered by the mnemonic PMAT.",
-              "The result of mitosis (followed by cytokinesis) is two <strong class='text-primary-700'>genetically identical daughter cells</strong>, each with the same number of chromosomes as the parent cell. In human body cells, this means each daughter cell receives 46 chromosomes — a complete and accurate copy of the genome.",
-            ],
-            didYouKnow:
-              "Your body produces approximately 3.8 million new red blood cells every second through cell division. To keep up with this demand, your bone marrow cells are almost always in the cell cycle, dividing continuously throughout your life!",
           },
         },
 
         {
           type: "imageCards",
-          heading: "Stages of Mitosis",
+          heading: "The Four Stages of Mitosis",
           data: {
             cards: [
               {
@@ -238,14 +133,14 @@ export const week15 = {
                 label: "Stage 1",
                 variant: "primary",
                 color: "primary",
-                desc: "Chromosomes condense and become visible, the spindle apparatus forms, and the nuclear envelope breaks down.",
+                desc: "Chromosomes condense and become visible, the spindle begins to form, and the nuclear envelope breaks down.",
                 image: microscope,
                 imageAlt:
                   "Microscope image of a cell in prophase with condensed chromosomes",
                 examples: [
-                  "Chromosomes condense — become short and thick",
-                  "Spindle fibers begin to form from centrioles",
-                  "Nuclear membrane breaks down",
+                  "Chromosomes condense — short, thick, and visible",
+                  "Spindle fibres begin forming from the poles",
+                  "Nuclear membrane breaks down, releasing the chromosomes",
                 ],
               },
               {
@@ -253,14 +148,14 @@ export const week15 = {
                 label: "Stage 2",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Chromosomes line up at the cell's equator (metaphase plate), attached to spindle fibers from both poles.",
+                desc: "Chromosomes line up along the cell's equator, each attached to spindle fibres reaching from both poles.",
                 image: simulation,
                 imageAlt:
-                  "Diagram of metaphase showing chromosomes aligned at the center",
+                  "Diagram of metaphase showing chromosomes aligned at the centre",
                 examples: [
-                  "Chromosomes align at the metaphase plate (cell center)",
-                  "Spindle fibers from opposite poles attach to centromeres",
-                  "This is the easiest stage to count chromosomes",
+                  "Chromosomes align at the metaphase plate",
+                  "Spindle fibres from opposite poles attach at each centromere",
+                  "The easiest stage for counting chromosomes",
                 ],
               },
               {
@@ -268,32 +163,63 @@ export const week15 = {
                 label: "Stage 3",
                 variant: "primary",
                 color: "primary",
-                desc: "Sister chromatids are pulled apart to opposite poles of the cell as spindle fibers shorten.",
+                desc: "Sister chromatids are pulled apart to opposite poles as the spindle fibres shorten.",
                 image: equation,
                 imageAlt:
-                  "Diagram showing sister chromatids being pulled to opposite poles in anaphase",
+                  "Diagram showing sister chromatids pulled to opposite poles in anaphase",
                 examples: [
-                  "Sister chromatids separate and are pulled apart",
-                  "Spindle fibers shorten, pulling chromosomes toward poles",
-                  "Cell begins to elongate",
+                  "Sister chromatids separate at the centromere",
+                  "Shortening spindle fibres drag them toward the poles",
+                  "The cell begins to elongate",
                 ],
               },
               {
-                title: "Telophase + Cytokinesis",
-                label: "Stage 4 + Final",
+                title: "Telophase and Cytokinesis",
+                label: "Stage 4",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Nuclear envelopes reform around each set of chromosomes, then the cytoplasm divides to form two daughter cells.",
+                desc: "Nuclear envelopes reform around each set of chromosomes, then the cytoplasm divides into two cells.",
                 image: lab,
                 imageAlt:
                   "Diagram of telophase showing two forming nuclei and cytokinesis",
                 examples: [
-                  "Nuclear envelopes reform around each pole",
-                  "Chromosomes decondense back to chromatin",
-                  "Cytokinesis: cytoplasm divides — two daughter cells form",
+                  "Nuclear envelopes reform at each pole",
+                  "Chromosomes decondense back into chromatin",
+                  "Cytokinesis splits the cytoplasm — two daughter cells",
                 ],
               },
             ],
+          },
+        },
+
+        {
+          type: "comparison",
+          heading: "Cytokinesis in Plants and Animals",
+          data: {
+            intro:
+              "Mitosis itself is the same in plants and animals, but the final physical split differs — because one of them has a rigid cell wall in the way.",
+            left: {
+              label: "Animal Cell Cytokinesis",
+              color: "primary",
+              items: [
+                "The cell membrane pinches inward at the middle",
+                "This inward pinch is called a cleavage furrow",
+                "A ring of protein filaments tightens like a drawstring",
+                "The membrane is flexible, so it can be squeezed",
+                "The cell is eventually pinched fully into two",
+              ],
+            },
+            right: {
+              label: "Plant Cell Cytokinesis",
+              color: "secondary",
+              items: [
+                "The rigid cell wall cannot be pinched inward",
+                "Instead a new wall is built from the inside out",
+                "Vesicles from the Golgi line up along the centre",
+                "They fuse to form a structure called the cell plate",
+                "The cell plate grows outward and becomes the new cell wall",
+              ],
+            },
           },
         },
 
@@ -302,46 +228,85 @@ export const week15 = {
           heading: "Key Ideas",
           data: {
             concepts: [
-              "The four stages of mitosis are remembered with the mnemonic PMAT: Prophase, Metaphase, Anaphase, Telophase.",
-              "Mitosis produces two daughter cells that are genetically identical to each other and to the original parent cell — each receives a complete, accurate copy of the genome.",
-              "In humans, each daughter cell from mitosis contains 46 chromosomes (diploid, 2n) — the same as the parent cell.",
-              "Spindle fibers are microtubules made of the protein tubulin that extend from centrioles and attach to chromosomes at structures called kinetochores during mitosis.",
-              "Cytokinesis in animal cells occurs by the cell membrane pinching inward (a cleavage furrow), while in plant cells a new cell wall called a cell plate forms between the two nuclei.",
-              "Mitosis produces genetically identical cells — it is used for growth, repair, and (in some organisms) asexual reproduction. It is different from meiosis, which produces sex cells.",
+              "The four stages of mitosis are remembered with PMAT: Prophase, Metaphase, Anaphase, Telophase.",
+              "Mitosis produces two daughter cells that are genetically identical to each other and to the parent cell.",
+              "In humans, each daughter cell from mitosis has 46 chromosomes — diploid (2n), the same as the parent.",
+              "DNA is copied in S phase BEFORE mitosis begins. Mitosis separates existing copies; it does not make them.",
+              "Spindle fibres are microtubules that extend from the poles and attach to chromosomes at the centromere.",
+              "Mitosis divides the nucleus; cytokinesis divides the cytoplasm. Both are needed to produce two complete cells.",
+              "Mitosis is used for growth, repair, replacement, and asexual reproduction — never for making sex cells.",
+            ],
+          },
+        },
+
+        {
+          type: "scenario",
+          heading: "Mitosis in Real Life",
+          data: {
+            intro:
+              "Mitosis is happening in your body right now. These scenarios connect the four stages to things you can actually observe.",
+            scenarios: [
+              {
+                title: "Skin Healing After a Cut",
+                situation:
+                  "You scrape your knee and lose several layers of skin cells. Within hours the area begins to heal, and within days new skin covers the wound — then the healing stops exactly when the gap is filled.",
+                question:
+                  "What is happening at the cellular level, and what makes the process stop at the right moment?",
+                skill:
+                  "Cells at the wound edge re-enter the cell cycle, complete interphase, and undergo mitosis to produce new skin cells. They stop when they touch neighbouring cells — contact inhibition — which is why healthy healing does not overshoot.",
+              },
+              {
+                title: "Counting Chromosomes",
+                situation:
+                  "A student is asked to photograph a cell and count its chromosomes. Looking through the microscope, most cells show only a fuzzy nucleus, but a few show clear separate structures lined up in a row.",
+                question:
+                  "Which stage should the student photograph, and why is that the easiest one for counting?",
+                skill:
+                  "Metaphase. The chromosomes are fully condensed and neatly lined up along the metaphase plate in a single plane, so each one can be seen and counted separately rather than overlapping.",
+              },
+              {
+                title: "Cancer Cells Dividing Without Stopping",
+                situation:
+                  "A mutation in a lung cell disables its G1 checkpoint. The cell begins dividing even when signals tell it to stop. After many divisions a visible tumour has formed.",
+                question:
+                  "How does disabling a checkpoint lead to a tumour, and why is that dangerous?",
+                skill:
+                  "Checkpoints normally block division when conditions are wrong or DNA is damaged. With one disabled, the cell divides continuously without verification, producing a mass of cells. If they also lose contact inhibition and the ability to stay in place, the cancer spreads — metastasis.",
+              },
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Real-World Applications",
+          heading: "Applications",
           data: {
             apps: [
               {
-                title: "Tissue Growth and Development",
+                title: "Growth and Development",
                 description:
-                  "From a single fertilized egg, mitosis produces the trillions of cells that make up a human body — all through repeated rounds of the cell cycle during embryonic development.",
+                  "From one fertilised egg, mitosis produces the trillions of cells in a human body during development.",
                 icon: "🌱",
                 color: "border-l-primary-500",
               },
               {
-                title: "Organ Development",
+                title: "Replacing Dead Cells",
                 description:
-                  "Organs grow through precisely controlled mitosis. Scientists study mitotic regulation to understand how organs know when to stop growing — and why tumors keep going.",
-                icon: "🫀",
+                  "Skin cells live only two to three weeks. Mitosis in the lower skin layer constantly produces replacements that push upward — you renew your outer skin every month.",
+                icon: "🩹",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Replacing Dead Cells",
+                title: "Cancer Therapy",
                 description:
-                  "Your skin cells live only about two to three weeks before dying. Mitosis in the skin's lower layer constantly produces new cells that push upward to replace dead skin — you replace your entire outer skin every month.",
-                icon: "🩹",
+                  "Most cancer treatments work by disrupting mitosis in rapidly dividing cells, often by blocking spindle formation.",
+                icon: "🔬",
                 color: "border-l-accent-500",
               },
               {
                 title: "Asexual Reproduction",
                 description:
-                  "Many single-celled organisms (like amoeba and yeast) reproduce entirely by mitosis, creating genetically identical offspring. Some animals like starfish can even regenerate lost body parts through mitosis.",
+                  "Amoeba, yeast, and hydra reproduce through mitosis or mitosis-like division, producing genetically identical offspring.",
                 icon: "🔄",
                 color: "border-l-primary-500",
               },
@@ -352,27 +317,41 @@ export const week15 = {
     },
 
     // ═══════════════════════════════════════════════════
-    // LESSON 45 — Importance and Applications of Mitosis
+    // LESSON 2 — Meiosis Cell Division
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-45",
+      id: "w15-l2",
       weekId: "week-15",
-      lessonNumber: 45,
-      title: "Importance and Applications of Mitosis",
-      badge: "Lesson 45",
+      lessonNumber: 2,
+      title: "Meiosis Cell Division",
+      badge: "Lesson 2",
       subtitle:
-        "Understand why mitosis is essential for life and how its breakdown leads to cancer.",
-      readTime: "~12 min read",
+        "Follow meiosis through two rounds of division as one diploid cell becomes four genetically unique haploid gametes — and find out where variation comes from.",
+      readTime: "~18 min read",
       xp: 50,
-      heroImage: lab,
+      heroImage: simulation,
       heroImageAlt:
-        "Lab setting with researchers studying cell division patterns",
+        "Diagram of chromosomes during the stages of meiosis",
 
       sections: [
         "Overview",
-        "Why Mitosis Matters",
-        "Mitosis in Real Life",
-        "Real-World Applications",
+        "Key Terms",
+        "The Stages of Meiosis",
+        "Where Variation Comes From",
+        "Mitosis vs. Meiosis",
+        "Key Concepts",
+        "Applications",
+      ],
+
+      references: [
+        {
+          label: "Khan Academy — Meiosis",
+          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology/meiosis",
+        },
+        {
+          label: "Britannica — Meiosis",
+          url: "https://www.britannica.com/science/meiosis",
+        },
       ],
 
       layout: [
@@ -381,134 +360,249 @@ export const week15 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "Mitosis is not just a biological process — it is the foundation of growth, repair, and life itself. From the moment a fertilized egg begins dividing until the day we die, mitosis is constantly occurring in our bodies to grow tissues, replace dead cells, and heal wounds.",
-              "When the careful control of mitosis breaks down — when cells divide without following the checkpoint rules — the result is <strong class='text-primary-700'>cancer</strong>. Cancer is essentially mitosis gone wrong: cells that divide uncontrollably, ignoring signals to stop, forming tumors that can invade other tissues. Understanding mitosis is therefore central to understanding and treating cancer.",
+              "<strong class='text-primary-700'>Meiosis</strong> is a special kind of cell division that produces sex cells, or <strong class='text-primary-700'>gametes</strong> — sperm in males and eggs in females. Unlike mitosis, which makes two identical cells, meiosis makes four genetically unique ones.",
+              "Meiosis starts with one <strong class='text-primary-700'>diploid</strong> cell (2n) carrying two full sets of chromosomes — 46 in humans. It ends with four <strong class='text-primary-700'>haploid</strong> cells (n) carrying only 23 each. This halving is essential: when a sperm and egg fuse at fertilisation, 23 + 23 restores the full 46.",
+              "Meiosis involves <strong class='text-primary-700'>two rounds of division</strong> and introduces genetic variation through <strong class='text-primary-700'>crossing over</strong> and <strong class='text-primary-700'>independent assortment</strong>. This is why children resemble their parents without being copies of them.",
             ],
             didYouKnow:
-              "Chemotherapy works by targeting cells that are dividing rapidly — which includes cancer cells. Unfortunately, it also affects other rapidly dividing cells in your body, like hair follicle cells and gut lining cells, which is why patients often experience hair loss and nausea during treatment.",
+              "A human female is born with every egg cell she will ever have — about one to two million immature eggs are present at birth, though only a few hundred are ever released.",
+          },
+        },
+
+        {
+          type: "keyTerms",
+          heading: "Key Terms",
+          data: {
+            terms: [
+              {
+                term: "Meiosis",
+                desc: "Cell division producing four haploid gametes from one diploid parent cell, through two rounds of division.",
+              },
+              {
+                term: "Gamete",
+                desc: "A sex cell — sperm or egg — containing half the normal chromosome number.",
+              },
+              {
+                term: "Haploid (n)",
+                desc: "A cell with one set of chromosomes — half the number in a body cell. In humans, n = 23.",
+              },
+              {
+                term: "Diploid (2n)",
+                desc: "A cell with two complete sets of chromosomes, the normal number for body cells. In humans, 2n = 46.",
+              },
+              {
+                term: "Homologous Chromosomes",
+                desc: "A matching pair of chromosomes, one inherited from each parent, carrying the same genes in the same order.",
+              },
+              {
+                term: "Crossing Over",
+                desc: "The exchange of DNA segments between homologous chromosomes during Prophase I — the main source of genetic variation.",
+              },
+              {
+                term: "Independent Assortment",
+                desc: "The random orientation of each homologous pair at Metaphase I, which shuffles which chromosomes end up together.",
+              },
+              {
+                term: "Meiosis I",
+                desc: "The first division, called the reduction division, which separates homologous pairs and halves the chromosome number.",
+              },
+              {
+                term: "Meiosis II",
+                desc: "The second division, very similar to mitosis, which separates sister chromatids in each of the two cells.",
+              },
+              {
+                term: "Nondisjunction",
+                desc: "An error where chromosomes fail to separate properly, producing gametes with too many or too few chromosomes.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "timeline",
+          heading: "The Stages of Meiosis",
+          data: {
+            intro:
+              "DNA is replicated once, before meiosis begins — then there are two divisions with no copying in between. That single fact is what halves the chromosome number.",
+            steps: [
+              {
+                num: 1,
+                title: "Prophase I",
+                color: "primary",
+                description:
+                  "Chromosomes condense and pair up with their homologous partners. Crossing over occurs — homologous chromosomes exchange matching segments of DNA at points called chiasmata. This is the single most important source of genetic variation.",
+                tip: "Crossing over happens only in Meiosis I — never in Meiosis II, and never in mitosis.",
+              },
+              {
+                num: 2,
+                title: "Metaphase I",
+                color: "secondary",
+                description:
+                  "Homologous PAIRS line up along the middle of the cell — not single chromosomes as in mitosis. Which member of each pair faces which pole is completely random, and this is called independent assortment.",
+                tip: "Random orientation alone can produce over 8 million different chromosome combinations in a human gamete.",
+              },
+              {
+                num: 3,
+                title: "Anaphase I and Telophase I",
+                color: "accent",
+                description:
+                  "Whole homologous chromosomes are pulled to opposite poles — the sister chromatids stay joined. The cell then divides into two cells, each now haploid, though each chromosome still consists of two chromatids.",
+                tip: "This is the reduction division. The chromosome number is halved here, not in Meiosis II.",
+              },
+              {
+                num: 4,
+                title: "Prophase II",
+                color: "primary",
+                description:
+                  "Both cells from Meiosis I enter the second division. Chromosomes condense again and a new spindle forms. Critically, there is no DNA replication before Meiosis II and no further crossing over.",
+                tip: "Meiosis II is essentially mitosis, except it starts with haploid cells instead of diploid ones.",
+              },
+              {
+                num: 5,
+                title: "Metaphase II and Anaphase II",
+                color: "secondary",
+                description:
+                  "In each of the two cells, chromosomes line up singly at the metaphase plate. Sister chromatids are then pulled apart to opposite poles, exactly as in mitosis.",
+                tip: "By the end of Anaphase II each pole holds individual, unpaired chromosomes.",
+              },
+              {
+                num: 6,
+                title: "Telophase II — Four Haploid Cells",
+                color: "accent",
+                description:
+                  "Each cell completes division, producing four haploid daughter cells in total. Every one is genetically unique thanks to the crossing over and independent assortment that happened in Meiosis I.",
+                tip: "In males all four become sperm. In females one becomes the egg and three become polar bodies that break down.",
+              },
+            ],
           },
         },
 
         {
           type: "reasonCards",
-          heading: "Why Mitosis Matters",
+          heading: "Where Variation Comes From",
           data: {
             intro:
-              "Mitosis is essential for multiple critical processes in every multicellular organism. Here are five key reasons why mitosis is one of the most important biological processes in nature.",
+              "Meiosis does not just halve chromosome number — it deliberately shuffles the genetic deck. Three mechanisms do the shuffling.",
             reasons: [
               {
                 num: 1,
-                title: "Growth",
+                title: "Crossing Over",
                 color: "primary",
-                desc: "Every multicellular organism grows from a single cell through repeated mitosis",
+                desc: "Homologous chromosomes swap matching segments in Prophase I",
                 content:
-                  "A human being begins as one fertilized egg cell. Through trillions of mitotic divisions, that single cell becomes a complete organism with over 37 trillion cells. Every increase in size is the result of mitosis.",
+                  "A chromosome that goes into a gamete is not the one that came from either parent — it is a mixture of both, recombined at points chosen essentially at random.",
               },
               {
                 num: 2,
-                title: "Repair",
+                title: "Independent Assortment",
                 color: "secondary",
-                desc: "Mitosis replaces damaged or dead cells to repair injured tissues",
+                desc: "Each homologous pair lines up independently at Metaphase I",
                 content:
-                  "When you cut your skin or break a bone, mitosis in the surrounding healthy cells produces new cells to fill in the gap. Without mitosis, even a small cut would never heal.",
+                  "With 23 pairs orienting randomly, a human can produce over 8 million different chromosome combinations from independent assortment alone — before crossing over is even counted.",
               },
               {
                 num: 3,
-                title: "Cell Replacement",
+                title: "Random Fertilisation",
                 color: "accent",
-                desc: "Old and worn-out cells are continuously replaced throughout life",
+                desc: "Any one sperm may fertilise any one egg",
                 content:
-                  "Red blood cells live only 120 days; skin cells live 2–3 weeks; gut lining cells live just 3–5 days. Mitosis continuously produces new cells to replace the ones that die naturally.",
+                  "Multiply 8 million possible sperm by 8 million possible eggs and a single couple could produce over 64 trillion genetically different children.",
               },
               {
                 num: 4,
-                title: "Asexual Reproduction",
+                title: "Why Variation Matters",
                 color: "primary",
-                desc: "Some organisms reproduce entirely by mitosis, producing identical offspring",
+                desc: "Varied populations survive change; identical ones do not",
                 content:
-                  "Bacteria, amoeba, yeast, and hydra reproduce by dividing through mitosis (or mitosis-like processes), creating genetically identical copies of themselves. Some plants also reproduce asexually through mitosis.",
-              },
-              {
-                num: 5,
-                title: "Development from Fertilized Egg",
-                color: "secondary",
-                desc: "Embryonic development relies entirely on precisely controlled mitosis",
-                content:
-                  "After fertilization, a single cell develops into a complete organism through mitosis combined with cell differentiation. The timing, rate, and location of mitosis determines the shape and size of every organ and body structure.",
+                  "When a new disease or a drought arrives, a genetically varied population is likely to contain some individuals that survive. A population of identical clones either all cope or all die.",
               },
             ],
           },
         },
 
         {
-          type: "scenario",
-          heading: "Mitosis in Real Life",
+          type: "comparison",
+          heading: "Mitosis vs. Meiosis",
           data: {
             intro:
-              "Mitosis happens in your body every second of every day. These scenarios help connect the stages of mitosis to the real biological situations you encounter.",
-            scenarios: [
-              {
-                title: "Skin Healing After a Cut",
-                situation:
-                  "You scrape your knee and lose several layers of skin cells. Within hours, the area begins to heal, and within days, new skin covers the wound.",
-                question:
-                  "What is happening at the cellular level during this healing process?",
-                skill:
-                  "Cells at the edges of the wound receive chemical signals that trigger their cell cycles. They enter the cycle, complete interphase (growing and copying their DNA), then undergo mitosis to produce new skin cells. These new cells fill in and cover the wound. The process continues until the wound is fully covered, then stops when cells make contact (contact inhibition).",
-              },
-              {
-                title: "Cancer Cells Dividing Without Stopping",
-                situation:
-                  "A mutation in a lung cell disables the G1 checkpoint. The cell begins dividing even when it receives signals telling it to stop. After many divisions, a visible tumor forms.",
-                question:
-                  "How does disabling the checkpoint lead to a tumor, and why is this dangerous?",
-                skill:
-                  "Checkpoints normally prevent cells from dividing if conditions are not right or if DNA is damaged. When a checkpoint is disabled by mutation, cells divide continuously without verifying that division is appropriate. The resulting uncontrolled divisions produce a mass of cells (a tumor). If these cells also lose the ability to stay in one place, the cancer can spread to other organs — a process called metastasis.",
-              },
-              {
-                title: "Stem Cells in Therapy",
-                situation:
-                  "A patient with a damaged spinal cord receives a treatment where laboratory-grown stem cells are injected into the injury site. The stem cells divide and differentiate into nerve cells.",
-                question:
-                  "How is mitosis involved in this stem cell therapy, and why is it important?",
-                skill:
-                  "The stem cells use mitosis to produce many daughter cells at the injury site. These daughter cells then receive chemical signals that guide them through differentiation — they become specialized nerve cells. The new nerve cells can form connections and potentially restore some function to the damaged spinal cord. Without controlled mitosis, there would be no way to produce the large number of replacement cells needed for tissue repair.",
-              },
+              "These two processes are the most commonly confused pair in cell biology. Compare them line by line.",
+            left: {
+              label: "Mitosis",
+              color: "primary",
+              items: [
+                "Produces 2 daughter cells",
+                "Daughter cells are diploid (2n)",
+                "Daughter cells are genetically IDENTICAL",
+                "ONE round of division",
+                "No crossing over",
+                "Purpose: growth, repair, and asexual reproduction",
+                "Occurs in body (somatic) cells",
+              ],
+            },
+            right: {
+              label: "Meiosis",
+              color: "secondary",
+              items: [
+                "Produces 4 daughter cells",
+                "Daughter cells are haploid (n)",
+                "Daughter cells are genetically UNIQUE",
+                "TWO rounds of division (I and II)",
+                "Crossing over occurs in Prophase I",
+                "Purpose: producing gametes for sexual reproduction",
+                "Occurs only in the ovaries and testes",
+              ],
+            },
+          },
+        },
+
+        {
+          type: "conceptList",
+          heading: "Key Concepts",
+          data: {
+            concepts: [
+              "Meiosis produces FOUR daughter cells, compared to mitosis which produces two.",
+              "All four cells are haploid (n) — they carry half the chromosomes of the parent cell.",
+              "Every daughter cell is genetically unique; no two are the same.",
+              "There are TWO rounds of division: Meiosis I halves the chromosome number, Meiosis II separates sister chromatids.",
+              "DNA is replicated only once, before Meiosis I. There is no replication between the two divisions — this is what halves the count.",
+              "Meiosis occurs only in the gonads: the ovaries in females and the testes in males.",
+              "Crossing over in Prophase I and independent assortment in Metaphase I are the two main sources of variation.",
+              "If chromosomes fail to separate correctly (nondisjunction), the resulting gamete has the wrong chromosome number.",
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Real-World Applications",
+          heading: "Applications",
           data: {
             apps: [
               {
-                title: "Wound Healing Research",
+                title: "Understanding Fertility",
                 description:
-                  "Scientists study how cells trigger mitosis after injury to develop treatments that speed wound healing — especially for chronic wounds like diabetic ulcers that fail to heal normally.",
-                icon: "🩹",
+                  "Doctors study meiosis to work out why some people cannot produce healthy gametes, guiding fertility treatments such as IVF.",
+                icon: "🏥",
                 color: "border-l-primary-500",
               },
               {
-                title: "Cancer Research and Therapy",
+                title: "Chromosomal Conditions",
                 description:
-                  "Most cancer treatments — chemotherapy, radiation, and targeted therapies — work by disrupting mitosis in rapidly dividing cancer cells. Research focuses on blocking specific mitotic proteins.",
-                icon: "🔬",
+                  "When chromosomes fail to separate during anaphase, a gamete ends up with an extra or missing chromosome — the cause of conditions such as Down syndrome.",
+                icon: "🧬",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Organ Regeneration",
+                title: "Selective Breeding",
                 description:
-                  "Scientists are working to grow replacement organs (liver, kidney, skin) by seeding stem cells onto biological scaffolds and triggering controlled mitosis to grow functional tissue.",
-                icon: "🫀",
+                  "Farmers rely on the variation meiosis produces to breed crops and livestock with better traits over successive generations.",
+                icon: "🌾",
                 color: "border-l-accent-500",
               },
               {
-                title: "Agricultural Cloning",
+                title: "Evolution",
                 description:
-                  "Farmers and scientists use mitosis-based techniques to clone plants — producing genetically identical crops with desirable traits by taking cuttings and stimulating mitotic growth.",
-                icon: "🌿",
+                  "The genetic variation meiosis creates is the raw material natural selection acts on. Without it, populations could not adapt.",
+                icon: "🔬",
                 color: "border-l-primary-500",
               },
             ],
