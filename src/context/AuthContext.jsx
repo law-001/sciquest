@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { clearStudentDrafts } from '../lib/studentStorage'
 
 // ---------------------------------------------------------------------------
 // Session timeout config — edit these values to change timeout durations.
@@ -83,7 +84,7 @@ export function AuthProvider({ children }) {
     }
     let { data: studentRow, error } = await supabase
       .from('students')
-      .select('id, first_name, last_name, email, student_number, section, avatar, avatar_style, created_at')
+      .select('id, first_name, last_name, email, student_number, section, avatar, avatar_style, leaderboard_opt_out, created_at')
       .eq('id', userId)
       .maybeSingle()
     // Keep existing profiles usable while the decoration migration rolls out.
@@ -95,8 +96,14 @@ export function AuthProvider({ children }) {
       error = fallback.error
     }
     if (error || !studentRow) return null
-    const { avatar_style, ...studentProfile } = studentRow
-    const profileData = { ...studentProfile, avatarStyle: avatar_style, role: 'student' }
+    const { avatar_style, leaderboard_opt_out, ...studentProfile } = studentRow
+    // Missing on the fallback path above, which predates the column.
+    const profileData = {
+      ...studentProfile,
+      avatarStyle: avatar_style,
+      leaderboardOptOut: leaderboard_opt_out ?? false,
+      role: 'student',
+    }
     setProfile(profileData)
     return profileData
   }
@@ -265,6 +272,9 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(LS_LAST_ACTIVE)
     localStorage.removeItem(LS_REMEMBER_ME)
     localStorage.removeItem(LS_SESSION_EXPIRY)
+    // Unsubmitted answers die with the session so the next student on a shared
+    // lab machine cannot read them.
+    clearStudentDrafts(user?.id)
   }
   // Sync ref every render so effects always hold the latest closure.
   useEffect(() => { signOutRef.current = signOut })

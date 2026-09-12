@@ -142,7 +142,7 @@ export async function fetchStudents() {
 
 // Updates the signed-in student's own editable fields. RLS
 // (own_student_update) restricts this to their own row.
-export async function updateStudentProfile(studentId, { firstName, lastName, avatar, avatarStyle }) {
+export async function updateStudentProfile(studentId, { firstName, lastName, avatar, avatarStyle, leaderboardOptOut }) {
   if (!studentId) return
   // Only touch a column when the caller supplies it, so a picture-only edit
   // doesn't wipe the stored name and a name-only edit doesn't wipe the avatar.
@@ -151,6 +151,7 @@ export async function updateStudentProfile(studentId, { firstName, lastName, ava
   if (lastName !== undefined) patch.last_name = lastName
   if (avatar !== undefined) patch.avatar = getAvatar(avatar)?.id ?? null
   if (avatarStyle !== undefined) patch.avatar_style = normalizeAvatarStyle(avatarStyle)
+  if (leaderboardOptOut !== undefined) patch.leaderboard_opt_out = Boolean(leaderboardOptOut)
   const { error } = await supabase
     .from('students')
     .update(patch)

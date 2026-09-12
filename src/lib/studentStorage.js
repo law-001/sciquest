@@ -46,3 +46,25 @@ export function purgeLegacyStudentKeys() {
     /* private mode — nothing to clean up */
   }
 }
+
+// Drops the in-progress work above when a session ends. On a shared school
+// computer the next student would otherwise inherit the previous one's
+// unsubmitted quiz answers. Mirrors the three key builders above — a new key
+// shape needs a prefix here too.
+export function clearStudentDrafts(userId) {
+  const prefixes = [
+    `sq-quiz-answers-${scopeFor(userId)}-`,
+    `sq-quiz-started-${scopeFor(userId)}-`,
+    `sq-lesson-interact-${scopeFor(userId)}-`,
+  ]
+  try {
+    const stale = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && prefixes.some((p) => key.startsWith(p))) stale.push(key)
+    }
+    for (const key of stale) localStorage.removeItem(key)
+  } catch {
+    /* private mode — nothing to clean up */
+  }
+}

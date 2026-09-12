@@ -27,6 +27,8 @@ import {
   ChevronDown,
   ChevronUp,
   ClipboardList,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { ACHIEVEMENTS, isHiddenAchievement } from "../lib/achievements";
 import { visibleAchievementCatalog, currentAchievementKey } from "../lib/game-achievements";
@@ -378,6 +380,7 @@ export function ProfilePage({
   const [xpWidth, setXpWidth] = useState(0);
   const [activePeriod, setActivePeriod] = useState("This Week");
   const [editOpen, setEditOpen] = useState(false);
+  const [boardVisibilitySaving, setBoardVisibilitySaving] = useState(false);
   const [hoveredBadge, setHoveredBadge] = useState(null);
   const [myQuizzesOpen, setMyQuizzesOpen] = useState(false);
   const [activeHighlight, setActiveHighlight] = useState(null);
@@ -570,6 +573,22 @@ export function ProfilePage({
 
   const userRank =
     allTimeBoard.find((e) => e.studentId === user?.id)?.rank ?? null;
+  const leaderboardOptOut = profile?.leaderboardOptOut ?? false;
+
+  // Saves straight away — the control lives on the card, not behind a Save
+  // button. On failure the flag is unchanged, so the button snaps back.
+  const toggleBoardVisibility = async () => {
+    if (!user?.id || boardVisibilitySaving) return;
+    setBoardVisibilitySaving(true);
+    try {
+      await updateStudentProfile(user.id, { leaderboardOptOut: !leaderboardOptOut });
+      await refreshProfile();
+    } catch {
+      /* nothing changed; the next profile load re-reads the real value */
+    } finally {
+      setBoardVisibilitySaving(false);
+    }
+  };
 
   const screen = screenTimeStat(screenSeconds ?? 0);
   const statCards = [
@@ -582,9 +601,11 @@ export function ProfilePage({
 
   const quickStats = [
     {
-      label: "Global Rank",
+      label: "Section Rank",
       // Ranks past 10 stay hidden here too, matching the leaderboard.
-      value: !userRank ? "Unranked" : userRank <= 10 ? `#${userRank}` : "Outside top 10",
+      value: leaderboardOptOut
+        ? "Hidden"
+        : !userRank ? "Unranked" : userRank <= 10 ? `#${userRank}` : "Outside top 10",
       color: "text-amber-500",
     },
     {
@@ -604,7 +625,6 @@ export function ProfilePage({
   useEffect(() => {
     if (!headerTriggered) return;
     if (prefersReducedMotion) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setXpWidth(xpTargetPct);
       return;
     }
@@ -624,7 +644,6 @@ export function ProfilePage({
   // Period leaderboard — refetches when the period toggle changes.
   useEffect(() => {
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBoardLoading(true);
     fetchLeaderboard(PERIOD_API[activePeriod])
       .then((rows) => {
@@ -639,9 +658,9 @@ export function ProfilePage({
     return () => {
       cancelled = true;
     };
-  }, [activePeriod]);
+  }, [activePeriod, leaderboardOptOut]);
 
-  // All-time board, fetched once, drives the "Global Rank" quick stat.
+  // All-time board, fetched once, drives the "Section Rank" quick stat.
   useEffect(() => {
     let cancelled = false;
     fetchLeaderboard("all")
@@ -652,7 +671,7 @@ export function ProfilePage({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [leaderboardOptOut]);
 
   // Achievement highlight — when arriving here from an achievement
   // notification, scroll the achievements grid into view and pulse the
@@ -735,6 +754,7 @@ export function ProfilePage({
   // board at all, so they get a stand-in row.
   const selfOutsideTop =
     isStudent &&
+    !leaderboardOptOut &&
     topBoard.length === TOP_N &&
     !topBoard.some((e) => e.studentId === user?.id)
       ? (board.find((e) => e.studentId === user?.id) ?? {
@@ -898,6 +918,24 @@ export function ProfilePage({
                     ? `Section ${profile.section}`
                     : "SciQuest learner"}
                 </p>
+                {isStudent && (
+                  <button
+                    type="button"
+                    onClick={toggleBoardVisibility}
+                    disabled={boardVisibilitySaving}
+                    aria-pressed={!leaderboardOptOut}
+                    className="mt-2 inline-flex items-center gap-1.5 min-h-9 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-bold text-stone-500 dark:text-stone-400 hover:border-primary-500/60 hover:text-primary-500 dark:hover:text-primary-400 disabled:opacity-50 transition-colors focus-visible:outline-2 focus-visible:outline-primary-500"
+                  >
+                    {leaderboardOptOut ? (
+                      <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                    )}
+                    {leaderboardOptOut
+                      ? "Hidden from leaderboard"
+                      : "On the leaderboard"}
+                  </button>
+                )}
               </div>
               <div className="text-right shrink-0">
                 <p className="text-2xl font-black text-stone-900 dark:text-white font-heading tabular-nums">
@@ -1196,7 +1234,7 @@ export function ProfilePage({
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-black text-stone-900 dark:text-white font-heading">
-                  Leaderboard
+                  Section Leaderboard
                 </h3>
                 <div className="flex gap-1 bg-stone-100 dark:bg-stone-800 rounded-xl p-1">
                   {LEADERBOARD_PERIODS.map((p) => (
@@ -1240,10 +1278,10 @@ export function ProfilePage({
                     {topBoard.length === 0 && (
                       <p className="text-sm text-stone-500 dark:text-stone-400 font-medium pb-2 text-center">
                         {activePeriod === "This Week"
-                          ? "No one has earned XP this week yet."
+                          ? "No one in your section has earned XP this week yet."
                           : activePeriod === "Month"
-                            ? "No one has earned XP this month yet."
-                            : "No one has earned XP yet."}{" "}
+                            ? "No one in your section has earned XP this month yet."
+                            : "No one in your section has earned XP yet."}{" "}
                         Be the first!
                       </p>
                     )}
@@ -1277,6 +1315,12 @@ export function ProfilePage({
                         </p>
                         {renderBoardRow(selfOutsideTop, TOP_N, xpToTopTen)}
                       </>
+                    )}
+                    {leaderboardOptOut && (
+                      <p className="pt-2 text-center text-xs font-semibold text-stone-500 dark:text-stone-400">
+                        You are hidden from this leaderboard. Turn it back on in
+                        Edit Profile.
+                      </p>
                     )}
                   </>
                 )}

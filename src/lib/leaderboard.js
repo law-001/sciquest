@@ -1,7 +1,9 @@
 import { supabase } from './supabase'
 import { totalAchievementXp } from './achievements'
 
-// Ranked XP leaderboard across all students. `period` is one of
+// Ranked XP leaderboard for the signed-in student's own section (staff see
+// every student). The scoping happens in the leaderboard_entries RPC, so this
+// module just renders what comes back. `period` is one of
 // 'week' | 'month' | 'all'.
 //
 // XP is computed the SAME way the profile's "Total XP" is —
@@ -27,7 +29,7 @@ export async function fetchLeaderboard(period = 'all') {
   const rows = (data ?? [])
     .map((s) => ({
       studentId: s.student_id,
-      name: `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || 'Student',
+      name: (s.first_name ?? '').trim() || 'Student',
       avatar: s.avatar ?? null,
       avatarStyle: s.avatar_style,
       xp: Number(s.progress_xp ?? 0) + totalAchievementXp(s.achievement_keys ?? []),
