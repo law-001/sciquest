@@ -35,6 +35,15 @@ export const week11 = {
       heroImage: microscope,
       heroImageAlt: "Close-up view of a compound microscope",
 
+      signature: {
+        widgetId: "focus-scope",
+        heading: "Watch It: Why Coarse Focus Cracks the Slide",
+        intro:
+          "The blur is real, and how much of it there is comes from one number — how far the stage sits from the focal plane, divided by the depth of field of the objective in the light path. At 4× that band is ten micrometres wide. At 40× it is eight tenths, one coarse step is two, and the lens goes into the glass.",
+        instruction: "Sharp at 40×, slide intact, no bubbles",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -386,6 +395,15 @@ export const week11 = {
       heroImage: lab,
       heroImageAlt:
         "Historical microscope illustration representing scientific discovery",
+
+      signature: {
+        widgetId: "scope-through-time",
+        heading: "Watch It: 280 Years of the Same Cork",
+        intro:
+          "One slider moves the year, and the resolving power of the best instrument of that year moves with it. Drag past 1830 and the colour fringes vanish and a nucleus appears. Drag past 1933 and ribosomes resolve that were not there a pixel earlier.",
+        instruction: "Use all three instruments",
+        xp: 25,
+      },
 
       sections: [
         "Overview",

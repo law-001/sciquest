@@ -38,6 +38,15 @@ export const week19 = {
       heroImageAlt:
         "Energy pyramid showing energy decreasing at each trophic level",
 
+      signature: {
+        widgetId: "ten-percent",
+        heading: "Watch It: Where the Other 90% Goes",
+        intro:
+          "A thousand units enter the grass. Send them up and ninety per cent peel off sideways as heat while a tenth climbs, so the pyramid shape builds itself out of the losses. Beside it, one carbon atom takes the other road — dead snake, decomposer, soil, grass, and round again.",
+        instruction: "Trace energy to the top, then follow one atom round",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",

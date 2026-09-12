@@ -36,6 +36,15 @@ export const week05 = {
       heroImage: flowchart,
       heroImageAlt: "Flowchart showing the steps of a scientific investigation",
 
+      signature: {
+        widgetId: "investigation-rig",
+        heading: "Watch It: Jam the Machine",
+        intro:
+          "The investigation runs as a machine on a conveyor. Pull any stage out of its housing and the belt keeps turning while the sample stops dead at the gap.",
+        instruction: "Run it whole, jam it once, then confound it once",
+        xp: 25,
+      },
+
       sections: [
         "Introduction",
         "Key Terms",
@@ -318,6 +327,15 @@ export const week05 = {
       xp: 50,
       heroImage: equation,
       heroImageAlt: "Scientific measurement tools and unit labels",
+
+      signature: {
+        widgetId: "meniscus-bench",
+        heading: "Watch It: Your Eye Changes the Number",
+        intro:
+          "The sightline is drawn for real. Look down at the meniscus and the scale reads high; look up at it and it reads low. Only eye level gives the true volume — and the balance beside it is lying by the same amount every time.",
+        instruction: "Read three volumes at eye level, then find the systematic error",
+        xp: 25,
+      },
 
       sections: [
         "Introduction",

@@ -38,6 +38,15 @@ export const week18 = {
       heroImageAlt:
         "Diverse living organisms that reproduce sexually",
 
+      signature: {
+        widgetId: "variation-batch",
+        heading: "Watch It: Twelve Offspring, No Two Alike",
+        intro:
+          "Set the two parents and cross them; twelve offspring are born one at a time, each a different draw. Then fire the same disease that wiped out the clone field — it grips one band of shell tones, and the spread puts some of the litter outside it.",
+        instruction: "Breed a litter of twelve, then stress it",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -318,6 +327,15 @@ export const week18 = {
       heroImage: foodchain,
       heroImageAlt:
         "Diagram of a food chain showing energy flowing from grass to a top predator",
+
+      signature: {
+        widgetId: "energy-flow",
+        heading: "Watch It: Turn an Arrow Round",
+        intro:
+          "Energy travels as packets you can see, and which organisms are fed is worked out by walking from the sun along the arrows that currently point the right way. Reverse one and everything behind it starves. Then add links, remove the frog, and find out what a web does that a chain cannot.",
+        instruction: "Feed the chain, break it, then build the web",
+        xp: 25,
+      },
 
       sections: [
         "Overview",

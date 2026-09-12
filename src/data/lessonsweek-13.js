@@ -36,6 +36,15 @@ export const week13 = {
       heroImageAlt:
         "Labelled diagram of a plant cell showing its internal structures",
 
+      signature: {
+        widgetId: "cell-morph",
+        heading: "Watch It: One Cell, Both Kinds",
+        intro:
+          "One slider drags an animal cell into a plant cell. The shared structures never move at all through the whole morph; the wall, the vacuole and the chloroplasts grow in and label themselves as they appear. Then flood both with pure water — one stops firm against its wall, the other has nothing to stop it.",
+        instruction: "Morph both ways, then flood both cells",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",

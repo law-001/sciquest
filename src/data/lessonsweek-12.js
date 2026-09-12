@@ -37,6 +37,15 @@ export const week12 = {
       heroImageAlt:
         "Microscope view representing the development of cell theory",
 
+      signature: {
+        widgetId: "scope-field",
+        heading: "Watch It: Six Cells, Two Kinds",
+        intro:
+          "Six living cells drift under the objective, each shaped for the job it actually does. Zoom into one and its interior resolves — or, in the two bacteria, there is simply no nucleus there: a loose loop of DNA lying in the cytoplasm with nothing holding it.",
+        instruction: "Inspect all six and find both cell types",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -325,6 +334,15 @@ export const week12 = {
       xp: 50,
       heroImage: simulation,
       heroImageAlt: "Diagram of a cell showing its internal organelles",
+
+      signature: {
+        widgetId: "cell-cutaway",
+        heading: "Watch It: Switch an Organelle Off",
+        intro:
+          "The organelles here are stations on one production line — instruction out of the nucleus, chain built at the ribosome, packed at the Golgi, vesicle out through the membrane, all of it paid for by the mitochondria. Switch one off and the legs downstream stop carrying anything.",
+        instruction: "Switch every organelle off once",
+        xp: 25,
+      },
 
       sections: [
         "Overview",

@@ -330,6 +330,15 @@ export const week16 = {
       heroImageAlt:
         "Microscopic image of a sperm cell approaching an egg cell during fertilization",
 
+      signature: {
+        widgetId: "fusion-bench",
+        heading: "Watch It: 23 + 23, and What Else Adds Up",
+        intro:
+          "Load two cells and drive them together; the chromosome total is the sum of what you picked. Get it right and the zygote starts cleaving on its own, with the count staying at 46 in every new cell. Put a body cell in and watch 69 fail.",
+        instruction: "Make a correct zygote, then make a wrong one",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",

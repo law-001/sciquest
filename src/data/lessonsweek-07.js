@@ -37,6 +37,15 @@ export const week07 = {
       heroImageAlt:
         "Two beakers side by side showing concentrated and dilute solutions",
 
+      signature: {
+        widgetId: "dilution-jar",
+        heading: "Watch It: Dilute Without Removing Anything",
+        intro:
+          "Add water and the colour fades — but count the particles before and after. Not one of them left the jar; they are simply sharing more space, and the % m/m readout falls as it happens.",
+        instruction: "Find both routes to dilute, then hit the target",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -361,6 +370,15 @@ export const week07 = {
       heroImage: flowchart,
       heroImageAlt:
         "Litmus paper tests showing color changes in acid and base solutions",
+
+      signature: {
+        widgetId: "titration-drip",
+        heading: "Watch It: One Drop from Neutral",
+        intro:
+          "Open the burette a drop at a time. H⁺ and OH⁻ pair off into water on screen, salt builds on the floor of the flask, and the pH needle crawls for thirty drops before jumping most of the scale on the fortieth.",
+        instruction: "Reach pH 7 and make salt — overshooting is allowed",
+        xp: 25,
+      },
 
       sections: [
         "Overview",
