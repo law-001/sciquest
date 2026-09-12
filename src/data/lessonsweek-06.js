@@ -36,6 +36,15 @@ export const week06 = {
       heroImage: lab,
       heroImageAlt: "Laboratory glassware with colorful solutions",
 
+      signature: {
+        widgetId: "solubility-beaker",
+        heading: "Watch It: The Beaker Says No",
+        intro:
+          "Spoon sugar in and watch it dissolve — until it stops and starts piling up on the bottom. Warm it and the pile goes; the stirrer and the crusher speed things up without moving the curve one pixel.",
+        instruction: "Make all three kinds of solution, then change the rate",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",

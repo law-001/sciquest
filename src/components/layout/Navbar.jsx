@@ -1,8 +1,9 @@
 import { Avatar } from "../Avatar";
 import React, { useState, useEffect, useRef } from "react";
-import { Sun, Moon, User, LogOut, ChevronDown } from "lucide-react";
+import { Sun, Moon, User, LogOut, ChevronDown, Trophy } from "lucide-react";
 import Logo from "../Logo";
 import Button from "../Button";
+import { LeaderboardModal } from "../modals/LeaderboardModal";
 import { useTheme } from "../../context/ThemeContext";
 
 export function Navbar({
@@ -19,6 +20,7 @@ export function Navbar({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const profileRef = useRef(null);
   const { isDark, toggle } = useTheme();
 
@@ -80,11 +82,13 @@ export function Navbar({
 
       {/* ── Content (always above the bg layer) ── */}
       <div className="relative z-10 max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
+        {/* 1fr / auto / 1fr — the two side columns are always equal, so the five
+            nav links sit dead-centre no matter how wide the logo or right side get */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center h-16">
 
           {/* Logo */}
           <div
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer justify-self-start"
             onClick={() => handleNavClick("home")}
           >
             <Logo
@@ -102,7 +106,7 @@ export function Navbar({
           </div>
 
           {/* Desktop nav links */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium justify-self-center">
             {navItems.map((item) => (
               <button
                 key={item.view}
@@ -122,8 +126,22 @@ export function Navbar({
             ))}
           </div>
 
-          {/* Desktop: theme + auth */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop: leaderboard + theme + auth */}
+          <div className="hidden md:flex items-center gap-3 justify-self-end">
+            <button
+              onClick={() => setIsLeaderboardOpen(true)}
+              aria-label="Open the section leaderboard"
+              className={`p-2 rounded-xl transition-colors duration-500 ${
+                hero
+                  ? isDark
+                    ? "text-white/80 hover:bg-white/10"
+                    : "text-stone-700 hover:bg-stone-100"
+                  : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
+              }`}
+            >
+              <Trophy className="w-5 h-5" />
+            </button>
+
             <button
               onClick={toggle}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
@@ -186,8 +204,22 @@ export function Navbar({
             )}
           </div>
 
-          {/* Mobile: theme + hamburger */}
-          <div className="md:hidden flex items-center gap-1">
+          {/* Mobile: leaderboard + theme + hamburger */}
+          <div className="md:hidden flex items-center gap-1 justify-self-end">
+            <button
+              onClick={() => setIsLeaderboardOpen(true)}
+              aria-label="Open the section leaderboard"
+              className={`p-2 rounded-xl transition-colors duration-500 ${
+                hero
+                  ? isDark
+                    ? "text-white/80 hover:bg-white/10"
+                    : "text-stone-700 hover:bg-stone-100"
+                  : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
+              }`}
+            >
+              <Trophy className="w-5 h-5" />
+            </button>
+
             <button
               onClick={toggle}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
@@ -281,6 +313,11 @@ export function Navbar({
           </div>
         )}
       </div>
+
+      <LeaderboardModal
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
+      />
     </nav>
   );
 }

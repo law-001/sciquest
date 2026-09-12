@@ -38,6 +38,15 @@ export const week08 = {
       heroImageAlt:
         "Array of common laboratory glassware and equipment on a bench",
 
+      signature: {
+        widgetId: "equipment-bench",
+        heading: "Watch It: Every Instrument Does Its Job",
+        intro:
+          "Pick one up and it works. Open the burner's collar and the lazy yellow flame pulls itself into a roaring blue cone; load the balance and the pan overshoots before it settles; pour a muddy mixture through the paper and clear filtrate climbs the beaker while the mud stays behind.",
+        instruction: "Operate all four instruments",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -296,6 +305,15 @@ export const week08 = {
       heroImage: modernclassroom,
       heroImageAlt:
         "Students in a science lab wearing safety goggles and lab gowns",
+
+      signature: {
+        widgetId: "hazard-cabinet",
+        heading: "Watch It: The Symbols Keep Their Promise",
+        intro:
+          "Open a bottle and its hazard symbol plays out: the corrosive bores through a steel plate, the flammable vapour finds a spark a metre away, one drop of the toxic reaches every corner of a fish tank. Then step onto the lab floor, where three unsafe things are already happening and getting worse on their own.",
+        instruction: "Demonstrate every symbol, resolve every hazard",
+        xp: 25,
+      },
 
       sections: [
         "Overview",

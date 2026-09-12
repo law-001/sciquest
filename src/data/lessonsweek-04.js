@@ -33,6 +33,15 @@ export const week04 = {
       heroImage: lesson7hero,
       heroImageAlt: "Ice melting in a laboratory setting",
 
+      signature: {
+        widgetId: "heating-curve",
+        heading: "Watch It: The Plateau Appears",
+        intro:
+          "Heat goes in at a steady rate and the graph draws itself alongside the lattice. Hold the heat until the line goes flat, then cool it and watch the curve retrace the way it came.",
+        instruction: "Draw both plateaus, run it backwards, then take the sublimation route",
+        xp: 25,
+      },
+
       sections: [
         "Introduction",
         "The Six Changes of State",

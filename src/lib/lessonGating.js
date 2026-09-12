@@ -20,6 +20,13 @@
 
 import { isWeekPublished, isWeekOpen } from './publishedWeeks'
 
+// Dev-only escape hatch for walking the whole course without sitting 33
+// quizzes. Set VITE_UNLOCK_ALL=true in .env.local and restart the dev server.
+// Double-guarded by import.meta.env.DEV, so setting the variable in a
+// production environment still cannot open the gates.
+export const UNLOCK_ALL =
+  import.meta.env.DEV && import.meta.env.VITE_UNLOCK_ALL === 'true'
+
 // A lesson is "passed" once the student has submitted at least one quiz
 // attempt for it. Derived from the quizAttempts rows.
 export function lessonsPassedFromAttempts(quizAttempts) {
@@ -28,6 +35,7 @@ export function lessonsPassedFromAttempts(quizAttempts) {
 }
 
 export function isLessonUnlocked(weekLessons, lessonId, lessonsPassed) {
+  if (UNLOCK_ALL) return true
   const idx = weekLessons.findIndex((l) => l.id === lessonId)
   if (idx <= 0) return true
   const prev = weekLessons[idx - 1]
@@ -45,6 +53,7 @@ export function isWeekFullyCompleted(week, lessonsPassed) {
 
 export function isWeekUnlocked(week, weeksData, lessonsPassed, publishedIds, openIds) {
   if (!week) return false
+  if (UNLOCK_ALL) return true
   if (!isWeekPublished(week.id, publishedIds)) return false
   if (isWeekOpen(week.id, openIds)) return true
 
@@ -59,6 +68,7 @@ export function isWeekUnlocked(week, weeksData, lessonsPassed, publishedIds, ope
 
 export function weekLockReason(week, weeksData, lessonsPassed, publishedIds, openIds) {
   if (!week) return null
+  if (UNLOCK_ALL) return null
   if (!isWeekPublished(week.id, publishedIds)) return 'unpublished'
   if (isWeekOpen(week.id, openIds)) return null
   const idx = weeksData.findIndex((w) => w.id === week.id)

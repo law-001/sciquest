@@ -38,6 +38,15 @@ export const week03 = {
       heroImage: lesson5hero,
       heroImageAlt: "Illustration comparing the different phases of matter",
 
+      signature: {
+        widgetId: "phase-bench",
+        heading: "Watch It: One Substance, Five Phases",
+        intro:
+          "One slider takes the same handful of particles from a hair above absolute zero to star-hot. Watch them merge into a blur, lock into a lattice, break loose, fly free, and finally tear into charged ions and loose electrons.",
+        instruction: "Reach all five phases",
+        xp: 25,
+      },
+
       sections: [
         "Introduction",
         "Key Terms",

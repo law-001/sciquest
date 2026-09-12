@@ -38,6 +38,15 @@ export const week15 = {
       heroImageAlt:
         "Microscope images showing the four stages of mitosis in dividing cells",
 
+      signature: {
+        widgetId: "mitosis-run",
+        heading: "Watch It: Scrub a Division",
+        intro:
+          "Every chromosome position is computed from where the slider is, so dragging backwards runs the division in reverse rather than replaying a recording. The plant/animal switch changes only the last leg — a furrow pinching in, or a plate built outward.",
+        instruction: "Run it both ways and see both endings",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -332,6 +341,15 @@ export const week15 = {
       heroImage: simulation,
       heroImageAlt:
         "Diagram of chromosomes during the stages of meiosis",
+
+      signature: {
+        widgetId: "crossover-lab",
+        heading: "Watch It: Drag the Crossover",
+        intro:
+          "Four chromatids, six gene loci. Move the crossover by one gene and two of the four gametes at the end change with it — they are computed from where you dragged. The counter beside them shows the halving happening once, at meiosis I, and not again.",
+        instruction: "Place a crossover, then run both divisions",
+        xp: 25,
+      },
 
       sections: [
         "Overview",

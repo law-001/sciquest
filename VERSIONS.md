@@ -296,3 +296,61 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Kept the version log: restored `VERSIONS.md` (full history + VERSION_33), `.gitattributes` (`VERSIONS.md merge=union`), and the CLAUDE.md "Version log" section.
 - Everything else from `main` merged cleanly and was taken as-is — `src/pages/ProfilePage.jsx` (own-row + XP-to-top-10 leaderboard) and `INTERACTIVE_SECTIONS.md`.
 - Commit: Merge main into markbranch, keeping VERSIONS.md and its union-merge rule
+
+## VERSION_35
+- **Navbar leaderboard button.** Added a trophy button next to the dark-mode toggle (desktop and mobile) in `src/components/layout/Navbar.jsx` that opens a modal leaderboard, so a student never has to walk to their profile to see the section standings.
+- New `src/components/modals/LeaderboardModal.jsx`: same ten slots, same Week/Month/All periods, same dense ranking, own-row-outside-top-10 and opt-out notice as the profile board. It reads through `fetchLeaderboard()` and `useAuth()` itself, so nothing was threaded through `App.jsx`. Signed-out visitors get a "log in to see this" line rather than an empty board.
+- **The profile leaderboard was not touched** — this is a duplicate for quick access, not a move.
+- Navbar row is now a `grid-cols-[1fr_auto_1fr]` instead of `flex justify-between`, so the five centre nav links stay exactly centred however wide the logo or the right-hand controls get.
+- **Wave 2 of the signature interactives (weeks 3–7) — seven new widgets**, all using `SimLayout` + `Stage`, all registered in `interactive/signatureWidgets.js` and pinned to their lesson via a `signature` block in `src/data/lessonsweek-0N.js`:
+  - `phase-bench` (w03-l1) — one energy slider takes a live canvas of particles from a Bose–Einstein condensate through solid, liquid and gas to plasma, where ions and free electrons separate.
+  - `heating-curve` (w04-l1) — hold-to-heat plots the temperature curve live beside the lattice; cooling walks the head of the curve back down, and the vacuum pump swaps in the one-plateau sublimation route.
+  - `investigation-rig` (w05-l1) — the investigation as a conveyor. Pull a stage out and the belt keeps turning while the sample jams at the gap; the second-variable lever tangles the cause arrows and the machine delivers "?".
+  - `meniscus-bench` (w05-l2) — real parallax: the sightline crosses the near-wall scale, so a wrong eye height produces a wrong number. The balance beside it reads 2.40 g with an empty pan until it is tared.
+  - `solubility-beaker` (w06-l1) — sugar transfers from pile to solution on a fixed tick until it hits the limit; the marker sits below, on, or above the solubility curve, and the stirrer and crusher move only the rate.
+  - `dilution-jar` (w07-l1) — particles live in normalised coordinates, so adding water genuinely spreads them without removing one; the % m/m readout falls as it happens.
+  - `titration-drip` (w07-l2) — pH solved from the water equilibrium, so the needle crawls for thirty drops and jumps on the fortieth. H⁺ and OH⁻ pair into water, salt builds on the flask floor, phenolphthalein flips one drop past neutral.
+- Reduced-motion handling for the canvas widgets: no `rAF` loop, but the draw function is stashed in a ref and repainted once per control change, so the picture still answers the slider instead of freezing at mount.
+- `INTERACTIVE_SECTIONS.md` progress tables updated — Wave 2 done, 12 of 28 shipped, Wave 3 (weeks 8–13) next.
+- Commit: Add navbar leaderboard modal and ship Wave 2 signature interactives for weeks 3-7
+
+## VERSION_36
+- **Dev-only "unlock every lesson" flag**, so the whole course can be walked one lesson at a time without sitting 33 quizzes.
+- `src/lib/lessonGating.js` exports `UNLOCK_ALL = import.meta.env.DEV && import.meta.env.VITE_UNLOCK_ALL === 'true'`, and `isWeekUnlocked()`, `isLessonUnlocked()` and `weekLockReason()` short-circuit on it. Double-guarded by `import.meta.env.DEV`, so the variable cannot open the gates in a production build.
+- `src/components/LessonTemplate.jsx` lesson-tab nav honours the same flag — without it only the week grid would open and lesson 2+ tabs inside each week would stay locked.
+- Usage: add `VITE_UNLOCK_ALL=true` to `.env.local` and restart `npm run dev`. `.env.*` is already gitignored.
+- Nothing else changed: quiz publish state, per-lesson hiding, XP and progress recording all behave exactly as before.
+- Commit: Add dev-only VITE_UNLOCK_ALL flag to open every week and lesson
+
+## VERSION_37
+- **Wave 3 of the signature interactives (weeks 8–13) — seven new widgets**, all using `SimLayout` + `Stage`, all registered in `interactive/signatureWidgets.js` and pinned to their lesson via a `signature` block in `src/data/lessonsweek-NN.js`:
+  - `equipment-bench` (w08-l1) — four instruments that actually work. The collar pulls the burner's yellow flame into a blue cone (temperature computed off the air setting), the balance pan overshoots on a damped spring before the reading settles, the funnel passes clear filtrate into the beaker while the mud stays on the paper, and the microscope's field of view is really blurred by an SVG Gaussian.
+  - `hazard-cabinet` (w08-l2) — opening a bottle plays its symbol out: the corrosive bores through a steel plate, the flammable vapour reaches a spark a metre away, one drop of toxic spreads through a fish tank, an ember flares on oxygen alone. A second view is a lab floor where three hazards grow worse on their own until tapped (or fixed from the keyboard-reachable panel buttons).
+  - `focus-scope` (w11-l1) — blur is `|stage − focal plane| ÷ depth of field`, so 4× forgives the coarse knob and 40× does not: one coarse step is two micrometres, the sharp band is under one, and the objective goes through the slide. The coverslip traps bubbles when it is dropped flat and none when it is lowered on an edge.
+  - `scope-through-time` (w11-l2) — one year slider, resolution log-interpolated between Hooke 1665, Lister 1830 and Ruska 1933. Colour fringing is what an uncorrected single lens does; a structure is drawn only if it is bigger than the resolution limit, so the nucleus and then the ribosomes appear as the student scrubs.
+  - `scope-field` (w12-l1) — six specialised cells drift under the objective and the view follows the one you pick while it keeps moving. Past 2.5× the interior resolves — or, in the two bacteria, does not: a loose nucleoid and ribosomes, with nothing enclosing them.
+  - `cell-cutaway` (w12-l2) — the organelles are stations on one production line and every travelling dot belongs to one leg of it. Switching a station off stops only the legs downstream, and the exported-proteins-per-minute readout drops to zero at whichever station broke first.
+  - `cell-morph` (w13-l1) — one slider morphs animal into plant; shared structures use coordinates that do not involve the morph value at all, so they visibly never move. The water slider then swells both: the plant cell's volume stalls and its turgor reading climbs against the wall, the animal cell lyses.
+- Two lint lessons from the React Compiler rules, recorded in `INTERACTIVE_SECTIONS.md`: reading `ref.current` during render is an error (`react-hooks/refs`), so a reduced-motion flag that render needs is seeded into `useState` instead; and all seven widgets drive motion from a single `setTick` interval with every coordinate derived in render, rather than a `rAF` loop plus refs.
+- `cell-morph` was specified as a possible GSAP candidate and shipped without it — the morph is slider-driven and the burst is a fourteen-step one-shot timer, so a tween library would have added a dependency for nothing.
+- `INTERACTIVE_SECTIONS.md` progress tables updated — Wave 3 done, 19 of 28 shipped, Wave 4 (weeks 14–19) next.
+- Commit: Ship Wave 3 signature interactives for weeks 8-13
+
+## VERSION_38
+- **Back-to-top button inside a lesson.** A floating "↑ Top" button appears once the reader is more than 640 px down and scrolls smoothly back to the start. Added in `src/components/LessonTemplate.jsx`: `TOP_BUTTON_AFTER_PX` at module scope, a `showTopButton` state fed by the scroll listener that already drives the progress bar (no second listener), and the button itself as the last child of the page wrapper.
+- Placed bottom-right at `z-30`, deliberately below the XP toast (`z-50`) and the notification bell (`z-40`), so it can never cover either. It fades and slides in rather than popping, and is `pointer-events-none` while hidden.
+- **Wave 4 of the signature interactives (weeks 14–19) — nine new widgets**, completing the set. Every one of the 28 content lessons now has a signature simulation; the five performance-task lessons deliberately have none.
+  - `surface-volume` (w14-l1) — the fed shell is a fixed 20 µm however big the cell gets, so growing it grows the starved core instead. Surface area, volume, SA∶V and the fed percentage are all computed off the radius, and dividing halves the volume so the core visibly shrinks.
+  - `cycle-dial` (w14-l2) — one dial. Chromosomes grow their second chromatid across S phase and the DNA-amount graph steps up with them, nowhere else. Damaged DNA does not warn: the slider physically stops at the G₂ checkpoint until it is repaired.
+  - `mitosis-run` (w15-l1) — condensation, alignment, chromatid separation and cytokinesis are each a pure function of the scrub position, so dragging backwards runs the division in reverse rather than replaying a recording. Plant/animal switches the ending between a cleavage furrow and a cell plate.
+  - `crossover-lab` (w15-l2) — four chromatids, six loci. The two inner strands swap everything below the crossover index, so moving it by one gene changes two of the four gametes on screen. The counter shows the halving happening at meiosis I and *not* again at meiosis II.
+  - `fusion-bench` (w16-l2) — the chromosome total is the sum of the two slots. 23 + 23 gives a zygote that starts cleaving on its own with 46 in every new cell; loading a body cell gives 69 and a zygote drawn as the failure it is.
+  - `clone-bench` (w17-l1) — binary fission, budding, fragmentation and vegetative propagation each animate on a real organism. The field they fill is genetically identical, so the disease sweep leaves no survivors.
+  - `variation-batch` (w18-l1) — twelve offspring from a deterministic hash of the batch seed, pulled toward the parents' midpoint, so moving a parent slider shifts the whole spread. The same disease grips one band of shell tones and the spread reaches past it.
+  - `energy-flow` (w18-l2) — which organisms are fed is recomputed every render by walking from the sun along the arrows that currently point the right way. Reversing one starves everything behind it and its packets stop; the web switch gives the hawk a second route that survives losing the frog.
+  - `ten-percent` (w19-l1) — tier widths are the cube root of the surviving fraction, so the pyramid shape is a consequence of the 90% losses rather than a drawing. A carbon atom runs the closed nutrient loop beside it.
+- Third React Compiler lint lesson, recorded in `INTERACTIVE_SECTIONS.md`: a hoisted helper called inside a `useEffect` that sits above its declaration is an **error** (`Cannot access variable before it is declared`), not a warning. `win` / `mark` / `finish` now sit above the first effect that calls them.
+- Warning count is back to the pre-existing baseline of 10: the three new `exhaustive-deps` warnings were fixed properly rather than left, by wrapping `win` / `mark` in `useCallback` and listing them in the effect deps.
+- `mitosis-run` and `crossover-lab` were both flagged as GSAP candidates in the plan and both shipped without it — every position is derived from the control value, so there was nothing left for a tween library to do.
+- `INTERACTIVE_SECTIONS.md` updated — all four waves done, 28 of 28 shipped, no "next three".
+- Commit: Add lesson back-to-top button and ship Wave 4 signature interactives for weeks 14-19

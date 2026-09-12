@@ -34,6 +34,15 @@ export const week14 = {
       heroImage: celldivision,
       heroImageAlt: "Illustration of a cell dividing into two daughter cells",
 
+      signature: {
+        widgetId: "surface-volume",
+        heading: "Watch It: The Middle Starves First",
+        intro:
+          "Nutrients diffuse the same twenty micrometres in however big the cell gets, so the fed shell never thickens — the starved core just grows. Watch the surface area and the volume race each other as you drag, then divide and see the core shrink.",
+        instruction: "Grow it until the centre starves, then divide",
+        xp: 25,
+      },
+
       sections: [
         "Overview",
         "Key Terms",
@@ -319,6 +328,15 @@ export const week14 = {
       heroImage: flowchart,
       heroImageAlt:
         "Circular diagram of the cell cycle showing interphase and the mitotic phase",
+
+      signature: {
+        widgetId: "cycle-dial",
+        heading: "Watch It: Turn the Cycle by Hand",
+        intro:
+          "One dial drives it all. Through S phase each chromosome grows its second chromatid a little at a time and the DNA graph steps up with it — nowhere else. Damage the DNA and the dial physically will not turn past G₂.",
+        instruction: "Turn a full cycle, then trigger the checkpoint",
+        xp: 25,
+      },
 
       sections: [
         "Overview",
