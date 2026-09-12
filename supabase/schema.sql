@@ -65,6 +65,8 @@ create table if not exists public.students (
   section         text,
   avatar          text,
   avatar_style    jsonb not null default '{"background":"original","stickers":[]}'::jsonb,
+  -- True = keep me off the leaderboard (migrations/20260912020000_leaderboard_opt_out.sql).
+  leaderboard_opt_out boolean not null default false,
   constraint students_avatar_style_valid check (public.valid_avatar_style(avatar_style)),
   created_at      timestamptz default now()
 );
@@ -252,10 +254,19 @@ create policy "own_or_staff_read_students"
   to authenticated
   using (id = auth.uid() or public.is_staff());
 
--- Students: a student can update their own row.
+-- Students: a student can update their own row, but section, student_number
+-- and email are frozen — section decides whose leaderboard they appear on
+-- (migrations/20260912020000_leaderboard_opt_out.sql).
 create policy "own_student_update"
   on public.students for update
-  using (auth.uid() = id);
+  to authenticated
+  using (auth.uid() = id)
+  with check (
+    auth.uid() = id
+    and section        is not distinct from (select section        from public.students where id = auth.uid())
+    and student_number is not distinct from (select student_number from public.students where id = auth.uid())
+    and email          is not distinct from (select email          from public.students where id = auth.uid())
+  );
 
 -- Staff: authenticated users can read staff rows (needed to identify teachers/admins).
 create policy "auth_read_staff"
@@ -557,12 +568,16 @@ create policy "sections_delete"
 
 -- Leaderboard (migrations/20260911020000_student_data_access.sql): what the
 -- leaderboard shows, without exposing other students' rows. Achievement XP
--- is added client-side from the keys.
+-- is added client-side from the keys. First name only — surnames are never
+-- sent to the client (migrations/20260912000000_leaderboard_first_name_only.sql)
+-- and a student only ever ranks against their own section; staff see every
+-- student (migrations/20260912010000_leaderboard_section_scoped.sql). Students
+-- who opted out are excluded for every viewer
+-- (migrations/20260912020000_leaderboard_opt_out.sql).
 create or replace function public.leaderboard_entries(p_since timestamptz default null)
 returns table (
   student_id        uuid,
   first_name        text,
-  last_name         text,
   avatar            text,
   avatar_style      jsonb,
   progress_xp       bigint,
@@ -573,7 +588,14 @@ stable
 security definer set search_path = public
 as $$
 #variable_conflict use_column
+declare
+  v_is_staff boolean := public.is_staff();
+  v_section  text;
 begin
+  if not v_is_staff then
+    select section into v_section from public.students where id = auth.uid();
+  end if;
+
   return query
   with lesson_xp as (
     select sp.student_id as sid, sum(sp.xp_awarded)::bigint as xp
@@ -597,7 +619,6 @@ begin
   select
     s.id,
     s.first_name,
-    s.last_name,
     s.avatar,
     s.avatar_style,
     coalesce(l.xp, 0) + coalesce(q.xp, 0),
@@ -606,7 +627,9 @@ begin
   left join lesson_xp l on l.sid = s.id
   left join quiz_xp   q on q.sid = s.id
   left join ach       a on a.sid = s.id
-  where l.sid is not null or q.sid is not null or a.sid is not null;
+  where (l.sid is not null or q.sid is not null or a.sid is not null)
+    and not s.leaderboard_opt_out
+    and (v_is_staff or s.section is not distinct from v_section);
 end;
 $$;
 
