@@ -429,4 +429,4 @@ Standing checks for every new widget:
 3. Add a `signature: { widgetId, heading, intro, instruction, xp: 25 }` block to the lesson
    in `src/data/lessonsweek-NN.js`, next to `heroImageAlt`.
 4. `npm run lint && npm run build`.
-5. Update the Progress table above and add a `VERSIONS.md` entry.
+5. Update the Progress table above.

@@ -583,7 +583,8 @@ export function ProfilePage({
   const quickStats = [
     {
       label: "Global Rank",
-      value: userRank ? `#${userRank}` : "Unranked",
+      // Ranks past 10 stay hidden here too, matching the leaderboard.
+      value: !userRank ? "Unranked" : userRank <= 10 ? `#${userRank}` : "Outside top 10",
       color: "text-amber-500",
     },
     {
@@ -722,27 +723,44 @@ export function ProfilePage({
     };
   }, []);
 
-  // Cap the rendered board and guarantee the signed-in student sees
-  // their own row even if they fall outside the top slice.
-  const TOP_N = 8;
+  // Always exactly TOP_N slots; unfilled slots render as blank rows.
+  const TOP_N = 10;
   const topBoard = board.slice(0, TOP_N);
-  const selfEntry = board.find((e) => e.studentId === user?.id);
+  const emptySlots = Array.from(
+    { length: TOP_N - topBoard.length },
+    (_, i) => topBoard.length + i,
+  );
+  // A student outside the top 10 sees their own row below it, without their
+  // rank number — just the XP gap to 10th place. A 0-XP student isn't on the
+  // board at all, so they get a stand-in row.
   const selfOutsideTop =
-    selfEntry && !topBoard.some((e) => e.studentId === user?.id)
-      ? selfEntry
+    isStudent &&
+    topBoard.length === TOP_N &&
+    !topBoard.some((e) => e.studentId === user?.id)
+      ? (board.find((e) => e.studentId === user?.id) ?? {
+          studentId: user?.id,
+          name: "You",
+          avatar: null,
+          avatarStyle: null,
+          xp: 0,
+        })
       : null;
+  const xpToTopTen = selfOutsideTop
+    ? Math.max(1, topBoard[TOP_N - 1].xp - selfOutsideTop.xp + 1)
+    : 0;
 
   const rankBadgeClass = (rank) =>
     rank === 1
       ? "bg-amber-400 text-stone-900"
       : rank === 2
-        ? "bg-stone-400 text-stone-900"
+        ? "bg-linear-to-br from-slate-100 to-slate-400 text-slate-800 ring-1 ring-slate-400"
         : rank === 3
-          ? "bg-amber-700 text-white"
+          ? "bg-linear-to-br from-orange-300 to-orange-800 text-white ring-1 ring-orange-700"
           : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-300";
 
-  const renderBoardRow = (entry, i) => {
+  const renderBoardRow = (entry, i, xpNeeded = 0) => {
     const isUser = entry.studentId === user?.id;
+    const isOutsideTop = xpNeeded > 0;
     return (
       <div
         key={entry.studentId}
@@ -759,22 +777,38 @@ export function ProfilePage({
           transitionDelay: leaderboardTriggered ? `${200 + i * 80}ms` : "0ms",
         }}
       >
-        <span
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${rankBadgeClass(
-            entry.rank,
-          )}`}
-        >
-          {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
-        </span>
+        {isOutsideTop ? (
+          <span
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary-500/15 text-primary-600 dark:text-primary-300"
+            aria-label="Outside the top 10"
+          >
+            <TrendingUp className="w-4 h-4" aria-hidden="true" />
+          </span>
+        ) : (
+          <span
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${rankBadgeClass(
+              entry.rank,
+            )}`}
+          >
+            {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
+          </span>
+        )}
         <Avatar avatarId={entry.studentId === user?.id ? profile?.avatar : entry.avatar} avatarStyle={entry.studentId === user?.id ? profile?.avatarStyle : entry.avatarStyle} name={entry.name} size={32} />
-        <span
-          className={`flex-1 text-sm font-bold truncate ${
-            isUser
-              ? "text-primary-600 dark:text-primary-300"
-              : "text-stone-700 dark:text-stone-200"
-          }`}
-        >
-          {isUser ? "You" : entry.name}
+        <span className="flex-1 min-w-0">
+          <span
+            className={`block text-sm font-bold truncate ${
+              isUser
+                ? "text-primary-600 dark:text-primary-300"
+                : "text-stone-700 dark:text-stone-200"
+            }`}
+          >
+            {isUser ? "You" : entry.name}
+          </span>
+          {isOutsideTop && (
+            <span className="block text-xs font-semibold text-stone-500 dark:text-stone-400 truncate">
+              {xpNeeded.toLocaleString()} XP to reach the top 10
+            </span>
+          )}
         </span>
         <span className="text-sm font-black text-stone-900 dark:text-white font-heading tabular-nums shrink-0">
           {entry.xp.toLocaleString()} XP
@@ -1186,22 +1220,62 @@ export function ProfilePage({
               </div>
               <div className="space-y-2">
                 {boardLoading ? (
-                  <p className="text-sm text-stone-400 dark:text-stone-500 font-medium py-8 text-center">
-                    Loading leaderboard…
-                  </p>
-                ) : topBoard.length === 0 ? (
-                  <p className="text-sm text-stone-400 dark:text-stone-500 font-medium py-8 text-center">
-                    No XP earned in this period yet.
-                  </p>
+                  <div role="status" aria-label="Loading leaderboard">
+                    <div className="space-y-2 motion-safe:animate-pulse">
+                      {Array.from({ length: TOP_N }, (_, i) => (
+                        <div
+                          key={`loading-${i}`}
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-stone-100 dark:bg-stone-800/60"
+                        >
+                          <span className="w-8 h-8 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
+                          <span className="w-8 h-8 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
+                          <span className="flex-1 h-3 rounded-full bg-stone-200 dark:bg-stone-700" />
+                          <span className="w-12 h-3 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
                   <>
+                    {topBoard.length === 0 && (
+                      <p className="text-sm text-stone-500 dark:text-stone-400 font-medium pb-2 text-center">
+                        {activePeriod === "This Week"
+                          ? "No one has earned XP this week yet."
+                          : activePeriod === "Month"
+                            ? "No one has earned XP this month yet."
+                            : "No one has earned XP yet."}{" "}
+                        Be the first!
+                      </p>
+                    )}
                     {topBoard.map((entry, i) => renderBoardRow(entry, i))}
+                    {emptySlots.map((slot) => (
+                      <div
+                        key={`empty-${slot}`}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-stone-300 dark:border-stone-700"
+                      >
+                        <span
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                            slot < 3
+                              ? rankBadgeClass(slot + 1)
+                              : "bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500"
+                          }`}
+                        >
+                          {slot === 0 ? <Crown className="w-4 h-4" /> : slot + 1}
+                        </span>
+                        <span className="text-sm font-medium text-stone-400 dark:text-stone-500">
+                          Open spot
+                        </span>
+                      </div>
+                    ))}
                     {selfOutsideTop && (
                       <>
-                        <p className="text-center text-stone-300 dark:text-stone-700 text-xs">
+                        <p
+                          aria-hidden="true"
+                          className="text-center text-stone-300 dark:text-stone-700 text-xs leading-none"
+                        >
                           ···
                         </p>
-                        {renderBoardRow(selfOutsideTop, TOP_N)}
+                        {renderBoardRow(selfOutsideTop, TOP_N, xpToTopTen)}
                       </>
                     )}
                   </>

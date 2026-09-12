@@ -290,3 +290,9 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Verified undamaged: `handle_new_user`, the `student_progress` FK, `own_student_update`, `auth_read_staff`, `own_staff_update` (never redefined by a later migration), and the `student_progress` / `student_achievements` read policies (never touched by `0001`/`0002`). `0003` aborted inside its own transaction, so none of it applied.
 - No application code changed; `schema.sql` already described the correct end state.
 - Commit: Repair RLS policy regressions caused by replaying migrations 0001 and 0002
+
+## VERSION_34
+- Merged `main` into `markbranch`. The only conflict was a modify/delete on `VERSIONS.md`: PR #125 (`5e5f1b7`) deleted the file, its `.gitattributes` union-merge rule, and the CLAUDE.md version-log section, while this branch had appended VERSION_33. `merge=union` cannot resolve modify/delete, which is why GitHub refused to auto-merge.
+- Kept the version log: restored `VERSIONS.md` (full history + VERSION_33), `.gitattributes` (`VERSIONS.md merge=union`), and the CLAUDE.md "Version log" section.
+- Everything else from `main` merged cleanly and was taken as-is — `src/pages/ProfilePage.jsx` (own-row + XP-to-top-10 leaderboard) and `INTERACTIVE_SECTIONS.md`.
+- Commit: Merge main into markbranch, keeping VERSIONS.md and its union-merge rule
