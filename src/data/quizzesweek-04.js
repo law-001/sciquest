@@ -1,191 +1,183 @@
-// Week 4 quizzes — Grade 7 Science: Scientific Investigation
+// Week 4 quizzes — Grade 7 Science: Changes in the State of Matter
+// Covered by the First Summative Test, so this quiz uses a wide mix of types.
 
 export const QUIZZES_WEEK_04 = {
-  // ── Lesson 10: Parts of a Scientific Investigation — multiple-choice ──────
-  "lesson-10": {
-    lessonId: "lesson-10",
-    title: "Parts of a Scientific Investigation",
+  // ── w04-l1: Changes in the State of Matter — mixed types ──────────────────
+  "w04-l1": {
+    lessonId: "w04-l1",
+    title: "Changes in the State of Matter in Terms of Particle Arrangement",
     description:
-      "Test your knowledge of the steps of a scientific investigation and the scientific method.",
-    timeLimit: 900,
+      "Test your understanding of all six changes of state, the energy involved in each, and what the particles are doing.",
+    timeLimit: 1800,
     questions: [
       {
         id: "q1",
-        type: "multiple-choice",
+        type: "true-false",
         question:
-          "Which step of a scientific investigation involves writing an educated, testable prediction about what will happen in the experiment?",
-        options: [
-          "Identifying the problem",
-          "Forming a hypothesis",
-          "Collecting data",
-          "Communicating results",
-        ],
-        correctAnswer: "Forming a hypothesis",
+          "Melting is an endothermic process, meaning the substance absorbs heat energy from its surroundings.",
+        correctAnswer: true,
         points: 5,
+        explanation:
+          "During melting, heat energy is absorbed to break the attractions holding particles in the solid arrangement. This is why ice feels cold when you hold it — it is drawing heat away from your hand.",
       },
       {
         id: "q2",
-        type: "multiple-choice",
+        type: "fill-blanks",
         question:
-          "A student notices that plants near the window grow taller than those in a darker corner of the room. What is the MOST appropriate next step in a scientific investigation?",
-        options: [
-          "Immediately write a conclusion about sunlight and plant growth",
-          "Identify the problem and form a testable question about light and plant growth",
-          "Skip to the experiment without doing any research",
-          "Communicate the observation to the class",
-        ],
-        correctAnswer:
-          "Identify the problem and form a testable question about light and plant growth",
+          "Pure water melts and freezes at ___ °C. While a substance is changing state, its temperature stays ___ until the change is complete.",
+        blanks: ["0", "constant"],
         points: 5,
+        explanation:
+          "The melting and freezing point of pure water is 0 °C. All absorbed energy goes into breaking bonds rather than raising the temperature, so the temperature holds steady during the change.",
       },
       {
         id: "q3",
-        type: "multiple-choice",
+        type: "identification",
         question:
-          "Why is it important to research a topic BEFORE designing an experiment?",
-        options: [
-          "To make the hypothesis impossible to test",
-          "To avoid repeating past mistakes and form a better hypothesis",
-          "To skip the data collection step",
-          "Because experiments do not require background knowledge",
-        ],
-        correctAnswer:
-          "To avoid repeating past mistakes and form a better hypothesis",
+          "What is the name of the change of state in which a solid turns directly into a gas without ever becoming a liquid?",
+        correctAnswer: "sublimation",
+        acceptedAnswers: ["sublimation", "sublimate", "subliming"],
         points: 5,
       },
       {
         id: "q4",
-        type: "multiple-choice",
+        type: "identification",
         question:
-          "A student conducts an experiment and gets results that do NOT support her hypothesis. What should she do?",
-        options: [
-          "Change the data until it matches the hypothesis",
-          "Throw away the results and start over without recording anything",
-          "Write an honest conclusion stating the hypothesis was rejected, and explain why",
-          "Avoid sharing the results with her teacher",
-        ],
-        correctAnswer:
-          "Write an honest conclusion stating the hypothesis was rejected, and explain why",
+          "What is the name of the change of state in which a gas turns directly into a solid, skipping the liquid stage — the process that forms frost?",
+        correctAnswer: "deposition",
+        acceptedAnswers: ["deposition", "depositing"],
         points: 5,
       },
       {
         id: "q5",
-        type: "multiple-choice",
+        type: "ordering",
         question:
-          "Which of the following is the BEST example of communicating scientific results?",
-        options: [
-          "Telling a friend verbally what you think might have happened",
-          "Writing a detailed report with data tables and graphs and sharing it with others",
-          "Keeping all results private so no one else can check them",
-          "Memorizing the conclusion without recording any data",
+          "Arrange these events in the correct order for what happens when a block of ice is heated until it becomes liquid water:",
+        items: [
+          "Heat energy is added to the ice",
+          "Ice particles vibrate faster in their fixed positions",
+          "The temperature reaches 0 °C and stops rising",
+          "Attractions between particles begin to break",
+          "Solid and liquid exist together while the temperature stays constant",
+          "All the ice has melted and the temperature begins to rise again",
         ],
-        correctAnswer:
-          "Writing a detailed report with data tables and graphs and sharing it with others",
-        points: 5,
+        points: 15,
       },
-    ],
-  },
-
-  // ── Lesson 11: Variables and Controls — matching ──────────────────────────
-  "lesson-11": {
-    lessonId: "lesson-11",
-    title: "Variables and Controls",
-    description:
-      "Match each variable term to its correct definition or example.",
-    timeLimit: 900,
-    questions: [
       {
-        id: "q1",
+        id: "q6",
         type: "matching",
         question:
-          "Match each term on the left to its correct definition or example on the right.",
+          "Match each change of state to its correct description.",
         leftItems: [
-          "Independent Variable",
-          "Dependent Variable",
-          "Controlled Variable",
-          "Control Group",
-          "Fair Test",
-          "Hypothesis",
+          "Melting",
+          "Freezing",
+          "Evaporation",
+          "Condensation",
+          "Sublimation",
+          "Deposition",
         ],
         rightItems: [
-          "The variable that is deliberately changed by the experimenter",
-          "The variable that is measured to see the effect of the change",
-          "A factor kept constant throughout the experiment",
-          "A group that receives no treatment, used as a baseline for comparison",
-          "An experiment where only one variable is changed at a time",
-          "An educated, testable prediction written as an If-then statement",
+          "Solid → Liquid",
+          "Liquid → Solid",
+          "Liquid → Gas at the surface",
+          "Gas → Liquid",
+          "Solid → Gas, skipping liquid",
+          "Gas → Solid, skipping liquid",
         ],
         correctPairs: {
-          "Independent Variable":
-            "The variable that is deliberately changed by the experimenter",
-          "Dependent Variable":
-            "The variable that is measured to see the effect of the change",
-          "Controlled Variable":
-            "A factor kept constant throughout the experiment",
-          "Control Group":
-            "A group that receives no treatment, used as a baseline for comparison",
-          "Fair Test":
-            "An experiment where only one variable is changed at a time",
-          Hypothesis:
-            "An educated, testable prediction written as an If-then statement",
+          Melting: "Solid → Liquid",
+          Freezing: "Liquid → Solid",
+          Evaporation: "Liquid → Gas at the surface",
+          Condensation: "Gas → Liquid",
+          Sublimation: "Solid → Gas, skipping liquid",
+          Deposition: "Gas → Solid, skipping liquid",
         },
         points: 15,
       },
-    ],
-  },
-
-  // ── Lesson 12: Data Collection and Recording — identification ─────────────
-  "lesson-12": {
-    lessonId: "lesson-12",
-    title: "Data Collection and Recording",
-    description:
-      "Test your ability to identify types of data and measurement concepts.",
-    timeLimit: 900,
-    questions: [
       {
-        id: "q1",
-        type: "identification",
+        id: "q7",
+        type: "multiple-choice",
         question:
-          "What type of data is expressed as numbers and measurements, such as the mass of an object in grams or the temperature in degrees Celsius?",
-        correctAnswer: "quantitative data",
-        acceptedAnswers: ["quantitative data", "quantitative"],
+          "Which statement correctly describes the difference between evaporation and boiling?",
+        options: [
+          "Evaporation happens throughout the liquid; boiling happens only at the surface",
+          "Evaporation happens only at the surface and at any temperature; boiling happens throughout the liquid at one specific temperature",
+          "Evaporation and boiling are two words for exactly the same process",
+          "Evaporation requires a higher temperature than boiling",
+        ],
+        correctAnswer:
+          "Evaporation happens only at the surface and at any temperature; boiling happens throughout the liquid at one specific temperature",
         points: 5,
+        explanation:
+          "Evaporation occurs when the fastest particles escape from the surface, which can happen at any temperature. Boiling occurs when particles throughout the whole liquid have enough energy to escape, forming bubbles inside it — and only at the boiling point.",
       },
       {
-        id: "q2",
-        type: "identification",
+        id: "q8",
+        type: "multiple-choice",
         question:
-          "What type of data is expressed as descriptions or observations — such as the color, texture, or smell of a substance — rather than as numbers?",
-        correctAnswer: "qualitative data",
-        acceptedAnswers: ["qualitative data", "qualitative"],
+          "Which list contains ONLY exothermic changes of state — changes that release heat to the surroundings?",
+        options: [
+          "Melting, evaporation, sublimation",
+          "Freezing, condensation, deposition",
+          "Melting, freezing, boiling",
+          "Evaporation, condensation, sublimation",
+        ],
+        correctAnswer: "Freezing, condensation, deposition",
         points: 5,
+        explanation:
+          "Freezing, condensation, and deposition all move a substance toward a more ordered state, and all release energy. Melting, evaporation, and sublimation are the endothermic opposites — they absorb energy.",
       },
       {
-        id: "q3",
-        type: "identification",
+        id: "q9",
+        type: "short-answer",
         question:
-          "What is the term for the average of a set of data values, calculated by adding all values together and dividing by the number of values?",
-        correctAnswer: "mean",
-        acceptedAnswers: ["mean", "average"],
-        points: 5,
+          "Explain why the temperature of a melting substance stays constant even though heat is continuously being added to it.",
+        points: 10,
+        rubric:
+          "Should explain that the added heat energy is used to break the attractive forces between particles rather than to increase their kinetic energy. Since temperature measures average kinetic energy, it does not rise while the change of state is happening.",
       },
       {
-        id: "q4",
-        type: "identification",
-        question:
-          "What is the term for a data value that is very different from all other values in a set — indicating a possible error or unusual result during an experiment?",
-        correctAnswer: "outlier",
-        acceptedAnswers: ["outlier", "outliers"],
-        points: 5,
-      },
-      {
-        id: "q5",
-        type: "identification",
-        question:
-          "What type of graph is best used to show how a measured value changes over time — for example, tracking plant height each day for two weeks?",
-        correctAnswer: "line graph",
-        acceptedAnswers: ["line graph", "line chart"],
-        points: 5,
+        id: "q10",
+        type: "case-study",
+        scenario:
+          "Maria places a block of dry ice (solid carbon dioxide) in a bowl on the kitchen bench. Thick white fog pours over the sides of the bowl, but when she carefully touches the bench afterwards it is completely dry. A few hours later the block has disappeared entirely, leaving nothing behind. Meanwhile, on the cold window beside her, delicate white frost patterns have formed on the inside of the glass overnight.",
+        points: 20,
+        subQuestions: [
+          {
+            id: "q10-a",
+            type: "multiple-choice",
+            question:
+              "What change of state did the dry ice undergo, and why was the bench left dry?",
+            options: [
+              "Melting — the liquid evaporated too quickly to notice",
+              "Sublimation — carbon dioxide passed straight from solid to gas with no liquid stage",
+              "Condensation — the solid absorbed water from the air",
+              "Freezing — the block became colder and shrank",
+            ],
+            correctAnswer:
+              "Sublimation — carbon dioxide passed straight from solid to gas with no liquid stage",
+            points: 5,
+          },
+          {
+            id: "q10-b",
+            type: "true-false",
+            question:
+              "The frost on the window formed by deposition, which is an exothermic change.",
+            correctAnswer: true,
+            points: 5,
+            explanation:
+              "Water vapour in the air lost energy rapidly against the freezing glass and locked straight into ice crystals, skipping the liquid stage. Since the vapour released energy to the surroundings, deposition is exothermic.",
+          },
+          {
+            id: "q10-c",
+            type: "short-answer",
+            question:
+              "Maria's brother says sublimation and deposition are opposite processes. Do you agree? Use evidence from this scenario and explain what happens to the particles in each.",
+            points: 10,
+            rubric:
+              "Should agree and explain that sublimation is solid → gas while deposition is gas → solid, and that both skip the liquid stage. Sublimation is endothermic (the dry ice absorbed energy so its particles could escape); deposition is exothermic (water vapour released energy so its particles could lock into ice crystals). Evidence: the dry ice vanished without wetting the bench; the frost appeared on the glass without any liquid water first.",
+          },
+        ],
       },
     ],
   },

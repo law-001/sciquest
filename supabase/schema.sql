@@ -146,9 +146,18 @@ create table if not exists public.quiz_student_access (
 -- 3e. CURRICULUM LESSONS TABLE
 --     Which week each SEED lesson belongs to, so the server never trusts the
 --     week_id a client sends with a quiz attempt. Custom lessons carry week_id
---     in `lessons`, which wins. Rows are seeded by
---     migrations/20260910010000_enforce_quiz_availability.sql — adding a seed
---     lesson means adding its row in a new migration. Read-only to clients.
+--     in `lessons`, which wins. Read-only to clients.
+--
+--     First seeded by migrations/20260910010000_enforce_quiz_availability.sql;
+--     rebuilt for the MATATAG curriculum by
+--     migrations/20260912000000_recurriculum_ids.sql, which holds the current
+--     33 rows (weeks 1–2 keep lesson-1 … lesson-5; weeks 3–19 use wNN-lN;
+--     weeks 10 and 20 are examination weeks with no lessons).
+--
+--     Adding a seed lesson means adding its row in a NEW migration. A lesson id
+--     missing here resolves to NULL in quiz_week_for_lesson(), which falls back
+--     to the client-supplied week_id — so a missing row silently weakens the
+--     quiz_attempts insert policy.
 create table if not exists public.curriculum_lessons (
   lesson_id  text primary key,
   week_id    text not null

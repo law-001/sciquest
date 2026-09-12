@@ -1,318 +1,61 @@
-// Week 8: Acids, Bases, and Salts — Grade 7 Science
+// Week 8: The Science Laboratory — Grade 7 Science
+//
+// Curriculum source: Grade 7 Science (MATATAG), 1st term Week 8.
+//   Lesson 1 — Science Laboratory Instruments and Equipment
+//   Lesson 2 — Science Laboratory Rules and Science Laboratory Safety Symbols
 
+import globe from "../assets/week1/globe.jpg";
 import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
+import modernclassroom from "../assets/modernclassroom.jpg";
 
 export const week08 = {
   id: "week-8",
   weekNumber: 8,
-  title: "Acids, Bases, and Salts",
-  category: "Chemistry",
+  title: "The Science Laboratory",
+  category: "Laboratory Skills",
   description:
-    "Explore the properties of acids and bases, understand the pH scale, and learn about neutralization reactions.",
-  icon: "FlaskRound",
+    "Identify the instruments used in a science laboratory, learn what each one is for, and master the safety rules and hazard symbols that keep everyone safe.",
+  icon: "ShieldCheck",
   color: "secondary",
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════
-    // LESSON 22 — Properties of Acids and Bases
+    // LESSON 1 — Science Laboratory Instruments and Equipment
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-22",
+      id: "w08-l1",
       weekId: "week-8",
-      lessonNumber: 22,
-      title: "Properties of Acids and Bases",
-      badge: "Lesson 22",
+      lessonNumber: 1,
+      title: "Science Laboratory Instruments and Equipment",
+      badge: "Lesson 1",
       subtitle:
-        "Learn to identify acids and bases by their physical properties and how they behave in chemical reactions.",
-      readTime: "~12 min read",
+        "Identify the common instruments of a science laboratory, learn the job each one is designed for, and know how to care for them.",
+      readTime: "~16 min read",
       xp: 50,
       heroImage: lab,
       heroImageAlt:
-        "Litmus paper tests showing color changes in acid and base solutions",
-
-      sections: ["Overview", "Key Terms", "Acids vs Bases", "Applications"],
-
-      layout: [
-        {
-          type: "intro",
-          heading: "Overview",
-          data: {
-            paragraphs: [
-              "<strong class='text-primary-700'>Acids</strong> and <strong class='text-primary-700'>bases</strong> are two important classes of chemical compounds found everywhere in nature and daily life. Acids taste sour, turn blue litmus paper red, and react with metals to release hydrogen gas. Common acids include vinegar (acetic acid), lemon juice (citric acid), and stomach acid (hydrochloric acid).",
-              "Bases taste bitter and feel slippery to the touch. They turn red litmus paper blue and react with fats and oils to form soap — a process called saponification. Common bases include baking soda (sodium bicarbonate), ammonia, and lye (sodium hydroxide). Both acids and bases conduct electricity when dissolved in water because they form <strong class='text-primary-700'>ions</strong> in solution.",
-            ],
-            didYouKnow:
-              "The stomach produces hydrochloric acid (HCl) with a pH of about 1.5 — strong enough to digest food and kill most bacteria, yet the stomach lining protects itself with a thick layer of mucus!",
-          },
-        },
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Acid",
-                desc: "A substance that releases hydrogen ions (H⁺) when dissolved in water. Acids taste sour, turn blue litmus red, and have a pH below 7.",
-              },
-              {
-                term: "Base",
-                desc: "A substance that releases hydroxide ions (OH⁻) in water. Bases taste bitter, feel slippery, turn red litmus blue, and have a pH above 7.",
-              },
-              {
-                term: "Litmus",
-                desc: "A natural dye used as an acid-base indicator. It turns red in acids and blue in bases.",
-              },
-              {
-                term: "Indicator",
-                desc: "A substance that changes color in the presence of an acid or base, used to identify the nature of a solution.",
-              },
-              {
-                term: "Corrosive",
-                desc: "Able to destroy or damage materials on contact. Strong acids and bases are corrosive and can cause chemical burns.",
-              },
-              {
-                term: "Electrolyte",
-                desc: "A substance that conducts electricity when dissolved in water because it forms ions in solution. Both acids and bases are electrolytes.",
-              },
-              {
-                term: "Hydroxide",
-                desc: "The OH⁻ ion released by bases in solution. The hydroxide ion is responsible for the basic properties of a solution.",
-              },
-              {
-                term: "Hydrogen Ion",
-                desc: "The H⁺ ion released by acids in solution. The hydrogen ion concentration determines how acidic a solution is.",
-              },
-            ],
-          },
-        },
-        {
-          type: "comparison",
-          heading: "Acids vs Bases",
-          data: {
-            intro:
-              "Acids and bases have opposite properties that can be identified through simple tests. Knowing these differences is essential for safely handling chemical substances.",
-            left: {
-              label: "Acids",
-              color: "primary",
-              items: [
-                "Taste sour (like lemon juice or vinegar)",
-                "Turn blue litmus paper red",
-                "pH range: 0 to below 7",
-                "Feel corrosive — can damage skin and surfaces",
-                "Examples: HCl, H₂SO₄, vinegar, citric acid",
-              ],
-            },
-            right: {
-              label: "Bases",
-              color: "secondary",
-              items: [
-                "Taste bitter (like baking soda or soap)",
-                "Turn red litmus paper blue",
-                "pH range: above 7 to 14",
-                "Feel slippery or soapy to the touch",
-                "Examples: NaOH, NH₃, baking soda, bleach",
-              ],
-            },
-          },
-        },
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Digestive System",
-                description:
-                  "Stomach acid (HCl, pH ≈ 1.5) breaks down food and kills pathogens. The small intestine uses a basic solution to neutralize the acid before absorption.",
-                icon: "🫁",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Cleaning Products",
-                description:
-                  "Many cleaners are basic — bleach and ammonia-based cleaners remove grease and stains because bases react with oils and fats.",
-                icon: "🧽",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Battery Acid",
-                description:
-                  "Car batteries contain sulfuric acid (H₂SO₄), a strong acid that drives the chemical reactions that generate electrical current.",
-                icon: "🔋",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Baking with Baking Soda",
-                description:
-                  "Baking soda (a base) reacts with acidic ingredients like buttermilk or vinegar to release CO₂ gas, which makes bread and cakes rise.",
-                icon: "🍞",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-
-    // ═══════════════════════════════════════════════════
-    // LESSON 23 — The pH Scale
-    // ═══════════════════════════════════════════════════
-    {
-      id: "lesson-23",
-      weekId: "week-8",
-      lessonNumber: 23,
-      title: "The pH Scale",
-      badge: "Lesson 23",
-      subtitle:
-        "Understand the pH scale and use chemical indicators to classify everyday substances as acids, bases, or neutral.",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: simulation,
-      heroImageAlt:
-        "pH scale chart showing colors from red (acid) to purple (base)",
-
-      sections: ["Overview", "pH Categories", "Key Ideas", "Applications"],
-
-      layout: [
-        {
-          type: "intro",
-          heading: "Overview",
-          data: {
-            paragraphs: [
-              "The <strong class='text-primary-700'>pH scale</strong> is a numerical scale from 0 to 14 that measures how acidic or basic a solution is. A pH of 7 is neutral — this is the pH of pure water. Values below 7 indicate an acid (the lower the number, the stronger the acid), while values above 7 indicate a base (the higher the number, the stronger the base).",
-              "Scientists use <strong class='text-primary-700'>indicators</strong> to determine pH. Litmus paper turns red in acid and blue in base. Universal indicator produces a range of colors across the entire pH scale. Phenolphthalein is colorless in acid and turns pink in base. Digital pH meters give precise readings to two decimal places.",
-            ],
-            didYouKnow:
-              "Each step on the pH scale represents a tenfold change in acidity. So pH 2 is ten times more acidic than pH 3, and a hundred times more acidic than pH 4!",
-          },
-        },
-        {
-          type: "imageCards",
-          heading: "pH Categories",
-          data: {
-            cards: [
-              {
-                title: "Strong Acids",
-                label: "pH 0–3",
-                variant: "primary",
-                color: "primary",
-                desc: "Strong acids have a very low pH and are highly corrosive. They release large numbers of hydrogen ions in solution.",
-                image: equation,
-                imageAlt: "Red litmus paper indicating strong acid",
-                examples: [
-                  "Battery acid (H₂SO₄): pH ≈ 0–1",
-                  "Stomach acid (HCl): pH ≈ 1.5–2",
-                  "Lemon juice (citric acid): pH ≈ 2–3",
-                ],
-              },
-              {
-                title: "Neutral Substances",
-                label: "pH 6–8",
-                variant: "secondary",
-                color: "secondary",
-                desc: "Neutral or near-neutral substances have a pH close to 7 and are safe to handle. Pure water is the reference point for neutrality.",
-                image: lab,
-                imageAlt: "Clear water in a beaker representing neutral pH",
-                examples: [
-                  "Pure water: pH = 7.0",
-                  "Blood: pH ≈ 7.35–7.45",
-                  "Human saliva: pH ≈ 6.5–7.5",
-                ],
-              },
-              {
-                title: "Strong Bases",
-                label: "pH 11–14",
-                variant: "primary",
-                color: "primary",
-                desc: "Strong bases have a very high pH and are also corrosive. They release large numbers of hydroxide ions in solution.",
-                image: simulation,
-                imageAlt: "Blue litmus paper indicating strong base",
-                examples: [
-                  "Bleach (sodium hypochlorite): pH ≈ 12–13",
-                  "Drain cleaner (NaOH): pH ≈ 13–14",
-                  "Ammonia solution: pH ≈ 11–12",
-                ],
-              },
-            ],
-          },
-        },
-        {
-          type: "conceptList",
-          heading: "Key Ideas",
-          data: {
-            concepts: [
-              "The pH scale runs from 0 (most acidic) to 14 (most basic), with 7 being exactly neutral.",
-              "Each pH unit represents a tenfold difference in the concentration of hydrogen ions.",
-              "Pure water is neutral with a pH of exactly 7.0 at 25°C.",
-              "Litmus, universal indicator, and phenolphthalein are common chemical indicators used in school laboratories.",
-              "A universal indicator changes through a spectrum of colors (red → orange → yellow → green → blue → purple) as pH increases from 0 to 14.",
-              "Maintaining the correct pH is critical in biological systems — human blood must stay between pH 7.35 and 7.45 or life-threatening conditions can occur.",
-            ],
-          },
-        },
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Swimming Pool Management",
-                description:
-                  "Pool water must be maintained at pH 7.2–7.6. If it drops below 7, acid irritates swimmers' eyes; if it rises above 7.8, chlorine becomes less effective.",
-                icon: "🏊",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Soil pH for Farming",
-                description:
-                  "Most crops grow best in slightly acidic soil (pH 6–7). Farmers test and adjust soil pH by adding lime (raises pH) or sulfur (lowers pH) to maximize yields.",
-                icon: "🌾",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Blood pH Regulation",
-                description:
-                  "The body uses buffer systems to keep blood pH between 7.35 and 7.45. A shift outside this range causes acidosis or alkalosis, both of which are medical emergencies.",
-                icon: "🩸",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Food Preservation",
-                description:
-                  "Pickling uses acidic vinegar (pH ≈ 2–3) to lower the pH of food to levels where bacteria cannot grow, preserving the food for months.",
-                icon: "🥒",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-
-    // ═══════════════════════════════════════════════════
-    // LESSON 24 — Neutralization and Salts
-    // ═══════════════════════════════════════════════════
-    {
-      id: "lesson-24",
-      weekId: "week-8",
-      lessonNumber: 24,
-      title: "Neutralization and Salts",
-      badge: "Lesson 24",
-      subtitle:
-        "Learn how acids and bases react to form salts and water, and explore where neutralization reactions occur in everyday life.",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: equation,
-      heroImageAlt:
-        "Chemical equation showing acid plus base yields salt plus water",
+        "Array of common laboratory glassware and equipment on a bench",
 
       sections: [
         "Overview",
         "Key Terms",
-        "Steps of Neutralization",
-        "Everyday Neutralization",
+        "Types of Equipment",
+        "The Compound Microscope",
+        "Care and Storage",
+        "Applications",
+      ],
+
+      references: [
+        {
+          label: "Royal Society of Chemistry — Practical Chemistry Equipment",
+          url: "https://edu.rsc.org/resources",
+        },
+        {
+          label: "Britannica — Laboratory Apparatus",
+          url: "https://www.britannica.com/technology/laboratory",
+        },
       ],
 
       layout: [
@@ -321,132 +64,564 @@ export const week08 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Neutralization</strong> is a chemical reaction in which an acid and a base react together to form a salt and water. The general equation is: Acid + Base → Salt + Water. A classic example is hydrochloric acid reacting with sodium hydroxide: HCl + NaOH → NaCl + H₂O, producing table salt and water.",
-              "<strong class='text-primary-700'>Salts</strong> are ionic compounds formed from the positive ion of a base and the negative ion of an acid. Table salt (NaCl) is the most familiar example, but there are many others: calcium carbonate (CaCO₃, found in chalk and shells), potassium nitrate (KNO₃, used in fertilizers), and magnesium sulfate (MgSO₄, Epsom salt).",
+              "A science laboratory contains many specialised tools, each designed for one specific purpose. Learning to identify and use them correctly is a fundamental skill. Common equipment includes <strong class='text-primary-700'>beakers</strong> for holding and heating liquids, <strong class='text-primary-700'>Erlenmeyer flasks</strong> for mixing without spilling, <strong class='text-primary-700'>graduated cylinders</strong> for measuring volume precisely, and <strong class='text-primary-700'>test tubes</strong> for small-scale reactions.",
+              "Heating equipment such as the <strong class='text-primary-700'>Bunsen burner</strong>, tripod stand, and wire gauze work together to heat substances safely. Supporting tools — funnels, glass rods, rubber stoppers, forceps, and tongs — complete the toolkit. Using the correct tool for each task produces accurate results and prevents accidents.",
             ],
             didYouKnow:
-              "Antacids work by neutralizing excess stomach acid. The active ingredients — like calcium carbonate or magnesium hydroxide — are bases that react with HCl to form harmless salts and water, relieving heartburn.",
+              "The Erlenmeyer flask was invented by German chemist Emil Erlenmeyer in 1861. Its tapered neck reduces evaporation and stops splashing while swirling — which is why it is still the standard flask for mixing reactions.",
           },
         },
+
         {
           type: "keyTerms",
           heading: "Key Terms",
           data: {
             terms: [
               {
-                term: "Neutralization",
-                desc: "A chemical reaction between an acid and a base that produces a salt and water, reducing the acidity or basicity of both.",
+                term: "Beaker",
+                desc: "A wide cylindrical container with a pouring lip, used for holding, mixing, and heating liquids. Its volume markings are approximate only.",
               },
               {
-                term: "Salt",
-                desc: "An ionic compound formed from the positive ion of a base and the negative ion of an acid during a neutralization reaction.",
+                term: "Erlenmeyer Flask",
+                desc: "A cone-shaped flask with a narrow neck, ideal for swirling and mixing without spilling the contents.",
               },
               {
-                term: "Ionic Compound",
-                desc: "A compound formed from positively and negatively charged ions held together by electrostatic attraction.",
+                term: "Graduated Cylinder",
+                desc: "A tall, narrow tube with precise volume markings — the most accurate common tool for measuring liquid volume.",
               },
               {
-                term: "Antacid",
-                desc: "A basic substance taken to neutralize excess stomach acid and relieve symptoms of heartburn or indigestion.",
+                term: "Test Tube",
+                desc: "A small glass tube for holding tiny amounts of substance during individual reactions or tests.",
               },
               {
-                term: "Reaction",
-                desc: "A chemical process in which substances (reactants) are transformed into new substances (products) with different properties.",
+                term: "Bunsen Burner",
+                desc: "A gas burner that produces a controllable flame. The air collar adjusts the flame between a cool yellow safety flame and a hot blue flame.",
               },
               {
-                term: "Product",
-                desc: "A substance formed as a result of a chemical reaction — in neutralization, the products are always a salt and water.",
+                term: "Tripod Stand and Wire Gauze",
+                desc: "A three-legged stand that supports glassware over a flame, with wire gauze on top to spread the heat evenly and protect the glass.",
               },
               {
-                term: "Reactant",
-                desc: "A substance that enters into and is altered during a chemical reaction. In neutralization, the reactants are an acid and a base.",
+                term: "Forceps and Tongs",
+                desc: "Gripping tools used to handle solid chemicals or hot equipment without touching them directly.",
+              },
+              {
+                term: "Compound Microscope",
+                desc: "An instrument that uses two sets of lenses — eyepiece and objective — to magnify specimens far beyond what the eye can see.",
               },
             ],
           },
         },
+
+        {
+          type: "imageCards",
+          heading: "Types of Equipment",
+          data: {
+            cards: [
+              {
+                title: "Measuring Equipment",
+                label: "Precision Tools",
+                variant: "primary",
+                color: "primary",
+                desc: "Measuring tools collect precise quantitative data. Accurate measurement is what makes results reproducible.",
+                image: equation,
+                imageAlt:
+                  "Graduated cylinder, thermometer, and balance on a lab bench",
+                examples: [
+                  "Graduated cylinder — measures liquid volume in millilitres",
+                  "Thermometer — measures temperature in °C",
+                  "Triple-beam balance — measures mass in grams",
+                ],
+              },
+              {
+                title: "Heating Equipment",
+                label: "Heat Sources",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Heating equipment applies controlled heat. These tools demand the most caution of anything on the bench.",
+                image: lab,
+                imageAlt: "Bunsen burner on a tripod with wire gauze",
+                examples: [
+                  "Bunsen burner — a controllable gas flame for heating",
+                  "Tripod stand — supports beakers or flasks over the heat",
+                  "Wire gauze — spreads heat evenly and protects glassware",
+                ],
+              },
+              {
+                title: "Containment Equipment",
+                label: "Holding Vessels",
+                variant: "primary",
+                color: "primary",
+                desc: "Containment equipment holds substances and lets reactions happen safely. Different vessels suit different jobs.",
+                image: simulation,
+                imageAlt:
+                  "Beakers, Erlenmeyer flask, and test tubes arranged on a shelf",
+                examples: [
+                  "Beaker — holds liquids for mixing and heating",
+                  "Erlenmeyer flask — for reactions that need swirling",
+                  "Test tube — holds small amounts for single reactions",
+                ],
+              },
+            ],
+          },
+        },
+
         {
           type: "timeline",
-          heading: "Steps of Neutralization",
+          heading: "The Compound Microscope",
           data: {
             intro:
-              "A neutralization reaction happens step by step as acid and base solutions are mixed. Here is what happens at the particle level when HCl reacts with NaOH.",
+              "The microscope is the most valuable instrument in a school laboratory and the easiest to damage. Follow these steps in order every time you use one.",
             steps: [
               {
                 num: 1,
-                title: "Mix the Acid and Base",
+                title: "Carry It with Both Hands",
                 color: "primary",
                 description:
-                  "Equal volumes of hydrochloric acid (HCl) and sodium hydroxide (NaOH) are carefully measured and poured together into a beaker. The solution initially contains H⁺, Cl⁻, Na⁺, and OH⁻ ions all moving freely.",
-                tip: "Always add acid to base slowly to control the reaction and prevent heat build-up.",
+                  "Always carry a microscope with one hand on the arm and the other supporting the base. Carrying it one-handed risks dropping the instrument or tipping the eyepiece out.",
+                tip: "Set it down gently on a flat bench, away from the edge.",
               },
               {
                 num: 2,
-                title: "Ions Combine",
+                title: "Start with the Lowest Power Objective",
                 color: "secondary",
                 description:
-                  "The positively charged hydrogen ions (H⁺) from the acid are attracted to the negatively charged hydroxide ions (OH⁻) from the base and combine with them. The Na⁺ and Cl⁻ ions remain separate in solution.",
-                tip: "The H⁺ and OH⁻ ions neutralize each other — this is the core of the neutralization reaction.",
+                  "Rotate the nosepiece to the lowest power objective (4×). This gives the widest field of view, which makes finding the specimen far easier before you magnify further.",
+                tip: "Jumping straight to high power can drive the lens into the slide and crack it.",
               },
               {
                 num: 3,
-                title: "Water Forms",
+                title: "Place and Secure the Slide",
                 color: "accent",
                 description:
-                  "Each pair of H⁺ and OH⁻ ions combines to form a molecule of water (H₂O). As this happens, the solution becomes less acidic and less basic — it moves toward neutral pH 7.",
-                tip: "The formation of water is the driving force of a neutralization reaction.",
+                  "Place the slide on the stage with the specimen centred over the light hole, and secure it with the stage clips so it cannot shift while you work.",
+                tip: "Check the cover slip is face up and the specimen sits over the opening.",
               },
               {
                 num: 4,
-                title: "Salt Remains in Solution",
+                title: "Focus Coarsely, Watching from the Side",
                 color: "primary",
                 description:
-                  "The Na⁺ ions and Cl⁻ ions, which were not directly involved in the reaction, remain in solution. Together they form sodium chloride (NaCl) — common table salt dissolved in water.",
-                tip: "If you evaporate the water afterward, solid salt crystals will be left behind.",
+                  "Looking from the side rather than through the eyepiece, turn the coarse focus knob to bring the stage close to the objective. Then look through the eyepiece and turn it slowly the other way until the image appears.",
+                tip: "Watching from the side is what prevents the objective from crashing into the slide.",
               },
               {
                 num: 5,
-                title: "Test with Indicator",
+                title: "Switch Up and Use Fine Focus Only",
                 color: "secondary",
                 description:
-                  "Adding a few drops of universal indicator or litmus to the final solution confirms that neutralization is complete. A green color (universal indicator) or no color change (litmus) indicates a neutral solution.",
-                tip: "If the indicator still shows acid or base, adjust by adding small amounts of the opposite substance.",
+                  "Once focused at low power, rotate to a higher objective (10× or 40×). Sharpen using only the fine focus knob, and adjust the diaphragm to control light.",
+                tip: "Never use the coarse knob at high power — the lens is millimetres from the glass.",
+              },
+              {
+                num: 6,
+                title: "Calculate the Magnification",
+                color: "accent",
+                description:
+                  "Total magnification = eyepiece power × objective power. A standard 10× eyepiece with a 40× objective gives 10 × 40 = 400× magnification.",
+                tip: "Always record the magnification alongside any drawing you make.",
               },
             ],
           },
         },
+
         {
-          type: "scenario",
-          heading: "Everyday Neutralization",
+          type: "conceptList",
+          heading: "Care and Storage",
+          data: {
+            concepts: [
+              "Inspect glassware for cracks or chips before every use — damaged glass can shatter during heating and cause serious injury.",
+              "Clean equipment with water and the appropriate cleaning agent immediately after use, before residue hardens.",
+              "Let heated glassware cool completely before rinsing with cold water, or thermal shock will crack it.",
+              "Clean microscope lenses with lens paper only — tissue and cloth scratch the coating permanently.",
+              "Store glassware upright on its designated shelf, never near the edge of a bench.",
+              "Return every instrument to its labelled storage place so it is ready for the next person.",
+              "Report damaged or broken equipment to the teacher immediately, and never use a broken tool.",
+            ],
+          },
+        },
+
+        {
+          type: "applications",
+          heading: "Applications",
+          data: {
+            apps: [
+              {
+                title: "Chemistry Experiments",
+                description:
+                  "Beakers, flasks, and test tubes are used worldwide to mix reagents, observe reactions, and collect products.",
+                icon: "🧪",
+                color: "border-l-primary-500",
+              },
+              {
+                title: "Biology Labs",
+                description:
+                  "Microscopes, slides, and forceps let biologists observe cells, microorganisms, and plant tissue directly.",
+                icon: "🔬",
+                color: "border-l-secondary-500",
+              },
+              {
+                title: "Medical Testing",
+                description:
+                  "Hospital laboratories use the same basic tools — test tubes, pipettes, balances — to analyse blood, urine, and tissue samples.",
+                icon: "🏥",
+                color: "border-l-accent-500",
+              },
+              {
+                title: "Food Science",
+                description:
+                  "Food laboratories use graduated cylinders, balances, and thermometers to check ingredient quantities and processing temperatures.",
+                icon: "🍳",
+                color: "border-l-primary-500",
+              },
+            ],
+          },
+        },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════
+    // LESSON 2 — Science Laboratory Rules and Safety Symbols
+    // ═══════════════════════════════════════════════════
+    {
+      id: "w08-l2",
+      weekId: "week-8",
+      lessonNumber: 2,
+      title: "Science Laboratory Rules and Science Laboratory Safety Symbols",
+      badge: "Lesson 2",
+      subtitle:
+        "Learn the safety rules every student must follow, the reason behind each one, and how to read the hazard symbols printed on chemical containers.",
+      readTime: "~16 min read",
+      xp: 50,
+      heroImage: modernclassroom,
+      heroImageAlt:
+        "Students in a science lab wearing safety goggles and lab gowns",
+
+      sections: [
+        "Overview",
+        "Key Terms",
+        "Safety Rules and Reasons",
+        "Hazard Categories",
+        "Reading Hazard Labels",
+        "Responding to an Emergency",
+        "Real-Lab Scenarios",
+        "Applications",
+      ],
+
+      references: [
+        {
+          label: "UNECE — Globally Harmonized System (GHS)",
+          url: "https://unece.org/about-ghs",
+        },
+        {
+          label: "Royal Society of Chemistry — Safety in the Lab",
+          url: "https://edu.rsc.org/resources",
+        },
+      ],
+
+      layout: [
+        {
+          type: "intro",
+          heading: "Overview",
+          data: {
+            paragraphs: [
+              "The laboratory is a place for discovery, but it can be dangerous when procedures are ignored. Every rule exists for a specific reason — to protect you, your classmates, and your teacher. <strong class='text-primary-700'>Personal Protective Equipment (PPE)</strong> such as safety goggles, a lab gown, and gloves must be worn for the whole session, not only when you expect a splash.",
+              "Before starting, know where the nearest <strong class='text-primary-700'>fire extinguisher</strong>, eye wash station, first aid kit, and emergency exit are. Chemical containers carry standardised <strong class='text-primary-700'>hazard symbols</strong> from the Globally Harmonized System (GHS), which tell you what a substance can do before you ever open it.",
+            ],
+            didYouKnow:
+              "The skull-and-crossbones warning for poison has been in use since the Middle Ages. The modern GHS version appears only on chemicals that can cause death or serious illness in small amounts.",
+          },
+        },
+
+        {
+          type: "keyTerms",
+          heading: "Key Terms",
+          data: {
+            terms: [
+              {
+                term: "PPE (Personal Protective Equipment)",
+                desc: "Equipment worn to minimise exposure to hazards. In a school lab this means safety goggles, a lab gown, and gloves.",
+              },
+              {
+                term: "GHS",
+                desc: "The Globally Harmonized System — the international standard for classifying and labelling chemical hazards with standard pictograms.",
+              },
+              {
+                term: "Pictogram",
+                desc: "A standardised hazard image inside a red diamond border that communicates a type of danger at a glance.",
+              },
+              {
+                term: "MSDS / SDS",
+                desc: "Material Safety Data Sheet — a document listing a chemical's hazards, safe handling, storage, first aid, and disposal instructions.",
+              },
+              {
+                term: "Hazard",
+                desc: "A source of potential harm — a flammable liquid, a corrosive acid, a sharp piece of glassware.",
+              },
+              {
+                term: "Corrosive",
+                desc: "Able to destroy skin, eyes, or metal on contact. Both strong acids and strong bases are corrosive.",
+              },
+              {
+                term: "Signal Word",
+                desc: "The word 'Danger' or 'Warning' on a GHS label, indicating how severe the hazard is. 'Danger' is the more serious of the two.",
+              },
+              {
+                term: "Wafting",
+                desc: "The correct technique for smelling a chemical — fanning vapour toward your nose with a hand rather than inhaling directly over the container.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "reasonCards",
+          heading: "Safety Rules and Reasons",
           data: {
             intro:
-              "Neutralization reactions happen all around us. Recognizing them helps you understand how chemistry solves practical problems in health and agriculture.",
+              "Every laboratory rule has a clear reason behind it. Understanding WHY makes you far more likely to follow it, even when nobody is watching.",
+            reasons: [
+              {
+                num: 1,
+                title: "Always Wear PPE",
+                color: "primary",
+                desc: "Protects eyes, skin, and clothing from chemical hazards",
+                content:
+                  "A single drop of strong acid reaching an unprotected eye can cause permanent blindness. Goggles go on before the experiment starts, not when it looks risky.",
+              },
+              {
+                num: 2,
+                title: "No Food or Drink in the Lab",
+                color: "secondary",
+                desc: "Prevents accidental ingestion of chemicals",
+                content:
+                  "Chemical residue contaminates food and drink invisibly. Snacking near chemicals is one of the most common causes of accidental poisoning in laboratories.",
+              },
+              {
+                num: 3,
+                title: "Follow Teacher Instructions Exactly",
+                color: "accent",
+                desc: "Ensures the experiment is conducted safely and correctly",
+                content:
+                  "Your teacher knows the specific hazards of each experiment. Improvising steps or starting an unauthorised experiment can cause dangerous and unexpected reactions.",
+              },
+              {
+                num: 4,
+                title: "No Horseplay",
+                color: "primary",
+                desc: "Prevents accidents caused by distraction",
+                content:
+                  "A moment of distraction near an open flame, an unsealed chemical, or fragile glassware can injure several people at once.",
+              },
+              {
+                num: 5,
+                title: "Dispose of Waste Properly",
+                color: "secondary",
+                desc: "Protects the environment and prevents reactions in drains",
+                content:
+                  "Pouring the wrong chemical down a drain can damage pipes, pollute water supplies, or react dangerously with other waste already there.",
+              },
+              {
+                num: 6,
+                title: "Know the Emergency Exits",
+                color: "accent",
+                desc: "Enables rapid evacuation in a fire or gas leak",
+                content:
+                  "In an emergency there is no time to search. Knowing the exit route, extinguisher, and eyewash location in advance prevents panic and saves seconds that matter.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "imageCards",
+          heading: "Hazard Categories",
+          data: {
+            cards: [
+              {
+                title: "Physical Hazards",
+                label: "Fire and Explosion",
+                variant: "primary",
+                color: "primary",
+                desc: "These symbols warn of substances that can catch fire, explode, or react dangerously with other materials.",
+                image: equation,
+                imageAlt: "Flammable, explosive, and oxidizing GHS symbols",
+                examples: [
+                  "Flame — flammable liquids, solids, or gases (ethanol, acetone)",
+                  "Exploding bomb — explosive substances",
+                  "Flame over circle — oxidisers that accelerate burning (hydrogen peroxide)",
+                ],
+              },
+              {
+                title: "Health Hazards",
+                label: "Harm to the Body",
+                variant: "secondary",
+                color: "secondary",
+                desc: "These warn of chemicals that harm the body through skin contact, inhalation, or swallowing — from mild irritation to fatal poisoning.",
+                image: lab,
+                imageAlt:
+                  "Toxic skull, health hazard exclamation, and corrosive GHS symbols",
+                examples: [
+                  "Skull and crossbones — acutely toxic (methanol, strong acids)",
+                  "Exclamation mark — irritant or mild health effects",
+                  "Corrosion — destroys skin, eyes, and metals (concentrated HCl)",
+                ],
+              },
+              {
+                title: "Environmental Hazards",
+                label: "Harm to Ecosystems",
+                variant: "primary",
+                color: "primary",
+                desc: "This symbol warns of substances harmful to aquatic life or the wider environment, which must never enter a drain.",
+                image: globe,
+                imageAlt:
+                  "Environmental hazard GHS symbol with dead fish and tree",
+                examples: [
+                  "Dead fish and tree — harmful to aquatic life (pesticides, heavy metals)",
+                  "Never pour these down a sink",
+                  "Disposal usually requires a licensed waste company",
+                ],
+              },
+            ],
+          },
+        },
+
+        {
+          type: "conceptList",
+          heading: "Reading Hazard Labels",
+          data: {
+            concepts: [
+              "Read the full label before handling any chemical, including the signal word — 'Danger' is more severe than 'Warning'.",
+              "Identify every pictogram and work out what protective equipment each hazard requires.",
+              "Read the first aid measures before you start, so you already know what to do if something goes wrong.",
+              "Never remove, cover, or deface a chemical label.",
+              "Store chemicals by hazard category — flammables away from heat, oxidisers away from flammables, corrosives in ventilated cabinets.",
+              "If a container has no label, do not use it. Report it to the teacher immediately — an unlabelled chemical is a serious hazard.",
+            ],
+          },
+        },
+
+        {
+          type: "timeline",
+          heading: "Responding to an Emergency",
+          data: {
+            intro:
+              "A chemical spill on skin is the most common serious laboratory emergency. These five steps are the difference between a scare and an injury.",
+            steps: [
+              {
+                num: 1,
+                title: "Stop What You Are Doing",
+                color: "primary",
+                description:
+                  "Put down any equipment immediately. Do not try to finish the step or rescue the experiment — your safety is the only priority.",
+                tip: "Every extra second of contact increases the damage.",
+              },
+              {
+                num: 2,
+                title: "Call the Teacher Loudly",
+                color: "secondary",
+                description:
+                  "Alert your teacher at once. They need to know which chemical, what concentration, and how much skin is affected to respond correctly.",
+                tip: "Stay calm and speak clearly so the information is understood the first time.",
+              },
+              {
+                num: 3,
+                title: "Flood the Area with Water",
+                color: "accent",
+                description:
+                  "Move to the nearest sink or safety shower and flood the affected skin with large amounts of cool running water. Keep rinsing for a full 15 minutes without stopping.",
+                tip: "Fifteen minutes even if it feels fine after two — many chemicals keep working after the sting fades.",
+              },
+              {
+                num: 4,
+                title: "Remove Contaminated Clothing",
+                color: "primary",
+                description:
+                  "While rinsing, carefully remove any clothing or jewellery holding the chemical against your skin.",
+                tip: "Cut clothing off rather than pulling it over your face.",
+              },
+              {
+                num: 5,
+                title: "Seek Medical Attention",
+                color: "secondary",
+                description:
+                  "Get checked afterwards even if the area feels better. Report the chemical name, concentration, and exposure time so medical staff can treat it properly.",
+                tip: "Some chemical burns develop hours after exposure.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "scenario",
+          heading: "Real-Lab Scenarios",
+          data: {
+            intro:
+              "Decide the correct action in each of these realistic situations before reading the answer.",
             scenarios: [
               {
-                title: "Antacid for Heartburn",
+                title: "The Unlabelled Bottle",
                 situation:
-                  "A person experiences heartburn after eating spicy food. Their stomach has produced too much HCl, causing a burning sensation in the esophagus. They take a chewable antacid tablet containing calcium carbonate (CaCO₃).",
+                  "A student finds a clear bottle of liquid on the reagent shelf. The label has rubbed off and no information is visible. The student needs a solvent for their experiment.",
                 question:
-                  "What type of chemical reaction is occurring? What are the products?",
+                  "Should the student use the liquid? What should they do instead?",
                 skill:
-                  "Neutralization — the basic calcium carbonate reacts with excess HCl to form calcium chloride (a salt), water, and carbon dioxide gas, relieving the acidity.",
+                  "Never use an unlabelled chemical. Report it to the teacher immediately. Without knowing what it is, using it risks fire, chemical burns, or toxic exposure.",
               },
               {
-                title: "Treating Soil Acidity",
+                title: "Broken Glass on the Bench",
                 situation:
-                  "A farmer tests the soil and finds it has a pH of 4.5 — too acidic for growing vegetables. The farmer spreads powdered agricultural lime (calcium oxide, CaO) over the field.",
+                  "A student knocks a beaker off the bench and it shatters across the floor. Nobody is injured.",
                 question:
-                  "How does adding lime change the soil? What type of reaction is this?",
+                  "What should the student do immediately, and what must they NOT do?",
                 skill:
-                  "Lime is a base that neutralizes the excess acid in the soil, raising the pH to a range suitable for plant growth — this is neutralization applied to agriculture.",
+                  "Tell the teacher at once. Do not pick up glass with bare hands — use a dustpan and brush, keep others away, and dispose of it in the broken-glass container.",
               },
               {
-                title: "Cleaning with Baking Soda",
+                title: "Choosing PPE",
                 situation:
-                  "To remove a stubborn stain caused by a mild acid (like fruit juice), a student sprinkles baking soda (NaHCO₃) on the stain and adds a few drops of water before scrubbing.",
+                  "A student is about to use a flammable solvent (acetone) and a corrosive acid. The GHS labels show a flame symbol and a corrosion symbol.",
                 question:
-                  "Why does the baking soda help remove the acidic stain? What products are formed?",
+                  "What PPE is required before beginning? Is ordinary clothing enough?",
                 skill:
-                  "Baking soda is a mild base that neutralizes the acid in the stain, breaking it down into salt, water, and CO₂ gas, making it easier to wash away.",
+                  "Safety goggles, chemical-resistant gloves, and a lab gown are all required. Ordinary clothing is not enough. No open flame may be present because of the flammable solvent.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "applications",
+          heading: "Applications",
+          data: {
+            apps: [
+              {
+                title: "Workplace Safety",
+                description:
+                  "Every professional laboratory — chemistry, biology, food science, engineering — enforces the same categories of rule you learn at school.",
+                icon: "🏭",
+                color: "border-l-primary-500",
+              },
+              {
+                title: "Reading Household Labels",
+                description:
+                  "GHS pictograms appear on bleach, drain cleaner, and paint thinner at home. Recognising them tells you how to store and use them safely.",
+                icon: "🧴",
+                color: "border-l-secondary-500",
+              },
+              {
+                title: "Hospital Protocols",
+                description:
+                  "Medical laboratory workers follow rigorous rules when handling blood, tissue, and potentially infectious material.",
+                icon: "🏥",
+                color: "border-l-accent-500",
+              },
+              {
+                title: "Emergency Response",
+                description:
+                  "Firefighters read the same hazard symbols on containers and tankers to decide how to fight a chemical fire safely.",
+                icon: "🚒",
+                color: "border-l-primary-500",
               },
             ],
           },

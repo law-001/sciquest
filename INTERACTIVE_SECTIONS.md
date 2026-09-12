@@ -3,6 +3,11 @@
 One purpose-built, animated simulation per lesson, pinned to that lesson and owned by
 developers rather than teachers.
 
+> **Rebuilt for the MATATAG curriculum.** The course now follows `SCIQUEST-TOPICS.pdf`:
+> 20 weeks, **33 lessons**, with a varying number of lessons per week rather than a fixed
+> three. Weeks 10 and 20 are periodical-examination weeks and carry no lessons at all.
+> The old 59-lesson plan below has been replaced week by week.
+
 ---
 
 ## The rule that decides everything
@@ -46,30 +51,68 @@ question, and neither is more than a couple of lines.
 
 ## Progress
 
-**Shipped: 5 of 59.**
+**Shipped: 5 of 28 buildable.**
+
+The 33 lessons break down as:
+
+| Group | Count | Status |
+|---|---|---|
+| Weeks 1–2 lessons with a shipped widget | 5 | ✅ Done |
+| Lessons still needing a widget | 23 | ⬜ To build |
+| Performance-task lessons (no signature — see below) | 5 | — Not applicable |
+| **Total lessons** | **33** | |
 
 | Wave | Scope | Status |
 |---|---|---|
 | **0** | Infrastructure | ✅ Done — registry, host section, `SimLayout`, `LessonTemplate` + `LessonsDataContext` wiring |
-| **1** | Weeks 1–3 (L1–L9) | 🟡 L1–L5 shipped · **L7, L8, L9 remain** |
-| **2** | Weeks 4–7 (L10–L21) | ⬜ 12 to build |
-| **3** | Weeks 8–11 (L22–L33) | ⬜ 12 to build |
-| **4** | Weeks 12–15 (L34–L45) | ⬜ 12 to build |
-| **5** | Weeks 16–20 (L46–L60) | ⬜ 14 to build |
+| **1** | Weeks 1–2 | ✅ Done — all five shipped |
+| **2** | Weeks 3–7 (7 widgets) | ⬜ Next up |
+| **3** | Weeks 8–13 (7 widgets) | ⬜ |
+| **4** | Weeks 14–19 (9 widgets) | ⬜ |
 
 ### Shipped
 
-| Lesson | Widget id | File |
-|---|---|---|
-| L1 | `model-gallery` | `widgets/ModelGalleryWidget.jsx` |
-| L2 | `investigation-run` | `widgets/InvestigationRunWidget.jsx` |
-| L3 | `globe-unroll` | `widgets/GlobeUnrollWidget.jsx` |
-| L4 | `particle-lab` | `widgets/ParticleLabWidget.jsx` |
-| L5 | `state-change-lab` | `widgets/StateChangeLabWidget.jsx` |
+These five are attached to the Week 1 and Week 2 lessons, which were **deliberately left
+unchanged** during the curriculum rebuild. Their lesson ids are still the original
+`lesson-N` form.
 
-**Next session: L7, L8, L9** — see the Week 3 table. Read `ParticleLabWidget.jsx` (canvas
-sim) and `ModelGalleryWidget.jsx` (SVG scenes) first; between them they demonstrate every
-technique the remaining 54 need.
+| Lesson | Lesson id | Widget id | File |
+|---|---|---|---|
+| W1 L1 Uses of Scientific Models | `lesson-1` | `model-gallery` | `widgets/ModelGalleryWidget.jsx` |
+| W1 L2 Science Process Skills | `lesson-2` | `investigation-run` | `widgets/InvestigationRunWidget.jsx` |
+| W1 L3 Models in Real Life | `lesson-3` | `globe-unroll` | `widgets/GlobeUnrollWidget.jsx` |
+| W2 L1 Particle Theory of Matter | `lesson-4` | `particle-lab` | `widgets/ParticleLabWidget.jsx` |
+| W2 L2 Particle Nature of Matter States | `lesson-5` | `state-change-lab` | `widgets/StateChangeLabWidget.jsx` |
+
+Two second interactives also ship as `customWidget` blocks inside those same lessons:
+`pour-test` on `lesson-4` and `container-test` on `lesson-5`.
+
+**Next session: `phase-bench`, `heating-curve`, `investigation-rig`** — the first three of
+Wave 2. Read `ParticleLabWidget.jsx` (canvas sim) and `ModelGalleryWidget.jsx` (SVG scenes)
+first; between them they demonstrate every technique the remaining 23 need.
+
+### Lesson id scheme
+
+Weeks 3–19 use `wNN-lN` ids (`w03-l1`, `w03-l2`, `w04-l1`, …). This was chosen over
+re-using `lesson-N` so that no stale teacher-override row in Supabase could silently land
+old content on a new topic. Weeks 1–2 keep their original `lesson-1`…`lesson-5` ids.
+
+### Performance-task lessons take no signature
+
+Five lessons are performance-task briefings rather than content lessons:
+
+| Lesson id | Task |
+|---|---|
+| `w03-l2` | Performance Task 1 — "The States of Matter Adventure: A Comic Strip Journey" |
+| `w06-l2` | Performance Task 2 — Solution Detectives |
+| `w09-l1` | Performance Task 3 — Identifying Acids and Bases in Everyday Products |
+| `w16-l1` | 2nd Performance Task — Math and Science Fair 2025 |
+| `w19-l2` | 3rd Performance Task — 3D Ecosystem Diorama |
+
+These tell a student how to build something in the real world over several days. There is
+no object to simulate — the object is the thing they go and make. Adding a widget here
+would be decoration, so they are deliberately left without one. Their quizzes carry the
+planning work instead.
 
 ---
 
@@ -81,13 +124,13 @@ A lesson object gains a sibling to `layout[]`:
 
 ```js
 {
-  id: "lesson-4",
-  title: "Particle Theory of Matter",
+  id: "w04-l1",
+  title: "Changes in the State of Matter in Terms of Particle Arrangement",
   signature: {
-    widgetId: "particle-lab",
-    heading: "Watch It: A Box of Real Particles",
-    intro: "Live particles with real speeds…",
-    instruction: "Drive the sliders and watch all five behaviours happen",
+    widgetId: "heating-curve",
+    heading: "Watch It: The Plateau Appears",
+    intro: "Heat goes in at a steady rate and the graph draws itself…",
+    instruction: "Draw both plateaus, then run it backwards",
     xp: 25,
   },
   layout: [ /* teacher-editable, untouched */ ],
@@ -107,14 +150,16 @@ cannot be dragged or deleted.
 | `interactive/stageMedia.js` | `STAGE_MEDIA` sizing for the SVG or canvas |
 | `interactive/widgets/<Name>Widget.jsx` | One per lesson |
 
+All of these live under `src/components/lesson-slots/interactive/`.
+
 Separate from `CUSTOM_WIDGETS` deliberately: that registry is rendered as a radio list in
-the teacher's section picker, and 59 entries would make it unusable.
+the teacher's section picker, and dozens of entries would make it unusable.
 
 ### Two wiring points, already done
 
-1. **`LessonTemplate.jsx:515`** renders the block after `layout.map()`, before
+1. **`LessonTemplate.jsx`** renders the block after `layout.map()`, before
    `<MaterialsPanel>`.
-2. **`LessonsDataContext.jsx:85`** — `mergeWeeks()` carries `signature` from the static
+2. **`LessonsDataContext.jsx:86`** — `mergeWeeks()` carries `signature` from the static
    seed onto a teacher's DB override row. **Without this the widget vanishes the first
    time a teacher edits the lesson.** Do not remove it.
 
@@ -164,7 +209,7 @@ is a broken simulation.
 
 ---
 
-## Six shapes, not 59 originals
+## Six shapes, not 23 originals
 
 | # | Shape | What it is | Built example |
 |---|---|---|---|
@@ -226,191 +271,130 @@ is a broken simulation.
 
 ---
 
-## The 59 simulations
+## The 23 simulations still to build
 
 Shape letters refer to the table above. **G** = worth reaching for GSAP.
 
-### Week 1 — Scientific Models ✅
+### Weeks 1–2 — Scientific Models, Particle Theory ✅
+
+All five shipped. These weeks were left unchanged by the curriculum rebuild; see the
+Shipped table above.
+
+### Week 3 — Phases of Matter
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| ✅ **L1** Uses of Scientific Models | `model-gallery` | Four models actually working: a suspension bridge whose deck sags under a crossing truck with hangers tracking the curve, an atom with two orbiting electron shells, a population formula plotting itself year by year, a hurricane spinning along a track inside a widening forecast cone | All four run | B |
-| ✅ **L2** Scientific Method | `investigation-run` | Two pots, one variable. Fourteen days play out — sun arcs over, stems climb a ruler, leaves unfold every 4 cm, the chart plots both curves live. Conclusion computed from the heights that came out | Full run completes | C |
-| ✅ **L3** Models in Real Life | `globe-unroll` | A globe unrolls into a Mercator map. Same lat/long coastlines projected two ways and blended; Greenland genuinely inflates, and the "× too big" readout is a shoelace area measured off the shape on screen | Both ends reached | D |
+| **w03-l1** Different Phases of Matter | `phase-bench` | One substance, five phases. A single energy slider runs from near absolute zero to star-hot: particles lock into a shivering lattice, break loose, fly free, then tear apart into glowing charged plasma. At the cold end they slow almost to a stop and merge into one blurred group | All five phases reached | A |
+| **w03-l2** Performance Task 1 | — | Task briefing — no signature widget | — | — |
 
-### Week 2 — Particle Model of Matter ✅
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| ✅ **L4** Particle Theory of Matter | `particle-lab` | Canvas particles with real velocities and motion trails. Cold and they lock to a lattice and shiver; warm and they break loose but stay pooled; hot and they fly free filling the box | All five behaviours produced | A |
-| ✅ **L5** Particle Nature of States | `state-change-lab` | A beaker on a burner. Hold to heat: lattice bonds stretch and snap, the thermometer **stalls at 0 °C and 100 °C**, bubbles form and rise while boiling. A vacuum pump forces sublimation and deposition | All six changes watched | B |
-
-*`lesson-6` does not exist — week 2 has only lessons 4 and 5 after a content merge. The
-unused `lesson6hero` import still sits at `src/data/lessonsweek-02.js:7`.*
-
-#### Second interactives, via `customWidget`
-
-`signature` is one per lesson and both week 2 lessons already use theirs, so a lesson that
-earns a second simulation gets it as a `customWidget` block placed inside `layout[]`. Same
-`{ onSolved }` contract, same `SimLayout`, same design rules — the only differences are
-that the host is `CustomWidgetSection` (which *does* use `InteractiveFrame`, so the block
-fades in on scroll) and that a teacher can move or delete it.
-
-| Lesson | Widget id | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| ✅ **L4** | `pour-test` | 50 mL of water poured into 50 mL of alcohol measures about 96 mL. A dashed line marks where 100 mL would have reached; a magnifier lens zooms into the real simulated particles and the small alcohol beads are visibly sitting in the gaps between the large water ones. The vessel is a volumetric flask because only a narrow neck makes a 4 mL shortfall visible | Both poured full, shortfall read, magnifier used, partial mix compared | B |
-| ✅ **L5** | `container-test` | Ice, water and steam moved between a beaker, a conical flask and a syringe. The liquid surface is found by integrating the container's own cross-section, so the same 40 mL genuinely stands twice as tall in the narrow syringe. The plunger compresses the gas and stops dead against the liquid | All three samples seen in all three containers, plunger pushed on gas and on liquid | B |
-
-Register these in `interactive/customWidgets.js` (not `signatureWidgets.js`) — that registry
-is the teacher's radio list, and a handful of entries keeps it usable.
-
-### Week 3 — Changes in State of Matter — **next up**
+### Week 4 — Changes in the State of Matter
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L7** Melting and Freezing | `heating-curve` | An ice cube on a hotplate, zoomed to the lattice. Heat goes in at a steady rate and the temperature-against-time graph **draws itself live**, so the flat plateau is something the student watches appear rather than a picture of a graph. Freeze it back and the curve retraces in reverse | Both plateaus drawn, both directions run | C |
-| **L8** Evaporation and Condensation | `evaporation-race` | Two open dishes of water with particles visibly escaping the surface. Drag physical apparatus onto a dish — heat lamp, fan, wide dish, humidity lid — and watch the water-level bars diverge in real time | A dish emptied, all four factors used | A |
-| **L9** Sublimation and Deposition | `dry-ice-bench` | A block of dry ice fuming on a bench, and a cold window growing frost crystals outward from seed points. A pressure dial moves the substance between routes so the liquid stage is visibly skipped | Both direct routes run | B |
+| **w04-l1** Changes in State by Particle Arrangement | `heating-curve` | An ice cube on a hotplate, zoomed to the lattice. Heat goes in at a steady rate and the temperature-against-time graph **draws itself live**, so the flat plateau is something the student watches appear rather than a picture of a graph. Freeze it back and the curve retraces in reverse. A vacuum lever forces the sublimation route so the liquid stage is visibly skipped | Both plateaus drawn, both directions run, sublimation route taken | C |
 
-### Week 4 — Scientific Investigation
+### Week 5 — Scientific Investigation and Measurement
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L10** Parts of an Investigation | `investigation-rig` | The investigation as a working machine: question, prediction, trial, data and conclusion are physical stages on a conveyor with material moving through them. Pull any stage out and the machine visibly jams at that point | Machine run whole, and jammed at least once | E |
-| **L11** Variables and Controls | `confound-lab` | Two setups, and you can change more than one thing at a time. Cause-arrows are drawn from each change to the outcome, and with two changes the arrows visibly tangle so the result cannot be pinned on either | A clean single-variable run and a tangled one | A |
-| **L12** Data Collection and Recording | `trial-bench` | A ball rolls down a ramp and is timed, again and again, with real scatter. Each run drops a dot onto a live dot plot; the mean line jitters wildly at three trials and settles by thirty | 30 trials run, mean settled | C |
+| **w05-l1** Appropriate Steps in Scientific Investigation | `investigation-rig` | The investigation as a working machine: question, prediction, trial, data and conclusion are physical stages on a conveyor with material moving through them. Pull any stage out and the machine visibly jams at that point. A second lever lets two variables change at once, and the cause-arrows visibly tangle | Machine run whole, jammed once, and confounded once | E |
+| **w05-l2** Measurement | `meniscus-bench` | A graduated cylinder with a **draggable eye**. The sightline is drawn and the apparent reading genuinely changes with parallax, so a wrong eye height gives a wrong number until the student levels it. A balance beside it can be left untared, shifting every reading by the same amount | Three volumes read at eye level, systematic error found and fixed | B |
 
-### Week 5 — Measurement in Science
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L13** SI Units and Measurement Tools | `scale-zoom` | One continuous zoom from a millimetre to a kilometre. Real objects fade in at their true size as the scale reaches them — grain of sand, coin, desk, bus, field — and the sensible unit renames itself as you pass | Full range traversed | D |
-| **L14** Measuring Length, Mass, Volume | `meniscus-bench` | A graduated cylinder with a **draggable eye**. The sightline is drawn and the apparent reading genuinely changes with parallax, so a wrong eye height gives a wrong number until the student levels it | Three volumes read at eye level | B |
-| **L15** Accuracy, Precision, and Errors | `target-range` | A bow fires at a target. Two physical dials — sight offset for accuracy, hand wobble for precision — and the student produces each of the four groupings by driving them and watching where arrows land | All four groupings produced | A |
-
-### Week 6 — Solutions and Solubility
+### Week 6 — Solubility of Matter
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L16** Mixtures and Solutions | `tyndall-bench` | A laser fires through three beakers. The beam is invisible in the solution, scatters into a visible shaft in the colloid, and in the suspension the particles slowly settle into a layer while you watch | All three beams fired, settling watched | A |
-| **L17** Solubility | `solubility-beaker` | Spoon sugar in and the particles visibly dissolve — until they stop and pile on the bottom. A temperature slider re-dissolves the pile, and a solubility curve traces where you currently are | Unsaturated, saturated and supersaturated all reached | A |
-| **L18** Rate of Dissolving | `dissolving-race` | Two beakers with real apparatus: a stirrer that spins, a heater, and a crusher that visibly breaks a cube into smaller cubes. Sugar disappears faster on the side with more surface, heat and motion | All three factors isolated | A |
+| **w06-l1** Solubility: Solute and Solvent | `solubility-beaker` | Spoon sugar in and the particles visibly dissolve — until they stop and pile on the bottom. A temperature slider re-dissolves the pile and a solubility curve traces where you currently are. A stirrer and a crusher change only how *fast* it goes, and the curve does not move — which is the whole lesson | Unsaturated, saturated and supersaturated reached; rate changed without moving the curve | A |
+| **w06-l2** Performance Task 2 | — | Task briefing — no signature widget | — | — |
 
-### Week 7 — Concentration of Solutions
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L19** What is Concentration? | `dilution-jar` | Colour intensity driven by particles-per-volume, drawn as actual particles. Two separate controls — add solute, add water. Adding water pushes the particles apart and lightens the colour **without removing a single one** | Both routes to dilute found | A |
-| **L20** Measuring Concentration | `percent-bench` | A balance and a measuring cylinder you physically load. The pan tips, the meniscus rises, and %m/m, %m/v and ppm all recompute live from what is actually on the bench | Three targets hit | B |
-| **L21** Dilution and Saturated Solutions | `dilution-bench` | Pour from a stock bottle into a flask and top up with water. The colour changes as you pour and a C₁V₁ = C₂V₂ bar rebalances live. Hit a target colour | Target hit within tolerance | B |
-
-### Week 8 — Acids, Bases, and Salts
+### Week 7 — Concentration, Acids, Bases and Salts
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L22** Properties of Acids and Bases | `indicator-bench` | Dip litmus into a beaker and watch the colour **wick up the paper** in real time. Four unknowns, two indicators, evidence gathered by dipping | All four tested with both indicators | B |
-| **L23** The pH Scale | `ph-dial` | Drag a pH probe between real substances. The colour strip slides and the H⁺ particle density in the beaker changes with it, so "more acidic" is a visible crowd rather than a word | Full range swept, all three categories visited | D |
-| **L24** Neutralization and Salts | `titration-drip` | A burette releases one drop at a time. The pH needle climbs, the indicator flips at the endpoint, and salt crystals grow in the flask. Overshooting is allowed and shown | pH 7 reached and salt formed | B |
+| **w07-l1** Concentration of Solutions | `dilution-jar` | Colour intensity driven by particles-per-volume, drawn as actual particles. Two separate controls — add solute, add water. Adding water pushes the particles apart and lightens the colour **without removing a single one**, and a live %m/m readout falls as it happens | Both routes to dilute found, target concentration hit | A |
+| **w07-l2** Acids, Bases and Salts | `titration-drip` | A burette releases one drop at a time. The pH needle climbs, H⁺ and OH⁻ particles pair off into water on screen, the indicator flips at the endpoint, and salt crystals grow in the flask. Overshooting is allowed and shown | pH 7 reached and salt formed | B |
 
-### Week 9 — Laboratory Equipment
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L25** Common Laboratory Equipment | `equipment-bench` | A bench of instruments. Pick one up and it **does its job on screen** — the bunsen lights and its flame changes with the collar, the balance pan settles, the funnel filters a mixture into a clean filtrate | Every instrument operated | B |
-| **L26** Using the Microscope | `focus-scope` | Coarse and fine knobs and an objective turret. The image is genuinely blurred and sharpens as you turn; coarse focus at high power drives the objective into the slide and cracks it | Sharp image at high power, slide intact | B |
-| **L27** Proper Handling of Lab Materials | `handling-bench` | Carry acid, heat a test tube, waft a gas. Each action plays out physically — a tube pointed at a face erupts at that face, wafting delivers a safe whiff | Every action performed safely | E |
-
-### Week 10 — Laboratory Safety
+### Week 8 — The Science Laboratory
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L28** Laboratory Safety Rules | `hazard-scene` | A lab scene where the unsafe things are actively *happening* — a flame creeping toward loose hair, a spill spreading across the bench, a bag in a walkway. Tap to intervene and watch each resolve | All eight resolved | E |
-| **L29** Safety Symbols and Hazards | `hazard-cabinet` | Containers on a shelf. Open one and its symbol animates into what it actually does: corrosive eats a hole through a plate, flammable ignites, toxic spreads through a fish tank | Every symbol demonstrated | B |
-| **L30** Emergency Procedures | `emergency-drill` | A spill spreads across the floor in real time while the student acts. Right moves contain it; wrong moves let it reach the drain and keep spreading | All three emergencies contained | E |
+| **w08-l1** Laboratory Instruments and Equipment | `equipment-bench` | A bench of instruments. Pick one up and it **does its job on screen** — the bunsen lights and its flame changes with the collar, the balance pan settles, the funnel filters a mixture into a clean filtrate, the microscope focuses | Every instrument operated | B |
+| **w08-l2** Laboratory Rules and Safety Symbols | `hazard-cabinet` | Containers on a shelf. Open one and its symbol animates into what it actually does: corrosive eats a hole through a plate, flammable ignites, toxic spreads through a fish tank. A lab scene alongside has unsafe things actively happening — a flame creeping toward loose hair, a spill spreading — and tapping intervenes | Every symbol demonstrated, every hazard resolved | B · E |
+
+### Week 9 — Performance Task 3
+
+| Lesson | Widget | What runs on screen | Done when | Shape |
+|---|---|---|---|---|
+| **w09-l1** Performance Task 3 | — | Task briefing — no signature widget | — | — |
+
+### Week 10 — First Periodical Examination
+
+No lessons. Examination week.
 
 ### Week 11 — The Microscope
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L31** History and Parts of the Microscope | `scope-cutaway` | A cutaway compound microscope with **light physically travelling the path** — mirror to condenser to specimen to objective to eyepiece. Switch off any part and the beam breaks there and the image goes dark | Light path traced, every part interrupted | E |
-| **L32** Using the Microscope Correctly | `scope-run` | The same scope, operated. Carry it one-handed and it drops; start at high power and the field is empty; skip the coverslip and the image swims | Clean run completed | B |
-| **L33** Preparing Microscope Slides | `wet-mount` | Lower a coverslip at an angle you control with a drag. Lower it flat and air bubbles get trapped — then look through the scope at the bubbles you just made | Bubble-free mount produced | B · **G** |
+| **w11-l1** The Microscope: An Introduction | `focus-scope` | Coarse and fine knobs and an objective turret. The image is genuinely blurred and sharpens as you turn; coarse focus at high power drives the objective into the slide and cracks it. A coverslip can be lowered at a draggable angle, and lowering it flat traps bubbles you then have to look at | Sharp image at high power, slide intact, bubble-free mount | B |
+| **w11-l2** The Importance of Microscope Discovery | `scope-through-time` | The same cork specimen through a 1665 lens, an 1830 achromat, a 1930s electron beam. Resolution genuinely improves as you scrub the years — blur and detail change, not the caption — and each instrument reveals the structure that was actually discovered with it | All three instruments used | D |
 
-### Week 12 — Cell Theory
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L34** Development of Cell Theory | `scope-through-time` | The same cork specimen through a 1665 lens, an 1830 achromat and an 1855 compound scope. Resolution genuinely improves as you scrub the years — blur and detail change, not the caption | All three instruments used | D |
-| **L35** Prokaryotes and Eukaryotes | `scope-field` | A live field of cells swimming under the objective. Zoom in on any one and its interior resolves — or stays empty, which is the whole distinction | Six cells inspected | A |
-| **L36** Cell Diversity | `cell-shape-lab` | Morph a generic cell toward nerve, muscle or root hair. A job-performance meter — signal distance, contraction force, water uptake — responds to the shape as it changes | All three shapes driven to peak | D |
-
-### Week 13 — Cell Parts and Functions
+### Week 12 — The Cell
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L37** Cell Membrane and Cell Wall | `gatekeeper` | Molecules of different sizes stream at a membrane. Small ones slip through, large ones bounce. Add a cell wall and watch what changes — and what does not | Selective permeability shown both ways | A |
-| **L38** Nucleus and Cell Organelles | `cell-cutaway` | A cell with everything running: ribosomes assembling protein chains, mitochondria pulsing, vesicles travelling to the membrane. Switch one organelle off and the animation downstream stops | Every organelle switched off once | E |
-| **L39** Cytoplasm and Cytoskeleton | `scaffold-test` | Remove one filament type at a time and watch the cell sag out of shape, transport stall mid-journey, or division fail halfway | All three roles broken | E · **G** |
+| **w12-l1** The Cell Theory and Its Diversity | `scope-field` | A live field of cells swimming under the objective. Zoom in on any one and its interior resolves — or stays empty, which is the whole prokaryote/eukaryote distinction. Specialised cells are in the mix, each shaped for its job | Six cells inspected, both cell types found | A |
+| **w12-l2** Parts and Function of the Cell | `cell-cutaway` | A cell with everything running: ribosomes assembling protein chains, mitochondria pulsing, vesicles travelling to the membrane, molecules bouncing off or slipping through. Switch one organelle off and the animation downstream stops | Every organelle switched off once | E |
 
-### Week 14 — Plant and Animal Cells
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L40** Comparing Plant and Animal Cells | `cell-morph` | One slider morphs an animal cell into a plant cell. Shared structures hold steady through the whole morph; unique ones grow in and label themselves as they appear | Full morph both ways | D · **G** |
-| **L41** Unique Structures in Plant Cells | `turgor-lab` | A water slider drives two linked scales at once — the vacuole swelling inside the cell, and the whole plant standing or wilting beside it. The wall visibly holds shape where an animal cell would burst | Turgid and flaccid both produced | A |
-| **L42** Unique Structures in Animal Cells | `lysosome-bench` | Feed debris to a lysosome and watch it engulf and digest. Trigger the centrioles and watch a spindle assemble | Both structures run | E |
-
-### Week 15 — Cell Reproduction: Mitosis
+### Week 13 — Plant and Animal Cell
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L43** The Cell Cycle | `cycle-dial` | Scrub a circular G₁–S–G₂–M dial. Chromosomes physically duplicate as you pass through S, and a DNA-amount graph steps up with them | Full cycle traversed | D |
-| **L44** Stages of Mitosis | `mitosis-run` | A real animated mitosis the student scrubs frame by frame — chromosomes condensing, aligning on the plate, spindle fibres pulling, the cell pinching in two | Full division scrubbed both ways | C · **G** |
-| **L45** Importance and Applications | `wound-heal` | Cut a sheet of tissue and watch cells divide inward to close the gap. Flip a switch to runaway division and watch the same process pile into a tumour | Both outcomes run | A · **G** |
+| **w13-l1** Plant and Animal Cell | `cell-morph` | One slider morphs an animal cell into a plant cell. Shared structures hold steady through the whole morph; unique ones grow in and label themselves as they appear. A second water slider then swells both — the plant cell stops firm against its wall, the animal cell bursts | Full morph both ways, both cells put in pure water | D · **G** |
 
-### Week 16 — Cell Reproduction: Meiosis
+### Week 14 — Cell Reproduction and the Cell Cycle
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L46** Introduction to Meiosis | `chromosome-counter` | Step through both divisions with the chromosomes physically halving and a live 2n → 2n → n → n counter beside them, so *where* the halving happens is something you watch | Both divisions stepped | C |
-| **L47** Stages of Meiosis | `crossover-lab` | Drag a crossover point along a tetrad. The four gametes that come out are visibly different **because of where the student dragged it** | Crossover performed, gametes compared | B · **G** |
-| **L48** Comparing Mitosis and Meiosis | `side-by-side-run` | Both processes run in parallel from the same starting cell, in step. Daughter cells line up at the end for a direct visual comparison | Both run to completion | C · **G** |
+| **w14-l1** Cell Reproduction | `surface-volume` | A single cell you can grow with a slider. Nutrients diffuse inward from the membrane as visible dots — and as the cell grows, the centre starves because volume outruns surface area. Hit divide and two smaller cells feed perfectly again | Cell grown to starvation and divided | A |
+| **w14-l2** The Cell Cycle | `cycle-dial` | Scrub a circular G₁–S–G₂–M dial. Chromosomes physically duplicate as you pass through S, and a DNA-amount graph steps up with them. Damage the DNA and the G₂ checkpoint visibly halts the dial until it is repaired | Full cycle traversed, a checkpoint triggered | D |
 
-### Week 17 — Fertilization and Reproduction
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L49** Fertilization | `fusion-bench` | Drag two gametes together and watch them fuse, with the chromosome count adding up on screen. Drag a diploid cell in by mistake and watch the count come out wrong | Correct zygote formed, error explored | B |
-| **L50** Sexual Reproduction | `variation-batch` | Cross two parents and watch twelve offspring generate one by one, each visibly different — colour, size, pattern, all inherited from the mix | A batch of twelve run | C |
-| **L51** Asexual Reproduction | `clone-bench` | Binary fission, budding, fragmentation and vegetative propagation, each running as a real animation on a real organism | All four run | C |
-
-### Week 18 — Types of Reproduction Compared
+### Week 15 — Cell Division
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L52** Sexual vs. Asexual Reproduction | `population-race` | Two populations grow generation by generation as visible organisms filling a field. The clones fill it faster, which sets up L53 | Race run to completion | C |
-| **L53** Advantages and Disadvantages | `stress-test` | Fire a disease or a drought at those same two fields. The clonal population — every organism identical — dies together; the varied one loses some and recovers | Both stressors applied | C |
-| **L54** Examples in Nature | `field-bench` | A pond and garden scene. Tap any organism and it reproduces on screen by its own method — strawberry runners creep, hydra buds, a sea star regrows an arm. Several do both | Every organism run | B |
+| **w15-l1** Mitosis Cell Division | `mitosis-run` | A real animated mitosis the student scrubs frame by frame — chromosomes condensing, aligning on the plate, spindle fibres pulling, the cell pinching in two. A plant/animal switch changes the ending from cleavage furrow to cell plate | Full division scrubbed both ways, both cytokinesis types seen | C · **G** |
+| **w15-l2** Meiosis Cell Division | `crossover-lab` | Drag a crossover point along a tetrad. The four gametes that come out are visibly different **because of where the student dragged it**, and a live 2n → 2n → n → n counter shows exactly where the halving happens | Crossover performed, both divisions stepped, gametes compared | B · **G** |
 
-### Week 19 — Food Chains and Food Webs
-
-| Lesson | Widget | What runs on screen | Done when | Shape |
-|---|---|---|---|---|
-| **L55** Producers, Consumers, Decomposers | `ecosystem-jar` | Stock a sealed jar and run it. Leave out decomposers and dead matter visibly piles up until it chokes; leave out producers and everything starves | A jar run to a stable state | F |
-| **L56** Food Chains | `energy-flow` | Energy travels as visible packets along the arrows. Reverse an arrow and the packets flow the wrong way and the chain starves in front of you — the classic arrow-direction error, made physical | Chain built and correctly fed | F |
-| **L57** Food Webs | `web-collapse` | Remove one organism and watch the loss propagate node by node, populations swelling and crashing along every connected path | Three removals explored | F · **G** |
-
-*`src/data/lessonsweek-19.js` is corrupted by a bad find/replace — every "Web"/"web" became
-the literal string `null` (`"Food Chains and Food nulls"`, `"Food nulls"`, and two alt-text
-strings). Fix that before L57 ships.*
-
-### Week 20 — Energy Flow and Biological Organization
+### Week 16 — Science Fair and Fertilization
 
 | Lesson | Widget | What runs on screen | Done when | Shape |
 |---|---|---|---|---|
-| **L58** Energy Pyramid | `ten-percent` | A thousand energy units enter as visible dots. At each trophic step ninety percent visibly peel off as heat and drift away, leaving a tenth to climb — so the pyramid shape builds itself | Energy traced to the top | F |
-| **L59** Levels of Biological Organization | `zoom-ladder` | One continuous zoom from atom to biosphere through all nine levels, each resolving into the next and naming itself as it comes into view | All nine levels passed | D · **G** |
-| **L60** Ecosystem Interactions | `interaction-tank` | Put two organisms in a tank and run it. Watch what actually happens between them over time — one feeds, one shelters, one starves — and the relationship names itself from the outcome | All five relationships produced | C |
+| **w16-l1** Math and Science Fair | — | Task briefing — no signature widget | — | — |
+| **w16-l2** Fertilization | `fusion-bench` | Drag two gametes together and watch them fuse, with the chromosome count adding up on screen. Drag a diploid cell in by mistake and watch the count come out wrong. The zygote then starts dividing on its own | Correct zygote formed, error explored | B |
+
+### Week 17 — Asexual Reproduction
+
+| Lesson | Widget | What runs on screen | Done when | Shape |
+|---|---|---|---|---|
+| **w17-l1** Asexual Reproduction | `clone-bench` | Binary fission, budding, fragmentation and vegetative propagation, each running as a real animation on a real organism. A disease switch then sweeps the field, and because every organism is identical they all fall together | All four run, disease applied | C |
+
+### Week 18 — Sexual Reproduction and Energy Flow
+
+| Lesson | Widget | What runs on screen | Done when | Shape |
+|---|---|---|---|---|
+| **w18-l1** Sexual Reproduction | `variation-batch` | Cross two parents and watch twelve offspring generate one by one, each visibly different — colour, size, pattern, all inherited from the mix. Fire the same disease from `clone-bench` at this varied field and watch some survive | A batch of twelve run, stress test survived | C |
+| **w18-l2** Energy Flow in an Ecosystem | `energy-flow` | Energy travels as visible packets along the arrows. Reverse an arrow and the packets flow the wrong way and the chain starves in front of you — the classic arrow-direction error, made physical. Add links to turn the chain into a web, then remove one organism and watch the loss propagate | Chain built and correctly fed, web survived a removal | F |
+
+### Week 19 — Energy Flow in the Circle of Life
+
+| Lesson | Widget | What runs on screen | Done when | Shape |
+|---|---|---|---|---|
+| **w19-l1** Energy Flow in the Circle of Life | `ten-percent` | A thousand energy units enter as visible dots. At each trophic step ninety percent visibly peel off as heat and drift away, leaving a tenth to climb — so the pyramid shape builds itself. Alongside it, nutrient atoms take the other route: they leave a dead organism, pass through a decomposer, and return to the soil to be used again | Energy traced to the top, one nutrient atom followed full circle | F |
+| **w19-l2** 3rd Performance Task | — | Task briefing — no signature widget | — | — |
+
+### Week 20 — Second Periodical Examination
+
+No lessons. Examination week.
 
 ---
 

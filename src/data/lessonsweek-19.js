@@ -1,442 +1,640 @@
-// Week 19: Food Chains and Food nulls — Grade 7 Science
+// Week 19: Energy Flow in the Circle of Life — Grade 7 Science
+//
+// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 19.
+//   Lesson 1 — Energy Flow in the Circle of Life
+//   Lesson 2 — 3rd Performance Task: 3D Ecosystem Diorama
 
+import foodchain from "../assets/foodchain.png";
 import globe from "../assets/week1/globe.jpg";
+import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
-import flowchart from "../assets/flowchart.jpg";
+import classroom from "../assets/classroom.webp";
 
 export const week19 = {
   id: "week-19",
   weekNumber: 19,
-  title: "Food Chains and Food nulls",
+  title: "Energy Flow in the Circle of Life",
   category: "Ecology",
   description:
-    "Explore how energy flows through ecosystems via food chains and food nulls, and understand the roles of producers, consumers, and decomposers.",
-  icon: "Network",
-  color: "secondary",
+    "See why energy pyramids narrow toward the top, how nutrients cycle endlessly, and how species interact — then build a 3D ecosystem diorama.",
+  icon: "Zap",
+  color: "accent",
   isLocked: false,
   lessons: [
+    // ═══════════════════════════════════════════════════
+    // LESSON 1 — Energy Flow in the Circle of Life
+    // ═══════════════════════════════════════════════════
     {
-      id: "lesson-55",
+      id: "w19-l1",
       weekId: "week-19",
-      lessonNumber: 55,
-      title: "Producers, Consumers, and Decomposers",
+      lessonNumber: 1,
+      title: "Energy Flow in the Circle of Life",
       badge: "Lesson 1",
-      subtitle: "The fundamental roles organisms play in an ecosystem",
-      readTime: "~12 min read",
+      subtitle:
+        "Energy flows one way and runs out; nutrients go round forever. Learn the energy pyramid, the nutrient cycle, and the relationships that hold an ecosystem together.",
+      readTime: "~18 min read",
       xp: 50,
-      heroImage: globe,
+      heroImage: foodchain,
       heroImageAlt:
-        "Globe image showing diverse ecosystems with producers, consumers, and decomposers",
+        "Energy pyramid showing energy decreasing at each trophic level",
+
       sections: [
-        "Roles in an Ecosystem",
+        "Overview",
         "Key Terms",
-        "Visual Guide to Roles",
-        "Real-World Applications",
+        "Types of Ecological Pyramids",
+        "Energy Flows, Nutrients Cycle",
+        "How Species Interact",
+        "Mutualism vs. Parasitism",
+        "Key Ideas",
+        "Applications",
       ],
+
+      references: [
+        {
+          label: "Khan Academy — Ecology and Energy Flow",
+          url: "https://www.khanacademy.org/science/biology/ecology",
+        },
+        {
+          label: "National Geographic — Energy Pyramid",
+          url: "https://education.nationalgeographic.org/resource/food-chain/",
+        },
+      ],
+
       layout: [
         {
           type: "intro",
-          heading: "Roles in an Ecosystem",
+          heading: "Overview",
           data: {
             paragraphs: [
-              "Every living thing in an ecosystem plays a specific role based on how it obtains energy. <strong class='text-primary-700'>Producers</strong> (also called autotrophs) make their own food through photosynthesis, using sunlight, water, and carbon dioxide to produce glucose. Plants, algae, and phytoplankton are producers — they form the foundation of all food chains.",
-              "<strong class='text-primary-700'>Consumers</strong> (heterotrophs) cannot make their own food and must eat other organisms to get energy. <strong class='text-primary-700'>Primary consumers</strong> are herbivores that eat producers (e.g., rabbits, caterpillars, deer). <strong class='text-primary-700'>Secondary consumers</strong> eat primary consumers (e.g., frogs eat caterpillars). <strong class='text-primary-700'>Tertiary consumers</strong> are top predators that eat secondary consumers (e.g., eagles, sharks).",
-              "<strong class='text-primary-700'>Decomposers</strong> are the ecosystem's recyclers. Bacteria and fungi break down dead organisms and waste, releasing nutrients back into the soil and water. Without decomposers, ecosystems would be buried in dead matter and essential nutrients would be locked away forever.",
+              "Last lesson you followed energy along a food chain and met the 10% rule. An <strong class='text-primary-700'>energy pyramid</strong> turns that rule into a picture: it shows how much energy is available at each trophic level, and it is always widest at the base and narrowest at the top.",
+              "The other 90% is lost as <strong class='text-primary-700'>heat</strong> — organisms spend it moving, breathing, and staying alive. That energy is gone from the ecosystem for good. This is the crucial difference in ecology: <strong class='text-primary-700'>energy flows one way and runs out; nutrients cycle round and are used again</strong>.",
+              "Holding the whole system together are the relationships between species — predation, competition, and the three forms of <strong class='text-primary-700'>symbiosis</strong>. The 'circle of life' is really these two things at once: a one-way river of energy and an endless loop of matter.",
             ],
             didYouKnow:
-              "A single teaspoon of healthy garden soil contains more microorganisms (mostly decomposers) than there are people on Earth — more than 1 billion bacteria in just one teaspoon!",
+              "It takes roughly 10,000 kg of grass to support 1,000 kg of grasshoppers, which supports 100 kg of frogs, which supports 10 kg of snakes, which supports just 1 kg of eagle.",
           },
         },
+
         {
           type: "keyTerms",
           heading: "Key Terms",
           data: {
             terms: [
               {
-                term: "Producer (Autotroph)",
-                desc: "An organism that makes its own food using energy from the sun (photosynthesis) or chemical reactions. Examples: plants, algae, phytoplankton.",
+                term: "Energy Pyramid",
+                desc: "A diagram showing the energy available at each trophic level, always widest at the base and narrowest at the top.",
               },
               {
-                term: "Consumer (Heterotroph)",
-                desc: "An organism that cannot make its own food and must eat other organisms. Consumers are classified by what they eat.",
+                term: "Biomass",
+                desc: "The total mass of living organisms at a trophic level, usually measured in grams or kilograms per unit area.",
               },
               {
-                term: "Decomposer",
-                desc: "An organism that breaks down dead organisms and waste, recycling nutrients back into the ecosystem. Examples: bacteria, fungi, earthworms.",
+                term: "Pyramid of Numbers",
+                desc: "A diagram showing the COUNT of organisms at each trophic level. It can be inverted when one large producer supports many small consumers.",
               },
               {
-                term: "Herbivore",
-                desc: "A consumer that eats only plants (producers). Also called a primary consumer. Examples: rabbit, caterpillar, deer, cow.",
+                term: "Nutrient Cycle",
+                desc: "The repeated movement of nutrients such as carbon and nitrogen between living things and the environment.",
               },
               {
-                term: "Carnivore",
-                desc: "A consumer that eats only other animals. Examples: eagles, sharks, frogs. Can be secondary or tertiary consumers.",
+                term: "Symbiosis",
+                desc: "A close, long-term interaction between two different species. It includes mutualism, commensalism, and parasitism.",
               },
               {
-                term: "Omnivore",
-                desc: "A consumer that eats both plants and animals. Examples: humans, bears, raccoons.",
+                term: "Mutualism",
+                desc: "A relationship where BOTH species benefit (+/+) — bees get nectar while flowers get pollinated.",
               },
               {
-                term: "Trophic Level",
-                desc: "A feeding position in a food chain. Producers are at the first trophic level; primary consumers at the second; and so on.",
+                term: "Commensalism",
+                desc: "A relationship where one benefits and the other is unaffected (+/0) — barnacles ride on a whale.",
+              },
+              {
+                term: "Parasitism",
+                desc: "A relationship where one benefits at the other's expense (+/−) — a tapeworm in an animal's intestine.",
+              },
+              {
+                term: "Predation",
+                desc: "One organism kills and eats another. The predator benefits, the prey is harmed.",
+              },
+              {
+                term: "Competition",
+                desc: "Two organisms compete for the same limited resource. Both are negatively affected (−/−).",
+              },
+              {
+                term: "Host",
+                desc: "The organism a parasite lives on or in, and takes nutrients from.",
               },
             ],
           },
         },
+
         {
           type: "imageCards",
-          heading: "Visual Guide to Roles",
+          heading: "Types of Ecological Pyramids",
           data: {
             cards: [
               {
-                title: "Producers",
-                label: "Autotrophs",
+                title: "Pyramid of Energy",
+                label: "Energy",
                 variant: "primary",
                 color: "primary",
-                desc: "Plants, algae, and other photosynthetic organisms form the base of all food chains.",
-                image: globe,
-                imageAlt:
-                  "Globe image showing diverse plant and algae producers in ecosystems",
-                examples: [
-                  "Grass, trees, shrubs (land ecosystems)",
-                  "Algae, phytoplankton (aquatic ecosystems)",
-                  "Seaweed, water plants (wetlands)",
-                ],
-              },
-              {
-                title: "Consumers",
-                label: "Heterotrophs",
-                variant: "secondary",
-                color: "secondary",
-                desc: "Animals that eat producers or other consumers, organized into trophic levels.",
-                image: null,
-                imageAlt:
-                  "null diagram showing consumer relationships between herbivores and carnivores",
-                examples: [
-                  "Primary: rabbit, grasshopper, deer (eat plants)",
-                  "Secondary: frog, fox, small fish (eat herbivores)",
-                  "Tertiary: eagle, shark, orca (top predators)",
-                ],
-              },
-              {
-                title: "Decomposers",
-                label: "Recyclers",
-                variant: "primary",
-                color: "primary",
-                desc: "Bacteria, fungi, and earthworms break down dead matter and return nutrients to the soil.",
+                desc: "Shows the energy available at each level in kilocalories. It is ALWAYS pyramid-shaped, because energy can only decrease going up.",
                 image: simulation,
                 imageAlt:
-                  "Simulation diagram showing decomposers breaking down organic matter",
+                  "Energy pyramid with kilocalorie values at each trophic level",
                 examples: [
-                  "Mushrooms break down fallen logs",
-                  "Bacteria decompose animal waste",
-                  "Earthworms break down leaf litter into rich soil",
+                  "Producers at base: most energy, e.g. 10,000 kcal",
+                  "Primary consumers: 1,000 kcal (10%)",
+                  "Secondary consumers: 100 kcal (1%)",
+                  "Tertiary consumers: 10 kcal (0.1%)",
+                ],
+              },
+              {
+                title: "Pyramid of Numbers",
+                label: "Numbers",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Shows how many organisms occupy each level. Usually pyramid-shaped, but it CAN be inverted.",
+                image: equation,
+                imageAlt:
+                  "Diagram showing organism counts at each trophic level",
+                examples: [
+                  "Millions of grass plants at the base",
+                  "Thousands of grasshoppers, hundreds of frogs",
+                  "One or two eagles at the top",
+                  "Inverted case: one oak tree supports thousands of insects",
+                ],
+              },
+              {
+                title: "Pyramid of Biomass",
+                label: "Biomass",
+                variant: "primary",
+                color: "primary",
+                desc: "Shows the total mass of living material at each level. Usually a pyramid, but inverted in some ocean ecosystems.",
+                image: globe,
+                imageAlt: "Diagram showing biomass decreasing at each level",
+                examples: [
+                  "Total mass of all organisms at that level",
+                  "Measured in grams or kilograms per area",
+                  "Usually decreases going upward",
+                  "Inverted in oceans, where fast-breeding phytoplankton are eaten as fast as they grow",
                 ],
               },
             ],
           },
         },
-        {
-          type: "applications",
-          heading: "Real-World Applications",
-          data: {
-            apps: [
-              {
-                title: "Agriculture and Soil Health",
-                description:
-                  "Farmers rely on decomposers to recycle nutrients. Adding compost (decomposed organic matter) enriches soil, reducing the need for chemical fertilizers and improving crop yields sustainably.",
-                icon: "🌾",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Natural Pest Control",
-                description:
-                  "Introducing natural predators (consumers) to control pest populations is safer and more sustainable than pesticides. Ladybugs eat aphids; hawks control rodent populations.",
-                icon: "🐞",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Fisheries Management",
-                description:
-                  "Understanding which fish are producers, primary consumers, or top predators helps fisheries managers decide sustainable catch limits and protect ocean food nulls from collapse.",
-                icon: "🐟",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Conservation",
-                description:
-                  "Protecting producers (forests, wetlands, coral reefs) is essential because all consumers depend on them. Deforestation and coral bleaching threaten entire food chains built upon these producers.",
-                icon: "🌿",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      id: "lesson-56",
-      weekId: "week-19",
-      lessonNumber: 56,
-      title: "Food Chains",
-      badge: "Lesson 2",
-      subtitle: "How energy flows in a linear sequence through an ecosystem",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: flowchart,
-      heroImageAlt: "Flowchart showing a linear food chain from grass to eagle",
-      sections: [
-        "What Is a Food Chain?",
-        "Trophic Levels",
-        "Key Ideas About Food Chains",
-        "Real-World Applications",
-      ],
-      layout: [
-        {
-          type: "intro",
-          heading: "What Is a Food Chain?",
-          data: {
-            paragraphs: [
-              "A <strong class='text-primary-700'>food chain</strong> is a linear diagram that shows the flow of energy from one organism to the next in an ecosystem. Each arrow in a food chain means 'is eaten by' or 'energy flows to'. For example: Grass → Grasshopper → Frog → Snake → Eagle. In this chain, grass is eaten by the grasshopper, the grasshopper is eaten by the frog, and so on.",
-              "Each position in a food chain is called a <strong class='text-primary-700'>trophic level</strong>. Producers are at the first trophic level. Each time energy moves up to the next trophic level, about <strong class='text-primary-700'>90% of that energy is lost</strong> as heat — this is known as the 10% rule. Only 10% of the energy is passed on to the next consumer.",
-              "This is why food chains rarely have more than four or five trophic levels — there simply is not enough energy to support a sixth or seventh level. It also explains why top predators like eagles and sharks are relatively rare compared to the producers and herbivores at the base of the chain.",
-            ],
-            didYouKnow:
-              "To produce 1 kilogram of beef, a cow must eat about 8 kilograms of grain — this is the 10% energy rule in action. Eating lower on the food chain is far more energy-efficient!",
-          },
-        },
-        {
-          type: "timeline",
-          heading: "Trophic Levels",
-          data: {
-            intro:
-              "Follow the path of energy through a food chain, from the sun-powered producers at the base to the decomposers that complete the cycle.",
-            steps: [
-              {
-                num: 1,
-                title: "First Trophic Level: Producers",
-                color: "primary",
-                description:
-                  "Producers capture energy from sunlight through photosynthesis and store it as chemical energy in their tissues. Examples: grass, algae, phytoplankton, trees. They are the source of all energy in a food chain.",
-                tip: "All the energy in a food chain originally comes from the sun — producers are the only organisms that can capture it.",
-              },
-              {
-                num: 2,
-                title: "Second Trophic Level: Primary Consumers",
-                color: "secondary",
-                description:
-                  "Primary consumers (herbivores) eat producers to get energy. Only about 10% of the producer's energy is transferred to the herbivore. Examples: grasshoppers, rabbits, caterpillars, deer, zebras.",
-                tip: "90% of the energy is lost at each step — mostly as body heat during metabolism and in waste products.",
-              },
-              {
-                num: 3,
-                title: "Third Trophic Level: Secondary Consumers",
-                color: "accent",
-                description:
-                  "Secondary consumers eat primary consumers. They receive only about 1% of the original energy from the producers (10% of 10%). Examples: frogs eat grasshoppers, foxes eat rabbits, small fish eat zooplankton.",
-                tip: "Because so little energy remains, there are always far fewer secondary consumers than primary consumers in an ecosystem.",
-              },
-              {
-                num: 4,
-                title: "Fourth Trophic Level: Tertiary Consumers",
-                color: "primary",
-                description:
-                  "Tertiary consumers (top predators) eat secondary consumers. They receive only about 0.1% of the original energy from producers. Examples: eagles eat snakes, sharks eat large fish, orcas eat seals.",
-                tip: "Top predators are always the rarest organisms in a food chain due to the tiny amount of energy available at this level.",
-              },
-              {
-                num: 5,
-                title: "Decomposers: Completing the Cycle",
-                color: "secondary",
-                description:
-                  "When organisms at any trophic level die, decomposers (bacteria, fungi) break them down. Nutrients are returned to the soil and water, where producers can absorb them — completing the nutrient cycle.",
-                tip: "Decomposers are essential — without them, ecosystems would run out of the minerals and nutrients that producers need to grow.",
-              },
-            ],
-          },
-        },
-        {
-          type: "conceptList",
-          heading: "Key Ideas About Food Chains",
-          data: {
-            concepts: [
-              "A food chain shows the linear transfer of energy from one organism to the next using arrows that point in the direction energy flows.",
-              "The 10% rule: only about 10% of the energy at one trophic level is transferred to the next — 90% is lost mainly as heat.",
-              "Producers are always at the base of a food chain because they are the only organisms that can capture energy from sunlight.",
-              "The number of trophic levels is limited — usually 4 to 5 — because too little energy remains to support higher levels.",
-              "Shorter food chains are more energy-efficient — a field of grain feeding humans directly provides far more energy than feeding it to cows and then eating the cows.",
-              "Decomposers are not always shown in food chains, but they play a vital role in returning nutrients to the ecosystem.",
-            ],
-          },
-        },
-        {
-          type: "applications",
-          heading: "Real-World Applications",
-          data: {
-            apps: [
-              {
-                title: "Fisheries Management",
-                description:
-                  "Understanding trophic levels and the 10% rule helps scientists calculate sustainable fish populations. Overfishing a top predator disrupts the entire chain below it.",
-                icon: "🐟",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Controlling Pest Populations",
-                description:
-                  "Introducing or protecting natural predators (secondary or tertiary consumers) to control pest species (primary consumers) is a cost-effective and environmentally friendly strategy.",
-                icon: "🦅",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Understanding Biodiversity Loss",
-                description:
-                  "When a species is removed from a food chain (through extinction or hunting), all species above and below it are affected. Protecting biodiversity means protecting all trophic levels.",
-                icon: "🌿",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Agricultural Planning",
-                description:
-                  "Farmers apply the 10% rule when deciding whether to grow crops for direct human consumption or to raise livestock. Direct consumption requires less land and fewer resources.",
-                icon: "🌾",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      id: "lesson-57",
-      weekId: "week-19",
-      lessonNumber: 57,
-      title: "Food nulls",
-      badge: "Lesson 3",
-      subtitle: "How interconnected food chains create a complex null of life",
-      readTime: "~13 min read",
-      xp: 50,
-      heroImage: null,
-      heroImageAlt:
-        "null diagram showing the interconnected food null of an ecosystem",
-      sections: [
-        "Beyond the Food Chain",
-        "Food Chain vs. Food null",
-        "Ecosystem Disruption Scenarios",
-        "Real-World Applications",
-      ],
-      layout: [
-        {
-          type: "intro",
-          heading: "Beyond the Food Chain",
-          data: {
-            paragraphs: [
-              "A food chain gives us a simple picture of energy flow, but nature is rarely that simple. In reality, most animals eat more than one type of food and are preyed upon by more than one predator. A <strong class='text-primary-700'>food null</strong> shows the complex, interconnected network of ALL the feeding relationships in an ecosystem.",
-              "In a food null, many food chains overlap and interlink. For example, a frog might eat grasshoppers AND flies, while the frog is eaten by both snakes AND herons. These overlapping connections mean that food nulls are far more resilient than simple food chains — if one food source disappears, an animal may switch to another.",
-              "However, removing a <strong class='text-primary-700'>keystone species</strong> — a species that has an outsized effect on its ecosystem — can trigger a <strong class='text-primary-700'>trophic cascade</strong>, where changes at one trophic level cause dramatic changes throughout the entire food null. The more biodiversity an ecosystem has, the more stable its food null.",
-            ],
-            didYouKnow:
-              "When wolves were reintroduced to Yellowstone National Park in 1995, they reduced elk grazing near rivers — allowing willows and aspens to grow back, which stabilized riverbanks, reduced erosion, and even changed the course of rivers. This is a trophic cascade!",
-          },
-        },
+
         {
           type: "comparison",
-          heading: "Food Chain vs. Food null",
+          heading: "Energy Flows, Nutrients Cycle",
           data: {
             intro:
-              "While food chains and food nulls both show energy flow, they differ significantly in complexity and accuracy.",
+              "This is the single most important idea in ecology, and the one most often confused. Energy and matter behave completely differently in an ecosystem.",
             left: {
-              label: "Food Chain",
+              label: "Energy — a One-Way Flow",
               color: "primary",
               items: [
-                "Simple, LINEAR sequence of organisms",
-                "Less realistic — most organisms eat many things",
-                "Shows ONE feeding pathway only",
-                "Easier to draw and understand",
-                "If one link is removed, the chain breaks completely",
+                "Enters the ecosystem from the sun",
+                "Captured by producers through photosynthesis",
+                "Passes upward through trophic levels, losing 90% at each step",
+                "Lost permanently as heat during metabolism",
+                "Must be constantly resupplied by sunlight — it never returns",
               ],
             },
             right: {
-              label: "Food null",
+              label: "Nutrients — an Endless Cycle",
               color: "secondary",
               items: [
-                "Complex, INTERCONNECTED network of organisms",
-                "More realistic — shows actual feeding relationships",
-                "Shows MANY overlapping feeding pathways",
-                "More complex but far more accurate",
-                "If one species is removed, others can adapt — more resilient",
+                "Carbon, nitrogen, and minerals already exist on Earth",
+                "Absorbed from soil and air by producers",
+                "Passed along as organisms eat one another",
+                "Released by decomposers when organisms die",
+                "Returned to soil and water and used again — round and round",
               ],
             },
           },
         },
+
         {
-          type: "scenario",
-          heading: "Ecosystem Disruption Scenarios",
+          type: "reasonCards",
+          heading: "How Species Interact",
           data: {
             intro:
-              "These real-world examples show how removing or disrupting one part of a food null can affect everything else.",
-            scenarios: [
+              "Organisms do not live in isolation. Five kinds of interaction shape populations, and each one is defined by who benefits and who is harmed.",
+            reasons: [
               {
-                title: "Wolves Removed from Yellowstone",
-                situation:
-                  "For most of the 20th century, wolves were hunted to extinction in Yellowstone National Park. With no natural predators, the elk population exploded and heavily grazed the riverbanks, causing erosion and destroying habitat.",
-                question:
-                  "How did removing one species from the top of the food null affect the entire ecosystem?",
-                skill:
-                  "Trophic cascade — removing the top predator (wolves) caused the primary consumer (elk) population to boom, which overconsumption of plants (producers) destabilized the ecosystem. When wolves were reintroduced in 1995, the entire ecosystem recovered.",
+                num: "+/+",
+                title: "Mutualism",
+                color: "primary",
+                desc: "Both species benefit",
+                content:
+                  "The clownfish and sea anemone: the anemone's stinging tentacles protect the clownfish, while the clownfish cleans the anemone and chases off fish that would eat it.",
               },
               {
-                title: "Overfishing Tuna",
-                situation:
-                  "Commercial fishing removes enormous numbers of bluefin tuna from the ocean every year. Tuna are apex predators that eat smaller fish like mackerel and herring.",
-                question:
-                  "What happens to the rest of the food null when tuna are overfished?",
-                skill:
-                  "Without tuna to control them, populations of mackerel and herring explode, leading to overgrazing of zooplankton and phytoplankton (producers). This reduces oxygen production in the ocean and disrupts the entire aquatic food null.",
+                num: "+/0",
+                title: "Commensalism",
+                color: "secondary",
+                desc: "One benefits, the other is unaffected",
+                content:
+                  "Barnacles attach to a whale's skin and are carried to food-rich waters. The barnacles gain transport and feeding opportunities; the whale is neither helped nor harmed.",
               },
               {
-                title: "Algae Bloom in a Lake",
-                situation:
-                  "Agricultural runoff containing fertilizers flows into a lake, causing an explosion of algae growth — an algal bloom. The algae cover the water surface, blocking sunlight from reaching underwater plants.",
-                question:
-                  "How does a sudden increase in producers (algae) disrupt the food null?",
-                skill:
-                  "The algae bloom blocks light, killing underwater plants and reducing oxygen in the water (when algae decompose). Fish and other aquatic consumers suffocate and die, collapsing the entire aquatic food null — a process called eutrophication.",
+                num: "+/−",
+                title: "Parasitism",
+                color: "accent",
+                desc: "One benefits at the other's expense",
+                content:
+                  "A tapeworm lives in an animal's intestine absorbing nutrients. The parasite gains food and shelter while the host is weakened — but usually not killed, since the parasite needs it alive.",
+              },
+              {
+                num: "+/−",
+                title: "Predation",
+                color: "primary",
+                desc: "The predator benefits, the prey is killed",
+                content:
+                  "A hawk catches and eats a mouse. Unlike parasitism this is immediate and fatal, and it is the main force controlling prey population sizes.",
+              },
+              {
+                num: "−/−",
+                title: "Competition",
+                color: "secondary",
+                desc: "Both species are harmed",
+                content:
+                  "Two plant species growing side by side compete for the same light, water, and soil minerals. Both grow less well than either would alone.",
               },
             ],
           },
         },
+
+        {
+          type: "comparison",
+          heading: "Mutualism vs. Parasitism",
+          data: {
+            intro:
+              "Both are long-term relationships between two species, but the outcome for the partner could not be more different.",
+            left: {
+              label: "Mutualism (+/+)",
+              color: "primary",
+              items: [
+                "Species 1: BENEFITS",
+                "Species 2: BENEFITS",
+                "Long term: both species thrive together",
+                "Examples: clownfish and anemone; bees and flowers",
+                "Each evolves traits that help the other",
+              ],
+            },
+            right: {
+              label: "Parasitism (+/−)",
+              color: "secondary",
+              items: [
+                "Species 1 (parasite): BENEFITS",
+                "Species 2 (host): IS HARMED",
+                "Long term: host weakened, but the parasite needs it alive",
+                "Examples: tapeworm in intestines; fleas on a dog",
+                "The host evolves defences; the parasite evolves ways around them",
+              ],
+            },
+          },
+        },
+
+        {
+          type: "conceptList",
+          heading: "Key Ideas",
+          data: {
+            concepts: [
+              "Only about 10% of the energy at one trophic level reaches the next; roughly 90% is lost as heat.",
+              "Energy pyramids are always widest at the base and narrowest at the top, because energy only decreases upward.",
+              "Top predators are always rare, because so little energy reaches the top of the pyramid to support them.",
+              "A pyramid of numbers or biomass can be inverted, but a pyramid of energy never can.",
+              "Energy flows one way through an ecosystem and is lost; nutrients cycle and are reused indefinitely.",
+              "Decomposers are what close the nutrient cycle — without them, nutrients would stay locked in dead matter.",
+              "Symbiosis covers three relationships: mutualism (+/+), commensalism (+/0), and parasitism (+/−).",
+              "Shorter food chains waste less energy, which is why eating plants directly is more efficient than eating animals that ate plants.",
+            ],
+          },
+        },
+
         {
           type: "applications",
-          heading: "Real-World Applications",
+          heading: "Applications",
           data: {
             apps: [
               {
-                title: "Conservation Biology",
+                title: "Sustainable Agriculture",
                 description:
-                  "Scientists use food null models to identify keystone species and predict how ecosystem changes (habitat loss, hunting, climate change) will affect entire communities of organisms.",
-                icon: "🌿",
+                  "Producing 1 kg of beef takes about 8 kg of grain. The 10% rule is why plant-based diets need less farmland, water, and energy.",
+                icon: "🌾",
                 color: "border-l-primary-500",
               },
               {
-                title: "Wildlife Management",
+                title: "Composting and Soil Health",
                 description:
-                  "Wildlife managers use food null knowledge to determine sustainable hunting and fishing limits, preventing the removal of key species that would destabilize entire ecosystems.",
-                icon: "🦅",
+                  "Composting is the nutrient cycle put to work — decomposers turn kitchen waste back into the minerals plants need.",
+                icon: "🪱",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Invasive Species Control",
+                title: "Protecting Pollinators",
                 description:
-                  "Invasive species disrupt food nulls by competing with native species or lacking natural predators. Understanding the food null helps managers decide how to control invasive species most effectively.",
-                icon: "🦎",
+                  "Bees and flowering plants are mutualists. Losing pollinators would devastate both wild plants and the crops that depend on them.",
+                icon: "🐝",
                 color: "border-l-accent-500",
               },
               {
-                title: "Environmental Impact Assessment",
+                title: "Treating Parasitic Disease",
                 description:
-                  "Before construction projects (dams, highways, factories) are approved, scientists use food null analysis to predict how the project will affect local ecosystems — protecting biodiversity while allowing development.",
+                  "Malaria, tapeworms, and lice are all parasitic relationships. Understanding how a parasite depends on its host guides the treatment.",
+                icon: "🏥",
+                color: "border-l-primary-500",
+              },
+            ],
+          },
+        },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════
+    // LESSON 2 — 3rd Performance Task: 3D Ecosystem Diorama
+    // ═══════════════════════════════════════════════════
+    {
+      id: "w19-l2",
+      weekId: "week-19",
+      lessonNumber: 2,
+      title: "3rd Performance Task: 3D Ecosystem Diorama",
+      badge: "Performance Task",
+      subtitle:
+        "Build a three-dimensional model of a real ecosystem, complete with a labelled food web showing exactly how energy moves through it.",
+      readTime: "~14 min read",
+      xp: 100,
+      heroImage: classroom,
+      heroImageAlt:
+        "Classroom display of student-built three-dimensional ecosystem models",
+
+      sections: [
+        "The Task",
+        "Choosing Your Ecosystem",
+        "What You Will Need",
+        "Building Your Diorama",
+        "How You Will Be Graded",
+        "Tips for a Strong Diorama",
+        "Why This Task Matters",
+      ],
+
+      references: [
+        {
+          label: "National Geographic — Ecosystems",
+          url: "https://education.nationalgeographic.org/resource/ecosystem/",
+        },
+      ],
+
+      layout: [
+        {
+          type: "intro",
+          heading: "The Task",
+          data: {
+            paragraphs: [
+              "Your final performance task is to build a <strong class='text-primary-700'>3D ecosystem diorama</strong> — a three-dimensional model of a real ecosystem inside a box, showing the organisms that live there and how they are connected.",
+              "This is not just a craft project. Your diorama must show at least <strong class='text-primary-700'>eight organisms</strong> covering producers, consumers at more than one trophic level, and decomposers. It must include both the <strong class='text-primary-700'>biotic</strong> (living) and <strong class='text-primary-700'>abiotic</strong> (non-living) parts of the ecosystem, and it must carry a labelled <strong class='text-primary-700'>food web</strong> with arrows pointing in the correct direction.",
+              "This single model pulls together everything from the last two weeks: producers and consumers, trophic levels, the 10% rule, food webs, and species interactions.",
+            ],
+            didYouKnow:
+              "Museum dioramas are built by teams of scientists and artists working together. The habitat backgrounds at natural history museums are painted from field sketches made at the actual location.",
+          },
+        },
+
+        {
+          type: "reasonCards",
+          heading: "Choosing Your Ecosystem",
+          data: {
+            intro:
+              "Pick one ecosystem and stick to it. Mixing organisms that would never meet in real life is the most common way to lose marks.",
+            reasons: [
+              {
+                num: 1,
+                title: "Forest Ecosystem",
+                color: "primary",
+                desc: "Trees, undergrowth, and layered habitats",
+                content:
+                  "Producers: trees, ferns, grasses. Consumers: deer, insects, birds, snakes, owls. Decomposers: mushrooms, earthworms, bacteria in the leaf litter.",
+              },
+              {
+                num: 2,
+                title: "Pond or Freshwater Ecosystem",
+                color: "secondary",
+                desc: "Easy to show layers from surface to bottom",
+                content:
+                  "Producers: algae, water lilies, pondweed. Consumers: tadpoles, small fish, frogs, herons, dragonflies. Decomposers: bacteria in the mud.",
+              },
+              {
+                num: 3,
+                title: "Coral Reef",
+                color: "accent",
+                desc: "Visually striking and full of interactions",
+                content:
+                  "Producers: algae and zooxanthellae. Consumers: parrotfish, clownfish, sea turtles, reef sharks. A clownfish and anemone also give you a clear mutualism to label.",
+              },
+              {
+                num: 4,
+                title: "Rice Field or Farm Ecosystem",
+                color: "primary",
+                desc: "A local ecosystem you can observe yourself",
+                content:
+                  "Producers: rice plants, weeds. Consumers: snails, frogs, rats, snakes, egrets. Decomposers: bacteria and fungi in the paddy mud. Easy to research from direct observation.",
+              },
+              {
+                num: 5,
+                title: "Mangrove or Coastal Ecosystem",
+                color: "secondary",
+                desc: "Shows a boundary between two habitats",
+                content:
+                  "Producers: mangrove trees, seagrass. Consumers: crabs, mudskippers, fish, wading birds. Decomposers: bacteria in the sediment.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "keyTerms",
+          heading: "What You Will Need",
+          data: {
+            terms: [
+              {
+                term: "A box",
+                desc: "A shoebox or similar, opened on one long side. This is your stage — everything is built inside it.",
+              },
+              {
+                term: "Background materials",
+                desc: "Paper or paint for the sky, water, or forest depth. Painting the background first makes everything else look finished.",
+              },
+              {
+                term: "Modelling materials",
+                desc: "Clay, cardboard, paper, cotton, twigs, sand, leaves. Natural materials collected outdoors look better than bought ones.",
+              },
+              {
+                term: "At least eight organisms",
+                desc: "Producers, primary consumers, secondary or tertiary consumers, and decomposers. Each must be modelled and labelled.",
+              },
+              {
+                term: "Abiotic components",
+                desc: "Water, soil, rocks, sunlight, air. These are part of the ecosystem and carry marks, so show them deliberately.",
+              },
+              {
+                term: "Labels and arrows",
+                desc: "Small flags or tags naming each organism and its role, plus a food web with arrows showing energy flow.",
+              },
+              {
+                term: "A written information card",
+                desc: "One page naming your ecosystem, listing each organism with its trophic level, and explaining one species interaction.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "timeline",
+          heading: "Building Your Diorama",
+          data: {
+            intro:
+              "Research before you build. A diorama that looks good but contains organisms that never coexist will not score well.",
+            steps: [
+              {
+                num: 1,
+                title: "Research Your Ecosystem",
+                color: "primary",
+                description:
+                  "Choose your ecosystem and research which organisms actually live there. List at least eight, and make sure you have producers, consumers from two or more levels, and decomposers.",
+                tip: "Every organism must genuinely belong. A polar bear does not belong in a coral reef.",
+              },
+              {
+                num: 2,
+                title: "Draw Your Food Web First",
+                color: "secondary",
+                description:
+                  "Before building anything, sketch the food web on paper. Draw arrows showing who eats whom, with each arrow pointing from the eaten toward the eater.",
+                tip: "Doing this first means you find the gaps in your organism list before you have glued anything down.",
+              },
+              {
+                num: 3,
+                title: "Prepare the Box and Background",
+                color: "accent",
+                description:
+                  "Paint or paper the inside of the box: sky and distant trees for a forest, water and light rays for a pond. Let it dry completely before adding anything.",
+                tip: "Paint the background before adding models. Painting around finished models is very difficult.",
+              },
+              {
+                num: 4,
+                title: "Build the Abiotic Layer",
+                color: "primary",
+                description:
+                  "Add the non-living parts first — soil, sand, rocks, water. These form the base everything else sits on, and they carry marks in their own right.",
+                tip: "Use real soil, sand, or small stones where you can. They look far better than painted cardboard.",
+              },
+              {
+                num: 5,
+                title: "Add Your Organisms",
+                color: "secondary",
+                description:
+                  "Model each organism from clay, paper, or natural materials and place it where it actually lives — birds in the canopy, worms in the soil, fish below the water line.",
+                tip: "Placement carries meaning. An organism in the wrong layer suggests you do not know its habitat.",
+              },
+              {
+                num: 6,
+                title: "Label Everything and Add the Food Web",
+                color: "accent",
+                description:
+                  "Attach a small label to each organism giving its name and role (producer, primary consumer, decomposer). Mount your food web inside the lid or on a card beside the box.",
+                tip: "Check every arrow direction one final time. Reversed arrows are the most commonly lost marks on this task.",
+              },
+              {
+                num: 7,
+                title: "Write Your Information Card",
+                color: "primary",
+                description:
+                  "Write one page naming the ecosystem, listing each organism with its trophic level, describing one species interaction you have included, and explaining what would happen if one organism were removed.",
+                tip: "The removal question is where you show real understanding — describe the knock-on effects along the web.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "comparison",
+          heading: "How You Will Be Graded",
+          data: {
+            intro:
+              "This task is marked out of 100 points. Science content outweighs craftwork — a neat model with a wrong food web scores poorly.",
+            left: {
+              label: "Science Content — 60 points",
+              color: "primary",
+              items: [
+                "At least eight organisms that genuinely coexist in the ecosystem (15 pts)",
+                "Producers, consumers at two or more levels, and decomposers all present (15 pts)",
+                "Food web arrows all point in the correct direction (15 pts)",
+                "Biotic and abiotic components both shown and labelled (10 pts)",
+                "Information card correctly explains one species interaction (5 pts)",
+              ],
+            },
+            right: {
+              label: "Construction and Presentation — 40 points",
+              color: "secondary",
+              items: [
+                "Diorama is three-dimensional and uses the depth of the box (10 pts)",
+                "Organisms are placed in their correct habitat layer (10 pts)",
+                "All labels are present, readable, and accurate (10 pts)",
+                "Neat, sturdy, creative, and submitted on time (10 pts)",
+              ],
+            },
+          },
+        },
+
+        {
+          type: "conceptList",
+          heading: "Tips for a Strong Diorama",
+          data: {
+            concepts: [
+              "Use the depth of the box. A flat picture glued to the back wall is a poster, not a diorama — build foreground, middle, and background layers.",
+              "Do not forget decomposers. They are the most commonly missed category, and they are worth marks: show mushrooms, worms, or a labelled patch of soil bacteria.",
+              "Check every arrow twice. Arrows run from the organism being eaten toward the organism eating it.",
+              "Include abiotic factors deliberately and label them — sunlight, water, soil, and air are part of the ecosystem.",
+              "Natural materials beat bought ones. Real twigs, sand, leaves, and small stones look better and cost nothing.",
+              "Keep the scale roughly sensible — an insect the same size as a deer confuses the model.",
+              "Add one clear species interaction you can explain out loud, such as a clownfish and anemone for mutualism.",
+              "Photograph your finished diorama before transporting it, in case anything is damaged on the way to school.",
+            ],
+          },
+        },
+
+        {
+          type: "applications",
+          heading: "Why This Task Matters",
+          data: {
+            apps: [
+              {
+                title: "How Museums Teach Ecology",
+                description:
+                  "Natural history museums use dioramas for exactly this reason: a three-dimensional scene shows relationships between organisms that a diagram cannot.",
+                icon: "🏛️",
+                color: "border-l-primary-500",
+              },
+              {
+                title: "Modelling in Science",
+                description:
+                  "This is the modelling idea from Week 1 again. Your diorama is a physical model — simplified, imperfect, and useful precisely because of that.",
                 icon: "🔬",
+                color: "border-l-secondary-500",
+              },
+              {
+                title: "Conservation Planning",
+                description:
+                  "Ecologists map food webs exactly as you are doing to predict how removing one species would affect an entire habitat.",
+                icon: "🌿",
+                color: "border-l-accent-500",
+              },
+              {
+                title: "Preparing for the Periodical Exam",
+                description:
+                  "The Second Periodical Examination covers Weeks 11–19, and this diorama reviews the ecology half of that material in one piece of work.",
+                icon: "📝",
                 color: "border-l-primary-500",
               },
             ],

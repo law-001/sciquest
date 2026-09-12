@@ -1,483 +1,414 @@
-// Week 4: Scientific Investigation — Grade 7 Science
+// Week 4: Changes in the State of Matter — Grade 7 Science
+//
+// Curriculum source: Grade 7 Science (MATATAG), 1st term Week 4.
+//   Lesson 1 — Changes in the State of Matter in Terms of Particle Arrangement
+//   (FIRST SUMMATIVE TEST)
 
-import equation from "../assets/week1/equation.jpg";
-import lab from "../assets/lab.jpg";
-import flowchart from "../assets/flowchart.jpg";
+import lesson7hero from "../assets/week3/lesson7hero.jpg";
 
 export const week04 = {
   id: "week-4",
   weekNumber: 4,
-  title: "Scientific Investigation",
-  category: "Scientific Method",
+  title: "Changes in the State of Matter",
+  category: "Matter",
   description:
-    "Learn how to design and conduct a proper scientific investigation by identifying variables, collecting data, and drawing conclusions.",
-  icon: "FlaskConical",
+    "Explain all six changes of state in terms of particle arrangement, motion, and energy. Covered by the First Summative Test.",
+  icon: "Thermometer",
   color: "primary",
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════
-    // LESSON 10 — Parts of a Scientific Investigation
+    // LESSON 1 — Changes in the State of Matter in Terms of Particle Arrangement
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-10",
+      id: "w04-l1",
       weekId: "week-4",
-      lessonNumber: 10,
-      title: "Parts of a Scientific Investigation",
-      badge: "Lesson 10",
+      lessonNumber: 1,
+      title: "Changes in the State of Matter in Terms of Particle Arrangement",
+      badge: "Lesson 1",
       subtitle:
-        "Discover the structured steps scientists use to investigate questions and find reliable, evidence-based answers.",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: flowchart,
-      heroImageAlt: "Flowchart showing the steps of a scientific investigation",
+        "Follow all six changes of state — melting, freezing, evaporation, condensation, sublimation, and deposition — and explain each one by what the particles are doing.",
+      readTime: "~20 min read",
+      xp: 100,
+      heroImage: lesson7hero,
+      heroImageAlt: "Ice melting in a laboratory setting",
 
       sections: [
         "Introduction",
+        "The Six Changes of State",
+        "Temperature During a Change of State",
+        "Melting vs. Freezing",
+        "Evaporation vs. Boiling",
+        "Sublimation and Deposition",
         "Key Terms",
-        "Steps of a Scientific Investigation",
+        "Real-World Scenarios",
         "Applications",
       ],
 
+      references: [
+        {
+          label: "The Physics Classroom — Phase Changes",
+          url: "https://www.physicsclassroom.com/class/thermalP/Lesson-2/Phase-Changes",
+        },
+        {
+          label: "CK-12 — Melting and Freezing",
+          url: "https://www.ck12.org/c/physical-science/melting-and-freezing",
+        },
+        {
+          label: "Britannica — Sublimation (Phase Change)",
+          url: "https://www.britannica.com/science/sublimation-phase-change",
+        },
+        {
+          label: "Khan Academy — States of Matter and Intermolecular Forces",
+          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces",
+        },
+      ],
+
       layout: [
-        // ── Section 0: Intro ──
         {
           type: "intro",
           heading: "Introduction",
           data: {
             paragraphs: [
-              "A <strong class='text-primary-700'>scientific investigation</strong> is a systematic process used by scientists to answer questions about the natural world. Unlike guessing, a scientific investigation gathers real <strong class='text-primary-700'>evidence</strong> through careful observation and experimentation. Every good investigation follows a similar set of steps to ensure that the results are valid and reliable.",
-              "Understanding how to conduct a proper scientific investigation is one of the most valuable skills you can learn. Whether you want to find out which fertilizer helps plants grow best, or why a bridge might be unsafe, the same logical steps apply. The <strong class='text-primary-700'>scientific method</strong> gives us a reliable roadmap for discovering the truth through evidence.",
+              "Matter changes from one state to another when energy is added or removed. Every one of these changes has the same underlying explanation: <strong class='text-primary-700'>heating gives particles more motion energy so they can break away from each other, and cooling takes it away so attractive forces can pull them back together</strong>.",
+              "Adding heat is an <strong class='text-primary-700'>endothermic</strong> change — the substance absorbs energy from its surroundings. Removing heat is an <strong class='text-primary-700'>exothermic</strong> change — the substance releases energy to its surroundings. There are six named changes, and this lesson covers all of them.",
             ],
             didYouKnow:
-              "The first known written scientific investigation was conducted by the ancient Egyptian physician Imhotep around 2650 BCE. He recorded medical observations and treatments systematically — thousands of years before the modern scientific method was formalized!",
+              "Pure gold melts at 1,064 °C, hot enough to melt almost any container on Earth. Scientists use special crucibles made of graphite or ceramic to melt and work with precious metals.",
           },
         },
 
-        // ── Section 1: Key Terms ──
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Hypothesis",
-                desc: "An educated, testable prediction that answers a scientific question. Written as an 'If... then...' statement based on prior knowledge and observations.",
-              },
-              {
-                term: "Experiment",
-                desc: "A controlled procedure designed to test a hypothesis by changing one variable and measuring the effect on another while keeping all other conditions the same.",
-              },
-              {
-                term: "Data",
-                desc: "Factual information — measurements, observations, and records — collected during an investigation. Data is the evidence used to support or reject a hypothesis.",
-              },
-              {
-                term: "Conclusion",
-                desc: "A summary statement that explains what the data shows and whether the hypothesis was supported or rejected. A good conclusion also suggests further questions.",
-              },
-              {
-                term: "Research",
-                desc: "The process of gathering background information about a topic before designing an investigation. Research helps form a stronger hypothesis and avoids repeating known mistakes.",
-              },
-              {
-                term: "Scientific Method",
-                desc: "A systematic, step-by-step process for investigating questions, collecting evidence, and drawing conclusions in a reliable and reproducible way.",
-              },
-            ],
-          },
-        },
-
-        // ── Section 2: Steps (timeline) ──
         {
           type: "timeline",
-          heading: "Steps of a Scientific Investigation",
+          heading: "The Six Changes of State",
           data: {
             intro:
-              "Every scientific investigation follows these seven steps. Following them carefully ensures that results are valid, reliable, and meaningful.",
+              "Each change has a name, a direction, and a particle-level explanation. Learn them as a set of three pairs — each change and its reverse.",
             steps: [
               {
                 num: 1,
-                title: "Identify the Problem or Question",
+                title: "Melting — Solid to Liquid",
                 color: "primary",
                 description:
-                  "Start by identifying a specific, testable question about something you want to understand. A good scientific question is clear, focused, and can be answered through investigation. Example: 'Does the amount of water affect the height of bean plants after 2 weeks?'",
-                tip: "Avoid questions that are too broad or cannot be tested with an experiment.",
+                  "When a solid is heated, its particles absorb energy and vibrate more vigorously. At the melting point, particles gain enough energy to break free from their fixed positions and begin to slide past one another. The regular pattern of the solid collapses.",
+                tip: "Endothermic. Ice melts at 0 °C. Different solids melt at different temperatures depending on how strongly their particles attract.",
               },
               {
                 num: 2,
-                title: "Research the Topic",
+                title: "Freezing — Liquid to Solid",
                 color: "secondary",
                 description:
-                  "Before designing your experiment, gather background information about the topic. Read textbooks, articles, or reports to understand what is already known. This prevents duplicating past work and helps you form a smarter hypothesis.",
-                tip: "Use reliable sources — science journals, textbooks, and educational websites are more trustworthy than random internet pages.",
+                  "When a liquid loses heat energy, its particles slow down. At the freezing point they no longer have enough energy to slide past each other, so attractive forces lock them into a fixed, regular arrangement.",
+                tip: "Exothermic. Freezing and melting happen at the same temperature for a given pure substance — for water, both at 0 °C.",
               },
               {
                 num: 3,
-                title: "Form a Hypothesis",
+                title: "Evaporation and Boiling — Liquid to Gas",
                 color: "accent",
                 description:
-                  "Based on your research, write a testable prediction about what you think will happen in your experiment. Example: 'If a bean plant receives more water per day, then it will grow taller after 2 weeks.'",
-                tip: "A hypothesis is not a fact — it is your best prediction based on available evidence. It must be something you can test.",
+                  "As a liquid is heated, the faster-moving particles at the surface escape into the air — this is evaporation, and it happens at any temperature. At the boiling point, particles throughout the whole liquid have enough energy to escape, forming bubbles of vapour inside the liquid.",
+                tip: "Endothermic. Evaporation happens only at the surface; boiling happens throughout. Water boils at 100 °C at sea level.",
               },
               {
                 num: 4,
-                title: "Design the Experiment",
+                title: "Condensation — Gas to Liquid",
                 color: "primary",
                 description:
-                  "Plan how you will test your hypothesis. Identify the independent variable (what you change), the dependent variable (what you measure), and the controlled variables (what stays the same). Write a clear step-by-step procedure.",
-                tip: "Change only ONE variable at a time to ensure your results are meaningful and not caused by multiple factors.",
+                  "When a gas loses energy and cools, its particles slow down until attractive forces can pull them back together into a liquid. This is why water droplets form on a cold glass on a warm day.",
+                tip: "Exothermic. Fog, clouds, and morning dew are all condensed water vapour.",
               },
               {
                 num: 5,
-                title: "Collect Data",
+                title: "Sublimation — Solid to Gas",
                 color: "secondary",
                 description:
-                  "Carry out your experiment and record all observations and measurements carefully. Use tables, charts, and notes to organize your data. Always record what actually happens — never change data to match your hypothesis.",
-                tip: "Perform multiple trials (at least 3) to improve the reliability of your results.",
+                  "Some solids change directly into a gas without ever becoming a liquid. This happens when particles at the surface of the solid gain enough energy to escape straight into the air, usually because the attractive forces are weak or the pressure is low.",
+                tip: "Endothermic. Dry ice (solid CO₂) sublimates at room temperature, producing fog without leaving anything wet behind.",
               },
               {
                 num: 6,
-                title: "Analyze Data and Identify Patterns",
+                title: "Deposition — Gas to Solid",
                 color: "accent",
                 description:
-                  "Look at your data and identify patterns, trends, or relationships. Calculate averages, create graphs, and compare results across your trials. Ask yourself: What does the data actually show?",
-                tip: "Graphs (bar, line, pie) make patterns in data easier to see and communicate to others.",
-              },
-              {
-                num: 7,
-                title: "Draw Conclusions and Communicate Results",
-                color: "primary",
-                description:
-                  "Write a conclusion that states whether your hypothesis was supported or rejected, and why. Explain any unexpected results. Then share your findings with others through a report, presentation, or poster.",
-                tip: "A rejected hypothesis is still a valuable finding — it narrows down possible explanations and guides future investigations.",
+                  "Some gases change directly into a solid without passing through the liquid state. Gas particles lose energy so quickly on contact with a very cold surface that they lock immediately into a fixed arrangement.",
+                tip: "Exothermic. Frost is the classic example — water vapour depositing straight onto cold surfaces as ice crystals.",
               },
             ],
           },
         },
 
-        // ── Section 3: Applications ──
         {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Medicine",
-                description:
-                  "Medical researchers use scientific investigations (clinical trials) to test whether new treatments, vaccines, and drugs are safe and effective before they are given to patients.",
-                icon: "💊",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Engineering",
-                description:
-                  "Engineers use investigations to test the strength of materials, the efficiency of new designs, and the safety of structures before they are built at full scale.",
-                icon: "🏗️",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Environmental Science",
-                description:
-                  "Scientists conduct investigations to measure pollution levels, track the health of ecosystems, and study the effects of human activities on the natural environment.",
-                icon: "🌿",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Agriculture",
-                description:
-                  "Farmers and agricultural scientists use investigations to find the best growing conditions, most effective fertilizers, and most resistant crop varieties to improve food production.",
-                icon: "🌾",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
-      ],
-    },
-
-    // ═══════════════════════════════════════════════════
-    // LESSON 11 — Variables and Controls
-    // ═══════════════════════════════════════════════════
-    {
-      id: "lesson-11",
-      weekId: "week-4",
-      lessonNumber: 11,
-      title: "Variables and Controls",
-      badge: "Lesson 11",
-      subtitle:
-        "Learn to identify the independent variable, dependent variable, controlled variables, and control group in any experiment.",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: lab,
-      heroImageAlt: "Laboratory setup showing controlled experiment",
-
-      sections: [
-        "Introduction",
-        "Independent vs. Dependent Variable",
-        "Key Concepts",
-        "Experiment Scenarios",
-      ],
-
-      layout: [
-        // ── Section 0: Intro ──
-        {
-          type: "intro",
-          heading: "Introduction",
-          data: {
-            paragraphs: [
-              "For an experiment to produce reliable results, scientists must carefully control what changes and what stays the same. In every experiment there are three types of variables: the <strong class='text-primary-700'>independent variable</strong> (what you deliberately change), the <strong class='text-primary-700'>dependent variable</strong> (what you measure as a result), and <strong class='text-primary-700'>controlled variables</strong> (everything else that must stay constant).",
-              "A <strong class='text-primary-700'>control group</strong> is a group in the experiment that receives no treatment and is used as a baseline for comparison. Without a control group, it is impossible to know whether the independent variable truly caused the observed changes. A fair test changes only one variable at a time.",
-            ],
-            didYouKnow:
-              "The concept of the controlled experiment was pioneered by the Arab scientist Ibn al-Haytham around 1000 CE. He used controlled tests of light and vision — setting the foundation for modern experimental design!",
-          },
-        },
-
-        // ── Section 1: Comparison ──
-        {
-          type: "comparison",
-          heading: "Independent vs. Dependent Variable",
+          type: "timeline",
+          heading: "Temperature During a Change of State",
           data: {
             intro:
-              "The independent variable and dependent variable play different roles in an experiment. Understanding their distinction is essential for designing a fair test.",
+              "Here is the part that surprises most students: while a substance is changing state, its temperature does not rise, even though heat is still being added. Follow what happens to a block of ice on a hotplate.",
+            steps: [
+              {
+                num: 1,
+                title: "Heating the Solid (Below Melting Point)",
+                color: "primary",
+                description:
+                  "Heat energy is added to the ice. The temperature rises steadily as the particles vibrate faster and faster in their fixed positions. The ice remains solid throughout this stage.",
+                tip: "The colder the solid, the more energy is needed to raise it to its melting point.",
+              },
+              {
+                num: 2,
+                title: "Reaching the Melting Point",
+                color: "secondary",
+                description:
+                  "The temperature stops rising when the melting point is reached (0 °C for ice). All heat energy added at this stage goes into breaking the attractions between particles, not into raising the temperature.",
+                tip: "This energy is called the latent heat of fusion — energy used to change state rather than temperature.",
+              },
+              {
+                num: 3,
+                title: "Melting Occurs (Solid and Liquid Together)",
+                color: "accent",
+                description:
+                  "While the substance sits at its melting point, solid and liquid exist side by side. The temperature stays flat until the last of the solid has melted. On a temperature-time graph this shows as a horizontal plateau.",
+                tip: "Pure substances melt at a sharp, exact temperature. Impurities spread melting across a range instead.",
+              },
+              {
+                num: 4,
+                title: "Heating the Liquid",
+                color: "primary",
+                description:
+                  "Once everything has melted, the temperature begins to climb again as heat is added to the liquid. The particles now move freely past one another and the substance is entirely liquid.",
+                tip: "Liquid water keeps warming until it reaches 100 °C, its boiling point — where a second plateau appears.",
+              },
+              {
+                num: 5,
+                title: "Cooling Back Down (Reverse Process)",
+                color: "secondary",
+                description:
+                  "Remove heat and the whole sequence runs backwards. The temperature drops until it reaches the freezing point, then holds flat while particles release energy, slow down, and lock into a solid arrangement.",
+                tip: "Freezing releases energy, which is why a pond takes a long time to freeze even in very cold weather.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "comparison",
+          heading: "Melting vs. Freezing",
+          data: {
+            intro:
+              "Melting and freezing are opposite phase changes that occur at the same temperature for a given pure substance.",
             left: {
-              label: "Independent Variable",
+              label: "Melting",
               color: "primary",
               items: [
-                "Definition: The variable that is deliberately changed or manipulated by the experimenter",
-                "Example: The amount of fertilizer added to each plant group (0g, 5g, 10g)",
-                "Who controls it: The experimenter — it is intentionally varied",
-                "How identified: Ask 'What am I changing in this experiment?'",
-                "Role: The cause — changes in this variable are expected to produce changes in the dependent variable",
+                "Direction: Solid → Liquid (gains energy)",
+                "Energy: Endothermic — absorbs heat from the surroundings",
+                "Particles gain energy, vibrate faster, and break free of fixed positions",
+                "Temperature stays constant at the melting point during the change",
+                "Examples: ice becoming water, wax softening, chocolate melting",
               ],
             },
             right: {
-              label: "Dependent Variable",
+              label: "Freezing",
               color: "secondary",
               items: [
-                "Definition: The variable that is observed and measured to see the effect of the independent variable",
-                "Example: The height of the plant (in cm) after 2 weeks",
-                "Who controls it: Nobody — it responds naturally to changes in the independent variable",
-                "How identified: Ask 'What am I measuring or observing?'",
-                "Role: The effect — changes in this variable show whether the independent variable had an impact",
+                "Direction: Liquid → Solid (loses energy)",
+                "Energy: Exothermic — releases heat to the surroundings",
+                "Particles lose energy, slow down, and lock into a rigid arrangement",
+                "Temperature stays constant at the freezing point during the change",
+                "Examples: water turning to ice, candle wax solidifying, cast metal cooling",
               ],
             },
           },
         },
 
-        // ── Section 2: Concept List ──
         {
-          type: "conceptList",
-          heading: "Key Concepts",
-          data: {
-            concepts: [
-              "In a fair test, only the independent variable is changed — all other conditions (controlled variables) must remain the same for each group.",
-              "Controlled variables are factors that could affect the dependent variable but are kept constant to prevent them from interfering with results (e.g., pot size, soil type, watering schedule).",
-              "A control group receives no treatment and is used as a baseline for comparing the results from the experimental groups.",
-              "If more than one variable is changed at the same time, it is impossible to determine which change caused the observed results.",
-              "Every experiment should be repeated (multiple trials) to check if results are consistent and not due to random chance.",
-              "The more controlled variables an experiment has, the more confident a scientist can be that the independent variable caused the observed changes in the dependent variable.",
-            ],
-          },
-        },
-
-        // ── Section 3: Scenarios ──
-        {
-          type: "scenario",
-          heading: "Experiment Scenarios",
+          type: "comparison",
+          heading: "Evaporation vs. Boiling",
           data: {
             intro:
-              "Practice identifying variables in these experiment scenarios. For each one, identify the independent variable, dependent variable, and at least two controlled variables.",
-            scenarios: [
-              {
-                title: "Plant Growth Experiment",
-                situation:
-                  "A student sets up 4 groups of bean plants. Group A gets 0 mL of water per day, Group B gets 50 mL, Group C gets 100 mL, and Group D gets 150 mL. All plants use the same soil, pot size, amount of sunlight, and room temperature. After 2 weeks, the student measures plant height.",
-                question:
-                  "What is the independent variable, dependent variable, and the control group? What are two controlled variables?",
-                skill:
-                  "IV: amount of water per day. DV: plant height after 2 weeks. Control group: Group A (0 mL). Controlled variables: soil type, pot size, sunlight, temperature.",
-              },
-              {
-                title: "Dissolving Sugar Experiment",
-                situation:
-                  "A student tests whether temperature affects how quickly sugar dissolves. She dissolves 10 g of sugar in 200 mL of water at temperatures of 10°C, 30°C, 50°C, and 70°C. She uses the same brand of sugar and the same volume of water in each trial.",
-                question:
-                  "What is the independent variable? What is the dependent variable? What would the control group look like?",
-                skill:
-                  "IV: temperature of the water. DV: time it takes for the sugar to dissolve. Control: a trial at room temperature (~25°C) with no special heating or cooling. Controlled: amount of sugar, volume of water, brand of sugar.",
-              },
-              {
-                title: "Sunscreen Effectiveness",
-                situation:
-                  "A student wants to test which brand of sunscreen blocks more UV rays. She applies three different sunscreens (Brand A, B, C) to separate pieces of UV-sensitive paper and exposes all of them to sunlight for 15 minutes at the same time of day.",
-                question:
-                  "Identify the independent variable, dependent variable, and one controlled variable. Why is it important that all papers are exposed at the same time?",
-                skill:
-                  "IV: brand of sunscreen (A, B, or C). DV: amount of UV light that passes through (color change of paper). Controlled: exposure time, time of day, distance from sunlight source. Exposing all at the same time controls sunlight intensity.",
-              },
-            ],
+              "Both turn a liquid into a gas, but they differ in where they happen and what conditions they need. This distinction is a common exam question.",
+            left: {
+              label: "Evaporation",
+              color: "primary",
+              items: [
+                "Occurs only at the surface of the liquid",
+                "Can happen at any temperature, not only at the boiling point",
+                "Slower — the rate depends on temperature, humidity, surface area, and wind",
+                "No bubbles form inside the liquid",
+                "Examples: puddles drying, wet clothes drying, sweat cooling skin",
+              ],
+            },
+            right: {
+              label: "Boiling",
+              color: "secondary",
+              items: [
+                "Occurs throughout the entire liquid at once",
+                "Only happens at one specific temperature — the boiling point",
+                "Much faster — rapid conversion of liquid to gas",
+                "Bubbles of vapour form inside the liquid and rise to the surface",
+                "Examples: water on a stove, kettle steam, pasta water",
+              ],
+            },
           },
         },
-      ],
-    },
 
-    // ═══════════════════════════════════════════════════
-    // LESSON 12 — Data Collection and Recording
-    // ═══════════════════════════════════════════════════
-    {
-      id: "lesson-12",
-      weekId: "week-4",
-      lessonNumber: 12,
-      title: "Data Collection and Recording",
-      badge: "Lesson 12",
-      subtitle:
-        "Master the skills of collecting, organizing, and presenting scientific data accurately and honestly.",
-      readTime: "~12 min read",
-      xp: 50,
-      heroImage: equation,
-      heroImageAlt: "Data table and graphs on a laboratory worksheet",
-
-      sections: [
-        "Introduction",
-        "Key Terms",
-        "Why Multiple Trials Matter",
-        "Applications",
-      ],
-
-      layout: [
-        // ── Section 0: Intro ──
         {
-          type: "intro",
-          heading: "Introduction",
+          type: "comparison",
+          heading: "Sublimation and Deposition",
           data: {
-            paragraphs: [
-              "Collecting and recording data accurately is one of the most important steps in any scientific investigation. Scientists collect two main types of data: <strong class='text-primary-700'>quantitative data</strong> (numerical measurements) and <strong class='text-primary-700'>qualitative data</strong> (descriptive observations). Both types provide valuable information about what is happening in an experiment.",
-              "Once data is collected, scientists organize it into <strong class='text-primary-700'>tables</strong> and represent it visually using <strong class='text-primary-700'>graphs</strong> — such as bar graphs, line graphs, and pie charts. Good data recording requires accuracy, honesty, and consistency. Always record what you actually observe, even if the results are unexpected.",
-            ],
-            didYouKnow:
-              "Florence Nightingale, the founder of modern nursing, was also a brilliant data scientist. She created detailed statistical charts of hospital death rates in the 1850s — and her visual data convinced the British government to improve sanitation in military hospitals, saving thousands of lives.",
+            intro:
+              "These two changes skip the liquid stage entirely. They are rarer than the other four, but they follow exactly the same energy rules.",
+            left: {
+              label: "Sublimation",
+              color: "primary",
+              items: [
+                "Direction: Solid → Gas (skips the liquid phase)",
+                "Energy: Endothermic — the solid absorbs heat to sublimate",
+                "Conditions: low atmospheric pressure or very weak attractions in the solid",
+                "Examples: dry ice fogging, iodine crystals releasing violet vapour, mothballs shrinking",
+                "Used for: freeze-drying food and medicine, shipping with dry ice",
+              ],
+            },
+            right: {
+              label: "Deposition",
+              color: "secondary",
+              items: [
+                "Direction: Gas → Solid (skips the liquid phase)",
+                "Energy: Exothermic — the gas releases heat as it becomes solid",
+                "Conditions: very cold surfaces that drain energy from gas particles fast",
+                "Examples: frost on windows, snowflakes forming in clouds",
+                "Used for: understanding frost warnings in agriculture",
+              ],
+            },
           },
         },
 
-        // ── Section 1: Key Terms ──
         {
           type: "keyTerms",
           heading: "Key Terms",
           data: {
             terms: [
               {
-                term: "Quantitative Data",
-                desc: "Data expressed as numbers and measurements, such as mass in grams, temperature in °C, or height in centimeters. Quantitative data can be graphed and calculated.",
+                term: "Melting Point",
+                desc: "The specific temperature at which a solid changes to a liquid. For a pure substance this is a fixed, characteristic value — 0 °C for water.",
               },
               {
-                term: "Qualitative Data",
-                desc: "Data expressed as descriptions or observations, such as color, texture, shape, or smell. Qualitative data cannot be directly measured with a ruler or scale.",
+                term: "Freezing Point",
+                desc: "The specific temperature at which a liquid changes to a solid. For a pure substance the freezing point equals the melting point.",
               },
               {
-                term: "Table",
-                desc: "An organized grid used to record and display data with clearly labeled rows and columns. Tables make it easy to compare values across different conditions or trials.",
+                term: "Boiling Point",
+                desc: "The temperature at which a liquid boils throughout and becomes a gas. Water boils at 100 °C at sea level.",
               },
               {
-                term: "Graph",
-                desc: "A visual representation of data. Bar graphs compare categories, line graphs show change over time, and pie charts show percentages of a whole.",
+                term: "Endothermic",
+                desc: "A process that absorbs heat energy from the surroundings. Melting, evaporation, and sublimation are all endothermic.",
               },
               {
-                term: "Mean",
-                desc: "The average of a set of data values, calculated by adding all values and dividing by the number of values. The mean helps summarize results across multiple trials.",
+                term: "Exothermic",
+                desc: "A process that releases heat energy to the surroundings. Freezing, condensation, and deposition are all exothermic.",
               },
               {
-                term: "Multiple Trials",
-                desc: "Repeating an experiment more than once under the same conditions. Multiple trials reduce the effect of random error and increase the reliability of results.",
+                term: "Latent Heat",
+                desc: "The energy absorbed or released during a change of state, which changes the arrangement of particles rather than the temperature.",
+              },
+              {
+                term: "Humidity",
+                desc: "The amount of water vapour present in the air. High humidity slows evaporation because the air already holds a lot of vapour.",
+              },
+              {
+                term: "Phase Change",
+                desc: "Any change in the physical state of matter — melting, freezing, evaporation, condensation, sublimation, or deposition.",
               },
             ],
           },
         },
 
-        // ── Section 2: Reason Cards (Why Multiple Trials Matter) ──
         {
-          type: "reasonCards",
-          heading: "Why Multiple Trials Matter",
+          type: "scenario",
+          heading: "Real-World Scenarios",
           data: {
             intro:
-              "Running an experiment only once can give misleading results. Repeating an experiment multiple times under the same conditions is one of the most important habits in science. Here is why:",
-            reasons: [
+              "For each situation, identify which change of state is happening, whether it is endothermic or exothermic, and what the particles are doing.",
+            scenarios: [
               {
-                num: 1,
-                title: "Reduces Random Error",
-                color: "primary",
-                desc: "Random errors affect one trial but not all trials",
-                content:
-                  "If a scale gives a slightly off reading on one trial, averaging multiple trials reduces the impact of that single error on your final result.",
+                title: "Chocolate Dipped Strawberry",
+                situation:
+                  "You dip a cold strawberry into a bowl of melted chocolate. When you pull it out, the chocolate coating hardens almost instantly into a solid shell.",
+                question:
+                  "What change of state happened to the chocolate? Is this endothermic or exothermic? What happened to the chocolate particles?",
+                skill:
+                  "Freezing — exothermic. The cold strawberry drew energy out of the liquid chocolate, its particles slowed, and attractive forces locked them into a solid arrangement.",
               },
               {
-                num: 2,
-                title: "Confirms Reproducibility",
-                color: "secondary",
-                desc: "Results that repeat are more trustworthy",
-                content:
-                  "If you get the same result every time you repeat the experiment, it is much more likely to be real rather than a fluke or accident.",
+                title: "Drying Clothes on a Clothesline",
+                situation:
+                  "Maria hangs wet clothes outside on a sunny, windy day. By afternoon the clothes are dry, even though the temperature never came close to 100 °C.",
+                question:
+                  "What process removed the water? Why did the clothes dry faster on a windy, sunny day than on a cold, still day?",
+                skill:
+                  "Evaporation — endothermic, and it happens at any temperature because only the fastest surface particles need to escape. Heat raises particle energy and wind carries vapour away, so both speed it up.",
               },
               {
-                num: 3,
-                title: "Allows Calculation of Mean",
-                color: "accent",
-                desc: "Multiple results can be averaged for a better estimate",
-                content:
-                  "Taking the mean of multiple trials gives a more accurate picture of the true result than any single measurement alone.",
+                title: "Steam on the Bathroom Mirror",
+                situation:
+                  "After a hot shower, Ana notices the bathroom mirror is completely fogged with tiny water droplets she has to wipe away.",
+                question:
+                  "The shower produced water vapour. What happened when this vapour touched the cool mirror surface?",
+                skill:
+                  "Condensation — exothermic. The cool glass drew energy from the vapour, its particles slowed, and attractive forces pulled them into liquid droplets.",
               },
               {
-                num: 4,
-                title: "Identifies Outliers",
-                color: "primary",
-                desc: "Unusual results stand out when compared to others",
-                content:
-                  "If one trial gives a very different result from the others, you can identify it as an outlier and investigate what went wrong.",
+                title: "Dry Ice in a Bowl",
+                situation:
+                  "You place a block of dry ice in a bowl at room temperature. Thick white fog pours over the sides, but the block never becomes wet. After a few hours it has vanished completely.",
+                question:
+                  "What change of state occurred? Why did the block never produce any liquid?",
+                skill:
+                  "Sublimation — endothermic. At normal atmospheric pressure carbon dioxide cannot exist as a liquid, so the solid passes straight to gas with no liquid stage at all.",
               },
               {
-                num: 5,
-                title: "Strengthens Scientific Conclusions",
-                color: "secondary",
-                desc: "More data = more confidence in the conclusion",
-                content:
-                  "Scientists and peer reviewers trust conclusions more when they are based on many consistent trials rather than a single observation.",
+                title: "Frost on a Car Windshield",
+                situation:
+                  "On a cold morning you notice white frost on a car windshield, even though it did not rain or snow overnight. The temperature dropped below 0 °C during the night.",
+                question:
+                  "Where did the frost come from, and why did it form directly on the glass with no liquid water appearing first?",
+                skill:
+                  "Deposition — exothermic. Water vapour in the air lost energy so rapidly against the freezing glass that its particles locked straight into ice crystals, skipping liquid entirely.",
               },
             ],
           },
         },
 
-        // ── Section 3: Applications ──
         {
           type: "applications",
           heading: "Applications",
           data: {
             apps: [
               {
-                title: "Clinical Trials",
+                title: "Food Preservation",
                 description:
-                  "Medical researchers test drugs and treatments using thousands of patients across multiple trials. This large-scale data collection ensures that only safe and effective treatments are approved for public use.",
-                icon: "🏥",
+                  "Freezing removes heat from food, slowing bacterial growth. Freeze-drying goes further, using sublimation in a vacuum to remove water without any heat damage.",
+                icon: "🥶",
                 color: "border-l-primary-500",
               },
               {
-                title: "Quality Control",
+                title: "Casting Metal",
                 description:
-                  "Factories test products repeatedly during manufacturing to ensure consistency and safety. Data from multiple tests helps identify defects early before products reach consumers.",
-                icon: "🏭",
+                  "Metals are melted at high temperature, poured into moulds, and allowed to freeze into the finished shape — an industrial use of melting and freezing.",
+                icon: "⚙️",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Weather Monitoring",
+                title: "The Water Cycle",
                 description:
-                  "Weather stations record temperature, rainfall, and pressure thousands of times per day. This continuous data collection enables accurate forecasts and long-term climate tracking.",
-                icon: "🌤️",
+                  "Evaporation, condensation, freezing, and deposition move water between ocean, atmosphere, and land — the process that produces all rain, snow, and frost.",
+                icon: "🌦️",
                 color: "border-l-accent-500",
               },
               {
-                title: "Sports Analytics",
+                title: "Cooling Your Body",
                 description:
-                  "Coaches and trainers use quantitative data (speed, jump height, heart rate) and qualitative data (technique observations) to track athlete performance and design better training programs.",
-                icon: "🏃",
+                  "Sweat evaporating from your skin is endothermic — it absorbs heat from your body and carries it away, which is how you avoid overheating.",
+                icon: "💧",
                 color: "border-l-primary-500",
               },
             ],

@@ -254,3 +254,39 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Quiz Performance now lists only the quizzes the student has taken (with an "Awaiting grade" note when one is pending). Untaken quizzes sit in a collapsible "Not attempted · N" section at the bottom of the same panel, collapsed by default.
 - Game Performance now lists only the games played; unplayed games are in a collapsible "Not played yet · N" section in the same panel. Both use native `<details>`, so they're keyboard-accessible, and the chevron doesn't animate for reduced motion.
 - Commit: Gradebook record: show only taken quizzes/played games, collapse the rest
+
+## VERSION_31
+- Rebuilt the course to follow the Grade 7 (MATATAG) curriculum in `SCIQUEST-TOPICS.pdf`: 20 weeks, 33 lessons, with lessons-per-week now varying (3, 2, 2, 1, 2, 2, 2, 2, 1, 0 …) instead of a fixed 3.
+- **Weeks 1 and 2 are unchanged** at the developer's request — they keep their original lessons and ids (`lesson-1` … `lesson-5`) and all five shipped signature widgets.
+- Weeks 3–19 rewritten with new content and a new id scheme (`w03-l1`, `w03-l2`, …) so no stale teacher-override or progress row in Supabase can land on the wrong topic. Weeks 10 and 20 are periodical-examination weeks and now carry `lessons: []`.
+- New lessons written for the four performance tasks (comic strip, solution detectives, acids/bases at home, science fair, 3D diorama); prior 3-lessons-per-week content merged where the curriculum consolidates it (e.g. old lessons 7–9 became the single Week 4 lesson on changes of state).
+- Quiz banks `quizzesweek-03.js` … `quizzesweek-20.js` re-keyed to the new lesson ids and consolidated to match; weeks 10 and 20 export empty objects so the aggregator in `quizzesweek-01.js` still spreads them.
+- Fixed `isWeekFullyCompleted()` in `src/lib/lessonGating.js`: a week with zero lessons now counts as complete. Previously an empty Week 10 would have permanently locked Week 11, since there is no quiz to submit.
+- Fixed a divide-by-zero in `src/pages/LessonsPage.jsx` — an examination week's card showed `NaN%` progress and reported itself fully done.
+- Fixed the corrupted `lessonsweek-19.js`, where a bad find/replace had turned every "Web"/"web" into the literal string `null` ("Food Chains and Food nulls").
+- Commit: Restructure lessons and quizzes to the MATATAG Grade 7 curriculum (weeks 1-2 untouched)
+
+## VERSION_32
+- Made the database the thing teachers actually edit, instead of the hardcoded files in `src/data/`.
+- New migration `supabase/migrations/20260912000000_recurriculum_ids.sql` (reference data + cleanup only, no content):
+  - Rebuilds `curriculum_lessons` for the 33 current lesson ids. **This was a security regression**: the table still mapped `lesson-1` … `lesson-60`, so every new `wNN-lN` id resolved to NULL in `quiz_week_for_lesson()` and fell back to the client-supplied `week_id` — reopening the hole that `20260910010000_enforce_quiz_availability.sql` was written to close. It also still mapped `lesson-28..30` to week-10, now an exam week with no lessons.
+  - Deletes orphaned seed-override rows (`is_custom = false`) in `lessons` / `quizzes` whose id is no longer in the curriculum. Teacher-authored lessons (`is_custom = true`) are preserved.
+  - Strips dead lesson ids out of `section_publish_state.item_ids` for the `lessons-individual` and `quizzes-individual` scopes.
+  - Leaves `quiz_attempts`, `lesson_interactions` and `student_progress` untouched — no student loses a score or XP.
+- New `scripts/seed-curriculum.mjs` + `npm run seed:curriculum`: upserts all 33 lessons and 33 quizzes from `src/data` into the `lessons` / `quizzes` tables, so the portal edits real DB rows. Content rows are deliberately kept out of migration history (`.claude/rules/database.md`), while the reference table stays in a migration as it already was.
+  - Loads `src/data` through Vite's `ssrLoadModule`, since those modules import `.jpg`/`.webp` assets that plain Node cannot resolve. Stored asset URLs are re-resolved by filename at runtime by `resolveLessonImage()`.
+  - Preserves teacher edits by default (skips rows whose `updated_at` has moved past `created_at`); `--force` overwrites, `--dry-run` reports without writing.
+  - Requires `SUPABASE_SERVICE_ROLE_KEY` — RLS restricts writes on these tables to teacher/admin staff.
+- No schema change: the `lessons` / `quizzes` tables, their teacher-only RLS policies, and the editor CRUD already existed.
+- Commit: Seed lessons and quizzes into Supabase and re-point curriculum reference data
+
+## VERSION_33
+- **Incident repair.** A `supabase db push` found the remote migration-tracking table empty (the schema had been applied by hand via the dashboard), so it replayed history from the start, recorded `0001` and `0002` as applied, then aborted on `0003` with `cannot drop columns from view (SQLSTATE 42P16)`.
+- `0001` and `0002` are idempotent for tables but not for policies — both `drop policy ... create policy ...`, which silently reverted three policies to their original permissive definitions and undid two later security migrations:
+  1. `quiz_attempts.own_attempt_insert` lost its `is_quiz_open_for(...)` term, so a student could submit an attempt for a **closed** quiz through the API.
+  2. `quiz_attempts.auth_read_attempts` (`using (true)`) came back; since RLS policies are OR-ed, it overrode `own_or_staff_read_attempts` and every student could read every other student's attempts.
+  3. `students.auth_read_students` (`using (true)`) came back, re-exposing every student's email and student number.
+- New `supabase/migrations/20260912010000_repair_policy_regressions.sql` drops the two resurrected permissive policies, reasserts the `own_or_staff_read_*` pair, and restores `own_attempt_insert` with the availability check. Guards on `is_quiz_open_for` existing so it fails loudly rather than silently leaving the hole open.
+- Verified undamaged: `handle_new_user`, the `student_progress` FK, `own_student_update`, `auth_read_staff`, `own_staff_update` (never redefined by a later migration), and the `student_progress` / `student_achievements` read policies (never touched by `0001`/`0002`). `0003` aborted inside its own transaction, so none of it applied.
+- No application code changed; `schema.sql` already described the correct end state.
+- Commit: Repair RLS policy regressions caused by replaying migrations 0001 and 0002
