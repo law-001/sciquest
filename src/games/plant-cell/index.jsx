@@ -106,6 +106,7 @@ export default function PlantCellGame({
         reducedMotion={reducedMotion}
         particleBudget={particleBudget}
         onExit={backToLevels}
+        onRestart={startLevel}
         onFinish={handleFinish}
       />
     );

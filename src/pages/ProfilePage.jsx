@@ -3,7 +3,6 @@ import {
   Trophy,
   Zap,
   Flame,
-  Crown,
   Shield,
   BookOpen,
   Target,
@@ -17,7 +16,6 @@ import {
   Atom,
   Globe2,
   Award,
-  TrendingUp,
   Calendar,
   BarChart3,
   Layers,
@@ -46,9 +44,6 @@ import { normalizeAvatarStyle } from "../lib/avatar-personalization";
 /* ─────────────────────────────────────────────────────────── */
 /*  Static catalogs (visual only — never holds user state)      */
 /* ─────────────────────────────────────────────────────────── */
-
-const LEADERBOARD_PERIODS = ["This Week", "Month", "All Time"];
-const PERIOD_API = { "This Week": "week", Month: "month", "All Time": "all" };
 
 // Visual catalog. `key` matches src/lib/achievements.js — unlock
 // state comes from the DB (the unlockedAchievements prop), never
@@ -378,7 +373,6 @@ export function ProfilePage({
   const isStudent = profile?.role === "student";
 
   const [xpWidth, setXpWidth] = useState(0);
-  const [activePeriod, setActivePeriod] = useState("This Week");
   const [editOpen, setEditOpen] = useState(false);
   const [boardVisibilitySaving, setBoardVisibilitySaving] = useState(false);
   const [hoveredBadge, setHoveredBadge] = useState(null);
@@ -386,15 +380,12 @@ export function ProfilePage({
   const [activeHighlight, setActiveHighlight] = useState(null);
   const [activeActivityHighlight, setActiveActivityHighlight] = useState(null);
 
-  const [board, setBoard] = useState([]);
-  const [boardLoading, setBoardLoading] = useState(true);
   const [allTimeBoard, setAllTimeBoard] = useState([]);
   const [screenSeconds, setScreenSeconds] = useState(null);
 
   const [headerRef, headerTriggered] = useScrollTrigger(0.1);
   const [statsRef, statsTriggered] = useScrollTrigger(0.2);
   const [subjectRef, subjectTriggered] = useScrollTrigger(0.2);
-  const [leaderboardRef, leaderboardTriggered] = useScrollTrigger(0.2);
   const [myQuizzesRef, myQuizzesTriggered] = useScrollTrigger(0.2);
   const [activityRef, activityTriggered] = useScrollTrigger(0.2);
   const [achievementsRef, achievementsTriggered] = useScrollTrigger(0.1);
@@ -641,25 +632,6 @@ export function ProfilePage({
     return () => clearTimeout(id);
   }, [headerTriggered, prefersReducedMotion, xpTargetPct]);
 
-  // Period leaderboard — refetches when the period toggle changes.
-  useEffect(() => {
-    let cancelled = false;
-    setBoardLoading(true);
-    fetchLeaderboard(PERIOD_API[activePeriod])
-      .then((rows) => {
-        if (!cancelled) setBoard(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setBoard([]);
-      })
-      .finally(() => {
-        if (!cancelled) setBoardLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [activePeriod, leaderboardOptOut]);
-
   // All-time board, fetched once, drives the "Section Rank" quick stat.
   useEffect(() => {
     let cancelled = false;
@@ -742,101 +714,6 @@ export function ProfilePage({
     };
   }, []);
 
-  // Always exactly TOP_N slots; unfilled slots render as blank rows.
-  const TOP_N = 10;
-  const topBoard = board.slice(0, TOP_N);
-  const emptySlots = Array.from(
-    { length: TOP_N - topBoard.length },
-    (_, i) => topBoard.length + i,
-  );
-  // A student outside the top 10 sees their own row below it, without their
-  // rank number — just the XP gap to 10th place. A 0-XP student isn't on the
-  // board at all, so they get a stand-in row.
-  const selfOutsideTop =
-    isStudent &&
-    !leaderboardOptOut &&
-    topBoard.length === TOP_N &&
-    !topBoard.some((e) => e.studentId === user?.id)
-      ? (board.find((e) => e.studentId === user?.id) ?? {
-          studentId: user?.id,
-          name: "You",
-          avatar: null,
-          avatarStyle: null,
-          xp: 0,
-        })
-      : null;
-  const xpToTopTen = selfOutsideTop
-    ? Math.max(1, topBoard[TOP_N - 1].xp - selfOutsideTop.xp + 1)
-    : 0;
-
-  const rankBadgeClass = (rank) =>
-    rank === 1
-      ? "bg-amber-400 text-stone-900"
-      : rank === 2
-        ? "bg-linear-to-br from-slate-100 to-slate-400 text-slate-800 ring-1 ring-slate-400"
-        : rank === 3
-          ? "bg-linear-to-br from-orange-300 to-orange-800 text-white ring-1 ring-orange-700"
-          : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-300";
-
-  const renderBoardRow = (entry, i, xpNeeded = 0) => {
-    const isUser = entry.studentId === user?.id;
-    const isOutsideTop = xpNeeded > 0;
-    return (
-      <div
-        key={entry.studentId}
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-[opacity,transform] duration-500 ease-out ${
-          leaderboardTriggered
-            ? "opacity-100 translate-x-0"
-            : "opacity-0 -translate-x-4"
-        } ${
-          isUser
-            ? "bg-primary-500/10 border border-primary-500/30"
-            : "bg-stone-100 dark:bg-stone-800/60"
-        }`}
-        style={{
-          transitionDelay: leaderboardTriggered ? `${200 + i * 80}ms` : "0ms",
-        }}
-      >
-        {isOutsideTop ? (
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary-500/15 text-primary-600 dark:text-primary-300"
-            aria-label="Outside the top 10"
-          >
-            <TrendingUp className="w-4 h-4" aria-hidden="true" />
-          </span>
-        ) : (
-          <span
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${rankBadgeClass(
-              entry.rank,
-            )}`}
-          >
-            {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
-          </span>
-        )}
-        <Avatar avatarId={entry.studentId === user?.id ? profile?.avatar : entry.avatar} avatarStyle={entry.studentId === user?.id ? profile?.avatarStyle : entry.avatarStyle} name={entry.name} size={32} />
-        <span className="flex-1 min-w-0">
-          <span
-            className={`block text-sm font-bold truncate ${
-              isUser
-                ? "text-primary-600 dark:text-primary-300"
-                : "text-stone-700 dark:text-stone-200"
-            }`}
-          >
-            {isUser ? "You" : entry.name}
-          </span>
-          {isOutsideTop && (
-            <span className="block text-xs font-semibold text-stone-500 dark:text-stone-400 truncate">
-              {xpNeeded.toLocaleString()} XP to reach the top 10
-            </span>
-          )}
-        </span>
-        <span className="text-sm font-black text-stone-900 dark:text-white font-heading tabular-nums shrink-0">
-          {entry.xp.toLocaleString()} XP
-        </span>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-[#fdf6e3] dark:bg-stone-950">
       {editOpen && <EditProfileModal
@@ -918,24 +795,6 @@ export function ProfilePage({
                     ? `Section ${profile.section}`
                     : "SciQuest learner"}
                 </p>
-                {isStudent && (
-                  <button
-                    type="button"
-                    onClick={toggleBoardVisibility}
-                    disabled={boardVisibilitySaving}
-                    aria-pressed={!leaderboardOptOut}
-                    className="mt-2 inline-flex items-center gap-1.5 min-h-9 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-bold text-stone-500 dark:text-stone-400 hover:border-primary-500/60 hover:text-primary-500 dark:hover:text-primary-400 disabled:opacity-50 transition-colors focus-visible:outline-2 focus-visible:outline-primary-500"
-                  >
-                    {leaderboardOptOut ? (
-                      <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
-                    ) : (
-                      <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-                    )}
-                    {leaderboardOptOut
-                      ? "Hidden from leaderboard"
-                      : "On the leaderboard"}
-                  </button>
-                )}
               </div>
               <div className="text-right shrink-0">
                 <p className="text-2xl font-black text-stone-900 dark:text-white font-heading tabular-nums">
@@ -1006,9 +865,28 @@ export function ProfilePage({
           >
             {/* Quick stat strip */}
             <div className="rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-5 shadow-sm">
-              <p className="text-xs font-bold text-stone-400 dark:text-stone-500 tracking-widest uppercase mb-4">
-                Quick Stats
-              </p>
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <p className="text-xs font-bold text-stone-400 dark:text-stone-500 tracking-widest uppercase">
+                  Quick Stats
+                </p>
+                {isStudent && (
+                  <button
+                    type="button"
+                    onClick={toggleBoardVisibility}
+                    disabled={boardVisibilitySaving}
+                    aria-pressed={!leaderboardOptOut}
+                    aria-label="Show me on the section leaderboard"
+                    className="-my-3 inline-flex items-center gap-1.5 min-h-11 px-2.5 rounded-lg text-xs font-bold text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-primary-500 dark:hover:text-primary-400 disabled:opacity-50 transition-colors focus-visible:outline-2 focus-visible:outline-primary-500"
+                  >
+                    {leaderboardOptOut ? (
+                      <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                    )}
+                    {leaderboardOptOut ? "Hidden" : "On leaderboard"}
+                  </button>
+                )}
+              </div>
               <div className="grid grid-cols-3 divide-x divide-stone-200 dark:divide-stone-800">
                 {quickStats.map(({ label, value, color }) => (
                   <div key={label} className="text-center px-2">
@@ -1148,12 +1026,12 @@ export function ProfilePage({
           </div>
         </section>
 
-        {/* SUBJECT PROGRESS + LEADERBOARD */}
+        {/* SUBJECT PROGRESS + RECENT ACTIVITY */}
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Subject Progress */}
           <section ref={subjectRef}>
             <div
-              className={`rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm transition-[opacity,transform] duration-700 ease-out ${
+              className={`h-full rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm transition-[opacity,transform] duration-700 ease-out ${
                 subjectTriggered
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-8"
@@ -1223,108 +1101,89 @@ export function ProfilePage({
             </div>
           </section>
 
-          {/* Leaderboard */}
-          <section ref={leaderboardRef}>
+          {/* Recent Activity */}
+          <section ref={activityRef}>
             <div
-              className={`rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm transition-[opacity,transform] duration-700 ease-out delay-150 ${
-                leaderboardTriggered
+              className={`h-full rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm transition-[opacity,transform] duration-700 ease-out ${
+                activityTriggered
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-8"
               }`}
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-black text-stone-900 dark:text-white font-heading">
-                  Section Leaderboard
+                  Recent Activity
                 </h3>
-                <div className="flex gap-1 bg-stone-100 dark:bg-stone-800 rounded-xl p-1">
-                  {LEADERBOARD_PERIODS.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setActivePeriod(p)}
-                      className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors ${
-                        activePeriod === p
-                          ? "bg-primary-500 text-white"
-                          : "text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
-                      }`}
-                    >
-                      {p === "This Week"
-                        ? "Week"
-                        : p === "Month"
-                          ? "Month"
-                          : "All"}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500">
+                  <Calendar className="w-4 h-4" aria-hidden="true" />
+                  <span className="text-xs font-medium">Latest</span>
                 </div>
               </div>
-              <div className="space-y-2">
-                {boardLoading ? (
-                  <div role="status" aria-label="Loading leaderboard">
-                    <div className="space-y-2 motion-safe:animate-pulse">
-                      {Array.from({ length: TOP_N }, (_, i) => (
-                        <div
-                          key={`loading-${i}`}
-                          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-stone-100 dark:bg-stone-800/60"
-                        >
-                          <span className="w-8 h-8 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
-                          <span className="w-8 h-8 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
-                          <span className="flex-1 h-3 rounded-full bg-stone-200 dark:bg-stone-700" />
-                          <span className="w-12 h-3 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {topBoard.length === 0 && (
-                      <p className="text-sm text-stone-500 dark:text-stone-400 font-medium pb-2 text-center">
-                        {activePeriod === "This Week"
-                          ? "No one in your section has earned XP this week yet."
-                          : activePeriod === "Month"
-                            ? "No one in your section has earned XP this month yet."
-                            : "No one in your section has earned XP yet."}{" "}
-                        Be the first!
-                      </p>
-                    )}
-                    {topBoard.map((entry, i) => renderBoardRow(entry, i))}
-                    {emptySlots.map((slot) => (
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-stone-400 dark:text-stone-500 font-medium py-8 text-center">
+                  No activity yet. Finish a lesson or quiz to see it here.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {recentActivity.map((item, i) => {
+                    const isHighlighted =
+                      activeActivityHighlight &&
+                      item.type === "lesson" &&
+                      item.lessonId === activeActivityHighlight;
+                    return (
+                    <div
+                      key={`${item.type}-${item.ts}-${i}`}
+                      className={`flex items-center gap-4 p-4 rounded-xl bg-stone-100 dark:bg-stone-800/60 transition-[opacity,transform] duration-500 ease-out ${
+                        activityTriggered
+                          ? "opacity-100 translate-x-0"
+                          : "opacity-0 -translate-x-4"
+                      } ${
+                        isHighlighted
+                          ? "ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-stone-900 animate-pulse"
+                          : ""
+                      }`}
+                      style={{
+                        transitionDelay: activityTriggered
+                          ? `${i * 80}ms`
+                          : "0ms",
+                      }}
+                    >
                       <div
-                        key={`empty-${slot}`}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-stone-300 dark:border-stone-700"
+                        className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}
                       >
-                        <span
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
-                            slot < 3
-                              ? rankBadgeClass(slot + 1)
-                              : "bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500"
-                          }`}
-                        >
-                          {slot === 0 ? <Crown className="w-4 h-4" /> : slot + 1}
-                        </span>
-                        <span className="text-sm font-medium text-stone-400 dark:text-stone-500">
-                          Open spot
-                        </span>
+                        <item.Icon className={`w-5 h-5 ${item.color}`} />
                       </div>
-                    ))}
-                    {selfOutsideTop && (
-                      <>
-                        <p
-                          aria-hidden="true"
-                          className="text-center text-stone-300 dark:text-stone-700 text-xs leading-none"
-                        >
-                          ···
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-stone-700 dark:text-stone-200 truncate">
+                          {item.label}
                         </p>
-                        {renderBoardRow(selfOutsideTop, TOP_N, xpToTopTen)}
-                      </>
-                    )}
-                    {leaderboardOptOut && (
-                      <p className="pt-2 text-center text-xs font-semibold text-stone-500 dark:text-stone-400">
-                        You are hidden from this leaderboard. Turn it back on in
-                        Edit Profile.
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {item.score !== null && (
+                            <>
+                              <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
+                                Score: {item.score}%
+                              </span>
+                              <span
+                                className="text-stone-300 dark:text-stone-700"
+                                aria-hidden="true"
+                              >
+                                ·
+                              </span>
+                            </>
+                          )}
+                          <span className="text-xs text-stone-400 dark:text-stone-500">
+                            {relTime(item.ts)}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-sm font-black text-primary-500 dark:text-primary-400 font-heading tabular-nums shrink-0">
+                        +{item.xp} XP
+                      </span>
+                    </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -1404,92 +1263,6 @@ export function ProfilePage({
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* RECENT ACTIVITY */}
-        <section ref={activityRef}>
-          <div
-            className={`rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm transition-[opacity,transform] duration-700 ease-out ${
-              activityTriggered
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-black text-stone-900 dark:text-white font-heading">
-                Recent Activity
-              </h3>
-              <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500">
-                <Calendar className="w-4 h-4" aria-hidden="true" />
-                <span className="text-xs font-medium">Latest</span>
-              </div>
-            </div>
-            {recentActivity.length === 0 ? (
-              <p className="text-sm text-stone-400 dark:text-stone-500 font-medium py-8 text-center">
-                No activity yet. Finish a lesson or quiz to see it here.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {recentActivity.map((item, i) => {
-                  const isHighlighted =
-                    activeActivityHighlight &&
-                    item.type === "lesson" &&
-                    item.lessonId === activeActivityHighlight;
-                  return (
-                  <div
-                    key={`${item.type}-${item.ts}-${i}`}
-                    className={`flex items-center gap-4 p-4 rounded-xl bg-stone-100 dark:bg-stone-800/60 transition-[opacity,transform] duration-500 ease-out ${
-                      activityTriggered
-                        ? "opacity-100 translate-x-0"
-                        : "opacity-0 -translate-x-4"
-                    } ${
-                      isHighlighted
-                        ? "ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-stone-900 animate-pulse"
-                        : ""
-                    }`}
-                    style={{
-                      transitionDelay: activityTriggered
-                        ? `${i * 80}ms`
-                        : "0ms",
-                    }}
-                  >
-                    <div
-                      className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}
-                    >
-                      <item.Icon className={`w-5 h-5 ${item.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-stone-700 dark:text-stone-200 truncate">
-                        {item.label}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {item.score !== null && (
-                          <>
-                            <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
-                              Score: {item.score}%
-                            </span>
-                            <span
-                              className="text-stone-300 dark:text-stone-700"
-                              aria-hidden="true"
-                            >
-                              ·
-                            </span>
-                          </>
-                        )}
-                        <span className="text-xs text-stone-400 dark:text-stone-500">
-                          {relTime(item.ts)}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-sm font-black text-primary-500 dark:text-primary-400 font-heading tabular-nums shrink-0">
-                      +{item.xp} XP
-                    </span>
-                  </div>
-                  );
-                })}
               </div>
             )}
           </div>

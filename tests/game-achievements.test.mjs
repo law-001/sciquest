@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { ACHIEVEMENTS, deriveUnlockedKeys, totalAchievementXp } from '../src/lib/achievements.js';
 import { GAME_MEDALS, currentAchievementKey, visibleAchievementCatalog } from '../src/lib/game-achievements.js';
 
@@ -37,6 +37,10 @@ test('legacy medals retain their identity and bonus XP', () => {
 
 test('every catalog entry has its own local artwork and every game has one locked preview', () => {
   assert.equal(new Set(ACHIEVEMENTS.map((a) => a.key)).size, ACHIEVEMENTS.length);
-  for (const a of ACHIEVEMENTS) assert.ok(existsSync(new URL(`../public/achievements/${a.key}.svg`, import.meta.url)), a.key);
+  for (const a of ACHIEVEMENTS) {
+    const artwork = readFileSync(new URL(`../public/achievements/${a.key}.png`, import.meta.url));
+    assert.deepEqual([...artwork.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], `${a.key}: PNG signature`);
+    assert.equal(artwork[25], 6, `${a.key}: RGBA artwork`);
+  }
   assert.equal(visibleAchievementCatalog(ACHIEVEMENTS, []).filter((a) => a.gameId).length, GAME_MEDALS.length);
 });

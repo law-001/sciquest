@@ -1,5 +1,6 @@
+import { LeaderboardRank } from "../LeaderboardRank";
 import React, { useState, useEffect } from "react";
-import { X, Crown, TrendingUp, Trophy } from "lucide-react";
+import { X, TrendingUp, Trophy } from "lucide-react";
 import { Avatar } from "../Avatar";
 import { fetchLeaderboard } from "../../lib/leaderboard";
 import { useAuth } from "../../context/AuthContext";
@@ -12,13 +13,6 @@ const PERIODS = [
 
 // Same ten slots the profile page shows, so the two views never disagree.
 const TOP_N = 10;
-
-function rankBadgeClass(rank) {
-  if (rank === 1) return "bg-amber-400 text-stone-900";
-  if (rank === 2) return "bg-linear-to-br from-slate-100 to-slate-400 text-slate-800 ring-1 ring-slate-400";
-  if (rank === 3) return "bg-linear-to-br from-orange-300 to-orange-800 text-white ring-1 ring-orange-700";
-  return "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-300";
-}
 
 export function LeaderboardModal({ isOpen, onClose }) {
   const { user, profile } = useAuth();
@@ -99,11 +93,7 @@ export function LeaderboardModal({ isOpen, onClose }) {
             <TrendingUp className="w-4 h-4" aria-hidden="true" />
           </span>
         ) : (
-          <span
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${rankBadgeClass(entry.rank)}`}
-          >
-            {entry.rank === 1 ? <Crown className="w-4 h-4" /> : entry.rank}
-          </span>
+          <LeaderboardRank rank={entry.rank} />
         )}
         <Avatar
           avatarId={isUser ? profile?.avatar : entry.avatar}
@@ -192,7 +182,7 @@ export function LeaderboardModal({ isOpen, onClose }) {
                     key={`loading-${i}`}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl bg-stone-100 dark:bg-stone-800/60"
                   >
-                    <span className="w-8 h-8 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
+                    <LeaderboardRank rank={i + 1} muted />
                     <span className="w-8 h-8 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
                     <span className="flex-1 h-3 rounded-full bg-stone-200 dark:bg-stone-700" />
                     <span className="w-12 h-3 rounded-full shrink-0 bg-stone-200 dark:bg-stone-700" />
@@ -213,15 +203,7 @@ export function LeaderboardModal({ isOpen, onClose }) {
                   key={`empty-${slot}`}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-stone-300 dark:border-stone-700"
                 >
-                  <span
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
-                      slot < 3
-                        ? rankBadgeClass(slot + 1)
-                        : "bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500"
-                    }`}
-                  >
-                    {slot === 0 ? <Crown className="w-4 h-4" /> : slot + 1}
-                  </span>
+                  <LeaderboardRank rank={slot + 1} muted />
                   <span className="text-sm font-medium text-stone-400 dark:text-stone-500">
                     Open spot
                   </span>

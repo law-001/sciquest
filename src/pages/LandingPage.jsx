@@ -1,3 +1,4 @@
+import { LeaderboardRank } from "../components/LeaderboardRank";
 import { AchievementMedal } from "../components/AchievementMedal";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
@@ -10,7 +11,6 @@ import {
   Dna,
   Globe2,
   Flame,
-  Crown,
   Shield,
   BookOpen,
   RotateCcw,
@@ -1505,15 +1505,7 @@ export function LandingPage({ onStartLearning, canEarnExplorer, onExplore }) {
                         key={entry.rank}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl ${entry.isUser ? "border border-orange-400" : "bg-stone-50 dark:bg-stone-700/50"}`}
                       >
-                        <span
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${entry.rank === 1 ? "bg-amber-400 text-white" : "bg-stone-200 text-stone-600"}`}
-                        >
-                          {entry.rank === 1 ? (
-                            <Crown className="w-3.5 h-3.5" />
-                          ) : (
-                            entry.rank
-                          )}
-                        </span>
+                        <LeaderboardRank rank={entry.rank} />
                         <span
                           className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0 "
                           style={{ backgroundColor: entry.color }}
@@ -1676,23 +1668,7 @@ export function LandingPage({ onStartLearning, canEarnExplorer, onExplore }) {
                         : "0ms",
                     }}
                   >
-                    <span
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
-                        entry.rank === 1
-                          ? "bg-amber-400 text-stone-900"
-                          : entry.rank === 2
-                            ? "bg-stone-400 text-stone-900"
-                            : entry.rank === 3
-                              ? "bg-amber-700 text-white"
-                              : "bg-stone-700 text-stone-300"
-                      }`}
-                    >
-                      {entry.rank === 1 ? (
-                        <Crown className="w-4 h-4" />
-                      ) : (
-                        entry.rank
-                      )}
-                    </span>
+                    <LeaderboardRank rank={entry.rank} className="text-stone-300" />
                     <span
                       className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0"
                       style={{ backgroundColor: entry.color }}
