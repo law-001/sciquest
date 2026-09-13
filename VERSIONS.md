@@ -354,3 +354,47 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - `mitosis-run` and `crossover-lab` were both flagged as GSAP candidates in the plan and both shipped without it — every position is derived from the control value, so there was nothing left for a tween library to do.
 - `INTERACTIVE_SECTIONS.md` updated — all four waves done, 28 of 28 shipped, no "next three".
 - Commit: Add lesson back-to-top button and ship Wave 4 signature interactives for weeks 14-19
+
+## VERSION_39
+- Removed the Section Leaderboard card from `src/pages/ProfilePage.jsx`. It duplicated the navbar's `LeaderboardModal`, and the profile page is for the student's own progress.
+- Subject Progress now spans the full width. The two-column grid that held it next to the leaderboard is gone.
+- Deleted the code only the card used: the `LEADERBOARD_PERIODS` / `PERIOD_API` constants, the `activePeriod` / `board` / `boardLoading` state, the per-period fetch effect, `renderBoardRow`, the top-10 slot logic, and the `LeaderboardRank` / `TrendingUp` imports.
+- Kept the "Section Rank" quick stat (it still reads the all-time board) and the "On the leaderboard / Hidden" toggle in the profile header.
+- Commit: Remove duplicate section leaderboard from profile page
+
+## VERSION_40
+- Subject Progress and Recent Activity now sit side by side in `src/pages/ProfilePage.jsx`: one `grid lg:grid-cols-2 gap-8` row. They stack on smaller screens.
+- Recent Activity moved up above My Quizzes to share that row. Page order is now Stats, then Subject Progress + Recent Activity, then My Quizzes, then Achievements.
+- Both cards got `h-full` so they stretch to the same height when one has more rows.
+- Commit: Show subject progress and recent activity side by side on profile page
+
+## VERSION_41
+- Profile header: the player card is now the same height as the right-hand column (Quick Stats, Current Focus, Member Since) in `src/pages/ProfilePage.jsx`. It used to stop short.
+- Removed `items-start` from the header grid so both columns stretch to the taller one. The player card is now `flex flex-col`.
+- The Achievements label got `mt-auto`, so it and the badge row sit at the bottom of the card and line up with the bottom of Member Since. The extra space goes above them, below the XP bar.
+- Commit: Align profile player card height with the sidebar cards
+
+## VERSION_42
+- Moved the leaderboard visibility toggle from under the student's section name to the right end of the Quick Stats heading in `src/pages/ProfilePage.jsx`. It now sits directly above Section Rank, the value it hides.
+- The toggle is now a borderless icon + text button: "On leaderboard" or "Hidden". It keeps a 44px tap target, and `-my-3` stops that from making the header taller. It has an `aria-label` and `aria-pressed` for screen readers.
+- The profile card's name block is back to name, streak and section only.
+- Commit: Move leaderboard visibility toggle into the Quick Stats header
+
+## VERSION_43
+- Reverted the equal-height player card from VERSION_41 in `src/pages/ProfilePage.jsx`. With the leaderboard toggle gone, stretching the card left a large empty gap between the XP bar and Achievements.
+- Put `items-start` back on the profile header grid, removed `flex flex-col` from the player card, and removed `mt-auto` from the Achievements label. The card is only as tall as its content again.
+- Commit: Revert equal-height profile card to remove empty space
+
+## VERSION_44
+- Plant Cell Level 1 (Power the Cell) now uses the matter-state sandbox layout: top bar, left info sidebar, grid stage and bottom control bar. It reuses the sandbox's global `sq-*` shell classes from `src/index.css` without editing them, and nothing in `src/games/matter-state-sandbox/` was touched.
+- New `src/games/plant-cell/ui/LabFrame.jsx` holds the shell:
+  - Top bar: Exit, "Level 1 — Power the Cell · objective", and theme, pause and restart icon buttons.
+  - A Paused popup with a Resume button.
+- `levels/PowerTheCell.jsx` now fills that shell:
+  - Sidebar: an orange objective card with a time-survived bar and seconds left, the coaching line, and the health, glucose, cell water and soil water meters in a stats card.
+  - Stage: photosynthesis rate, limiting factor and oxygen as small text in the top-left, an "Inside a cell" / "Whole plant" pill in the top-right, and the plant or cell drawing above the equation strip.
+  - Bottom bar: Sunlight, Water from roots and Stomata sliders side by side, with one-line hints.
+- `index.jsx` passes `onRestart` to Level 1 so the restart button starts a fresh run.
+- `styles.css` got a `pc-lab-*` block covering the parts the sandbox shell has no class for. On screens 768px or narrower, the sliders stack, the meters become a 2-column grid, and the top-bar buttons grow to 44px.
+- Levels 2 and 3 are unchanged and still use `RunFrame`. No "Saved" pill: this game only saves when a run ends.
+- Commit: Give Plant Cell Level 1 the sandbox-style layout

@@ -907,3 +907,146 @@
     transition: none;
   }
 }
+
+/* — Level 1 lab shell —
+   Level 1 plays inside the matter-state sandbox's layout by reusing the global
+   sq-* shell classes from index.css untouched. These rules only add what that
+   shell has no class for. Selectors are doubled up (.sq-x.pc-lab-x) where they
+   must beat an sq-* rule whatever order the stylesheets load in. */
+.sq-icon-btn.pc-lab-exit {
+  width: auto;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pc-lab-title {
+  font-family: var(--sq-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sq-ink-1);
+  white-space: nowrap;
+}
+
+.pc-lab-subtitle {
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--sq-ink-3);
+  white-space: nowrap;
+}
+
+.pc-lab-subtitle::before {
+  content: '';
+  flex-shrink: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--sq-ink-4);
+}
+
+.sq-stats.pc-lab-meters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+/* The top padding clears the readout and view toggle pinned to the stage's
+   top corners. */
+.pc-lab-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 52px 14px 14px;
+}
+
+.pc-lab-readout {
+  position: absolute;
+  top: 16px;
+  left: 14px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-family: var(--sq-font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--sq-ink-3);
+}
+
+.pc-lab-readout b {
+  font-weight: 600;
+  color: var(--sq-ink-1);
+}
+
+.pc-lab-viewtoggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--pc-line);
+  background: var(--sq-surface);
+  color: var(--sq-ink-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pc-lab-viewtoggle.is-on {
+  background: var(--sq-orange);
+  border-color: var(--sq-orange-deep);
+  color: #ffffff;
+}
+
+.pc-lab-viewtoggle:focus-visible {
+  outline: 2px solid var(--sq-orange-deep);
+  outline-offset: 2px;
+}
+
+.sq-sandbox-bottom.pc-lab-bottom {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pc-lab-bottom .pc-range {
+  height: 30px;
+}
+
+.pc-lab-paused {
+  max-width: 280px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .sq-sandbox-bottom.pc-lab-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sq-stats.pc-lab-meters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 12px;
+    padding: 8px 10px;
+  }
+
+  .pc-root .sq-icon-btn {
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .pc-lab-viewtoggle {
+    min-height: 44px;
+  }
+}
