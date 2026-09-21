@@ -243,6 +243,17 @@ export function LessonsPage({
           </Card>
         </div>
 
+        {profile?.role === "student" && !profile.section && (
+          <div role="status" className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
+            <p className="font-bold">Your account has no section assigned.</p>
+            <p className="mt-1 text-sm">
+              Your teacher’s Open and Hidden settings apply to their sections.
+              Ask your teacher or administrator to assign you to your class so
+              you receive its lesson access settings.
+            </p>
+          </div>
+        )}
+
         {/* Category Filter + Search */}
         <div
           className={`mb-8 transition-all duration-700 ease-out ${
