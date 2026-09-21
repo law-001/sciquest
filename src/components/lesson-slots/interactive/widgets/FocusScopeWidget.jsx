@@ -1,35 +1,281 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// w11-l1 signature interactive — a microscope that punishes the coarse knob.
+// w11-l1 signature interactive: a microscope that punishes the coarse knob.
 //
 // The blur is a real Gaussian on the field of view, and how much of it there is
-// comes out of one number: how far the stage is from the focal plane, divided
-// by the depth of field of the objective currently in the light path. At 4x the
-// depth of field is ten units wide and the coarse knob is fine. At 40x it is
-// eight tenths of a unit, one coarse step is two units, and the lens goes into
-// the slide. Nothing warns the student about this — the slide simply cracks.
+// comes out of one number: how far the stage sits from the focal plane, divided
+// by the depth of field of the objective in the light path. At 4x that band is
+// ten micrometres wide and the coarse knob is harmless. At 40x it is eight
+// tenths, one coarse step is two, and the lens goes into the glass.
+//
+// The barrel lengths are not decoration. Each objective is drawn exactly long
+// enough that its tip meets the slide at the coarse setting that cracks it, so
+// the crash is something a student can watch closing rather than a message.
 //
 // The coverslip is the other half. Dropped flat it traps air, and the bubbles
-// are then in the field of view with perfect black rims, in the way, until the
-// student remounts at an angle.
+// are then in the field of view with black rims, in the way, until the student
+// remounts it on an edge.
+//
+// The scene paints its own wall and bench, so its contrast is the same on cream
+// and on stone-900 and the widget never has to know about the theme.
 
+// Drawn at the stage's own shape (about 16:10) so the scene fills the frame.
 const W = 620
-const H = 340
+const H = 390
+// Wall and bench run past the viewBox so a cropped edge never shows a seam.
+// Nothing readable goes in this margin.
+const BLEED = 60
+
+const BENCH_Y = 300
+
+const INK = '#57534e'
+const INK_MID = '#78716c'
+const STEEL = '#a8a29e'
+const GLASS = '#DDEEFF'
+const BRASS = '#F59E0B'
+
+// The turret hangs here, and every barrel length below is measured off it.
+const TURRET_X = 150
+const TURRET_Y = 132
 
 const FOCAL_Z = 60
 
+// `barrel` is chosen so the objective tip reaches the slide at exactly its
+// `crashZ`: the slide top sits at 214 - coarse * 0.28333 and the barrel starts
+// 18 below the turret centre. Move one of those and the others follow.
 const OBJECTIVES = [
-  { power: 4, label: '4× low power', depth: 10, crashZ: Infinity, cells: 1 },
-  { power: 10, label: '10× medium power', depth: 4, crashZ: 108, cells: 2.1 },
-  { power: 40, label: '40× high power', depth: 0.8, crashZ: 64, cells: 5.4 },
+  { power: 4, depth: 10, crashZ: Infinity, cells: 1, barrel: 28 },
+  { power: 10, depth: 4, crashZ: 108, cells: 2.1, barrel: 33 },
+  { power: 40, depth: 0.8, crashZ: 64, cells: 5.4, barrel: 46 },
 ]
 
 const SHARP_BLUR = 0.9
 
+const FIELD_X = 470
+const FIELD_Y = 130
+const FIELD_R = 92
+
 const bubblesFor = (angle) => (angle < 10 ? 4 : angle < 22 ? 2 : 0)
+
+// The lab the instrument stands in. Wall, bench edge and floor all run past the
+// viewBox, so the scene covers the frame however it is cropped.
+function Room() {
+  return (
+    <g>
+      <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={H + BLEED * 2} fill="#fdfaf3" />
+      <line x1={-BLEED} y1="96" x2={W + BLEED} y2="96" stroke="#efe6d6" strokeWidth="2" />
+      <rect x={-BLEED} y={BENCH_Y} width={W + BLEED * 2} height="13" fill="#e7d9c3" />
+      <rect x={-BLEED} y={BENCH_Y + 13} width={W + BLEED * 2} height={H + BLEED} fill="#f3ead9" />
+    </g>
+  )
+}
+
+// Foot, lamp, condenser, stage, turret, body tube and the two focus knobs.
+// Both knobs turn with the slider that drives them, so the control and the part
+// it moves are visibly the same thing.
+function Microscope({ objective, index, coarse, fine, stageY, cracked }) {
+  const tip = TURRET_Y + 18 + objective.barrel
+  const spares = OBJECTIVES.map((_, i) => i).filter((i) => i !== index)
+
+  return (
+    <g>
+      {/* Foot and lamp housing. */}
+      <ellipse cx="144" cy={BENCH_Y + 2} rx="96" ry="6" fill={INK} opacity="0.12" />
+      <rect x="58" y="292" width="176" height="8" rx="3" fill="#44403c" />
+      <path d="M 70 292 L 222 292 L 206 270 L 86 270 Z" fill={INK} />
+      <rect x="120" y="256" width="60" height="20" rx="6" fill="#44403c" />
+      <circle cx="150" cy="256" r="9" fill="#FDE68A" stroke={INK_MID} strokeWidth="2" />
+      <text x="150" y="288" fontSize="10" fontWeight="800" fill={STEEL} textAnchor="middle">
+        lamp
+      </text>
+
+      {/* Light climbing from the lamp through the condenser into the slide. */}
+      <path
+        d={`M 141 250 L 159 250 L 170 ${stageY + 2} L 130 ${stageY + 2} Z`}
+        fill="#FDE68A"
+        opacity="0.45"
+      />
+
+      {/* Condenser and iris diaphragm, riding just under the stage. */}
+      <rect x="132" y={stageY + 11} width="36" height="8" rx="3" fill={STEEL} />
+      <circle cx="150" cy={stageY + 24} r="9" fill={INK_MID} />
+      <circle cx="150" cy={stageY + 24} r="4" fill="#FDE68A" />
+      <rect x="159" y={stageY + 21} width="20" height="6" rx="3" fill={INK} />
+
+      {/* Stage, clips, and the slide the objective is closing in on. */}
+      <rect x="92" y={stageY} width="116" height="10" rx="3" fill={STEEL} />
+      <path d={`M 104 ${stageY} l 0 -9 l 16 0`} fill="none" stroke={INK} strokeWidth="3" />
+      <path d={`M 196 ${stageY} l 0 -9 l -16 0`} fill="none" stroke={INK} strokeWidth="3" />
+      <rect
+        x="110"
+        y={stageY - 6}
+        width="80"
+        height="6"
+        rx="1.5"
+        fill={cracked ? '#FCA5A5' : GLASS}
+        stroke={cracked ? '#DC2626' : INK_MID}
+        strokeWidth="1.6"
+      />
+      {cracked && (
+        <path
+          d={`M 126 ${stageY - 6} l 7 6 M 148 ${stageY} l 6 -6 l -1 6 M 172 ${stageY - 6} l -5 6`}
+          stroke="#DC2626"
+          strokeWidth="2"
+          fill="none"
+        />
+      )}
+
+      {/* Arm, body tube and eyepiece. */}
+      <path
+        d="M 212 286 Q 228 286 228 262 L 228 142 Q 228 112 198 108 L 172 108"
+        fill="none"
+        stroke={INK_MID}
+        strokeWidth="14"
+        strokeLinecap="round"
+      />
+      <rect x="136" y="74" width="28" height="62" fill={INK_MID} />
+      <rect x="139" y="74" width="5" height="62" fill={STEEL} opacity="0.5" />
+      <rect x="131" y="54" width="38" height="22" rx="6" fill="#44403c" />
+      <ellipse cx="150" cy="54" rx="19" ry="5" fill={STEEL} />
+      <text x="150" y="44" fontSize="11" fontWeight="800" fill={INK_MID} textAnchor="middle">
+        eyepiece 10x
+      </text>
+
+      {/* Turret: the two spare objectives swing out of the light path and the
+          chosen one hangs straight down over the slide. */}
+      {spares.map((si, k) => (
+        <g key={si} transform={`rotate(${k === 0 ? -56 : 56} ${TURRET_X} ${TURRET_Y})`}>
+          <rect x={TURRET_X - 6} y={TURRET_Y + 14} width="12" height="24" rx="4" fill={STEEL} />
+        </g>
+      ))}
+      <circle cx={TURRET_X} cy={TURRET_Y} r="20" fill={INK} />
+      <circle cx={TURRET_X} cy={TURRET_Y} r="8" fill="#44403c" />
+      <rect
+        x={TURRET_X - 8}
+        y={TURRET_Y + 14}
+        width="16"
+        height={objective.barrel}
+        rx="4"
+        fill={BRASS}
+      />
+      <rect x={TURRET_X - 8} y={tip - 9} width="16" height="9" rx="3" fill="#b45309" />
+      <ellipse cx={TURRET_X} cy={tip} rx="6" ry="2" fill={GLASS} />
+
+      <line
+        x1="138"
+        y1={TURRET_Y + 32}
+        x2="104"
+        y2={TURRET_Y + 32}
+        stroke={INK_MID}
+        strokeWidth="1.5"
+      />
+      <text x="100" y={TURRET_Y + 36} fontSize="11" fontWeight="800" fill="#b45309" textAnchor="end">
+        {objective.power}x objective
+      </text>
+
+      {/* Focus knobs: coarse outside, fine on the same shaft. */}
+      <g transform={`rotate(${coarse * 2.4} 228 206)`}>
+        <circle cx="228" cy="206" r="20" fill="#44403c" />
+        {[0, 45, 90, 135].map((a) => (
+          <line
+            key={a}
+            x1={228 - Math.cos((a * Math.PI) / 180) * 18}
+            y1={206 - Math.sin((a * Math.PI) / 180) * 18}
+            x2={228 + Math.cos((a * Math.PI) / 180) * 18}
+            y2={206 + Math.sin((a * Math.PI) / 180) * 18}
+            stroke={INK_MID}
+            strokeWidth="2"
+          />
+        ))}
+      </g>
+      <g transform={`rotate(${fine * 3.6} 228 206)`}>
+        <circle cx="228" cy="206" r="10" fill={STEEL} />
+        <line x1="228" y1="206" x2="228" y2="197" stroke="#b45309" strokeWidth="2.5" />
+      </g>
+      <text x="228" y="242" fontSize="10.5" fontWeight="800" fill={INK_MID} textAnchor="middle">
+        focus knobs
+      </text>
+    </g>
+  )
+}
+
+// The wet mount being made on the bench beside the instrument, so the angle the
+// coverslip goes down at is a thing the student can see, not a number.
+function WetMount({ angle, mounted, bubbles }) {
+  const slipY = mounted ? 283 : 258
+
+  return (
+    <g>
+      <text x="300" y="248" fontSize="11" fontWeight="800" fill={INK_MID} textAnchor="middle">
+        wet mount
+      </text>
+      <ellipse cx="300" cy={BENCH_Y + 2} rx="50" ry="4" fill={INK} opacity="0.12" />
+      <rect
+        x="256"
+        y="288"
+        width="88"
+        height="9"
+        rx="2"
+        fill={GLASS}
+        stroke={INK_MID}
+        strokeWidth="1.6"
+      />
+      <path d="M 280 288 q 20 -11 40 0 z" fill="#7BC9CF" opacity="0.6" />
+      <ellipse cx="300" cy="285" rx="7" ry="3" fill="#0f766e" opacity="0.7" />
+
+      {!mounted && (
+        <line
+          x1="352"
+          y1="236"
+          x2="322"
+          y2={slipY - angle * 0.4}
+          stroke={INK_MID}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+      )}
+      <g transform={`rotate(${mounted ? 0 : -angle} 300 ${slipY})`}>
+        <rect
+          x="274"
+          y={slipY - 3}
+          width="52"
+          height="5"
+          rx="1.5"
+          fill="#7BC9CF"
+          stroke="#0f766e"
+          strokeWidth="1.5"
+        />
+      </g>
+
+      {mounted &&
+        Array.from({ length: bubbles }, (_, i) => (
+          <circle
+            key={i}
+            cx={282 + i * 12}
+            cy="286"
+            r="3.6"
+            fill="#fdfaf3"
+            stroke="#1c1917"
+            strokeWidth="1.6"
+          />
+        ))}
+
+      <text
+        x="300"
+        y="316"
+        fontSize="11"
+        fontWeight="800"
+        fill={mounted && !bubbles ? '#0f766e' : '#b45309'}
+        textAnchor="middle"
+      >
+        {mounted ? (bubbles ? `${bubbles} bubbles trapped` : 'no bubbles') : `coverslip at ${angle} deg`}
+      </text>
+    </g>
+  )
+}
 
 export default function FocusScopeWidget({ onSolved }) {
   const [coarse, setCoarse] = useState(20)
@@ -43,11 +289,9 @@ export default function FocusScopeWidget({ onSolved }) {
   const [wins, setWins] = useState([])
 
   const winRef = useRef([])
-  const stillRef = useRef(false)
 
   useEffect(() => {
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    stillRef.current = still
     if (still) return undefined
     const id = setInterval(() => setTick((t) => t + 1), 90)
     return () => clearInterval(id)
@@ -118,85 +362,120 @@ export default function FocusScopeWidget({ onSolved }) {
   }
 
   const drift = Math.sin(tick * 0.16) * 1.6
-  const stageY = 214 - (coarse / 120) * 26
+  const stageY = 220 - (coarse / 120) * 34
   const cell = 13 * objective.cells
-  const status = cracked
-    ? 'Slide cracked. The objective was driven straight into the glass.'
+  const statusWord = cracked ? 'cracked' : sharp ? 'sharp' : 'blurred'
+  const statusTint = cracked ? '#DC2626' : sharp ? '#0f766e' : '#b45309'
+  const title = cracked
+    ? 'Slide cracked.'
     : sharp
       ? `Sharp at ${objective.power}×.`
-      : `${objective.power}× — out of focus. Depth of field here is ${objective.depth} µm.`
+      : `Blurred at ${objective.power}×.`
+  const note = cracked
+    ? 'The lens was driven into the glass. Fit a fresh slide.'
+    : sharp
+      ? `Total magnification ${objective.power * 10}×.`
+      : `Stage is ${Math.abs(z - FOCAL_Z).toFixed(2)} µm off the focal plane.`
 
   return (
     <>
       <SimLayout
         stage={
-          <Stage>
-            <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${status} ${bubbles} air bubbles in the mount.`} style={STAGE_MEDIA}>
+          <Stage bleed>
+            <svg
+              viewBox={`0 0 ${W} ${H}`}
+              preserveAspectRatio="xMidYMid slice"
+              role="img"
+              aria-label={`${title} ${note} ${
+                mounted ? `${bubbles} air bubbles in the mount.` : 'No coverslip yet.'
+              }`}
+              style={stageFill(W, H)}
+            >
               <defs>
                 <filter id="fs-blur" x="-40%" y="-40%" width="180%" height="180%">
                   <feGaussianBlur stdDeviation={blur.toFixed(2)} />
                 </filter>
                 <clipPath id="fs-field">
-                  <circle cx="440" cy="168" r="96" />
+                  <circle cx={FIELD_X} cy={FIELD_Y} r={FIELD_R} />
                 </clipPath>
               </defs>
 
-              {/* ── The instrument ── */}
-              <rect x="52" y="296" width="188" height="18" rx="8" fill="#57534e" />
-              <path d="M 146 296 L 146 128 Q 146 100 174 100 L 200 100" fill="none" stroke="#78716c" strokeWidth="14" strokeLinecap="round" />
-              <rect x="192" y="74" width="28" height="42" rx="7" fill="#44403c" />
-              <text x="206" y="66" fontSize="11" fontWeight="800" fill="#78716c" textAnchor="middle">
-                eyepiece 10×
+              <Room />
+              <Microscope
+                objective={objective}
+                index={index}
+                coarse={coarse}
+                fine={fine}
+                stageY={stageY}
+                cracked={cracked}
+              />
+              <WetMount angle={angle} mounted={mounted} bubbles={bubbles} />
+
+              {/* What the eyepiece shows. */}
+              <rect
+                x="424"
+                y="14"
+                width="92"
+                height="20"
+                rx="5"
+                fill="#fff7ed"
+                stroke="#e7e5e4"
+                strokeWidth="1.5"
+              />
+              <text x="470" y="28" fontSize="11" fontWeight="800" fill={INK_MID} textAnchor="middle">
+                field of view
               </text>
+              <circle
+                cx={FIELD_X}
+                cy={FIELD_Y}
+                r={FIELD_R + 9}
+                fill="#e7e5e4"
+                stroke={INK_MID}
+                strokeWidth="2.5"
+              />
+              <circle cx={FIELD_X} cy={FIELD_Y} r={FIELD_R} fill="#FDF7EC" stroke={INK} strokeWidth="2" />
 
-              {/* Turret: the chosen objective swings into the light path. */}
-              <circle cx="152" cy="158" r="26" fill="#57534e" />
-              {OBJECTIVES.map((o, i) => {
-                const chosen = i === index
-                const a = ((i - index) * 46 - 90) * (Math.PI / 180)
-                const len = chosen ? 30 + o.power * 0.42 : 18
-                return (
-                  <g key={o.power} transform={`translate(${152 + Math.cos(a) * 20} ${158 + Math.sin(a) * 20}) rotate(${(i - index) * 46})`}>
-                    <rect x="-6" y="0" width="12" height={len} rx="4" fill={chosen ? '#F59E0B' : '#a8a29e'} />
-                    <text x="0" y={len + 12} fontSize="9" fontWeight="900" fill={chosen ? '#b45309' : '#a8a29e'} textAnchor="middle">
-                      {o.power}×
-                    </text>
-                  </g>
-                )
-              })}
-
-              {/* Stage and slide */}
-              <rect x="98" y={stageY} width="112" height="9" rx="3" fill="#a8a29e" />
-              <rect x="116" y={stageY - 5} width="74" height="5" rx="2" fill={cracked ? '#DC2626' : '#DDEEFF'} stroke="#78716c" strokeWidth="1.4" />
-              {cracked && (
-                <path d={`M 122 ${stageY - 5} l 10 5 l -6 0 l 12 -5 M 158 ${stageY} l 8 -5 l -2 5 l 10 -5`} stroke="#DC2626" strokeWidth="2" fill="none" />
-              )}
-              <circle cx="118" cy={stageY + 42} r="15" fill="#57534e" />
-              <circle cx="118" cy={stageY + 42} r="6" fill="#a8a29e" />
-              <circle cx="118" cy={stageY + 42} r="26" fill="none" stroke="#78716c" strokeWidth="4" />
-              <text x="118" y={stageY + 84} fontSize="10" fontWeight="800" fill="#78716c" textAnchor="middle">
-                coarse / fine
-              </text>
-
-              {/* Coverslip, shown at the angle it will be lowered at. */}
-              <g transform={`translate(238 ${mounted ? 250 : 210})`}>
-                <rect x="0" y="0" width="56" height="4" rx="2" fill="#7BC9CF" stroke="#0f766e" strokeWidth="1.4" transform={`rotate(${mounted ? 0 : -angle})`} />
-                <text x="28" y="24" fontSize="10" fontWeight="800" fill="#0f766e" textAnchor="middle">
-                  {mounted ? `mounted — ${bubbles} bubbles` : `coverslip at ${angle}°`}
-                </text>
-              </g>
-
-              {/* ── Field of view ── */}
-              <circle cx="440" cy="168" r="96" fill="#FDF7EC" stroke="#78716c" strokeWidth="3" />
               <g clipPath="url(#fs-field)" filter="url(#fs-blur)">
                 {Array.from({ length: 7 }, (_, r) =>
                   Array.from({ length: 7 }, (_, c) => {
-                    const x = 440 - 96 + c * cell + drift
-                    const y = 168 - 96 + r * cell * 0.72 + drift * 0.6
+                    const x = FIELD_X - FIELD_R + c * cell + drift
+                    const y = FIELD_Y - FIELD_R + r * cell * 0.72 + drift * 0.6
+                    const w = cell - 2
+                    const h = cell * 0.72 - 2
                     return (
                       <g key={`${r}-${c}`}>
-                        <rect x={x} y={y} width={cell - 2} height={cell * 0.72 - 2} rx="3" fill="#C7E3D8" stroke="#0f766e" strokeWidth="1.5" />
-                        <circle cx={x + cell * 0.5} cy={y + cell * 0.36} r={Math.max(1.4, cell * 0.11)} fill="#7C3AED" opacity="0.75" />
+                        <rect
+                          x={x}
+                          y={y}
+                          width={w}
+                          height={h}
+                          rx="3"
+                          fill="#F3E6CE"
+                          stroke="#8A6A4A"
+                          strokeWidth="2.4"
+                        />
+                        <rect
+                          x={x + 2}
+                          y={y + 2}
+                          width={Math.max(0, w - 4)}
+                          height={Math.max(0, h - 4)}
+                          rx="2"
+                          fill="#C7E3D8"
+                          opacity="0.6"
+                        />
+                        <circle
+                          cx={x + w * 0.5}
+                          cy={y + h * 0.5}
+                          r={Math.max(1.4, cell * 0.12)}
+                          fill="#7C3AED"
+                          opacity="0.75"
+                        />
+                        <circle
+                          cx={x + w * 0.5}
+                          cy={y + h * 0.5}
+                          r={Math.max(0.6, cell * 0.05)}
+                          fill="#4C1D95"
+                        />
                       </g>
                     )
                   }),
@@ -205,23 +484,47 @@ export default function FocusScopeWidget({ onSolved }) {
                   Array.from({ length: bubbles }, (_, i) => (
                     <circle
                       key={i}
-                      cx={396 + i * 32}
-                      cy={150 + (i % 2) * 44}
-                      r={16 + i * 2}
+                      cx={420 + i * 34}
+                      cy={110 + (i % 2) * 46}
+                      r={15 + i * 2}
                       fill="#FDF7EC"
                       stroke="#1c1917"
                       strokeWidth="4"
                     />
                   ))}
                 {cracked && (
-                  <path d="M 350 100 L 410 160 L 384 178 L 452 240 M 410 160 L 470 128 L 530 176" stroke="#44403c" strokeWidth="4" fill="none" />
+                  <path
+                    d="M 384 62 L 444 122 L 418 140 L 486 202 M 444 122 L 504 90 L 560 138"
+                    stroke="#44403c"
+                    strokeWidth="4"
+                    fill="none"
+                  />
                 )}
               </g>
-              <text x="440" y="288" fontSize="13" fontWeight="900" fill={cracked ? '#DC2626' : sharp ? '#0f766e' : '#b45309'} textAnchor="middle">
-                {cracked ? 'slide cracked' : sharp ? `sharp — total ${objective.power * 10}×` : `blur ${blur.toFixed(1)}`}
+
+              {/* Wall card: the live numbers, inside the picture. */}
+              <rect
+                x="366"
+                y="234"
+                width="216"
+                height="56"
+                rx="6"
+                fill="#fff7ed"
+                stroke="#e7e5e4"
+                strokeWidth="1.5"
+              />
+              <circle cx="474" cy="234" r="3.5" fill={STEEL} />
+              <text x="378" y="252" fontSize="9" fontWeight="800" fill={INK_MID}>
+                TOTAL MAGNIFICATION
               </text>
-              <text x="440" y="308" fontSize="11" fontWeight="800" fill="#78716c" textAnchor="middle">
-                {mounted ? (bubbles ? `${bubbles} air bubbles in the way` : 'clean mount, no bubbles') : 'no coverslip yet'}
+              <text x="378" y="278" fontSize="22" fontWeight="900" fill={INK}>
+                {objective.power * 10}x
+              </text>
+              <text x="570" y="254" fontSize="13" fontWeight="900" fill={statusTint} textAnchor="end">
+                {statusWord}
+              </text>
+              <text x="570" y="278" fontSize="10.5" fontWeight="800" fill={INK_MID} textAnchor="end">
+                sharp band {objective.depth} um
               </text>
             </svg>
           </Stage>
@@ -237,17 +540,13 @@ export default function FocusScopeWidget({ onSolved }) {
                     : 'border-amber-400 bg-amber-50 dark:border-amber-500 dark:bg-amber-600/20'
               }`}
             >
-              <p className="text-sm font-black text-stone-900 dark:text-white">{status}</p>
-              <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                {cracked
-                  ? 'The coarse knob moves the stage two micrometres a step. At 40× the whole sharp band is less than one. Fit a fresh slide and use fine focus only.'
-                  : `Stage at ${z.toFixed(2)} µm, focal plane at ${FOCAL_Z}. You are ${Math.abs(z - FOCAL_Z).toFixed(2)} µm out.`}
-              </p>
+              <p className="text-sm font-black text-stone-900 dark:text-white">{title}</p>
+              <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">{note}</p>
             </div>
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Objective in the light path
+                Objective lens
               </p>
               <div className="grid grid-cols-3 gap-1.5">
                 {OBJECTIVES.map((o, i) => (
@@ -261,15 +560,18 @@ export default function FocusScopeWidget({ onSolved }) {
                         : 'border-stone-200 bg-white text-stone-700 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200'
                     }`}
                   >
-                    {o.power}×
+                    {o.power}&times;
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label htmlFor="fs-coarse" className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Coarse focus — {coarse} µm
+              <label
+                htmlFor="fs-coarse"
+                className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
+              >
+                Coarse focus: {coarse} &micro;m
               </label>
               <input
                 id="fs-coarse"
@@ -281,11 +583,17 @@ export default function FocusScopeWidget({ onSolved }) {
                 onChange={(e) => changeCoarse(Number(e.target.value))}
                 className="h-11 w-full accent-orange-500"
               />
+              <p className="text-xs font-medium text-stone-500 dark:text-stone-400">
+                Big steps, 2 &micro;m each. Safe at low power only.
+              </p>
             </div>
 
             <div>
-              <label htmlFor="fs-fine" className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Fine focus — {(fine * 0.04).toFixed(2)} µm
+              <label
+                htmlFor="fs-fine"
+                className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
+              >
+                Fine focus: {(fine * 0.04).toFixed(2)} &micro;m
               </label>
               <input
                 id="fs-fine"
@@ -298,14 +606,16 @@ export default function FocusScopeWidget({ onSolved }) {
                 className="h-11 w-full accent-orange-500"
               />
               <p className="text-xs font-medium text-stone-500 dark:text-stone-400">
-                Fine moves the stage by four hundredths of a micrometre a step. That is why
-                it is the only knob that can find focus at 40×.
+                Steps of 0.04 &micro;m. The only knob that works at 40&times;.
               </p>
             </div>
 
             <div>
-              <label htmlFor="fs-angle" className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Coverslip angle — {angle}°
+              <label
+                htmlFor="fs-angle"
+                className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
+              >
+                Coverslip angle: {angle}&deg;
               </label>
               <input
                 id="fs-angle"
@@ -322,11 +632,10 @@ export default function FocusScopeWidget({ onSolved }) {
                 onClick={lowerCoverslip}
                 className="mt-1 min-h-11 w-full rounded-xl bg-primary-500 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-primary-600"
               >
-                {mounted ? 'Lift and lower it again' : 'Lower the coverslip'}
+                {mounted ? 'Lower it again' : 'Lower coverslip'}
               </button>
               <p className="mt-1 text-xs font-medium text-stone-500 dark:text-stone-400">
-                Dropped flat, the air under it has nowhere to go. Lowered on one edge, the
-                water pushes the air out ahead of the glass.
+                Dropped flat, the air underneath has nowhere to go.
               </p>
             </div>
 
@@ -335,18 +644,18 @@ export default function FocusScopeWidget({ onSolved }) {
               onClick={freshSlide}
               className="min-h-11 w-full rounded-xl border-2 border-accent-500 bg-accent-50 px-3 py-2 text-sm font-black text-accent-700 transition-colors dark:bg-accent-700/25 dark:text-accent-100"
             >
-              Fit a fresh slide
+              Fresh slide
             </button>
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Bench work — {wins.length} of 3
+                Bench work: {wins.length} of 3
               </p>
               <ul className="space-y-1.5">
                 {[
-                  ['lowpower', 'Focus found at 4× first'],
-                  ['sharp', 'Sharp at 40× with the slide still intact'],
-                  ['mount', 'Bubble-free mount'],
+                  ['lowpower', 'Focused at 4× first'],
+                  ['sharp', 'Sharp at 40×, slide intact'],
+                  ['mount', 'Coverslip down with no bubbles'],
                 ].map(([id, text]) => {
                   const ok = wins.includes(id)
                   return (
@@ -359,7 +668,7 @@ export default function FocusScopeWidget({ onSolved }) {
                       }`}
                     >
                       <p className="text-xs font-black text-stone-900 dark:text-white">
-                        {ok ? '✓ Done — ' : 'Not yet — '}
+                        {ok ? '✓ Done: ' : 'Not yet: '}
                         {text}
                       </p>
                     </li>
@@ -372,7 +681,7 @@ export default function FocusScopeWidget({ onSolved }) {
       />
 
       <p aria-live="polite" className="sr-only">
-        {status} {mounted ? `${bubbles} bubbles in the mount.` : 'No coverslip yet.'}
+        {title} {note} {mounted ? `${bubbles} bubbles in the mount.` : 'No coverslip yet.'}
       </p>
     </>
   )

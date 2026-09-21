@@ -40,10 +40,17 @@ export const week07 = {
       signature: {
         widgetId: "dilution-jar",
         heading: "Watch It: Dilute Without Removing Anything",
-        intro:
-          "Add water and the colour fades — but count the particles before and after. Not one of them left the jar; they are simply sharing more space, and the % m/m readout falls as it happens.",
-        instruction: "Find both routes to dilute, then hit the target",
+        intro: "Water goes in, particles stay. The colour fades anyway.",
+        instruction: "Find both routes to dilute, then hit the target.",
         xp: 25,
+        explainer: {
+          title: "Why the colour faded",
+          points: [
+            "Adding water never removed a particle. The same count spread through more liquid, so the colour thinned out.",
+            "The % m/m reading fell because the total mass underneath the fraction grew while the solute stayed put.",
+            "Pouring half away did remove particles. Topping back up gave the same volume with half the solute in it.",
+          ],
+        },
       },
 
       sections: [
@@ -374,10 +381,18 @@ export const week07 = {
       signature: {
         widgetId: "titration-drip",
         heading: "Watch It: One Drop from Neutral",
-        intro:
-          "Open the burette a drop at a time. H⁺ and OH⁻ pair off into water on screen, salt builds on the floor of the flask, and the pH needle crawls for thirty drops before jumping most of the scale on the fortieth.",
-        instruction: "Reach pH 7 and make salt — overshooting is allowed",
+        intro: "One drop at a time, acid turns into salt and water.",
+        instruction: "Reach pH 7, then add one drop too many.",
         xp: 25,
+        explainer: {
+          title: "Why the pH jumped at the end",
+          points: [
+            "Each drop paired an H⁺ with an OH⁻. Both vanished and left plain water behind.",
+            "The white crystals on the flask floor were the salt, sodium chloride, left by that swap.",
+            "The needle crawled while acid was still spare, then jumped once the last H⁺ was gone.",
+            "One drop past neutral turned the flask pink, because the base was in charge now.",
+          ],
+        },
       },
 
       sections: [

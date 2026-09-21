@@ -40,10 +40,18 @@ export const week12 = {
       signature: {
         widgetId: "scope-field",
         heading: "Watch It: Six Cells, Two Kinds",
-        intro:
-          "Six living cells drift under the objective, each shaped for the job it actually does. Zoom into one and its interior resolves — or, in the two bacteria, there is simply no nucleus there: a loose loop of DNA lying in the cytoplasm with nothing holding it.",
-        instruction: "Inspect all six and find both cell types",
+        intro: "Six living cells drift under the lens. Two have no nucleus.",
+        instruction: "Zoom past 2.5x on every one of the six cells.",
         xp: 25,
+        explainer: {
+          title: "Why cells come in two kinds",
+          points: [
+            "Four of the cells you zoomed into held their DNA inside a nucleus. Those are eukaryotes.",
+            "The bacterium and the cyanobacterium had no nucleus at all, just a loose loop of DNA in the cytoplasm.",
+            "Shape followed the job every time: the nerve cell stretched out, the sperm cell carried a tail.",
+            "One word, cell, covered all six, and that is the range cell theory has to account for.",
+          ],
+        },
       },
 
       sections: [
@@ -338,10 +346,18 @@ export const week12 = {
       signature: {
         widgetId: "cell-cutaway",
         heading: "Watch It: Switch an Organelle Off",
-        intro:
-          "The organelles here are stations on one production line — instruction out of the nucleus, chain built at the ribosome, packed at the Golgi, vesicle out through the membrane, all of it paid for by the mitochondria. Switch one off and the legs downstream stop carrying anything.",
-        instruction: "Switch every organelle off once",
+        intro: "Five organelles, one production line. Switch one off and watch.",
+        instruction: "Switch each of the five organelles off once.",
         xp: 25,
+        explainer: {
+          title: "Why one failure stops the line",
+          points: [
+            "Switching the nucleus off cut the instruction, so the ribosomes had nothing left to build from.",
+            "Switching the Golgi off left the chains unwrapped, so no vesicle ever reached the membrane.",
+            "The mitochondria were different: with no ATP, every station stopped at once instead of one by one.",
+            "Stations upstream of the broken one kept working, which is how you could tell what depends on what.",
+          ],
+        },
       },
 
       sections: [

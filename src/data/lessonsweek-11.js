@@ -37,11 +37,19 @@ export const week11 = {
 
       signature: {
         widgetId: "focus-scope",
-        heading: "Watch It: Why Coarse Focus Cracks the Slide",
-        intro:
-          "The blur is real, and how much of it there is comes from one number — how far the stage sits from the focal plane, divided by the depth of field of the objective in the light path. At 4× that band is ten micrometres wide. At 40× it is eight tenths, one coarse step is two, and the lens goes into the glass.",
-        instruction: "Sharp at 40×, slide intact, no bubbles",
+        heading: "Watch It: Focus Without Cracking",
+        intro: "Turn the knobs, then lower the coverslip.",
+        instruction: "Get a sharp 40× view without cracking the slide.",
         xp: 25,
+        explainer: {
+          title: "Why fine focus exists",
+          points: [
+            "At 4× the sharp band was ten micrometres wide, so the big coarse knob found it easily.",
+            "At 40× that band shrank to under one micrometre, and one coarse step moves two.",
+            "That is why the coarse knob cracked the slide, and why only fine focus could find focus.",
+            "Dropping the coverslip flat trapped air, so bubbles sat in the field until you lowered it on an edge.",
+          ],
+        },
       },
 
       sections: [
@@ -398,11 +406,19 @@ export const week11 = {
 
       signature: {
         widgetId: "scope-through-time",
-        heading: "Watch It: 280 Years of the Same Cork",
-        intro:
-          "One slider moves the year, and the resolving power of the best instrument of that year moves with it. Drag past 1830 and the colour fringes vanish and a nucleus appears. Drag past 1933 and ribosomes resolve that were not there a pixel earlier.",
-        instruction: "Use all three instruments",
+        heading: "Watch It: Same Cork, Better Lenses",
+        intro: "Drag the year. The instrument changes, the cork does not.",
+        instruction: "Drag the year through all three instruments.",
         xp: 25,
+        explainer: {
+          title: "Why better lenses found more",
+          points: [
+            "In 1665 the best lens resolved five micrometres, so cork showed empty boxes and nothing inside them.",
+            "The 1830 doublet cleared the coloured fringes and cut the limit to one micrometre, so a nucleus appeared.",
+            "Electrons have a far shorter wavelength than light, so 1933 resolved ribosomes no light lens could reach.",
+            "Each discovery waited for the instrument, not for someone clever enough to look.",
+          ],
+        },
       },
 
       sections: [

@@ -37,9 +37,18 @@ export const week04 = {
         widgetId: "heating-curve",
         heading: "Watch It: The Plateau Appears",
         intro:
-          "Heat goes in at a steady rate and the graph draws itself alongside the lattice. Hold the heat until the line goes flat, then cool it and watch the curve retrace the way it came.",
-        instruction: "Draw both plateaus, run it backwards, then take the sublimation route",
+          "Heat goes in at a steady rate while the graph draws itself.",
+        instruction: "Hold the heat button and watch the line.",
         xp: 25,
+        explainer: {
+          title: "Why the line went flat",
+          points: [
+            "While the line climbed, the heat was making particles move faster, so the thermometer rose.",
+            "On each flat run the heat kept going in, but it went into breaking bonds instead.",
+            "Cooling walked the same line backwards, so freezing gave back exactly what melting took.",
+            "With the pump on, the solid went straight to gas and the liquid stage never happened.",
+          ],
+        },
       },
 
       sections: [
