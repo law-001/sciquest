@@ -39,10 +39,18 @@ export const week05 = {
       signature: {
         widgetId: "investigation-rig",
         heading: "Watch It: Jam the Machine",
-        intro:
-          "The investigation runs as a machine on a conveyor. Pull any stage out of its housing and the belt keeps turning while the sample stops dead at the gap.",
-        instruction: "Run it whole, jam it once, then confound it once",
+        intro: "A sample rides the belt through all five stages.",
+        instruction: "Run it whole, pull a stage out, then change two things.",
         xp: 25,
+        explainer: {
+          title: "Why the machine jammed",
+          points: [
+            "With all five stages fitted, the sample rode the belt straight into the result tray.",
+            "Pulling a stage out left a gap in the belt, and the sample stopped there. Steps cannot be skipped.",
+            "With the second variable on, the cause arrows crossed and the tray showed a question mark.",
+            "Two things changed at once, so the result could not be pinned on either one.",
+          ],
+        },
       },
 
       sections: [
@@ -330,11 +338,19 @@ export const week05 = {
 
       signature: {
         widgetId: "meniscus-bench",
-        heading: "Watch It: Your Eye Changes the Number",
-        intro:
-          "The sightline is drawn for real. Look down at the meniscus and the scale reads high; look up at it and it reads low. Only eye level gives the true volume — and the balance beside it is lying by the same amount every time.",
-        instruction: "Read three volumes at eye level, then find the systematic error",
+        heading: "Watch It: Eye Level Matters",
+        intro: "Your eye height changes the number the scale shows.",
+        instruction: "Read three volumes at eye level, then zero the balance.",
         xp: 25,
+        explainer: {
+          title: "Why eye level gave the true volume",
+          points: [
+            "Looking down at the liquid made the scale read high, and looking up made it read low.",
+            "Only at eye level did the sightline cross the scale exactly where the liquid sat.",
+            "The balance was out by 2.40 g on every single mass, not by a different amount each time.",
+            "An error that repeats identically is a systematic error. You fixed it at the instrument by zeroing it.",
+          ],
+        },
       },
 
       sections: [

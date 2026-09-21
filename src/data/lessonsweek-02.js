@@ -18,7 +18,7 @@ export const week02 = {
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════
-    // LESSON 4: What is Matter?
+    // LESSON 1: What is Matter?
     // ═══════════════════════════════════════════════════
     // ═══════════════════════════════════════════════════
     // COMBINED LESSON: Particle Theory of Matter
@@ -26,11 +26,11 @@ export const week02 = {
     //  states comparison, temperature effect)
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-4",
+      id: "w02-l1",
       weekId: "week-2",
-      lessonNumber: 4,
+      lessonNumber: 1,
       title: "Particle Theory of Matter",
-      badge: "Lesson 4",
+      badge: "Lesson 1",
       subtitle:
         "The Particle Model of Matter explains that all matter is made up of tiny particles, and each pure substance has its own kind of particles. These particles are constantly moving, and their arrangement and behavior affect the properties and state of matter. ",
       readTime: "~18 min read",
@@ -254,14 +254,14 @@ export const week02 = {
     },
 
     // ═══════════════════════════════════════════════════
-    // LESSON 5: States of Matter
+    // LESSON 2: States of Matter
     // ═══════════════════════════════════════════════════
     {
-      id: "lesson-5",
+      id: "w02-l2",
       weekId: "week-2",
-      lessonNumber: 5,
+      lessonNumber: 2,
       title: "Particle Nature of Matter States",
-      badge: "Lesson 5",
+      badge: "Lesson 2",
       subtitle:
         "Understanding the particle nature of matter helps explain how matter behaves in its different states at the microscopic level. Matter commonly exists in three main states: solid, liquid, and gas. ",
       readTime: "~13 min read",

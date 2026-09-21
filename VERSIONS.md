@@ -469,3 +469,168 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Front text: "Energy in the chamber" became "Energy", and "Same substance the whole way. Only the energy changes." is gone, since the heading and the back card both already say it.
 - Back card: the title restated the lesson heading, so it is now "Energy alone changed the phase", and the plasma point is in past tense like the rest.
 - Commit: Refine the phase bench with a real chamber and an energy gauge
+
+## VERSION_52
+- Renumbered the two Week 2 lessons: they now read "Lesson 1" and "Lesson 2" instead of "Lesson 4" and "Lesson 5" (`badge` + `lessonNumber` in `src/data/lessonsweek-02.js`).
+- Moved their ids onto the per-week `wNN-lN` scheme used by weeks 3+: `lesson-4` -> `w02-l1`, `lesson-5` -> `w02-l2` (plain `lesson-1`/`lesson-2` would collide with Week 1). Updated `src/data/quizzesweek-02.js` keys and `lessonId`s to match.
+- New migration `supabase/migrations/20260921010000_week2_lesson_ids.sql` renames the ids in place across `curriculum_lessons`, `lessons`, `quizzes`, `quiz_settings`, `quiz_student_access`, `quiz_attempts`, `student_progress`, `lesson_interactions`, `lesson_materials` and both publish-state id arrays, so teacher overrides, student progress and XP follow the lesson instead of being orphaned.
+- Refreshed the `curriculum_lessons` note in `supabase/schema.sql` and the Week 2 rows/id-scheme note in `INTERACTIVE_SECTIONS.md`.
+- Commit: renumber Week 2 lessons to 1-2 and move their ids to the w02-lN scheme
+
+## VERSION_53
+- Refined the Week 4 Lesson 1 signature interactive (`heating-curve`) so the picture carries the lesson and the explanation moved to the back of the card.
+- Redrew the scene at 640x400 (the stage's own 16:10 shape) with a bleeding wall and bench, `stageFill` + `<Stage bleed>`, so it fills the frame instead of letterboxing inside it.
+- Real apparatus instead of boxes: a beaker with a rim, pour lip, graduation marks and a meniscus, lattice bonds that stretch and snap, rising bubbles while boiling, a hotplate with an indicator LED, a digital readout and a glow band under the beaker base, and a bell jar for the vacuum route.
+- Added a thermometer whose red column tracks the temperature, so a plateau is now visible as the column sitting still while the hotplate keeps glowing.
+- The graph moved onto chart paper pinned to the wall, with a grid, dashed guides at 0 and 100 °C, a dashed ghost of the furthest run, and plateau bands that only get named once the student has drawn them.
+- Front copy on a diet: the intro is one sentence, the instruction is one imperative, the five paragraph-length state `note` strings are gone, and the vacuum explainer paragraph moved to the back. Removed every em dash from student-facing text.
+- New `signature.explainer` on the lesson, so finishing all four goals now unlocks the flip.
+- Commit: Refine the heating curve with real apparatus and a thermometer
+
+## VERSION_54
+- Refined both Week 5 signature interactives: `investigation-rig` (Lesson 1) and `meniscus-bench` (Lesson 2). Neither lesson has any interactive slots in its `layout[]`, so the signature widget is the whole scope in each.
+- Both scenes were redrawn at 620x390 (the stage's own 16:10 shape) with a bleeding wall and floor, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so they cover the frame instead of letterboxing inside it. `investigation-rig` was 600x330 and `meniscus-bench` was 620x360, both on `STAGE_MEDIA`.
+- `InvestigationRigWidget`: the belt now runs on two rollers with spokes that turn, stands on legs down to a workshop floor, and the modules bolt into a top and bottom mounting rail. A fitted module has bolt heads, a viewport onto its gears and a `FITTED` name plate; a pulled one shows the empty socket and its two bare rails. The sample is a potted seedling on a carrier plate instead of a rounded rectangle, and `JAMMED` moved below the belt where it no longer collides with the modules.
+- `InvestigationRigWidget` honours `prefers-reduced-motion`: the belt dashes and gear spokes hold still, and only the sample moves.
+- `MeniscusBenchWidget`: the cylinder gained a pour lip, a rim ellipse, a weighted foot, a glass highlight, a `50 mL` capacity band and ticks every 2 mL on both walls instead of every 5 on one. The balance gained feet, a pan column, a sample beaker on the pan, and a `TARE` button on its body that turns teal once zeroed. Both sit on a bench with their own shadow, and the eye now slides along a visible dashed track.
+- Front copy on a diet in both. L1 intro is one sentence and the instruction drops the word "confound"; the five `jam` strings, the caption and the three goal hints are all inside budget. L2 heading went from 7 words to 5, the intro from a 40-word paragraph to one sentence, the slider label to "Eye height", and the panel reading is now two readouts rather than one long sentence. Every em dash in student-facing text is gone.
+- Fixed L2's record message: a rejected reading said "Recorded ..." while recording nothing. It now says "Not recorded" and names how far off the eye is.
+- New `signature.explainer` on both lessons, so finishing the goals unlocks the flip.
+- Commit: Refine the Week 5 investigation rig and meniscus bench
+
+## VERSION_55
+- Re-centred the Week 5 Lesson 1 machine (`investigation-rig`). Its content sat from x=14 to x=574 in a 620-wide viewBox, so `slice` cropping (about 40 units a side at the shapes the stage actually takes) ate the left edge of module 1 while leaving bare wall on the right.
+- Added `SAFE_L`/`SAFE_R` (40 units in from each edge) and laid the machine out between them: `X0` 14 -> 49, `PITCH` 100 -> 92, `HOUSE_W` 92 -> 84, tray 493-569. The whole composition is now centred on 309 with nothing but wall and floor outside the safe inset.
+- Filled the vertical dead space at the bottom: modules moved down (`HOUSE_Y` 100 -> 110) and the belt with them (`BELT_Y` 282 -> 306, `FLOOR_Y` 348 -> 362), so the floor is a strip rather than a third of the picture.
+- Added a drive motor under the left roller with a belt line to it, which gives the lower-left something structural instead of empty floor.
+- `sampleX` is now derived from `X0`, `HOUSE_W` and `PITCH` instead of the three magic numbers it used, so the sample cannot drift off the module centres when the spacing is retuned.
+- Week 5 Lesson 2 (`meniscus-bench`): the balance ran to x=580, right where a side crop lands. Its parts are now offset from one `BAL_X = 388` constant, moving it 16 units inboard.
+- Commit: Re-centre the Week 5 machine inside the stage crop
+
+## VERSION_56
+- Week 6 Lesson 1 (`solubility-beaker`): re-authored the scene at the stage's own shape. It was 660x330 (a 2:1 strip) drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
+- Gave the scene a room: a lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam.
+- The beaker gained a rim ellipse, a pour lip, graduation ticks, a `100 mL` printed band, a curved meniscus, a highlight stripe and a shadow on the bench. It was three straight lines and a flat rectangle before.
+- Every control now changes the picture, not just a readout: the hotplate's element band brightens with the temperature slider and sheds heat wisps above 42 °C, the stirring rod sweeps across the beaker with a swirl in the water while the stirrer is on, and `Crushed: YES` swaps the heap of 12 big cubes for a bed of 26-wide fine grains carrying the same mass.
+- Moved the solubility curve onto a sheet of chart paper pinned to the wall, and added leader-line labels inside the picture (`dissolved N g`, `on the bottom N g`, `sugar cubes` / `crushed sugar`).
+- Front copy on a diet: `intro` cut from 36 words to 9, `instruction` to 8, the four `STATUS` notes from paragraphs to one line each, and the two panel helper lines to six words each. Removed every em dash from the widget and its lesson data.
+- Added `signature.explainer` to `w06-l1`, so the section now flips to a "Why the beaker stopped taking sugar" back once all four solutions have been made.
+- Commit: Refine the Week 6 solubility beaker illustration and copy, add its explainer flip
+
+## VERSION_57
+- Week 7 Lesson 1 (`dilution-jar`): re-authored the scene at the stage's own shape. It was 620x330 drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
+- Gave the scene a room: a lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam.
+- The jar gained a rim ellipse, a pour lip, a curved meniscus, a highlight stripe, graduation ticks with mL numbers, a surface reading on a leader line and a shadow on the bench. It was four straight lines and a flat rectangle before.
+- Both controls now change the picture: `Add 10 mL` opens a wall tap whose orange handle turns while a stream falls into the jar, and `Pour half away` sends a stream over the lip into a waste beaker on the bench whose level stays up afterwards.
+- Moved the `% m/m` column onto a sheet pinned to the wall with the formula printed on it, and added in-picture labels (`N solute particles`, `only pouring removes them`, `N g solute`) so the point of the activity is readable without the panel.
+- Week 7 Lesson 2 (`titration-drip`): same re-author, 620x340 to 620x390 with bleed and `stageFill`. The burette now hangs from a retort stand with a base, rod and clamp instead of floating, has graduation ticks and a stopcock whose orange handle turns a quarter while `Hold to drip` is pressed.
+- The flask gained a rim, a neck, a curved indicator surface and a bench shadow; the salt stacks in offset rows with a `salt crystals` leader label; the pH scale moved onto a wall chart with `acid` / `neutral` / `base` band names so the scale never relies on colour alone, and the ion tally moved onto that chart.
+- Front copy on a diet across both: `intro` cut from 33 to 9 words and 38 to 11 words, control labels down to three words or fewer (`Add 5 g`, `Pour half away`, `One drop`, `Hold to drip`, `Fresh flask`), status notes from paragraphs to one line, and every goal hint under 14 words. Removed every em dash from both widgets and their lesson data.
+- Added `signature.explainer` to `w07-l1` and `w07-l2`, so each section flips to a "Why the colour faded" / "Why the pH jumped at the end" back once every goal is met.
+- Commit: Refine the Week 7 dilution jar and titration drip illustrations and copy, add their explainer flips
+
+## VERSION_58
+- Week 8 Lesson 1 (`equipment-bench`): re-authored the scene at the stage's own shape. It was 620x340 drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `preserveAspectRatio="xMidYMid slice"`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
+- Gave all four instruments a room: a tiled lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam. Every instrument now casts a shadow on the bench.
+- Bunsen burner: added a wall gas tap with an orange handle and a rubber hose running to the burner inlet, a knurled collar whose air hole widens as the slider opens, a barrel highlight and a chimney base. The flame keeps its outer cone and gains an inner cone that only appears once air is getting in.
+- Balance: the pan now carries a real sample beaker whose contents rise with the mass, and the body gained a spirit level whose bubble slides while the pan swings, a `TARE` button, a monospace display and feet.
+- Filter funnel: the funnel hangs from a retort stand (base, rod, boss head, ring clamp) instead of a bare bracket. The paper cone is fluted, the receiving beaker gained a rim, a pour lip, a meniscus, a highlight and mL graduations, and the mud wedge builds at the apex while the filtrate climbs the ticks.
+- Microscope: replaced the stick figure with a full compound scope. Foot, C arm, body tube, eyepiece, a three-objective nosepiece, stage with clips and slide, a lamp throwing light up through the specimen, and coarse and fine focus knobs that turn with the slider. The focus knob now raises and lowers the stage, so the gap under the objective is visible rather than only stated.
+- Added one pinned wall card that carries the live number for whichever instrument is out (flame tip °C, balance reading, filtrate mL, focus error), in the same corner in all four views.
+- Week 8 Lesson 2 (`hazard-cabinet`): same re-author, 620x340 to 620x390 with bleed, slice and `stageFill`, and the same wall/bench room.
+- The cabinet is now a real wall cabinet: frame, `HAZARD STORE` plate, mounting brackets, two shelves and four labelled bottles with necks and caps. The four GHS pictograms are drawn as SVG paths (flame, skull and crossbones, corroding hand and plate, flame over circle) instead of emoji glyphs, so they look the same on every device.
+- Every demonstration gained structure: the corrosive drips from a dropper bottle onto a steel plate raised on two blocks, the flammable beaker stands on the bench with its vapour drifting to a wall socket that sparks, the toxic drop goes into a tank with gravel and a plant, and the oxidiser's ember sits on a heatproof mat beside an oxygen cylinder.
+- Lab floor: both students are now drawn with heads, faces, hair and lab gowns, the burner sits on a proper base, the boiling tube hangs in a clamp on a stand, and the spill and cordon cone sit on the floor with leader-line labels.
+- Front copy on a diet across both lessons: L1 heading 7 words to 5 and its intro from a 47-word paragraph to one sentence; L2 heading 7 words to 6 and its intro from 53 words to one sentence. Control labels are three words or fewer (`Air collar`, `Mass on pan`, `Pour mixture`, `Focus knob`), helper lines are one short sentence each, and every goal hint is under 14 words. Removed every em dash from both widgets and their lesson data.
+- Added `signature.explainer` to `w08-l1` and `w08-l2`, so each section flips to a "Why each tool has one job" / "Why the symbols are worth reading" back once every goal is met.
+- Commit: Refine the Week 8 equipment bench and hazard cabinet illustrations and copy, add their explainer flips
+
+## VERSION_59
+- Week 11 Lesson 1 (`focus-scope`): re-authored the scene at the stage's own shape. It was 620x340 drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `preserveAspectRatio="xMidYMid slice"`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
+- Gave the instrument a room: a lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam. The scope and the wet mount both cast shadows on the bench.
+- Replaced the stick-figure scope with a full compound microscope: horseshoe foot, lamp with a visible light cone, condenser and iris diaphragm riding under the stage, stage with clips and slide, a three-objective turret whose two spare lenses swing out of the light path, arm, body tube and eyepiece.
+- The objective barrels are now measured, not decorative: each one is drawn exactly long enough that its tip meets the slide at the coarse setting that cracks it, so the crash is something a student can watch closing instead of a message that appears.
+- Both focus knobs turn with the slider that drives them (coarse outside, fine on the same shaft), so the control and the part it moves are visibly the same thing.
+- Moved the wet mount out of the instrument and onto the bench: a glass slide with a water drop, the specimen in it, a mounted needle holding the coverslip at the chosen angle, and the trapped bubbles drawn on the slide as well as in the field of view.
+- Added a pinned wall card carrying the live numbers (total magnification, sharp/blurred/cracked, the sharp band in µm), and gave the field of view a real eyepiece barrel, a `field of view` plate and cells with a proper wall, cytoplasm and nucleolus.
+- Week 11 Lesson 2 (`scope-through-time`): same re-author, 620x340 to 620x390 with bleed, slice and `stageFill`, and the same wall and bench room.
+- All three instruments are now the real objects. 1665: a leather barrel with gold tooling on a turned pillar, cork on a pin, and the oil lamp and water globe that made it usable. 1830: a brass compound scope with a horseshoe foot, curved arm, swivel mirror and an objective drawn as two stacked glasses. 1933: a vacuum column with an electron gun, three magnetic lens coils, a specimen airlock, a fluorescent viewing screen and a hosed vacuum pump.
+- Added a year rail across the wall with the three anchor years notched on it and a marker that travels as the slider moves, so the slider's value lives in the picture. Cork cells are now irregular boxes rather than one repeated rectangle.
+- Front copy on a diet across both lessons: L1 heading 7 words to 5 and its intro from a 60-word paragraph to one sentence of 7; L2 heading 8 words to 6 and its intro from 44 words to one sentence of 10. Control labels are three words or fewer (`Objective lens`, `Coarse focus`, `Fine focus`, `Coverslip angle`, `Fresh slide`), status notes are one line each, and every goal hint is under 14 words. Removed every em dash from both widgets and their signature data.
+- Added `signature.explainer` to `w11-l1` and `w11-l2`, so each section flips to a "Why fine focus exists" / "Why better lenses found more" back once every goal is met.
+- Commit: Refine the Week 11 microscope and scope-through-time illustrations and copy, add their explainer flips
+
+## VERSION_59
+- Week 8 Lesson 2 (`hazard-cabinet`): padded the left side of the wall cabinet. It started at x=24 in a 620-wide viewBox with its mounting brackets at x=16, so `slice` cropping (roughly 40 units a side at the shapes the stage takes) ate the bracket and the cabinet's left frame.
+- Added a `CAB_X = 56` constant and laid the cabinet out from it: frame 56-220 (was 24-200), width 176 -> 164, back panel and warning plate inset to match, brackets now at x=48. The four bottles are positioned off `CAB_X` too, so the shelves stay centred if the cabinet moves again.
+- Moved the blown-up diamond and its name from x=262 to x=272 to keep the gap between the cabinet and the demonstration area even.
+- Lab floor: both people are now actual figures. Added a shared `Student` component drawing sloped shoulders, a lab gown with a collar V, a centre seam and buttons, a neck, ears, eyebrows, eyes, a nose and a mouth, one arm hanging with a visible hand and one arm reaching for the equipment their hazard belongs to. They were a rounded rectangle with a circle and two dots on top.
+- Student at the burner: the hair is now a fringe plus a separate loose length that drapes toward the flame as the hazard grows, and tying it back turns that length into a bun with an orange tie. The burner gained a collar so it reads as a burner rather than a post.
+- Student at the boiling tube: the goggles are a real strap plus two tinted lenses over the eyes instead of a flat bar, and the tube now hangs in a clamp on a stand with a base rather than floating beside a rod.
+- Both status labels moved from y=140 to y=132 so the new hair and goggles do not run into them.
+- Commit: Pad the Week 8 hazard cabinet and redraw the lab floor students as figures
+
+## VERSION_60
+- Week 8 Lesson 2 (`hazard-cabinet`), lab floor: the loose hair on the left student was a triangle that grew sideways out of the head, so it read as a spike pointing at the burner rather than as hair.
+- Replaced it with a lock that hangs. Two `sway`/`drop` values in `LabFloor` swing the lock further out and further down as the hazard grows, and the path curves down over the shoulder and chest so the tip ends up beside the flame while the whole length still drapes under its own weight.
+- Added a lighter strand line along the lock so it reads as hair rather than a flat blob.
+- The tied-back state gained a short sweep from the fringe up to the bun, and the bun and its tie moved 2 units right so they sit behind the head instead of on top of the fringe.
+- Commit: Redraw the loose hair on the Week 8 lab floor so it hangs instead of pointing
+
+## VERSION_61
+- Week 12 Lesson 1 (`scope-field`): the scene is now the eyepiece view itself. Redrawn at 620x390 with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so the microscope barrel fills the stage corner to corner instead of a 620x340 disc floating in gradient.
+- Added a `Barrel` component (ribbed body, lit top edge, engraved graduations around the rim) and an engraved readout plate on the right carrying objective zoom, the cell in view, its type badge, where the DNA is, and six inspection pips.
+- More structure in the cells: nuclear envelope with pores plus a nucleolus, mitochondria with cristae, scattered ribosomes, a double cell wall and veined chloroplasts on the palisade cell, myelin blocks and branched dendrites on the neuron, a midpiece on the sperm cell, pili on E. coli, and stacked thylakoid rings in the cyanobacterium. The prokaryote interior is now a real closed DNA loop labelled `loose DNA loop`, not a squiggle.
+- Added drifting grit inside the field so it reads as a wet mount.
+- Week 12 Lesson 2 (`cell-cutaway`): redrawn at 620x390 with the same bleed/slice/stageFill treatment. The cell now fills the frame and the extracellular fluid bleeds past the viewBox.
+- The membrane is a real phospholipid bilayer: two head rings with channel proteins sunk through them, switching to a red dashed double line when it is off. Nucleus gained an envelope, ten pores and chromatin threads; the rough ER is folded sheets studded with ribosomes; the Golgi is a four-cisterna stack with vesicles budding off the rim; mitochondria have inner membranes and cristae and now emit visible ATP dots toward the centre when powered.
+- Replaced the floating sentence at the foot of the cell with a readout plate: `PROTEINS OUT PER MINUTE`, the number, and `stops at the golgi` / `line running`.
+- Front copy on a diet across both lessons: L1 intro from a 43-word paragraph to one sentence of 10, L2 intro from 45 words to 9. Instructions are one imperative sentence each, every organelle and cell blurb is one line, and the closing hint on L2 is 8 words. Removed every em dash from both widgets and their signature data.
+- Added `signature.explainer` to `w12-l1` and `w12-l2`, so each section flips to a "Why cells come in two kinds" / "Why one failure stops the line" back once every goal is met.
+- Commit: Refine the Week 12 cell field and cell cutaway illustrations and copy, add their explainer flips
+
+## VERSION_60
+- Week 8 Lesson 2 (`hazard-cabinet`): the student at the burner now has hair on both sides. It was a single lock on her right, hanging off the edge of the shoulder; now a length leaves each temple, clears the jaw, drapes over its own shoulder and comes to rest on her chest.
+- Kept the hazard intact: only the right length carries `sway` and `drop`, so it still swings out and down until its tip is beside the flame, which is what the `cm from flame` readout measures. The left length hangs still.
+- Both lengths have their own highlight strand, and both inner edges are drawn outside the eyes so no hair crosses her face. The tied-back bun state is unchanged.
+- Commit: Drape the hazard-cabinet student's hair over both shoulders onto her chest
+
+## VERSION_62
+- Week 12 Lesson 1 (`scope-field`): the in-cell labels were drawn inside the zoom transform, so at 3.2x `no nucleus` and `loose DNA loop` rendered at roughly three times their authored size and ran straight over the drawing.
+- Added a `PinLabel` helper that keeps the label pinned to the cell but counter-scales the glyphs by `1 / zoom`, so a label is the same size on screen at 1x and at 6x. Gave it a cream halo (`stroke` plus `paintOrder`) so it stays readable over a tinted cell body.
+- Moved the prokaryote labels clear of the body (`-30` and `34` in cell units, was `-22` and `27`) now that they no longer grow with the zoom.
+- The orange selection ring and the teal seen rings are now hidden once the view is past 2.5x. At 3.2x a 46-unit ring filled the whole field, and the plate already names the cell in view.
+- Week 12 Lesson 2 (`cell-cutaway`): the `mitochondrion` label sat at x=142 y=340 and ran under the readout plate that started at x=176. Renamed it `mitochondria` (two are drawn), moved it above its organelle at x=146 y=264, and nudged the bottom-left mitochondrion to [146, 296].
+- Moved the readout plate to x=202 y=310, 196 x 56, so it sits inside the cytoplasm clear of both the mitochondria label and the Golgi label.
+- Added a `short` name to each organelle and replaced `firstStop` (a name string that was matched back against the list) with a `stopped` organelle object, so the plate can read `stops at the Golgi` instead of `stops at the golgi apparatus` overrunning the number beside it.
+- Commit: Counter-scale the Week 12 cell labels and clear the cutaway readout plate overlap
+
+## VERSION_61
+- Week 8 Lesson 2 (`hazard-cabinet`): her hair is no longer a filled silhouette. Both falling lengths are now bundles of 14 separate wavy strands drawn by a new `HairFall` component, each with its own start point, stroke width, shade and wave phase, so the bundle has a broken edge and gaps you can see through.
+- Added a three-tone `HAIR_TINTS` palette (`#78350F`, `#92400E`, `#5C2A0B`) mixed strand by strand. One flat brown was most of why it read as a cut-out shape rather than hair.
+- `sway` and `drop` now build up down each strand instead of moving the whole shape, because hair pivots at the head: the roots stay put and only the ends travel toward the flame.
+- Kept the crown as a filled cap, since scalp does not show through the top of a head, but scalloped its lower edge and ran five strand lines over it. The bun in the tied-back state got the same treatment.
+- Commit: Redraw the hazard-cabinet student's hair as wavy per-strand bundles
+
+## VERSION_63
+- Week 13 Lesson 1 (`cell-morph`): redrew the scene at the stage's own shape (620 x 390) with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so the cell fills the frame instead of floating in a band of gradient.
+- The organelles are drawn as objects now, not dots: the nucleus has a double envelope, pores, a nucleolus and chromatin; the mitochondria have cristae; there is a rough ER with ribosomes on it, a three-sac Golgi with budding vesicles, lysosomes with enzyme specks, and centrioles as a paired cylinder with triplets. Chloroplasts are ellipses with grana stacks.
+- The cell wall is two layers now (a filled cellulose band plus a dashed inner line), and turgor closes the gap between membrane and wall from 16 to 5 units as the water rises, with four outward push marks.
+- Water entering is visible: solute dots outside fade as the water gets purer, and blue dots march in from both sides toward the membrane.
+- Chloroplasts and the vacuole are positioned off the box edges so they hug the wall as the cell grows; every shared organelle is on a fixed coordinate, so the "these never move" claim is literally true (dropped the old wobble that broke it).
+- Front copy on a diet: `intro` is one line, control labels are "Animal to plant" and "Water outside" with the readout split out, the long note under the status went to the back of the card, and a one-line "Next" hint names the next step. No em dashes left in student-facing text.
+- Added `signature.explainer` to `w13-l1`, so finishing all four steps unlocks the flip explaining what the student just saw.
+- Commit: Refine the Week 13 cell-morph interactive and add its explainer flip
+
+## VERSION_64
+- Week 13 Lesson 1 (`cell-morph`): no label is drawn over the artwork any more. A new `Tag` component puts each label in a gutter beside the cell (`LEFT_TEXT`/`RIGHT_TEXT`) and draws a line with an arrowhead from the text to the part it names.
+- Labelled parts: nucleus, centrioles and chloroplasts on the left; mitochondria, lysosomes and the central vacuole on the right; cell wall still above the wall, now with its own arrow down onto it.
+- Shrank the cell to clear those gutters (`bw` 190 to 280, `bh` 190 to 204, was 212 to 324 / 212 to 228) and moved every organelle to match: nucleus (246, 174) r32, mitochondria (336, 136) and (340, 200), ER at y 236 and 248, Golgi at y 224 to 244, free ribosomes at y 208 to 220, lysosomes (288, 168) and (296, 192), centrioles at (212, 112).
+- Vacuole now starts at x 306 and runs y `T+34` to `B-34`, so the mitochondria arrow passes above it; the top turgor marks moved off the chloroplast row to `CX ± 60`.
+- Commit: Move the Week 13 cell-morph labels out of the drawing onto arrows
+
+## VERSION_65
+- Week 13 Lesson 1 (`cell-morph`): the centriole pair sat at (212, 112), which is outside the round animal cell (the box is 190 wide with a 95 radius, so that corner is off the circle). Moved it right and down to (266, 119) and (280, 123), with the triplet dots at 286 + i * 8, cy 128.5.
+- The spot clears the nucleus at (246, 174) r32 and the upper mitochondrion at x 310, and stays inside the circle in animal form.
+- Pointed the `centrioles` arrow at the pair's new left edge, (262, 126), was (210, 118).
+- Commit: Move the Week 13 centrioles back inside the animal cell

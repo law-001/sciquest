@@ -153,8 +153,10 @@ create table if not exists public.quiz_student_access (
 --     First seeded by migrations/20260910010000_enforce_quiz_availability.sql;
 --     rebuilt for the MATATAG curriculum by
 --     migrations/20260912000000_recurriculum_ids.sql, which holds the current
---     33 rows (weeks 1–2 keep lesson-1 … lesson-5; weeks 3–19 use wNN-lN;
---     weeks 10 and 20 are examination weeks with no lessons).
+--     33 rows (week 1 keeps lesson-1 … lesson-3; weeks 2–19 use wNN-lN;
+--     weeks 10 and 20 are examination weeks with no lessons). Week 2 moved off
+--     lesson-4 / lesson-5 in
+--     migrations/20260921010000_week2_lesson_ids.sql.
 --
 --     Adding a seed lesson means adding its row in a NEW migration. A lesson id
 --     missing here resolves to NULL in quiz_week_for_lesson(), which falls back

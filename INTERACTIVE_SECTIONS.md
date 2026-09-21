@@ -81,8 +81,8 @@ lesson ids are still the original `lesson-N` form. Everything from Week 3 on use
 | W1 L1 Uses of Scientific Models | `lesson-1` | `model-gallery` | `widgets/ModelGalleryWidget.jsx` |
 | W1 L2 Science Process Skills | `lesson-2` | `investigation-run` | `widgets/InvestigationRunWidget.jsx` |
 | W1 L3 Models in Real Life | `lesson-3` | `globe-unroll` | `widgets/GlobeUnrollWidget.jsx` |
-| W2 L1 Particle Theory of Matter | `lesson-4` | `particle-lab` | `widgets/ParticleLabWidget.jsx` |
-| W2 L2 Particle Nature of Matter States | `lesson-5` | `state-change-lab` | `widgets/StateChangeLabWidget.jsx` |
+| W2 L1 Particle Theory of Matter | `w02-l1` | `particle-lab` | `widgets/ParticleLabWidget.jsx` |
+| W2 L2 Particle Nature of Matter States | `w02-l2` | `state-change-lab` | `widgets/StateChangeLabWidget.jsx` |
 | W3 L1 Different Phases of Matter | `w03-l1` | `phase-bench` | `widgets/PhaseBenchWidget.jsx` |
 | W4 L1 Changes in the State of Matter | `w04-l1` | `heating-curve` | `widgets/HeatingCurveWidget.jsx` |
 | W5 L1 Steps in Scientific Investigation | `w05-l1` | `investigation-rig` | `widgets/InvestigationRigWidget.jsx` |
@@ -108,7 +108,7 @@ lesson ids are still the original `lesson-N` form. Everything from Week 3 on use
 | W19 L1 Energy Flow in the Circle of Life | `w19-l1` | `ten-percent` | `widgets/TenPercentWidget.jsx` |
 
 Two second interactives also ship as `customWidget` blocks inside those same lessons:
-`pour-test` on `lesson-4` and `container-test` on `lesson-5`.
+`pour-test` on `w02-l1` and `container-test` on `w02-l2`.
 
 **All four waves are done.** Every one of the 28 content lessons has a signature
 simulation; the five performance-task lessons deliberately have none. There is no
@@ -146,9 +146,9 @@ Wave 4 added one more, learned the hard way three times in one run:
 
 ### Lesson id scheme
 
-Weeks 3–19 use `wNN-lN` ids (`w03-l1`, `w03-l2`, `w04-l1`, …). This was chosen over
-re-using `lesson-N` so that no stale teacher-override row in Supabase could silently land
-old content on a new topic. Weeks 1–2 keep their original `lesson-1`…`lesson-5` ids.
+Weeks 2–19 use `wNN-lN` ids (`w02-l1`, `w03-l1`, `w03-l2`, `w04-l1`, …). This was chosen
+over re-using `lesson-N` so that no stale teacher-override row in Supabase could silently
+land old content on a new topic. Week 1 keeps its original `lesson-1`…`lesson-3` ids.
 
 ### Performance-task lessons take no signature
 
