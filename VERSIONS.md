@@ -634,3 +634,8 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - The spot clears the nucleus at (246, 174) r32 and the upper mitochondrion at x 310, and stays inside the circle in animal form.
 - Pointed the `centrioles` arrow at the pair's new left edge, (262, 126), was (210, 118).
 - Commit: Move the Week 13 centrioles back inside the animal cell
+
+## VERSION_66
+- Fixed signup code resending to use Supabase's confirmation resend endpoint instead of repeating registration and its student-number duplicate check.
+- Preserve resend error messages so email provider failures and rate limits are visible; normalize email addresses for signup, resend, and verification.
+- Commit: Fix signup confirmation resend and expose delivery errors

@@ -232,7 +232,7 @@ export function AuthProvider({ children }) {
     }
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
       options: {
         data: {
@@ -248,9 +248,18 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  const resendEmailOtp = async (email) => {
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim().toLowerCase(),
+    })
+    if (error) throw error
+    return data
+  }
+
   const verifyEmailOtp = async (email, token) => {
     signedOutRef.current = false
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' })
+    const { data, error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token, type: 'signup' })
     if (error) throw error
     if (data.user) {
       await fetchProfile(data.user.id)
@@ -359,7 +368,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp, resendEmailOtp, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
