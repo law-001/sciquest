@@ -5745,13 +5745,18 @@ export function TeacherPortalPage({
   // teachers' edits show up live in this portal too.
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchPublishState(), fetchQuizSettings()])
-      .then(([publish, settings]) => {
-        if (cancelled) return;
-        setPublishState(publish);
-        setQuizSettings(settings);
+    // Availability must still load when unrelated quiz settings fail (for
+    // example, when production has not applied the quiz schedule migration).
+    fetchPublishState()
+      .then((publish) => {
+        if (!cancelled) setPublishState(publish);
       })
-      .catch((err) => console.error("Failed to load course settings:", err));
+      .catch((err) => console.error("Failed to load lesson availability:", err));
+    fetchQuizSettings()
+      .then((settings) => {
+        if (!cancelled) setQuizSettings(settings);
+      })
+      .catch((err) => console.error("Failed to load quiz settings:", err));
 
     const unsubPublish = subscribeToPublishState((next) => {
       if (!cancelled) setPublishState(next);
