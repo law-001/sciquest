@@ -58,6 +58,7 @@ export default function CustomWidgetSection({
       intro={rest.intro}
       instruction={meta?.desc ?? 'Explore the interactive below'}
       isComplete={solved}
+      explainer={data?.explainer}
       status={solved ? 'Interactive completed.' : 'Interactive in progress.'}
     >
       <div style={height ? { minHeight: Number(height) } : undefined}>

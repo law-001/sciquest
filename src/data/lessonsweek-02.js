@@ -1,4 +1,4 @@
-// Week 2: Particle Model of Matter — Grade 7 Science
+// Week 2: Particle Model of Matter, Grade 7 Science
 
 import matter from "../assets/week2/matter.webp";
 import solid from "../assets/week2/solid.webp";
@@ -18,10 +18,10 @@ export const week02 = {
   isLocked: false,
   lessons: [
     // ═══════════════════════════════════════════════════
-    // LESSON 4 — What is Matter?
+    // LESSON 4: What is Matter?
     // ═══════════════════════════════════════════════════
     // ═══════════════════════════════════════════════════
-    // COMBINED LESSON — Particle Theory of Matter
+    // COMBINED LESSON: Particle Theory of Matter
     // (Objectives-aligned: definitions, five statements,
     //  states comparison, temperature effect)
     // ═══════════════════════════════════════════════════
@@ -40,11 +40,18 @@ export const week02 = {
 
       signature: {
         widgetId: "particle-lab",
-        heading: "Watch It: A Box of Real Particles",
-        intro:
-          "Live particles with real speeds. Heat them and they break their pattern; cool them and they snap back into it. Everything particle theory claims is on screen.",
-        instruction: "Drive the sliders and watch all five behaviours happen",
+        heading: "Watch It: A Box of Particles",
+        instruction: "Drive the sliders until all five appear",
         xp: 25,
+        explainer: {
+          title: "What the particles showed you",
+          points: [
+            "Adding particles showed that matter is made of them, all the way down.",
+            "Even at the coldest setting they still shivered. Particles never stop moving.",
+            "Heating opened gaps between them, so the space between particles is real.",
+            "Cooling pulled them back into a pattern, because particles attract each other.",
+          ],
+        },
       },
 
       sections: [
@@ -181,9 +188,16 @@ export const week02 = {
           heading: "Try It: The Pour Test",
           data: {
             widgetId: "pour-test",
-            intro:
-              "Statement three says there is empty space between particles. Here is the measurement that proves it: pour 50 mL of water into 50 mL of alcohol and the flask does not read 100 mL.",
             xp: 25,
+            explainer: {
+              title: "Where the missing millilitres went",
+              points: [
+                "50 mL plus 50 mL measured less than 100 mL. Nothing leaked and nothing evaporated.",
+                "The small alcohol particles dropped into gaps already sitting between the bigger water ones.",
+                "So the mixture packs tighter than the two liquids did apart.",
+                "That shortfall is the proof that there is empty space between particles.",
+              ],
+            },
           },
         },
 
@@ -240,7 +254,7 @@ export const week02 = {
     },
 
     // ═══════════════════════════════════════════════════
-    // LESSON 5 — States of Matter
+    // LESSON 5: States of Matter
     // ═══════════════════════════════════════════════════
     {
       id: "lesson-5",
@@ -258,10 +272,17 @@ export const week02 = {
       signature: {
         widgetId: "state-change-lab",
         heading: "Watch It: Water on a Burner",
-        intro:
-          "Hold the flame under a beaker of ice and watch it through: the lattice breaking, the thermometer stalling, the bubbles rising, the vapour filling the glass.",
-        instruction: "Heat it, cool it, and watch all six changes happen",
+        instruction: "Heat it and cool it until all six happen",
         xp: 25,
+        explainer: {
+          title: "Heat in, heat out, six changes",
+          points: [
+            "Heating loosened the particles: melting, then boiling. Cooling tightened them again.",
+            "The thermometer stalled during a change. That heat went into breaking bonds, not raising temperature.",
+            "Dry ice went straight from solid to gas, and frost formed without passing through water.",
+            "The water itself never changed. Only how its particles were arranged did.",
+          ],
+        },
       },
 
       sections: [
@@ -386,9 +407,16 @@ export const week02 = {
           heading: "Try It: The Container Test",
           data: {
             widgetId: "container-test",
-            intro:
-              "A solid keeps its shape and volume, a liquid keeps only its volume, and a gas keeps neither. Move the same sample between three containers and watch which of those two things it holds on to.",
             xp: 25,
+            explainer: {
+              title: "What each state holds on to",
+              points: [
+                "The solid kept its shape and its volume in every container you tried.",
+                "The liquid gave up its shape but kept its volume: still 40 mL, just standing taller in the syringe.",
+                "The gas kept neither. It spread out until it filled whatever you put it in.",
+                "Only the gas squashed when you pushed the syringe, because only it has room to spare.",
+              ],
+            },
           },
         },
 
@@ -431,7 +459,7 @@ export const week02 = {
             steps: [
               {
                 num: 1,
-                title: "Melting — Solid to Liquid",
+                title: "Melting: Solid to Liquid",
                 color: "primary",
                 description:
                   "When a solid is heated, its particles absorb energy and vibrate more vigorously. At the melting point, particles gain enough energy to break free from their fixed positions and begin to flow. The substance changes from solid to liquid.",
@@ -439,7 +467,7 @@ export const week02 = {
               },
               {
                 num: 2,
-                title: "Freezing — Liquid to Solid",
+                title: "Freezing: Liquid to Solid",
                 color: "secondary",
                 description:
                   "When a liquid loses heat energy, its particles slow down. At the freezing point, particles no longer have enough energy to slide past each other and lock into fixed positions. The substance changes from liquid to solid.",
@@ -447,7 +475,7 @@ export const week02 = {
               },
               {
                 num: 3,
-                title: "Evaporation / Boiling — Liquid to Gas",
+                title: "Evaporation / Boiling: Liquid to Gas",
                 color: "accent",
                 description:
                   "As a liquid is heated, faster-moving particles at the surface escape into the air (evaporation). When the temperature reaches the boiling point, particles throughout the liquid have enough energy to escape as gas.",
@@ -455,7 +483,7 @@ export const week02 = {
               },
               {
                 num: 4,
-                title: "Condensation — Gas to Liquid",
+                title: "Condensation: Gas to Liquid",
                 color: "primary",
                 description:
                   "When a gas loses energy and cools, its particles slow and are pulled together by intermolecular forces. The substance changes from gas to liquid. This is why water droplets form on a cold glass on a warm day.",
@@ -463,7 +491,7 @@ export const week02 = {
               },
               {
                 num: 5,
-                title: "Sublimation — Solid to Gas",
+                title: "Sublimation: Solid to Gas",
                 color: "secondary",
                 description:
                   "Some solids change directly to a gas without passing through the liquid state. This occurs when particles at the surface of a solid gain enough energy to escape directly into the air.",
@@ -471,7 +499,7 @@ export const week02 = {
               },
               {
                 num: 6,
-                title: "Deposition — Gas to Solid",
+                title: "Deposition: Gas to Solid",
                 color: "accent",
                 description:
                   "Some gases change directly into a solid without passing through the liquid state. This occurs when gas particles lose enough energy to lock immediately into fixed positions.",

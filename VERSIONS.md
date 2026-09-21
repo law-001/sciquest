@@ -398,3 +398,74 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - `styles.css` got a `pc-lab-*` block covering the parts the sandbox shell has no class for. On screens 768px or narrower, the sliders stack, the meters become a 2-column grid, and the top-bar buttons grow to 44px.
 - Levels 2 and 3 are unchanged and still use `RunFrame`. No "Saved" pill: this game only saves when a run ends.
 - Commit: Give Plant Cell Level 1 the sandbox-style layout
+
+## VERSION_45
+- Teachers can now schedule when each quiz is available: a dated window with an "Opens" and a "Closes" time (e.g. 4:00–5:00 PM). Outside it the quiz is locked for the class; inside it students get all of their attempts.
+- New migration `supabase/migrations/20260921000000_quiz_schedule_window.sql`:
+  - Adds `quiz_settings.available_from` / `available_until` (timestamptz, both nullable) plus a check that the close time is after the open time.
+  - New `is_quiz_scheduled_open(lesson_id)` and a rewritten `is_quiz_open_for()` that ANDs the window into the existing publish gates, so the `quiz_attempts` insert policy rejects an attempt sent outside the window. A `quiz_student_access` grant still overrides it — that is the make-up path for a student who missed the window.
+  - The closing edge gets the same 2-minute server grace as grants so an auto-submit fired at the bell still saves.
+- `supabase/schema.sql`: added the `quiz_settings` table (it was missing from the snapshot), its RLS policies, `is_quiz_scheduled_open`, and the window term in `is_quiz_open_for`.
+- `src/lib/quizSettings.js`: `getQuizWindow`, `getQuizWindowState` ("none" | "before" | "open" | "after") and `saveQuizWindow`; fetch/realtime now carry the two new columns through a shared `toEntry`.
+- `src/App.jsx`: `isQuizClosedForClass` now also fails outside the window; `getQuizClosesAt` became `getQuizClose`, returning the close instant plus which rule set it, and taking whichever of the grant / window runs longest. An extra clock tick is scheduled exactly on the next window edge so a quiz unlocks at its opening minute rather than up to 60s late.
+- Teacher portal (`src/pages/TeacherPortalPage.jsx`): new `QuizScheduleControl` in each quiz card's Settings panel — an on/off switch, two `datetime-local` fields, a Save button, a live status line, and an amber warning when the window is shorter than `time limit × attempts`. Quiz cards show a schedule chip, and "Open for a student" now treats a closed window as closed for the class.
+- Students: the lesson CTA says "Quiz Opens <time>" / "Quiz Window Has Closed" instead of a bare lock, and shows the closing time while the quiz is open; the quiz's countdown, auto-submit and "closed" screen now cover schedule windows as well as personal grants.
+- Commit: Let teachers schedule a per-quiz availability window
+
+## VERSION_46
+- New skill `.claude/skills/refine-interactive/SKILL.md`, invoked as `/refine-interactive [lesson id | widget id | slot type]`. It drives a one-section-at-a-time refinement pass over lesson interactives.
+- Encodes the three goals: more detailed illustration, front-of-card text cut to instructions only, and a whole-section card flip that reveals the explanation once the block reports complete.
+- Specifies a single shared `ExplainerFlip` shell (to be built on first run) wired only into `InteractiveFrame.jsx` and `SignatureWidgetSection.jsx`: front never unmounts, locked until complete, click guard so Reset and controls still work, grid-stacked faces instead of a hardcoded height, `inert` + `aria-hidden` on the turned-away face, cross-fade under `prefers-reduced-motion`.
+- Sets per-slot word budgets for front copy and the `explainer: { title, points[] }` shape for back copy, including where it lives in `src/data/lessonsweek-*.js` and `DEFAULT_SLOT_DATA`.
+- Commit: Add /refine-interactive skill for lesson interactive refinement passes
+
+## VERSION_47
+- New shared `src/components/lesson-slots/interactive/ExplainerFlip.jsx`: once an interactive block reports complete, the whole card can be clicked (or the "What just happened?" strip pressed) to turn over and show a short explanation of what the student just did. The front is rotated away, never unmounted, so a running simulation keeps its state; clicks that start on a control (Reset, slider, canvas, button) don't trigger the flip; focus follows the flip because the turned-away face is `inert`; a block with no `explainer` renders exactly as before.
+- `src/index.css`: new `.sq-explain-flip*` block — both faces share one grid cell so the card sizes itself, and `prefers-reduced-motion` cross-fades instead of rotating. The existing `.sq-flip` rules are untouched.
+- Wired into `InteractiveFrame.jsx` (new `explainer` prop) and `SignatureWidgetSection.jsx` (`signature.explainer`); the six interactive slots pass `data.explainer` through.
+- `DragLabelSection.jsx`: the drag ghost now renders through a portal to `document.body`. It is positioned in viewport coordinates, and the flip's `perspective` ancestor would otherwise become its containing block and offset it mid-drag.
+- Week 1 interactives refined — more detailed illustrations, front text cut to instructions:
+  - `ModelGalleryWidget`: each scene now paints its own ground so it holds contrast in both themes; the bridge gained a river, banks, braced towers, road markings, a dashed no-load line and a detailed truck; the atom gained countable protons/neutrons, shell labels, electron trails and a legend; the fish graph gained the lake, a "lake is full" ceiling, axis labels and a filled area; the storm gained coastal towns, day markers, rain bands and an eye. The four per-model explanation paragraphs were removed from the panel.
+  - `InvestigationRunWidget`: each pot now has a light beam whose strength is that pot's hours, so the variable being changed is visible in the picture; tapered pots, trays, soil, veined leaves and a day counter. The five "Step N" prose blocks became four short labels plus the result line.
+  - `GlobeUnrollWidget`: added South America and Australia in muted grey, globe shading and rim that fade as it flattens, and latitude labels; the two paragraph "costs you" panels became a Globe / Flat map seen-or-not pair.
+- `src/data/lessonsweek-01.js`: all three signature blocks got shorter headings, no `intro`, and a new `explainer` with the removed prose compressed into 4 short points.
+- Commit: Add explainer card flip and refine week 1 interactives
+
+## VERSION_48
+- Fixed the dead space above and below every simulation. The stage column is about 16:10 but the scenes were authored at other ratios, so `preserveAspectRatio` letterboxed the difference.
+  - New `stageFill(w, h)` in `stageMedia.js` plus a `bleed` prop on `Stage`: the scene covers the frame the way `background-size: cover` does, using `preserveAspectRatio="xMidYMid slice"` for SVG and `object-fit: cover` for canvas, with an `aspect-ratio` that stops the picture collapsing on a phone.
+  - Scenes re-authored near 16:10 with their ground bleeding past the viewBox: model gallery 620x390, investigation bench 620x400 (pots now sit side by side on a wide bench instead of a tall narrow strip), globe 620x390, particle box 640x400, phase bench 640x400, burner scene 620x400 (the burner's foot was previously cut off at 360), pour test 680x425, container test 608x380.
+  - The lab scenes now paint their own wall and bench, which also fixes their contrast in dark mode.
+- Weeks 2 and 3 interactives refined the same way as week 1: `particle-lab`, `pour-test`, `state-change-lab`, `container-test` and `phase-bench` each got an `explainer` back card, lost their `intro`, and had the per-state explanation paragraph cut from the panel. The state label and the readouts stay on the front.
+- No em dashes anywhere in weeks 1 to 3: lesson data, interactive widgets, the shared interactive components, and the skill itself. Rewritten as colons, commas or full stops.
+- `.claude/skills/refine-interactive/SKILL.md`: added the fill-the-stage rule (author at 16:10, bleed the ground, render with slice or cover, never distort or hardcode a height) and the no-em-dash rule.
+- Commit: Fill the stage on every interactive and refine weeks 2 and 3
+
+## VERSION_49
+- Week 2 illustration detail pass, the part weeks 2 and 3 were missing after VERSION_48.
+- `ParticleLabWidget`: the flat tinted rectangle is now a sealed glass jar. The simulation bounces off the jar's inner walls (new `IN_L/IN_R/IN_T/IN_B` constants shared by the physics and the drawing) instead of the canvas edge, so "it fills the whole container" is one fact rather than two kept in step by hand. Added lattice bonds drawn only in the solid state, a curved surface on the liquid, a working thermometer whose mercury tracks the slider, a sealed lid, a bench with the jar's shadow, and a state tag so colour is never the only signal.
+- `PourTestWidget`: the flask now has the neck scale and the single etched 100 mL calibration ring its whole premise rests on, so a 4 mL shortfall is visibly a drop in the neck. Source cylinders became graduated measuring cylinders with a pouring lip, a foot and 10 mL marks. The measured surface curves into a meniscus, and the flask has a shadow on the bench.
+- `StateChangeLabWidget`: the beaker rested on nothing above the burner, so it now sits on wire gauze over a tripod, which is also why the heat arrives spread out. The thermometer hangs from a retort stand instead of floating. Added a meniscus on the water surface and vapour wisps that only appear once there is vapour to leave.
+- `ContainerTestWidget`: vessels gained a foot, a pouring lip, graduations up the left wall and a shadow on the bench; the liquid surface curves; the syringe gained finger flanges and a nozzle, and is excluded from the lip and foot it would never have.
+- Commit: Detail pass on the week 2 interactive illustrations
+
+## VERSION_50
+- `container-test` refinement pass.
+- Removed 6 dead `note` strings from `SAMPLES` and `CONTAINERS`. Nothing had read them since the explanation moved to the back of the card in VERSION_48.
+- The checklist stated each conclusion on the front ("A solid keeps its shape and volume in every container") while the back card stated the same four again. The front now lists only the job to do ("Put the ice in all three containers"), and the separate hint line is gone because the task was the hint. Four fewer sentences on screen and no duplication.
+- The reading was one long sentence. It is now two readouts, `40.0 mL` under "Volume" and a height under "Height", with the full sentence kept for the screen reader where a whole sentence is what you want.
+- New height ruler down the left of the bench, in centimetres, with a bar showing what the sample is standing at right now. This is the block's stated pay-off: the same 40 mL stands twice as tall in the syringe as in the beaker, which was a number in the panel with nothing to read it against. `PX_PER_CM` is shared by the ruler and the readout so the two cannot disagree.
+- The ice block now draws its own outline, so its silhouette is visibly identical in all three containers, which is what "a solid keeps its shape" means.
+- Back card point 2 now names the height the ruler shows.
+- Commit: Refine the container test with a height ruler and a shorter front
+
+## VERSION_51
+- `phase-bench` (week 3 lesson 1) refinement pass. Week 3 lesson 2 is the comic strip Performance Task: it has no signature widget and only presentational slots, so it has nothing this skill applies to and was left alone.
+- The widget's own `aria-label` said "sealed chamber" but no chamber was ever drawn, just particles on a flat tinted rectangle. There is now a steel vacuum chamber with a bolted flange, feet and a viewport, and the simulation bounces off the chamber's inner walls (new `IN_L/IN_R/IN_T/IN_B`) instead of the canvas edge, so "it fills the chamber" is one fact rather than two kept in step by hand.
+- Added lattice bonds drawn only in the solid phase, so watching them vanish is the lattice breaking; a curved surface on the liquid; a bench with the chamber's shadow; and a phase tag in the picture so colour is never the only signal.
+- New energy gauge down the right, banded in each phase's own colour with a marker at the current setting. It shows that one slider covers all five phases and where in the range the student is standing.
+- Plasma: the code comment claimed the "+ and −" marks carried the charge, but only the + was ever drawn on the ions. The free electrons now carry their −.
+- Removed 5 dead `note` strings, unread since VERSION_48 moved the explanation to the back of the card.
+- Front text: "Energy in the chamber" became "Energy", and "Same substance the whole way. Only the energy changes." is gone, since the heading and the back card both already say it.
+- Back card: the title restated the lesson heading, so it is now "Energy alone changed the phase", and the plasma point is in past tense like the rest.
+- Commit: Refine the phase bench with a real chamber and an energy gauge

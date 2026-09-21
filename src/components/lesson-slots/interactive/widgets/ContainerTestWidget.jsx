@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// L5 second interactive — the container bench.
+// L5 second interactive: the container bench.
 //
 // Lesson 5 states that a solid keeps its shape and volume, a liquid keeps only
 // its volume, and a gas keeps neither. Here the student moves the same sample
@@ -15,8 +15,12 @@ import { STAGE_MEDIA } from '../stageMedia'
 // in it as in the beaker, and its plunger compresses the gas while stopping
 // dead against the liquid.
 
-const W = 560
+// The scene is authored 560 wide and centred in a 608-wide canvas, which is
+// the stage's own shape (about 16:10), so it fills the frame edge to edge.
+const ART_W = 560
+const W = 608
 const H = 380
+const ART_X = (W - ART_W) / 2
 
 const TOP = 70
 const BOTTOM = 340
@@ -30,14 +34,12 @@ const CONTAINERS = [
   {
     id: 'beaker',
     label: 'Beaker',
-    note: 'Wide and open.',
     wallsAt: () => [170, 400],
     outline: [[170, TOP], [170, BOTTOM], [400, BOTTOM], [400, TOP]],
   },
   {
     id: 'flask',
     label: 'Flask',
-    note: 'Narrow neck, cone body.',
     wallsAt: (y) => {
       if (y <= 150) return [250, 320]
       const t = (y - 150) / (BOTTOM - 150)
@@ -48,7 +50,6 @@ const CONTAINERS = [
   {
     id: 'syringe',
     label: 'Syringe',
-    note: 'Narrow barrel with a plunger.',
     wallsAt: () => [225, 335],
     outline: [[225, TOP], [225, BOTTOM], [335, BOTTOM], [335, TOP]],
   },
@@ -68,7 +69,6 @@ const SAMPLES = [
     panel: 'border-[#7FB3EA] bg-[#DDEEFF] dark:bg-[#7FB3EA]/15',
     keepsShape: true,
     keepsVolume: true,
-    note: 'Particles are locked to each other in a fixed pattern, so the block holds its own shape no matter what it is put in.',
   },
   {
     id: 'water',
@@ -79,7 +79,6 @@ const SAMPLES = [
     panel: 'border-[#3BAFA9] bg-[#7BC9CF]/25 dark:bg-[#3BAFA9]/15',
     keepsShape: false,
     keepsVolume: true,
-    note: 'Particles slide past each other but still cling together, so the water takes the container’s shape while staying the same amount.',
   },
   {
     id: 'steam',
@@ -90,12 +89,14 @@ const SAMPLES = [
     panel: 'border-stone-300 bg-stone-100 dark:border-stone-500 dark:bg-stone-700/50',
     keepsShape: false,
     keepsVolume: false,
-    note: 'Particles have broken free of each other completely, so they spread out until they hit the walls — however far away those are.',
   },
 ]
 
 const N = 25
 const R = 7
+// Pixels per centimetre. The height readout divides by this, and so does the
+// ruler, so the number and the scale beside it can never disagree.
+const PX_PER_CM = 8
 const CUBE_GAP = 16
 const MAX_PUSH = 190
 
@@ -115,7 +116,7 @@ function areaBetween(container, topY, bottomY) {
 }
 
 // The height a fixed volume reaches in this container, found by filling upward
-// until the accumulated area matches — so a narrow vessel really does stand the
+// until the accumulated area matches, so a narrow vessel really does stand the
 // same millilitres taller.
 function surfaceFor(container, ml, bottomY) {
   const target = ml * SCALE
@@ -135,28 +136,50 @@ function makeParticles() {
   })
 }
 
+// The jobs to do, not what they prove. What they prove is on the back of the
+// card, where the student reads it after doing them.
 const OBSERVATIONS = [
-  {
-    id: 'solid',
-    text: 'A solid keeps its shape and volume in every container.',
-    hint: 'Put the ice in all three containers.',
-  },
-  {
-    id: 'liquid',
-    text: 'A liquid changes shape to fit, but stays 40 mL.',
-    hint: 'Put the water in all three containers.',
-  },
-  {
-    id: 'gas',
-    text: 'A gas fills whatever it is put in, so its volume changes.',
-    hint: 'Put the steam in all three containers and read the volume.',
-  },
-  {
-    id: 'squeeze',
-    text: 'Gas squashes under the plunger. Liquid and solid do not.',
-    hint: 'In the syringe, push the plunger down hard on the steam, then on the water.',
-  },
+  { id: 'solid', task: 'Put the ice in all three containers.' },
+  { id: 'liquid', task: 'Put the water in all three containers.' },
+  { id: 'gas', task: 'Put the steam in all three containers.' },
+  { id: 'squeeze', task: 'In the syringe, push the plunger on steam, then water.' },
 ]
+
+// A centimetre scale down the left of the bench, with the sample's current
+// height filled in against it.
+function drawRuler(ctx, colour, topY) {
+  const x = 118
+  ctx.strokeStyle = 'rgba(120,113,108,0.55)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(x, BOTTOM)
+  ctx.lineTo(x, TOP)
+  ctx.stroke()
+
+  ctx.fillStyle = INK
+  ctx.font = '700 11px system-ui, sans-serif'
+  ctx.textAlign = 'right'
+  for (let cm = 0; cm <= 32; cm += 2) {
+    const y = BOTTOM - cm * PX_PER_CM
+    if (y < TOP) break
+    const long = cm % 10 === 0
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + (long ? 13 : 7), y)
+    ctx.stroke()
+    if (long) ctx.fillText(String(cm), x - 5, y + 4)
+  }
+  ctx.fillText('cm', x - 5, TOP + 10)
+
+  // How tall the sample is standing right now.
+  ctx.strokeStyle = colour
+  ctx.lineWidth = 5
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(x + 20, BOTTOM)
+  ctx.lineTo(x + 20, Math.max(TOP, topY))
+  ctx.stroke()
+}
 
 export default function ContainerTestWidget({ onSolved }) {
   const canvasRef = useRef(null)
@@ -247,14 +270,67 @@ export default function ContainerTestWidget({ onSolved }) {
       }
 
       ctx.clearRect(0, 0, W, H)
+      // Lab wall and bench top, so the glassware keeps its contrast in both
+      // themes and the scene fills the frame.
+      ctx.fillStyle = '#fbf7ef'
+      ctx.fillRect(0, 0, W, H)
+      ctx.fillStyle = '#e7d9c3'
+      ctx.fillRect(0, BOTTOM + 8, W, H - BOTTOM - 8)
+      ctx.fillStyle = 'rgba(120,113,108,0.18)'
+      ctx.fillRect(0, BOTTOM + 8, W, 2)
 
-      // Container walls. Left and right sides only — an open vessel has no lid.
+      ctx.save()
+      ctx.translate(ART_X, 0)
+
+      // A ruler to read the height off. This is the pay-off of the whole block:
+      // the same 40 mL stands twice as tall in the syringe as in the beaker,
+      // which is only convincing if there is a scale to see it against.
+      drawRuler(ctx, smp.colour, smp.keepsVolume ? fillTop : lid)
+
+      // The vessel's shadow, so it stands on the bench rather than over it.
+      const [footL, footR] = con.wallsAt(BOTTOM)
+      ctx.fillStyle = 'rgba(87,83,78,0.13)'
+      ctx.beginPath()
+      ctx.ellipse((footL + footR) / 2, BOTTOM + 7, (footR - footL) / 2 + 16, 8, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Container walls. Left and right sides only, because an open vessel has no lid.
       ctx.strokeStyle = GLASS
       ctx.lineWidth = 3
       ctx.lineJoin = 'round'
       ctx.beginPath()
       con.outline.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)))
       ctx.stroke()
+
+      // A pouring lip on each open rim, and a foot to stand on. The syringe has
+      // neither: it gets a nozzle further down instead.
+      if (con.id !== 'syringe') {
+        const [rimL, rimR] = con.wallsAt(TOP)
+        ctx.lineCap = 'round'
+        ctx.beginPath()
+        ctx.moveTo(rimL - 9, TOP + 3)
+        ctx.lineTo(rimL, TOP)
+        ctx.moveTo(rimR + 9, TOP + 3)
+        ctx.lineTo(rimR, TOP)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.roundRect(footL - 12, BOTTOM, footR - footL + 24, 7, 3)
+        ctx.stroke()
+      }
+
+      // Graduations up the left wall. A vessel you read a volume off is the
+      // reason "keeps its volume" is something you can check rather than take
+      // on trust.
+      ctx.lineWidth = 1.5
+      for (let i = 1; i <= 4; i += 1) {
+        const y = BOTTOM - (i / 5) * (BOTTOM - TOP)
+        const [l] = con.wallsAt(y)
+        ctx.beginPath()
+        ctx.moveTo(l, y)
+        ctx.lineTo(l + (i % 2 === 0 ? 17 : 10), y)
+        ctx.stroke()
+      }
+      ctx.lineWidth = 3
 
       if (smp.keepsVolume) {
         // Surface line, drawn at the height the volume actually reaches.
@@ -263,7 +339,23 @@ export default function ContainerTestWidget({ onSolved }) {
         ctx.lineWidth = 3
         ctx.beginPath()
         ctx.moveTo(l, fillTop)
-        ctx.lineTo(r, fillTop)
+        ctx.quadraticCurveTo((l + r) / 2, fillTop + Math.min(7, (r - l) * 0.06), r, fillTop)
+        ctx.stroke()
+      }
+
+      // The ice block's edge. Its silhouette is identical in all three
+      // containers, which is the whole of "a solid keeps its shape".
+      if (smp.keepsShape) {
+        const [bl, br] = con.wallsAt(BOTTOM - 40)
+        const bcx = (bl + br) / 2
+        const bcy = BOTTOM - R - 6 - CUBE_GAP * 2
+        const half = CUBE_GAP * 2 + R + 5
+        ctx.fillStyle = 'rgba(127,179,234,0.22)'
+        ctx.strokeStyle = smp.colour
+        ctx.lineWidth = 2.5
+        ctx.beginPath()
+        ctx.roundRect(bcx - half, bcy - half, half * 2, half * 2, 8)
+        ctx.fill()
         ctx.stroke()
       }
 
@@ -293,12 +385,23 @@ export default function ContainerTestWidget({ onSolved }) {
         ctx.moveTo(245, TOP - 40)
         ctx.lineTo(315, TOP - 40)
         ctx.stroke()
+        // Finger flanges, and the nozzle the gas would leave by if it could.
+        ctx.beginPath()
+        ctx.moveTo(207, TOP)
+        ctx.lineTo(353, TOP)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(280, BOTTOM)
+        ctx.lineTo(280, BOTTOM + 16)
+        ctx.stroke()
       }
+
+      ctx.restore()
 
       ctx.fillStyle = INK
       ctx.font = '600 13px system-ui, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(`${con.label} — ${smp.label} (${smp.state})`, W / 2, BOTTOM + 26)
+      ctx.fillText(`${con.label}: ${smp.label} (${smp.state})`, W / 2, BOTTOM + 26)
 
       if (!still) raf = requestAnimationFrame(step)
     }
@@ -361,30 +464,51 @@ export default function ContainerTestWidget({ onSolved }) {
     record(sampleId, containerId, next)
   }
 
-  const heightCm = ((BOTTOM - (sample.keepsVolume ? contentTop : plungerY)) / 8).toFixed(1)
-  const reading = `${sample.label} in the ${container.label.toLowerCase()} — taking up ${occupied.toFixed(1)} mL, standing ${heightCm} cm tall.`
+  const heightCm = ((BOTTOM - (sample.keepsVolume ? contentTop : plungerY)) / PX_PER_CM).toFixed(1)
+  const reading = `${sample.label} in the ${container.label.toLowerCase()}: taking up ${occupied.toFixed(1)} mL, standing ${heightCm} cm tall.`
 
   return (
     <>
       <SimLayout
         stage={
-          <Stage>
+          <Stage bleed>
             <canvas
               ref={canvasRef}
               role="img"
               aria-label={reading}
-              style={{ ...STAGE_MEDIA, aspectRatio: `${W} / ${H}` }}
+              style={stageFill(W, H)}
             />
           </Stage>
         }
         panel={
           <>
             <div className={`rounded-xl border-2 p-3 ${sample.panel}`}>
-              <p className="text-sm font-black text-stone-900 dark:text-white">{reading}</p>
-              <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                {blocked ? 'The plunger has stopped dead — this sample will not compress. ' : ''}
-                {sample.note}
+              <p className="text-sm font-black text-stone-900 dark:text-white">
+                {sample.label} in the {container.label.toLowerCase()}
               </p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xl font-black leading-none text-stone-900 dark:text-white">
+                    {occupied.toFixed(1)} mL
+                  </p>
+                  <p className="mt-1 text-xs font-bold text-stone-500 dark:text-stone-400">
+                    Volume
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xl font-black leading-none text-stone-900 dark:text-white">
+                    {heightCm} cm
+                  </p>
+                  <p className="mt-1 text-xs font-bold text-stone-500 dark:text-stone-400">
+                    Height
+                  </p>
+                </div>
+              </div>
+              {blocked && (
+                <p className="mt-2 text-xs font-bold text-stone-700 dark:text-stone-200">
+                  The plunger has stopped dead.
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -462,7 +586,7 @@ export default function ContainerTestWidget({ onSolved }) {
                   htmlFor="ct-plunger"
                   className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
                 >
-                  Plunger — pushed {push}%
+                  Plunger: pushed {push}%
                 </label>
                 <input
                   id="ct-plunger"
@@ -479,7 +603,7 @@ export default function ContainerTestWidget({ onSolved }) {
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Seen with your own eyes — {observed.length} of {OBSERVATIONS.length}
+                Tried: {observed.length} of {OBSERVATIONS.length}
               </p>
               <ul className="space-y-1.5">
                 {OBSERVATIONS.map((o) => {
@@ -493,15 +617,16 @@ export default function ContainerTestWidget({ onSolved }) {
                           : 'border-stone-200 bg-orange-50/40 dark:border-stone-600 dark:bg-stone-700/30'
                       }`}
                     >
-                      <p className="text-xs font-black text-stone-900 dark:text-white">
-                        {done ? '✓ Seen — ' : 'Not yet — '}
-                        {o.text}
+                      <p
+                        className={`text-xs font-black ${
+                          done
+                            ? 'text-stone-900 dark:text-white'
+                            : 'text-stone-500 dark:text-stone-400'
+                        }`}
+                      >
+                        {done ? '✓ ' : '○ '}
+                        {o.task}
                       </p>
-                      {!done && (
-                        <p className="mt-0.5 text-xs font-medium text-stone-500 dark:text-stone-400">
-                          {o.hint}
-                        </p>
-                      )}
                     </li>
                   )
                 })}
