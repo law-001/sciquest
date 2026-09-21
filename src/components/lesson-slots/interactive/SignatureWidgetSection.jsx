@@ -3,6 +3,7 @@ import { CheckCircle2, Loader2, Sparkles } from 'lucide-react'
 
 import Card from '../../Card'
 import SectionHeading from '../SectionHeading'
+import ExplainerFlip from './ExplainerFlip'
 import { SIGNATURE_WIDGETS } from './signatureWidgets'
 import { useCompletionReport } from './useInteractiveState'
 
@@ -32,7 +33,7 @@ export default function SignatureWidgetSection({
     onInteractionComplete,
   })
 
-  // An unknown id means the lesson data is ahead of the registry — a developer
+  // An unknown id means the lesson data is ahead of the registry, a developer
   // problem, not something a student can act on.
   const Widget = SIGNATURE_WIDGETS[signature?.widgetId]
   if (!Widget) return null
@@ -52,29 +53,31 @@ export default function SignatureWidgetSection({
         </p>
       )}
 
-      <Card className="p-4 sm:p-5">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
-            {signature.instruction ?? 'Try it yourself'}
-          </p>
-          {solved && (
-            <span className="flex items-center gap-1.5 rounded-full bg-secondary-50 px-3 py-1.5 text-xs font-black text-secondary-700 dark:bg-secondary-700/25 dark:text-secondary-200">
-              <CheckCircle2 className="h-4 w-4" />
-              Completed
-            </span>
-          )}
-        </div>
+      <ExplainerFlip explainer={signature.explainer} unlocked={solved}>
+        <Card className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
+              {signature.instruction ?? 'Try it yourself'}
+            </p>
+            {solved && (
+              <span className="flex items-center gap-1.5 rounded-full bg-secondary-50 px-3 py-1.5 text-xs font-black text-secondary-700 dark:bg-secondary-700/25 dark:text-secondary-200">
+                <CheckCircle2 className="h-4 w-4" />
+                Completed
+              </span>
+            )}
+          </div>
 
-        <Suspense
-          fallback={
-            <div className="flex h-40 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
-            </div>
-          }
-        >
-          <Widget onSolved={() => setSolved(true)} />
-        </Suspense>
-      </Card>
+          <Suspense
+            fallback={
+              <div className="flex h-40 items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+              </div>
+            }
+          >
+            <Widget onSolved={() => setSolved(true)} />
+          </Suspense>
+        </Card>
+      </ExplainerFlip>
     </section>
   )
 }

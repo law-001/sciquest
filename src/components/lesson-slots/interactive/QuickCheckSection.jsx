@@ -52,6 +52,7 @@ export default function QuickCheckSection({
       intro={intro}
       instruction={`Check your understanding — ${correctCount} of ${questions.length} correct`}
       isComplete={isComplete}
+      explainer={data?.explainer}
       status={
         isComplete
           ? 'All questions answered correctly.'

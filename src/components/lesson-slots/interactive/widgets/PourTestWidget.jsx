@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// L4 second interactive — the empty-space proof.
+// L4 second interactive: the empty-space proof.
 //
 // 50 mL of water poured into 50 mL of alcohol does not measure 100 mL. The
 // small alcohol particles drop into the gaps already between the larger water
@@ -12,11 +12,13 @@ import { STAGE_MEDIA } from '../stageMedia'
 // that shows it.
 //
 // The mixing vessel is a volumetric flask because a narrow neck is the only
-// thing that makes a four-millilitre shortfall visible at all — which is the
+// thing that makes a four-millilitre shortfall visible at all, which is the
 // real reason volumetric glassware is shaped that way.
 
 const W = 680
-const H = 360
+// Close to the stage's own shape (about 16:10) so the bench fills the frame
+// instead of floating in a band of empty gradient.
+const H = 425
 
 const FLASK = {
   bottom: 330,
@@ -49,7 +51,7 @@ const MARK = '#E2683C'
 
 const LENS = { cx: 578, cy: 132, r: 78, fromX: 385, fromY: 285, zoom: 2.6 }
 
-// Mixing water and alcohol loses about 4 mL out of 100 — the two liquids pack
+// Mixing water and alcohol loses about 4 mL out of 100. The two liquids pack
 // into each other. A partial mix loses proportionally less.
 const shrinkFor = (w, a) => 4 * (Math.min(w, a) / SRC_ML)
 
@@ -209,25 +211,87 @@ export default function PourTestWidget({ onSolved }) {
       }
 
       ctx.clearRect(0, 0, W, H)
+      // Lab wall and bench top. Painting its own ground is what keeps the
+      // glassware readable on cream and on stone-900 alike.
+      ctx.fillStyle = '#fbf7ef'
+      ctx.fillRect(0, 0, W, H)
+      ctx.fillStyle = '#e7d9c3'
+      ctx.fillRect(0, FLASK.bottom + 6, W, H - FLASK.bottom - 6)
+      ctx.fillStyle = 'rgba(120,113,108,0.18)'
+      ctx.fillRect(0, FLASK.bottom + 6, W, 2)
+      ctx.fillStyle = 'rgba(87,83,78,0.13)'
+      ctx.beginPath()
+      ctx.ellipse((FLASK.bodyL + FLASK.bodyR) / 2, FLASK.bottom + 8, 104, 8, 0, 0, Math.PI * 2)
+      ctx.fill()
       ctx.lineWidth = 2.5
       ctx.strokeStyle = GLASS
       ctx.font = '600 13px system-ui, sans-serif'
       ctx.textAlign = 'center'
 
-      // Source cylinders, draining as they are poured out.
+      // Source cylinders, draining as they are poured out. Graduated and
+      // footed, because a measuring cylinder is what 50 mL is measured in.
       for (const { spec, poured } of pools) {
         const srcTop = SRC_BOTTOM - ((SRC_ML - poured) / SRC_ML) * (SRC_BOTTOM - SRC_TOP)
         ctx.strokeRect(spec.x[0], SRC_TOP, spec.x[1] - spec.x[0], SRC_BOTTOM - SRC_TOP)
+
+        // A pouring lip and a foot to stand on.
+        ctx.beginPath()
+        ctx.moveTo(spec.x[0] - 7, SRC_TOP + 2)
+        ctx.lineTo(spec.x[0], SRC_TOP)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.roundRect(spec.x[0] - 9, SRC_BOTTOM, spec.x[1] - spec.x[0] + 18, 7, 3)
+        ctx.stroke()
+
+        // Ten millilitres a mark, so the 50 mL poured out is a reading.
+        ctx.lineWidth = 1.5
+        for (let ml = 10; ml < SRC_ML; ml += 10) {
+          const y = SRC_BOTTOM - (ml / SRC_ML) * (SRC_BOTTOM - SRC_TOP)
+          ctx.beginPath()
+          ctx.moveTo(spec.x[0], y)
+          ctx.lineTo(spec.x[0] + (ml % 20 === 0 ? 16 : 9), y)
+          ctx.stroke()
+        }
+        ctx.lineWidth = 2.5
+
         ctx.strokeStyle = spec.colour
         ctx.beginPath()
         ctx.moveTo(spec.x[0], srcTop)
-        ctx.lineTo(spec.x[1], srcTop)
+        ctx.quadraticCurveTo((spec.x[0] + spec.x[1]) / 2, srcTop + 4, spec.x[1], srcTop)
         ctx.stroke()
         ctx.strokeStyle = GLASS
       }
 
       flaskPath()
       ctx.stroke()
+
+      // Neck scale and the single etched calibration ring. This is the whole
+      // reason a volumetric flask is shaped this way: four millilitres is a
+      // visible drop in a neck this narrow and nothing at all in the body.
+      ctx.lineWidth = 1.5
+      for (let ml = 92; ml <= 108; ml += 2) {
+        const y = surfaceY(ml)
+        const long = ml % 10 === 0
+        ctx.beginPath()
+        ctx.moveTo(FLASK.neckL, y)
+        ctx.lineTo(FLASK.neckL + (long ? 14 : 7), y)
+        ctx.stroke()
+      }
+      ctx.lineWidth = 2.5
+
+      const ringY = surfaceY(100)
+      ctx.strokeStyle = MARK
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(FLASK.neckL - 5, ringY)
+      ctx.lineTo(FLASK.neckR + 5, ringY)
+      ctx.stroke()
+      ctx.fillStyle = MARK
+      ctx.textAlign = 'right'
+      ctx.fillText('100 mL', FLASK.neckL - 10, ringY + 4)
+      ctx.textAlign = 'center'
+      ctx.strokeStyle = GLASS
+      ctx.lineWidth = 2.5
 
       // Where the poured volume would reach if nothing were lost.
       if (w + a > 0) {
@@ -254,7 +318,7 @@ export default function PourTestWidget({ onSolved }) {
         ctx.lineWidth = 3
         ctx.beginPath()
         ctx.moveTo(xL, top)
-        ctx.lineTo(xR, top)
+        ctx.quadraticCurveTo((xL + xR) / 2, top + Math.min(7, (xR - xL) * 0.16), xR, top)
         ctx.stroke()
         ctx.strokeStyle = GLASS
         ctx.lineWidth = 2.5
@@ -361,19 +425,19 @@ export default function PourTestWidget({ onSolved }) {
 
   const reading =
     expected === 0
-      ? 'Empty flask — pour something in.'
+      ? 'Empty flask. Pour something in.'
       : `Expected ${expected} mL, measured ${actual.toFixed(1)} mL. ${shrink.toFixed(1)} mL has gone missing.`
 
   return (
     <>
       <SimLayout
         stage={
-          <Stage>
+          <Stage bleed>
             <canvas
               ref={canvasRef}
               role="img"
               aria-label={`Volumetric flask holding ${water} millilitres of water and ${alcohol} millilitres of alcohol, measuring ${actual.toFixed(1)} millilitres.`}
-              style={{ ...STAGE_MEDIA, aspectRatio: `${W} / ${H}` }}
+              style={stageFill(W, H)}
             />
           </Stage>
         }
@@ -381,11 +445,6 @@ export default function PourTestWidget({ onSolved }) {
           <>
             <div className="rounded-xl border-2 border-[#3BAFA9] bg-[#7BC9CF]/25 p-3 dark:bg-[#3BAFA9]/15">
               <p className="text-sm font-black text-stone-900 dark:text-white">{reading}</p>
-              <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                Alcohol particles are smaller than water particles, so they drop into the
-                empty spaces already between them. The mixture packs tighter than the two
-                liquids did apart.
-              </p>
             </div>
 
             <div>
@@ -393,7 +452,7 @@ export default function PourTestWidget({ onSolved }) {
                 htmlFor="pour-water"
                 className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
               >
-                Water poured in — {water} mL
+                Water poured in: {water} mL
               </label>
               <input
                 id="pour-water"
@@ -410,7 +469,7 @@ export default function PourTestWidget({ onSolved }) {
                 htmlFor="pour-alcohol"
                 className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
               >
-                Alcohol poured in — {alcohol} mL
+                Alcohol poured in: {alcohol} mL
               </label>
               <input
                 id="pour-alcohol"
@@ -434,12 +493,12 @@ export default function PourTestWidget({ onSolved }) {
                   : 'border-stone-300 bg-white text-stone-700 hover:bg-orange-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700'
               }`}
             >
-              {magnified ? 'Magnifier on — ×2.6 into the flask' : 'Magnifier off — switch it on'}
+              {magnified ? 'Magnifier on: ×2.6 into the flask' : 'Magnifier off. Switch it on'}
             </button>
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Seen with your own eyes — {observed.length} of {OBSERVATIONS.length}
+                Seen with your own eyes: {observed.length} of {OBSERVATIONS.length}
               </p>
               <ul className="space-y-1.5">
                 {OBSERVATIONS.map((o) => {
@@ -454,7 +513,7 @@ export default function PourTestWidget({ onSolved }) {
                       }`}
                     >
                       <p className="text-xs font-black text-stone-900 dark:text-white">
-                        {done ? '✓ Seen — ' : 'Not yet — '}
+                        {done ? '✓ Seen: ' : 'Not yet: '}
                         {o.text}
                       </p>
                       {!done && (

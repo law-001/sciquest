@@ -3,6 +3,7 @@ import { CheckCircle2, RotateCcw } from 'lucide-react'
 
 import Card from '../../Card'
 import SectionHeading from '../SectionHeading'
+import ExplainerFlip from './ExplainerFlip'
 
 // Shared shell for every interactive block, so the whole family reads as one
 // component: heading, optional intro, an aria-live status line, a completion
@@ -15,6 +16,7 @@ export default function InteractiveFrame({
   intro,
   instruction,
   isComplete = false,
+  explainer,
   status,
   onReset,
   children,
@@ -56,39 +58,41 @@ export default function InteractiveFrame({
         </p>
       )}
 
-      <Card className="p-6 sm:p-8">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
-            {instruction}
-          </p>
+      <ExplainerFlip explainer={explainer} unlocked={isComplete}>
+        <Card className="p-6 sm:p-8">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
+              {instruction}
+            </p>
 
-          <div className="flex items-center gap-2">
-            {isComplete && (
-              <span className="flex items-center gap-1.5 rounded-full bg-secondary-50 px-3 py-1.5 text-xs font-black text-secondary-700 dark:bg-secondary-700/25 dark:text-secondary-200">
-                <CheckCircle2 className="h-4 w-4" />
-                Completed
-              </span>
-            )}
-            {onReset && (
-              <button
-                type="button"
-                onClick={onReset}
-                className="flex min-h-11 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-stone-500 transition-colors hover:bg-orange-50 hover:text-stone-700 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-stone-100"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                Reset
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {isComplete && (
+                <span className="flex items-center gap-1.5 rounded-full bg-secondary-50 px-3 py-1.5 text-xs font-black text-secondary-700 dark:bg-secondary-700/25 dark:text-secondary-200">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Completed
+                </span>
+              )}
+              {onReset && (
+                <button
+                  type="button"
+                  onClick={onReset}
+                  className="flex min-h-11 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-stone-500 transition-colors hover:bg-orange-50 hover:text-stone-700 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {children}
+          {children}
 
-        {/* Announced to screen readers as the block's state changes. */}
-        <p aria-live="polite" className="sr-only">
-          {status}
-        </p>
-      </Card>
+          {/* Announced to screen readers as the block's state changes. */}
+          <p aria-live="polite" className="sr-only">
+            {status}
+          </p>
+        </Card>
+      </ExplainerFlip>
     </section>
   )
 }

@@ -201,6 +201,36 @@ create table if not exists public.section_publish_state (
   primary key (section, scope)
 );
 
+-- 3h. QUIZ SETTINGS TABLE
+--     Per-lesson quiz configuration. A missing row means "all defaults".
+--     Added in migrations/20260524000000_course_settings.sql; attempt cap and
+--     answer reveal in migrations/20260525000000_quiz_attempt_settings.sql;
+--     the availability window in
+--     migrations/20260921000000_quiz_schedule_window.sql.
+--
+--     time_limit_seconds   null = no per-attempt timer.
+--     max_attempts         null = unlimited (the app default is 3).
+--     show_correct_answers false hides the answer key on the results screen.
+--     available_from       null = no opening time.
+--     available_until      null = the quiz never closes on its own.
+--       Both are instants, so one window fits a class across timezones. The
+--       window gates ALL attempts: a student with 3 attempts takes all three
+--       inside it. is_quiz_scheduled_open() enforces it.
+create table if not exists public.quiz_settings (
+  lesson_id            text primary key,
+  time_limit_seconds   integer check (time_limit_seconds is null or time_limit_seconds > 0),
+  max_attempts         integer check (max_attempts is null or max_attempts > 0),
+  show_correct_answers boolean not null default true,
+  available_from       timestamptz,
+  available_until      timestamptz,
+  updated_at           timestamptz not null default now(),
+  constraint quiz_settings_window_order_check check (
+    available_from is null
+    or available_until is null
+    or available_until > available_from
+  )
+);
+
 -- ============================================================
 -- 4. TRIGGER: auto-create the correct row on new auth user
 --    Reads role from user_metadata.role:
@@ -385,6 +415,38 @@ begin
 end;
 $$;
 
+-- Scheduled availability window (migrations/20260921000000_quiz_schedule_window.sql).
+-- No window, or now() inside it. The closing edge gets the same 2-minute grace
+-- as a grant so an auto-submit fired at the bell still saves; the browser
+-- applies no grace, so students see the quiz close on time.
+create or replace function public.is_quiz_scheduled_open(p_lesson_id text)
+returns boolean
+language plpgsql
+stable
+security definer set search_path = public
+as $$
+declare
+  v_from  timestamptz;
+  v_until timestamptz;
+begin
+  select available_from, available_until
+    into v_from, v_until
+  from public.quiz_settings
+  where lesson_id = p_lesson_id;
+
+  if not found then
+    return true;
+  end if;
+  if v_from is not null and now() < v_from then
+    return false;
+  end if;
+  if v_until is not null and now() >= v_until + interval '2 minutes' then
+    return false;
+  end if;
+  return true;
+end;
+$$;
+
 create or replace function public.is_quiz_open_for(
   p_student_id uuid,
   p_lesson_id  text,
@@ -408,7 +470,8 @@ begin
 
   v_closed :=
        (v_published is not null and not coalesce(v_week = any(v_published), false))
-    or (v_hidden is not null and coalesce(p_lesson_id = any(v_hidden), false));
+    or (v_hidden is not null and coalesce(p_lesson_id = any(v_hidden), false))
+    or not public.is_quiz_scheduled_open(p_lesson_id);
 
   if not v_closed then
     return true;
@@ -545,6 +608,21 @@ create policy "section_staff_delete_publish_state"
   on public.section_publish_state for delete
   to authenticated
   using (public.can_manage_section(section));
+
+-- Quiz settings: everyone signed in reads (students need the timer, the
+-- attempt cap and the availability window); only staff write.
+alter table public.quiz_settings enable row level security;
+
+create policy "anyone_read_quiz_settings"
+  on public.quiz_settings for select
+  to authenticated
+  using (true);
+
+create policy "staff_write_quiz_settings"
+  on public.quiz_settings for all
+  to authenticated
+  using      (public.is_staff())
+  with check (public.is_staff());
 
 -- Sections (migrations/20260911010000_sections_table.sql): signup lists them
 -- before an account exists, so anon can read; staff create; admins delete.

@@ -1,9 +1,11 @@
-// Per-lesson quiz settings: optional time limit, attempt cap, and the
-// "reveal correct answers after submit" toggle.
+// Per-lesson quiz settings: optional time limit, attempt cap, the "reveal
+// correct answers after submit" toggle, and the scheduled availability window.
 //
 // `time_limit_seconds` null = "no timer".
 // `max_attempts`       null = "unlimited"; positive int otherwise.
 // `show_correct_answers` defaults true (current behavior).
+// `available_from` / `available_until` null = "no window on that edge"; both
+//   null means the quiz is governed by the publish toggles alone.
 //
 // Read paths return a Map keyed by lessonId; missing keys mean "no
 // override exists" — callers fall back to app-wide defaults.
@@ -28,6 +30,16 @@ function writeCache(map) {
     localStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(map)))
   } catch {
     /* quota */
+  }
+}
+
+function toEntry(row) {
+  return {
+    time_limit_seconds: row.time_limit_seconds,
+    max_attempts: row.max_attempts,
+    show_correct_answers: row.show_correct_answers,
+    available_from: row.available_from ?? null,
+    available_until: row.available_until ?? null,
   }
 }
 
@@ -61,18 +73,68 @@ export function getQuizShowAnswers(settings, lessonId) {
   return entry.show_correct_answers !== false
 }
 
+// The scheduled availability window for this quiz, or null when the teacher
+// set neither edge. `from` / `until` are ISO instants; either may be null.
+export function getQuizWindow(settings, lessonId) {
+  const entry = settings?.get?.(lessonId)
+  if (!entry) return null
+  const from = entry.available_from ?? null
+  const until = entry.available_until ?? null
+  if (!from && !until) return null
+  return { from, until }
+}
+
+// 'none'   no window set
+// 'before' the window has not opened yet
+// 'open'   inside the window (or past an open-ended start)
+// 'after'  the window has closed
+//
+// The server allows a 2-minute grace past `until` so an auto-submit fired at
+// the bell still saves. That grace is deliberately NOT applied here: students
+// and teachers should see the window close exactly when it says it does.
+export function getQuizWindowState(quizWindow, now = Date.now()) {
+  if (!quizWindow) return 'none'
+  const from = quizWindow.from ? Date.parse(quizWindow.from) : NaN
+  const until = quizWindow.until ? Date.parse(quizWindow.until) : NaN
+  if (Number.isFinite(from) && now < from) return 'before'
+  if (Number.isFinite(until) && now >= until) return 'after'
+  return 'open'
+}
+
+// Both edges are written together: saving one without the other could leave
+// a window whose end precedes its start, which the table's check rejects.
+// Pass nulls for both to clear the schedule.
+export async function saveQuizWindow(lessonId, { from, until }) {
+  const { error } = await supabase
+    .from('quiz_settings')
+    .upsert(
+      {
+        lesson_id: lessonId,
+        available_from: from ?? null,
+        available_until: until ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'lesson_id' },
+    )
+  if (error) throw error
+  const cache = readCache()
+  const prev = cache.get(lessonId) ?? {}
+  cache.set(lessonId, {
+    ...prev,
+    available_from: from ?? null,
+    available_until: until ?? null,
+  })
+  writeCache(cache)
+}
+
 export async function fetchQuizSettings() {
   const { data, error } = await supabase
     .from('quiz_settings')
-    .select('lesson_id, time_limit_seconds, max_attempts, show_correct_answers')
+    .select('lesson_id, time_limit_seconds, max_attempts, show_correct_answers, available_from, available_until')
   if (error) throw error
   const map = new Map()
   for (const row of data ?? []) {
-    map.set(row.lesson_id, {
-      time_limit_seconds: row.time_limit_seconds,
-      max_attempts: row.max_attempts,
-      show_correct_answers: row.show_correct_answers,
-    })
+    map.set(row.lesson_id, toEntry(row))
   }
   writeCache(map)
   return map
@@ -152,11 +214,7 @@ export function subscribeToQuizSettings(onChange) {
         if (payload.eventType === 'DELETE') {
           cache.delete(row.lesson_id)
         } else {
-          cache.set(row.lesson_id, {
-            time_limit_seconds: row.time_limit_seconds,
-            max_attempts: row.max_attempts,
-            show_correct_answers: row.show_correct_answers,
-          })
+          cache.set(row.lesson_id, toEntry(row))
         }
         writeCache(cache)
         onChange(row.lesson_id, payload.eventType === 'DELETE' ? null : row)

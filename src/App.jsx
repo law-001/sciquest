@@ -47,6 +47,8 @@ import {
   getQuizTimeLimit,
   getQuizMaxAttempts,
   getQuizShowAnswers,
+  getQuizWindow,
+  getQuizWindowState,
 } from "./lib/quizSettings";
 import {
   fetchQuizAccessGrants,
@@ -195,6 +197,33 @@ function AppContent() {
   // Ticks each minute so a personal quiz grant's end time closes the quiz
   // without the student reloading.
   const [nowMs, setNowMs] = useState(() => Date.now());
+
+  // nowMs only ticks each minute, which would leave a scheduled quiz looking
+  // locked for up to a minute after its opening time. Find the next window
+  // edge across every quiz so an extra tick can be fired exactly on it.
+  const nextQuizWindowEdgeMs = useMemo(() => {
+    let next = Infinity;
+    for (const entry of quizSettings.values()) {
+      for (const iso of [entry.available_from, entry.available_until]) {
+        const at = iso ? Date.parse(iso) : NaN;
+        if (Number.isFinite(at) && at > nowMs && at < next) next = at;
+      }
+    }
+    return Number.isFinite(next) ? next : null;
+  }, [quizSettings, nowMs]);
+
+  useEffect(() => {
+    if (nextQuizWindowEdgeMs == null) return;
+    // +1s so the tick lands just after the edge, never a hair before it.
+    // Clamped to setTimeout's 32-bit ceiling; a window weeks out just gets
+    // re-scheduled when that first timer fires.
+    const delay = Math.min(
+      Math.max(0, nextQuizWindowEdgeMs - Date.now() + 1000),
+      2_147_483_000,
+    );
+    const id = setTimeout(() => setNowMs(Date.now()), delay);
+    return () => clearTimeout(id);
+  }, [nextQuizWindowEdgeMs]);
 
   // Stable refs so interval callbacks always see the latest values without
   // being listed as effect deps (which would reset the interval constantly).
@@ -731,16 +760,30 @@ function AppContent() {
     handleNavigate("lesson-content");
   };
 
-  const isQuizClosedForClass = (weekId, lessonId) =>
+  // The publish toggles alone — no schedule, no personal grant.
+  const isQuizUnpublished = (weekId, lessonId) =>
     !isWeekPublished(weekId, publishedQuizWeekIds) ||
     isLessonHidden(lessonId, hiddenQuizLessonIds);
+
+  // True when the teacher gave this quiz a dated window and we are not in it.
+  const isQuizOutsideWindow = (lessonId, { freshClock = false } = {}) => {
+    const quizWindow = getQuizWindow(quizSettings, lessonId);
+    if (!quizWindow) return false;
+    return (
+      getQuizWindowState(quizWindow, freshClock ? undefined : nowMs) !== "open"
+    );
+  };
+
+  // Both gates have to let the quiz through; a personal grant overrides either.
+  const isQuizClosedForClass = (weekId, lessonId, options) =>
+    isQuizUnpublished(weekId, lessonId) || isQuizOutsideWindow(lessonId, options);
 
   // The teacher's per-student grant, but only when it's what keeps the quiz
   // open — null when the quiz is open for the whole class anyway.
   // `freshClock`: event handlers read the real time (nowMs can be a minute
   // stale); render code uses the ticking nowMs so renders stay pure.
   const getPersonalQuizGrant = (weekId, lessonId, { freshClock = false } = {}) =>
-    weekId && isQuizClosedForClass(weekId, lessonId)
+    weekId && isQuizClosedForClass(weekId, lessonId, { freshClock })
       ? findActiveGrant(
           effectiveQuizAccessGrants,
           lessonId,
@@ -752,20 +795,45 @@ function AppContent() {
   const isQuizLocked = (weekId, lessonId, options) => {
     if (!weekId) return false;
     return (
-      isQuizClosedForClass(weekId, lessonId) &&
+      isQuizClosedForClass(weekId, lessonId, options) &&
       !getPersonalQuizGrant(weekId, lessonId, options)
     );
   };
 
-  // The quiz page needs the grant's end time even after it passes, so it can
-  // auto-submit on time — or show "closed" to a student who comes back late —
-  // rather than let the server reject a fresh attempt.
-  const getQuizClosesAt = (weekId, lessonId) =>
-    weekId && isQuizClosedForClass(weekId, lessonId)
-      ? (effectiveQuizAccessGrants.find(
-          (g) => g.lessonId === lessonId && g.studentId === user?.id,
-        )?.openUntil ?? null)
-      : null;
+  // When this student's quiz stops accepting answers, and which rule ends it.
+  // The quiz page counts down to it, warns near the end and auto-submits once
+  // it passes — so it is returned even after it has gone by, which is what
+  // shows a late arrival the "closed" screen instead of a server rejection.
+  const getQuizClose = (weekId, lessonId) => {
+    if (!weekId) return null;
+    const grant = effectiveQuizAccessGrants.find(
+      (g) => g.lessonId === lessonId && g.studentId === user?.id,
+    );
+    // An open-ended grant means nothing closes this quiz for this student.
+    if (grant && !grant.openUntil) return null;
+    const grantEnd = grant ? Date.parse(grant.openUntil) : NaN;
+
+    // While the quiz is unpublished the schedule is moot — only a grant can
+    // be keeping it open, so only the grant can end it.
+    const quizWindow = isQuizUnpublished(weekId, lessonId)
+      ? null
+      : getQuizWindow(quizSettings, lessonId);
+    const windowEnd = quizWindow?.until ? Date.parse(quizWindow.until) : NaN;
+
+    // A grant that runs past the class window extends this student past it.
+    if (Number.isFinite(grantEnd) && !(grantEnd < windowEnd)) {
+      return { at: grant.openUntil, reason: "grant" };
+    }
+    if (Number.isFinite(windowEnd)) {
+      return { at: quizWindow.until, reason: "schedule" };
+    }
+    return null;
+  };
+
+  // The active lesson's schedule, resolved once for every consumer below.
+  const activeQuizWindow = getQuizWindow(quizSettings, activeLessonId);
+  const activeQuizWindowState = getQuizWindowState(activeQuizWindow, nowMs);
+  const activeQuizClose = getQuizClose(activeWeekId, activeLessonId);
 
   const handleGoToQuiz = () => {
     // A grant that just ended must not open a quiz that would auto-submit
@@ -1147,6 +1215,8 @@ function AppContent() {
             onInteractionComplete={handleInteractionComplete}
             quizLocked={isQuizLocked(activeWeekId, activeLessonId)}
             personalQuizGrant={getPersonalQuizGrant(activeWeekId, activeLessonId)}
+            quizWindow={activeQuizWindow}
+            quizWindowState={activeQuizWindowState}
             onLessonSelect={(lessonId) => {
               setActiveLessonId(lessonId);
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1163,7 +1233,8 @@ function AppContent() {
             onComplete={handleQuizComplete}
             onFinish={handleQuizFinish}
             timeLimitSeconds={getQuizTimeLimit(quizSettings, activeLessonId)}
-            closesAt={getQuizClosesAt(activeWeekId, activeLessonId)}
+            closesAt={activeQuizClose?.at ?? null}
+            closesReason={activeQuizClose?.reason ?? null}
             maxAttempts={getQuizMaxAttempts(quizSettings, activeLessonId)}
             showCorrectAnswers={getQuizShowAnswers(quizSettings, activeLessonId)}
           />

@@ -1492,3 +1492,57 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
     transition: none;
   }
 }
+
+/* — Interactive explainer flip — */
+/* Turns a finished interactive block over to show the explanation on its back.
+   Both faces share one grid cell, so the card is as tall as the taller face and
+   nothing here needs a hardcoded height — these blocks run from ~200px to 62vh. */
+.sq-explain-flip {
+  perspective: 2200px;
+}
+
+.sq-explain-flip__inner {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sq-explain-flip__inner--flipped {
+  transform: rotateY(180deg);
+}
+
+.sq-explain-flip__face {
+  grid-area: 1 / 1;
+  min-width: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.sq-explain-flip__face--back {
+  transform: rotateY(180deg);
+}
+
+/* No rotation to hide the turned-away face with, so the faces cross-fade and
+   the hidden one is taken out of the hit test. */
+@media (prefers-reduced-motion: reduce) {
+  .sq-explain-flip__inner,
+  .sq-explain-flip__inner--flipped {
+    transform: none;
+    transition: none;
+  }
+
+  .sq-explain-flip__face {
+    transition: opacity 0.2s linear;
+  }
+
+  .sq-explain-flip__face--back,
+  .sq-explain-flip__inner--flipped .sq-explain-flip__face {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sq-explain-flip__inner--flipped .sq-explain-flip__face--back {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

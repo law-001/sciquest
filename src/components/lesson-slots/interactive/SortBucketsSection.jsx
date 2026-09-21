@@ -112,6 +112,7 @@ export default function SortBucketsSection({
           : `Drag each item into a category, or tap it then tap a category — ${placedCount} of ${items.length} placed`
       }
       isComplete={isComplete}
+      explainer={data?.explainer}
       status={
         isComplete
           ? 'All items sorted correctly.'

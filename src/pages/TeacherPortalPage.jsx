@@ -90,6 +90,9 @@ import {
   getQuizTimeLimit,
   getQuizMaxAttempts,
   getQuizShowAnswers,
+  getQuizWindow,
+  getQuizWindowState,
+  saveQuizWindow,
 } from "../lib/quizSettings";
 import {
   fetchQuizAccessGrants,
@@ -4135,6 +4138,312 @@ function QuizShowAnswersControl({ lessonId, currentShow }) {
   );
 }
 
+// <input type="datetime-local"> speaks local wall-clock with no zone; the row
+// stores an instant. These two convert between the pair.
+function isoToLocalInput(iso) {
+  if (!iso) return "";
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return (
+    `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}` +
+    `T${pad(at.getHours())}:${pad(at.getMinutes())}`
+  );
+}
+
+function localInputToIso(value) {
+  if (!value) return null;
+  const at = new Date(value);
+  return Number.isNaN(at.getTime()) ? null : at.toISOString();
+}
+
+function formatWindowEdge(iso) {
+  if (!iso) return "";
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "";
+  return at.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+// A default window the teacher can accept or adjust: the next whole hour,
+// running for an hour.
+function defaultWindowInputs() {
+  const opens = new Date();
+  opens.setMinutes(0, 0, 0);
+  opens.setHours(opens.getHours() + 1);
+  const closes = new Date(opens.getTime() + 60 * 60 * 1000);
+  return { from: isoToLocalInput(opens), until: isoToLocalInput(closes) };
+}
+
+// Puts a quiz on a clock: it unlocks at `from` and locks again at `until`,
+// with no teacher action at either edge. Both edges are optional, so a quiz
+// can open at a time and stay open, or be open now and close at a deadline.
+// The window gates every attempt — a student with 3 attempts takes all three
+// inside it — and a per-student grant still overrides it for a make-up.
+function QuizScheduleControl({
+  lessonId,
+  currentWindow,
+  nowMs,
+  timeLimitSeconds,
+  maxAttempts,
+}) {
+  const savedFrom = currentWindow?.from ?? null;
+  const savedUntil = currentWindow?.until ?? null;
+  const [enabled, setEnabled] = useState(!!currentWindow);
+  const [from, setFrom] = useState(() => isoToLocalInput(savedFrom));
+  const [until, setUntil] = useState(() => isoToLocalInput(savedUntil));
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [error, setError] = useState(null);
+  // What the server last accepted, in input format. It advances the moment a
+  // save resolves, so the status line and the Save button settle straight
+  // away instead of waiting for realtime to echo the row back.
+  const [committed, setCommitted] = useState(() => ({
+    from: isoToLocalInput(savedFrom),
+    until: isoToLocalInput(savedUntil),
+  }));
+
+  // Re-sync when the row changes under us — realtime echoing this save, or
+  // another teacher's edit. Keyed on the ISO strings, not the object, which
+  // getQuizWindow rebuilds every render.
+  useEffect(() => {
+    const next = {
+      from: isoToLocalInput(savedFrom),
+      until: isoToLocalInput(savedUntil),
+    };
+    setCommitted(next);
+    setEnabled(!!(savedFrom || savedUntil));
+    setFrom(next.from);
+    setUntil(next.until);
+    setError(null);
+  }, [savedFrom, savedUntil]);
+
+  const committedWindow =
+    committed.from || committed.until
+      ? {
+          from: localInputToIso(committed.from),
+          until: localInputToIso(committed.until),
+        }
+      : null;
+  const state = getQuizWindowState(committedWindow, nowMs);
+  const dirty =
+    enabled && (from !== committed.from || until !== committed.until);
+
+  // Resolves true only when the row actually changed, so callers can put the
+  // switch back rather than show a schedule as cleared while it is still live.
+  async function commit(next) {
+    setSaving(true);
+    setError(null);
+    try {
+      await saveQuizWindow(lessonId, next);
+      setCommitted({
+        from: isoToLocalInput(next.from),
+        until: isoToLocalInput(next.until),
+      });
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 1500);
+      return true;
+    } catch (err) {
+      setError(err.message || "Could not save the schedule.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleToggle() {
+    if (saving) return;
+    if (enabled) {
+      setEnabled(false);
+      setFrom("");
+      setUntil("");
+      if (!(await commit({ from: null, until: null }))) {
+        // The window is still live on the server — show it again.
+        setEnabled(true);
+        setFrom(committed.from);
+        setUntil(committed.until);
+      }
+      return;
+    }
+    // Turning it on only fills the form — nothing is scheduled until Save,
+    // so a stray click can't lock a class out of a live quiz.
+    const defaults = defaultWindowInputs();
+    setEnabled(true);
+    setFrom(defaults.from);
+    setUntil(defaults.until);
+    setError(null);
+  }
+
+  function handleSave() {
+    const fromIso = localInputToIso(from);
+    const untilIso = localInputToIso(until);
+    if (!fromIso && !untilIso) {
+      setError("Set an opening time, a closing time, or both.");
+      return;
+    }
+    if (fromIso && untilIso && Date.parse(untilIso) <= Date.parse(fromIso)) {
+      setError("The closing time has to be after the opening time.");
+      return;
+    }
+    commit({ from: fromIso, until: untilIso });
+  }
+
+  // A window too short for the attempts it allows would auto-submit a student
+  // mid-try, so surface the clash here rather than let the class find it.
+  const windowMin =
+    committedWindow?.from && committedWindow?.until
+      ? Math.round(
+          (Date.parse(committedWindow.until) - Date.parse(committedWindow.from)) /
+            60_000,
+        )
+      : null;
+  const attemptMin = timeLimitSeconds ? Math.round(timeLimitSeconds / 60) : null;
+  // maxAttempts null = unlimited, so only the single-attempt length can be
+  // checked in that case.
+  const neededMin =
+    attemptMin == null ? null : attemptMin * (maxAttempts ?? 1);
+  const tooShort =
+    windowMin != null && neededMin != null && neededMin > windowMin;
+
+  const statusText = {
+    none: "No schedule — the publish toggle alone decides who sees this quiz.",
+    before: `Locked until ${formatWindowEdge(committedWindow?.from)}.`,
+    open: committedWindow?.until
+      ? `Open now — closes ${formatWindowEdge(committedWindow.until)}.`
+      : "Open now — no closing time set.",
+    after: `Closed since ${formatWindowEdge(committedWindow?.until)}. Use "Open for a student" for make-ups.`,
+  }[state];
+
+  return (
+    <div className="pt-3 border-t border-orange-100 dark:border-stone-700">
+      <div className="flex items-center justify-between gap-2">
+        <label
+          htmlFor={`schedule-${lessonId}`}
+          className="flex items-center gap-1.5 text-xs font-bold text-stone-500 dark:text-stone-400"
+        >
+          <CalendarClock className="w-3.5 h-3.5" />
+          Available only at a set time
+        </label>
+        <button
+          id={`schedule-${lessonId}`}
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Schedule when this quiz is available"
+          onClick={handleToggle}
+          disabled={saving}
+          className={cn(
+            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-400",
+            enabled
+              ? "bg-secondary-500 border-secondary-500"
+              : "bg-stone-200 dark:bg-stone-700 border-stone-300 dark:border-stone-600",
+            saving && "opacity-60 cursor-not-allowed",
+          )}
+        >
+          <span
+            className={cn(
+              "inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
+              enabled ? "translate-x-[18px]" : "translate-x-[2px]",
+            )}
+          />
+        </button>
+      </div>
+
+      {enabled && (
+        <div className="mt-2 space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label
+                htmlFor={`opens-${lessonId}`}
+                className="block text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1"
+              >
+                Opens
+              </label>
+              <input
+                id={`opens-${lessonId}`}
+                type="datetime-local"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                disabled={saving}
+                className="w-full min-h-11 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor={`closes-${lessonId}`}
+                className="block text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1"
+              >
+                Closes
+              </label>
+              <input
+                id={`closes-${lessonId}`}
+                type="datetime-local"
+                value={until}
+                onChange={(e) => setUntil(e.target.value)}
+                disabled={saving}
+                className="w-full min-h-11 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !dirty}
+            className={cn(
+              "w-full min-h-11 rounded-lg text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-400",
+              dirty && !saving
+                ? "bg-secondary-500 hover:bg-secondary-600 text-white"
+                : "bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 cursor-not-allowed",
+            )}
+          >
+            {saving ? "Saving…" : dirty ? "Save schedule" : "Schedule saved"}
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-1.5 text-[11px] font-bold text-red-600 dark:text-red-400"
+        >
+          {error}
+        </p>
+      )}
+      <p className="text-[10px] font-medium text-stone-400 dark:text-stone-500 mt-1 flex flex-wrap items-center gap-1.5">
+        {dirty ? "Not saved yet — press Save schedule to apply it." : statusText}
+        {savedFlash && (
+          <span className="text-secondary-600 dark:text-secondary-400 font-bold">
+            Saved
+          </span>
+        )}
+      </p>
+      {tooShort && (
+        <p className="mt-1.5 flex items-start gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" />
+          <span>
+            This window is {windowMin} min, but{" "}
+            {maxAttempts ?? 1}{" "}
+            {maxAttempts === 1 || maxAttempts == null ? "attempt" : "attempts"}{" "}
+            of {attemptMin} min need {neededMin} min. A student starting late
+            gets auto-submitted when the window closes.
+          </span>
+        </p>
+      )}
+      {enabled && state !== "none" && (
+        <p className="text-[10px] font-medium text-stone-400 dark:text-stone-500 mt-1">
+          Every attempt has to be finished inside the window. Times follow this
+          device's clock.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function DeleteQuizModal({
   lesson,
   quiz,
@@ -4671,7 +4980,10 @@ function LessonQuizCard({
   isDeleted,
   accessCount = 0,
   onManageAccess,
+  currentWindow = null,
+  nowMs,
 }) {
+  const windowState = getQuizWindowState(currentWindow, nowMs);
   return (
     <PortalPanel className={cn("p-5", isDeleted && "opacity-60")}>
       <div className="flex items-start justify-between mb-3">
@@ -4796,6 +5108,27 @@ function LessonQuizCard({
         </div>
         <ProgressBar progress={pct} color="secondary" size="sm" />
       </div>
+      {!isDeleted && windowState !== "none" && (
+        <div
+          className={cn(
+            "flex items-center gap-1.5 w-full mb-3 px-3 py-2 rounded-xl border text-[11px] font-bold",
+            windowState === "open"
+              ? "bg-secondary-50 dark:bg-secondary-900/20 border-secondary-200 dark:border-secondary-700/50 text-secondary-700 dark:text-secondary-400"
+              : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400",
+          )}
+        >
+          <CalendarClock className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            {windowState === "before"
+              ? `Opens ${formatWindowEdge(currentWindow.from)}`
+              : windowState === "open"
+                ? currentWindow.until
+                  ? `Open until ${formatWindowEdge(currentWindow.until)}`
+                  : "Open — no closing time"
+                : `Closed ${formatWindowEdge(currentWindow.until)}`}
+          </span>
+        </div>
+      )}
       {!isDeleted && onManageAccess && (
         <button
           type="button"
@@ -4845,6 +5178,13 @@ function LessonQuizCard({
             lessonId={lesson.id}
             currentShow={currentShow}
           />
+          <QuizScheduleControl
+            lessonId={lesson.id}
+            currentWindow={currentWindow}
+            nowMs={nowMs}
+            timeLimitSeconds={currentLimit}
+            maxAttempts={currentAttempts}
+          />
         </>
       )}
     </PortalPanel>
@@ -4878,6 +5218,12 @@ function QuizzesManagementSlot({
   const pickerStudents = sectionId
     ? data.students.filter((s) => s.section === sectionId)
     : data.students;
+  // A schedule closes the quiz for the class just as the publish toggle does,
+  // so the make-up grant is the way back in for a student who missed it.
+  function isOutsideWindow(lessonId) {
+    const quizWindow = getQuizWindow(quizSettings, lessonId);
+    return !!quizWindow && getQuizWindowState(quizWindow, nowMs) !== "open";
+  }
   function grantsForLesson(lessonId) {
     return quizAccessGrants.filter(
       (g) => g.lessonId === lessonId && studentById.has(g.studentId),
@@ -5092,6 +5438,7 @@ function QuizzesManagementSlot({
                   lesson.id,
                 );
                 const currentShow = getQuizShowAnswers(quizSettings, lesson.id);
+                const currentWindow = getQuizWindow(quizSettings, lesson.id);
                 const dbRow = dbQuizzes.get(lesson.id);
                 const isCustomQuiz = !!dbRow?.is_custom;
                 const isEdited = !!dbRow && !isCustomQuiz;
@@ -5119,6 +5466,8 @@ function QuizzesManagementSlot({
                     currentLimit={currentLimit}
                     currentAttempts={currentAttempts}
                     currentShow={currentShow}
+                    currentWindow={currentWindow}
+                    nowMs={nowMs}
                     open={openLessonId === lesson.id}
                     onToggle={() => toggleLessonOpen(lesson.id)}
                     onEdit={() => onEditQuiz?.(lesson.id, expandedWeek.id)}
@@ -5265,7 +5614,8 @@ function QuizzesManagementSlot({
           studentById={studentById}
           grants={grantsForLesson(accessLesson.id)}
           isClosedForClass={
-            !isQuizPublishedInScope(expandedWeek.id, accessLesson.id)
+            !isQuizPublishedInScope(expandedWeek.id, accessLesson.id) ||
+            isOutsideWindow(accessLesson.id)
           }
           nowMs={nowMs}
           onGrantsChange={onQuizAccessChange}
