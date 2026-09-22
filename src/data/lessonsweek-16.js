@@ -332,11 +332,19 @@ export const week16 = {
 
       signature: {
         widgetId: "fusion-bench",
-        heading: "Watch It: 23 + 23, and What Else Adds Up",
-        intro:
-          "Load two cells and drive them together; the chromosome total is the sum of what you picked. Get it right and the zygote starts cleaving on its own, with the count staying at 46 in every new cell. Put a body cell in and watch 69 fail.",
-        instruction: "Make a correct zygote, then make a wrong one",
+        heading: "Watch It: Build a Zygote",
+        intro: "The zygote's chromosome count is just the two cells added up.",
+        instruction: "Make a real zygote, then make one that fails",
         xp: 25,
+        explainer: {
+          title: "Why 23 plus 23 works",
+          points: [
+            "You drove two half sets together, and the new cell ended up with 46, one full set.",
+            "The fertilisation membrane closed the moment they fused, so no second sperm could get in.",
+            "Your zygote kept cleaving, and every new cell still held 46, because mitosis copies rather than adds.",
+            "A body cell gave 69, a whole extra set, and no amount of dividing could fix that.",
+          ],
+        },
       },
 
       sections: [

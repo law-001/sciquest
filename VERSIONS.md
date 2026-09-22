@@ -667,3 +667,72 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Week 14 Lesson 2 (`cycle-dial`): dial centre 176 to 202, `R_OUT` 134 to 130, `R_IN` 94 to 92. Chromosome close-up spacing 60 to 50 and the DNA graph 200 x 84 to 164 x 80 so both sit inside the narrower card.
 - Fixed the cleavage furrow. The bite circles were being driven to a centre distance of `biteR * 0.34`, which is inside their own radius, so the two bites met in the middle and cut a horizontal channel through the cell, leaving two crescents joined at their sides. They now stop at `biteR + NECK_HALF`, which pinches a 14-unit neck at the equator and leaves a proper peanut before the cell separates at position 99.
 - Commit: Keep the Week 14 stage instruments inside the crop-safe band and fix the cleavage furrow
+
+## VERSION_70
+- Week 15 Lesson 1 (`mitosis-run`): scene re-authored at 620 x 390 with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so it fills the stage instead of sitting in a band of empty gradient. Readable content stays between x 60 and x 560, y 40 and y 352.
+- Chromosomes are now one morphing strand each: a long wavy thread when loose, a short fat rod once coiled, with a centromere disc joining the sisters. Dragging back uncoils them. Added a nucleolus that fades in prophase, spindle poles with asters on the animal cell, cytoplasm grain, chloroplasts and a double wall on the plant cell, the contractile ring drawn as a drawstring across the furrow, and Golgi vesicles that line up then fuse into the cell plate.
+- Added a six-segment stage track along the bottom with a scrub marker, so PMAT is visible in the picture, plus one stage-gated in-picture label at a time (nucleus opening / metaphase plate / fibres pulling / cleavage furrow or cell plate).
+- Stage boundaries retimed to 0-14-36-54-74-88-100 so each track segment is wide enough for its own name.
+- Front copy on a diet: `intro` cut to one line, stage notes to one short sentence each, the slider helper to "Drag it backwards too.", the cell-type buttons to "Animal cell" / "Plant cell" with the explanation moved to the back. Added a Reset button.
+- Week 15 Lesson 2 (`crossover-lab`): same stage treatment at 620 x 390 with bleed and slice. Gene letters A to F now ride on every band and a gene ruler runs down the left of the tetrad, so the swap is readable without relying on colour. Added a from-mother / from-father key, a cell outline around the tetrad, "untouched" / "swapped" strand labels, and a thicker orange outline on the gametes that came out mixed.
+- Counter strip rebuilt at the new height and its labels cut to "n = 23, 46 chromatids" style with no em dashes.
+- Front copy on a diet: `intro` cut to one line, step notes to one sentence, the recombinant card is now a readout plus a nudge only when no crossover is set, and "Back to the tetrad" became "Reset".
+- Added `signature.explainer` to `w15-l1` and `w15-l2`, so finishing each one unlocks the flip.
+- Commit: Refine the Week 15 mitosis and crossover interactives and add their explainer flips
+
+## VERSION_71
+- Week 15 Lesson 2 (`crossover-lab`): fixed overlapping text in the tetrad. The four strands were evenly spaced 38 apart, so the per-strand "untouched" / "swapped" captions under them ran into each other and read as "swappedswapped".
+- Strands regrouped two and two at x offsets -62, -30, +30, +62, which is what a tetrad actually looks like (two chromosomes, each already two chromatids) and opens a 60-unit gap down the middle for the chiasma.
+- Dropped the per-strand captions and the redundant gene ruler, whose "gene" header was sitting on the cell outline. Every band already carries its own gene letter. In their place: one orange bracket under the two strands that changed, labelled "swapped".
+- The chiasma cross now straddles the crossover boundary (`cutY - 9` to `cutY + 9`) instead of hanging below it onto the next gene band, and the caption reads "swapped from gene F down".
+- Moved the colour key inside the `step === 0` branch and into the top-left corner at x 66, where the cell ellipse never reaches, instead of x 470 where it sat on the membrane.
+- Meiosis I chromatid spacing 38 to 32, to match the new within-pair gap.
+- Week 15 Lesson 1 (`mitosis-run`): plant chloroplasts moved to +/- 178 x, +/- 44 and 48 y so they clear the stage-gated labels, and the prophase tag shortened from "nucleus opening" to "nucleus" and moved to (CX - 146, CY - 64) so it no longer touches the nuclear envelope.
+- Commit: Fix overlapping labels in the Week 15 tetrad illustration
+
+## VERSION_72
+- Week 16 Lesson 2 (`fusion-bench`): rebuilt the illustration. The scene is now authored at 620x390 (the stage's own ~16:10 shape), the fluid background bleeds 60 units past the viewBox, and it renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>`, so it fills the frame instead of sitting in a 620x340 letterbox.
+- The three cells are drawn as the actual objects instead of a circle with four bars. Sperm: acrosome cap, nucleus, midpiece, and a tail that beats from the animation tick. Egg: corona radiata, zona pellucida, yolk-packed cytoplasm, nucleus. Body cell: membrane, mitochondria, nucleus.
+- New `Chroms` helper draws one bar per chromosome copy, so haploid reads as four singles, diploid as four pairs and a failed 69 as four triples with the surplus copy in red, with an "a whole extra set" callout pointing at it.
+- A viable zygote now cleaves inside a drawn fertilisation membrane, 1 to 2 to 4 to 8 cells on a hand-placed pack, every cell still showing its diploid pair of bars.
+- Added a pairing check: 46 is necessary but not sufficient, so egg + egg and sperm + sperm no longer count as a zygote. They fuse, fail, and report "46, but two of the same / needs one of each".
+- New bench readout strip along the bottom: left slot, right slot and result, each with its name and count.
+- Front copy on a diet. Heading "Watch It: Build a Zygote", intro one sentence, instruction "Make a real zygote, then make one that fails", per-cell notes cut to one short line each, action button "Drive them together".
+- Added `signature.explainer` to `w16-l2` so finishing the block unlocks the flip.
+- Reduced motion now jumps straight to the finished 8-cell embryo instead of running the fuse and cleave tweens.
+- Commit: Rebuild the Week 16 fertilisation interactive and add its explainer flip
+
+## VERSION_73
+- Week 17 Lesson 1 (`clone-bench`): rebuilt the illustration. The scene is now authored at 620x390 (the stage's own ~16:10 shape), the background and the strawberry soil bleed 60 units past the viewBox, and it renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>`, so it fills the frame instead of sitting in a 620x340 letterbox.
+- All four organisms redrawn as the real thing. Bacterium: rod body with a waisted outline that pinches shut, a DNA loop that duplicates and separates, ribosomes and flagella. Yeast: cell wall, vacuole, old bud scars, a neck that pinches, and a nucleus copy that travels into the bud. Starfish: five tapered arms with tube feet and a madreporite, the broken piece keeping a share of the central disc. Strawberry: soil band, trifoliate leaves, roots, and a runner that walks a second plant out and roots it.
+- Layout regions fixed so nothing can be cropped: organism name at y 42, scene centred at (310, 128), bench divider at y 248, the clone field at y 312, disease verdict at y 350.
+- The disease sweep is now a real progressive wave (`SWEEP_TICKS`) instead of an always-on sine tick that killed the whole field on the first frame. Dead clones get X eyes as well as a grey tint, so it is not colour alone.
+- Dropped the permanent 70ms idle timer. Motion now only runs while a method or the sweep is running.
+- "Release the disease" is gated on all four methods being run, which matches the hint line and makes completion deterministic.
+- Front copy on a diet. Heading "Watch It: Copy Yourself Four Ways", intro one sentence, instruction "Run all four methods, then release the disease.", per-method paragraphs replaced by a one-line "what to watch for", in-picture captions cut to four words or fewer, em dashes removed.
+- Added `signature.explainer` to `w17-l1` so finishing the block unlocks the flip.
+- Commit: Rebuild the Week 17 asexual reproduction interactive and add its explainer flip
+
+## VERSION_74
+- Week 18 Lesson 1 (`variation-batch`): rebuilt the illustration. Scene re-authored at 620x390 (the stage's own ~16:10 shape), meadow, foliage and grass tufts bleed 60 units past the viewBox, and it now renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>` instead of letterboxing inside a 620x340 box.
+- Beetles redrawn as beetles: six legs, two antennae, head with eyes, pronotum, wing cases with the split down the middle, a shell highlight and spots. Killed offspring land on their backs with their legs in the air instead of just turning grey.
+- The shell-tone scale is now a field chart pinned in the scene, with a `pale`/`dark` gradient bar, the parasite zone drawn on it, and one triangle marker per offspring born, so the spread appears on the scale at the same moment it appears on the ground.
+- The two parents now sit on leaves with a dashed cross joining them, so the picture shows where the litter came from.
+- Front copy on a diet. Heading "Watch It: Twelve Offspring, All Different", one-sentence intro, instruction "Breed twelve offspring, then release the disease.", control labels cut to three words, status line reduced to a readout, and the panel paragraph replaced by a single hint that only shows while a goal is still open.
+- Week 18 Lesson 2 (`energy-flow`): same stage treatment, plus a real meadow with sky, hills, a mid-ground band and a foreground band.
+- All seven nodes redrawn as organisms instead of tinted circles: rayed sun, grass tuft with seed heads, grasshopper with a hind leg and antennae, frog with eyes and folded back legs, coiled snake with a tongue, hawk with spread wings, hooked beak and talons, and a rabbit with ears and a tail. Starving ones go grey with a red outline, a red dashed ring and a "no food" label, so it is never colour alone.
+- Dropped the in-picture instruction caption; the instruction lives on the front and the panel buttons carry the same actions.
+- Front copy on a diet on both blocks, em dashes removed from copy and comments.
+- Added `signature.explainer` to `w18-l1` and `w18-l2` so finishing either block unlocks the flip.
+- Commit: Rebuild both Week 18 interactives and add their explainer flips
+
+## VERSION_75
+- Week 19 Lesson 1 (`ten-percent`): rebuilt the illustration. Scene re-authored at 620x390 (the stage's own ~16:10 shape), sky, meadow and grass tufts bleed 60 units past the viewBox, and it now renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>` instead of letterboxing inside a 620x340 box.
+- Trophic levels are drawn as organisms standing on their own bar: three grass tufts, a grasshopper with a hind leg and antennae, a frog with eye bumps and folded legs, and a coiled snake with a tongue. Tier widths still come from the cube root of the surviving fraction, with a 30-unit floor so the 1-unit bar can carry its label.
+- Added a bleeding sun in the top-left corner with a dashed ray into the base bar and a "sunlight in" label, so the picture shows where the 1000 units come from.
+- Heat plumes now carry a "90% heat" label, and a "10% up" chip appears beside each gap the student has actually climbed, so both halves of the rule are visible.
+- Nutrient loop nodes redrawn as pictures: a grey dead snake with an X eye, a two-mushroom decomposer, a soil mound with mineral flecks and a new grass tuft. Nodes sit on the four diagonals and their labels ride paper chips, so nothing crowds the dashed ring.
+- Front copy on a diet. Heading "Watch It: Energy Out, Atoms Round", one-sentence intro, instruction "Send energy to the top, then follow one carbon atom.", control labels cut to three words ("Send energy up", "Start again", "Follow one atom"), the panel paragraph replaced by a single hint that only shows while a goal is still open, and the status line reduced to a readout.
+- Em dashes removed from the copy and the comments in this block.
+- Added `signature.explainer` to `w19-l1` so finishing the block unlocks the flip.
+- Commit: Rebuild the Week 19 ten-percent interactive and add its explainer flip
