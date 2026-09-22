@@ -639,3 +639,31 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Fixed signup code resending to use Supabase's confirmation resend endpoint instead of repeating registration and its student-number duplicate check.
 - Preserve resend error messages so email provider failures and rate limits are visible; normalize email addresses for signup, resend, and verification.
 - Commit: Fix signup confirmation resend and expose delivery errors
+
+## VERSION_67
+- Week 14 Lesson 1 (`surface-volume`): redrawn at the stage's own shape (620 x 390) with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so the scene fills the frame instead of letterboxing.
+- The cell is an object now, not a circle: cytoplasm, a washed fed shell, a double membrane line, a nucleus with nucleolus and chromatin, mitochondria in the shell and in the core, nutrients drifting in the fluid outside, nutrients crossing the membrane, and a visible pile-up of nutrients at the inner edge of the shell where diffusion stops.
+- Core mitochondria grey out when the core starves, so the starvation is shown by the drawing and not only by a number.
+- Replaced the five-number readout plate inside the picture with an instrument card: a growth-race graph plotting surface and volume against the same baseline, a "volume fed" bar, and a legend. The raw numbers moved to the control panel.
+- Radius range is now 30 to 100 µm at a 1.07 draw scale, chosen so both daughters still fit side by side after Divide.
+- Front copy on a diet: `intro` is one line, the slider label is "Cell radius" with the value split out, the button is "Divide the cell", and the long note under the status became a one-line next-step hint. No em dashes left in student-facing text.
+- Added `signature.explainer` to `w14-l1`, so finishing both steps unlocks the flip.
+- Commit: Refine the Week 14 surface-volume interactive and add its explainer flip
+
+## VERSION_68
+- Week 14 Lesson 2 (`cycle-dial`): same stage treatment (620 x 390, 60-unit bleed, slice, `stageFill`, `<Stage bleed>`).
+- A live cell now sits inside the dial and is drawn entirely from the dial position: it grows through interphase, its chromatin doubles through S, the nuclear envelope breaks down in early M, the chromosomes condense and line up on the equator, the chromatids are pulled to the poles, a cleavage furrow bites in from both sides, and at position 99 it is two separate cells.
+- The furrow is a mask plus a clipped pair of arcs, so the membrane stays one continuous line around the narrowing waist instead of two circles crossing each other.
+- Dropped the centre-to-rim handle spoke (it crossed the cell) for a knob riding on the ring, added hour ticks, and made the G₂ marker read as a gate that thickens and turns red when the DNA is damaged.
+- Chromosome close-up redrawn with banding and a centromere disc; the DNA graph now has phase tint bands behind it so it ties back to the ring.
+- Front copy on a diet: `intro` is one line, phase notes cut to one short sentence each, the slider label is "Dial position" with the value split out, and the standing "Damage it, then try..." line became a hint that only appears once the DNA is damaged. No em dashes left in student-facing text.
+- Added `signature.explainer` to `w14-l2`, so finishing both steps unlocks the flip.
+- Commit: Refine the Week 14 cycle-dial interactive and add its explainer flip
+
+## VERSION_69
+- Week 14 Lessons 1 and 2: the instrument card beside each illustration was being cropped away. The stage column runs at about 1.48 wide to 1 tall, not the 1.59 the scene is drawn at, so `slice` cuts roughly 25 units off each side, and more on a narrower window.
+- Both scenes now keep every readable thing between x 60 and x 560, leaving a 60-unit crop margin of pure background on each side. The cards moved from x 372/356 width 232/250 to x 352 width 204, and their contents moved with them.
+- Week 14 Lesson 1 (`surface-volume`): cell centre 190 to 200, draw scale 1.07 to 0.83 and `R_MIN` 30 to 34, so the two daughters still fit inside the band after Divide (they now span x 65 to 335). Graph box is 168 x 100 at (370, 88); the fed bar, legend and state caption moved up to match.
+- Week 14 Lesson 2 (`cycle-dial`): dial centre 176 to 202, `R_OUT` 134 to 130, `R_IN` 94 to 92. Chromosome close-up spacing 60 to 50 and the DNA graph 200 x 84 to 164 x 80 so both sit inside the narrower card.
+- Fixed the cleavage furrow. The bite circles were being driven to a centre distance of `biteR * 0.34`, which is inside their own radius, so the two bites met in the middle and cut a horizontal channel through the cell, leaving two crescents joined at their sides. They now stop at `biteR + NECK_HALF`, which pinches a 14-unit neck at the equator and leaves a proper peanut before the cell separates at position 99.
+- Commit: Keep the Week 14 stage instruments inside the crop-safe band and fix the cleavage furrow
