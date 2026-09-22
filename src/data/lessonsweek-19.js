@@ -40,11 +40,20 @@ export const week19 = {
 
       signature: {
         widgetId: "ten-percent",
-        heading: "Watch It: Where the Other 90% Goes",
+        heading: "Watch It: Energy Out, Atoms Round",
         intro:
-          "A thousand units enter the grass. Send them up and ninety per cent peel off sideways as heat while a tenth climbs, so the pyramid shape builds itself out of the losses. Beside it, one carbon atom takes the other road — dead snake, decomposer, soil, grass, and round again.",
-        instruction: "Trace energy to the top, then follow one atom round",
+          "Energy climbs once and leaks away. The same atoms keep circling.",
+        instruction: "Send energy to the top, then follow one carbon atom.",
         xp: 25,
+        explainer: {
+          title: "Why the pyramid narrows",
+          points: [
+            "Each time you sent energy up, ninety per cent drifted off as heat and only a tenth climbed.",
+            "That is why every bar was thinner than the one below it, and why one unit reached the snakes.",
+            "The heat is gone for good, so the sun has to keep refilling the bottom bar.",
+            "Your carbon atom lost nothing at all. It went dead snake, decomposer, soil, new grass, and started over.",
+          ],
+        },
       },
 
       sections: [
