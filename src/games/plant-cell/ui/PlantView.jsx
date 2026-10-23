@@ -1,6 +1,6 @@
-// The object view — the whole plant in a pot by a window, so the three sliders
-// have a visible consequence outside the microscope: the beam brightens, water
-// climbs the stem, the stomata open, and a starved plant droops.
+// The object view — the whole plant in a pot by a window, so the sliders have a
+// visible consequence outside the microscope: the beam brightens, water climbs
+// the stem, carbon dioxide drifts in, and a starved or dry plant droops.
 //
 // Same 320 x 220 viewBox as CellView so the two views swap without the stage
 // resizing. Plain shapes on purpose — artwork replaces them later.
@@ -43,10 +43,8 @@ const SALT = [[184, 155], [195, 153], [206, 156], [216, 153], [226, 155], [190, 
 const LANES = {
   // Straight up the stem, which plant-*.png draws at x 205 from the soil to y 68.
   sap: ['M 205 154 L 205 70'],
-  // Carbon dioxide arriving at the two right-hand leaf tips through open stomata.
+  // Carbon dioxide arriving at the two right-hand leaf tips.
   co2: ['M 330 74 L 236 90', 'M 330 142 L 236 128'],
-  // Water vapour leaving those same leaves.
-  vapour: ['M 236 88 L 270 34', 'M 170 118 L 140 46'],
 };
 
 function Flow({ id, lanes, count, color, duration, radius, animate, sprite = null }) {
@@ -93,7 +91,7 @@ export function PlantView({
   soil = 60,
   health = 100,
   turgor = 70,
-  // 'rain' | 'drought' | 'salty' | null — level 2's weather, drawn on the scene.
+  // 'drought' | 'salty' | null — level 2's surroundings, drawn on the scene.
   weather = null,
   reducedMotion = false,
   particleBudget = 2,
@@ -112,13 +110,6 @@ export function PlantView({
 
   const animate = !reducedMotion;
   const count = (amount) => Math.min(particleBudget, Math.round(amount * particleBudget));
-  // Open stomata and strong light are what drive water out of the leaf.
-  const vapourRate = clamp01(co2F * 0.65 + lightF * 0.35);
-  const stoma = co2 < 12
-    ? { asset: 'stoma-shut.png', label: 'STOMA SHUT' }
-    : co2 < 55
-      ? { asset: 'stoma-part-open.png', label: 'PART OPEN' }
-      : { asset: 'stoma-wide-open.png', label: 'WIDE OPEN' };
   // Five sprite stages, upright to fully wilted. Blending them across a whole
   // stage each way left two half-transparent sprites on screen nearly always,
   // so the window showed straight through the plant. Instead a sprite holds
@@ -136,8 +127,8 @@ export function PlantView({
     : weather === 'drought' ? ' The soil is cracked and dry.'
       : weather === 'salty' ? ' There is salt on the soil.' : '';
 
-  const label = `${title}.${weatherWord} Sunlight ${Math.round(light)} percent, water uptake ${Math.round(water)} percent, `
-    + `stomata ${Math.round(co2)} percent open. The plant looks ${droop > 0.55 ? 'wilted' : droop > 0.25 ? 'slightly limp' : 'firm and upright'}.`;
+  const label = `${title}.${weatherWord} Sunlight ${Math.round(light)} percent, water ${Math.round(water)} percent, `
+    + `carbon dioxide ${Math.round(co2)} percent. The plant looks ${droop > 0.55 ? 'wilted' : droop > 0.25 ? 'slightly limp' : 'firm and upright'}.`;
 
   return (
     <svg
@@ -153,18 +144,12 @@ export function PlantView({
         <clipPath id="pc-plant-glass">
           <rect x={GLASS.x} y={GLASS.y} width={GLASS.w} height={GLASS.h} />
         </clipPath>
-        <marker id="pc-stoma-callout-arrow" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-          <path d="M 0 0 L 8 4 L 0 8 Z" fill="#3b7d49" />
-        </marker>
+        <clipPath id="pc-pot-front-rim">
+          <rect x="165" y="154" width="80" height="10" />
+        </clipPath>
       </defs>
 
       <g>
-
-      <image
-        href="/games/plant-cell/art/room-wall.png"
-        x="0" y="0" width={VIEW_W} height={VIEW_H}
-        preserveAspectRatio="none"
-      />
 
       {/* Window — the light source the sunlight slider controls. */}
       <g>
@@ -268,6 +253,21 @@ export function PlantView({
           preserveAspectRatio="none"
           opacity={clamp01(soil / 100)}
         />
+        {/* Continue the stem into the soil, then redraw the front lip over it.
+            That overlap makes the plant read as planted inside the pot. */}
+        <path
+          d="M 205 137 C 205 144 205 151 205 159"
+          fill="none"
+          stroke="#398f3e"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <image
+          href="/games/plant-cell/art/pot.png"
+          x="165" y="143" width="80" height="60"
+          preserveAspectRatio="none"
+          clipPath="url(#pc-pot-front-rim)"
+        />
         {weather === 'drought' && (
           <g stroke="#8a6a3f" strokeWidth="1.2" strokeLinecap="round" opacity="0.8" aria-hidden="true">
             <path d="M 188 152 L 190 157 M 205 152 L 203 157 M 221 152 L 224 157" />
@@ -278,22 +278,6 @@ export function PlantView({
             {SALT.map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.1" />)}
           </g>
         )}
-      </g>
-
-      {/* A small leaf detail is magnified in the stoma close-up on the right. */}
-      <g aria-hidden="true">
-        <circle cx="229" cy="130" r="10" fill="#f8f2d9" opacity="0.75" />
-        <circle cx="229" cy="130" r="7" fill="none" stroke="#3b7d49" strokeWidth="1.5" />
-        <path
-          d="M 236 136 C 242 141 246 147 251 152"
-          fill="none"
-          stroke="#3b7d49"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeDasharray="3 2"
-          markerEnd="url(#pc-stoma-callout-arrow)"
-        />
-        <path d="M 225 130 H 233 M 229 126 V 134" stroke="#3b7d49" strokeWidth="1" strokeLinecap="round" opacity="0.85" />
       </g>
 
       </g>
@@ -313,24 +297,6 @@ export function PlantView({
         duration={2.6} radius={9} animate={animate}
         sprite="/games/plant-cell/art/particle-co2.png"
       />
-      <Flow
-        id="vapour" lanes={LANES.vapour} count={count(vapourRate)} color="#bcd7e8"
-        duration={3} radius={6} animate={animate}
-        sprite="/games/plant-cell/art/particle-vapour.png"
-      />
-
-      {/* Stomata close-up — the mouth on the underside of a leaf. */}
-      <g>
-        <image
-          href={`/games/plant-cell/art/${stoma.asset}`}
-          x="252" y="140" width="52" height="52"
-          preserveAspectRatio="xMidYMid meet"
-        />
-        <rect x="254" y="194" width="48" height="13" rx="6.5" fill="#fbf5e7" opacity="0.9" />
-        <text x="278" y="203" textAnchor="middle" fontSize="7.2" fontWeight="700" fill="#4a4231">
-          {stoma.label}
-        </text>
-      </g>
     </svg>
   );
 }

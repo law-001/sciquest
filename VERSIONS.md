@@ -398,3 +398,232 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - `styles.css` got a `pc-lab-*` block covering the parts the sandbox shell has no class for. On screens 768px or narrower, the sliders stack, the meters become a 2-column grid, and the top-bar buttons grow to 44px.
 - Levels 2 and 3 are unchanged and still use `RunFrame`. No "Saved" pill: this game only saves when a run ends.
 - Commit: Give Plant Cell Level 1 the sandbox-style layout
+
+## VERSION_45
+- Plant Cell Level 1 (Power the Cell) now plays like the matter-state sandbox. There is no 30-second timer. Instead there are 5 quests, each completed by holding a condition for a few seconds: Open the stomata, Turn up the sun, Draw water from the roots, Find the limiting factor, and Full power. They live in `quests[]` in `src/games/plant-cell/data/levels.js`.
+- The left sidebar lists the quests using the sandbox's `ChallengePanel`, imported as-is. The active quest shows a hold-progress bar, and finished quests get a check mark. Clicking a quest makes it active.
+- The new `src/games/plant-cell/ui/QuestModal.jsx` pops up when a quest completes. It shows the quest's science note plus Keep exploring and Next quest buttons, and the sim pauses while it is open. After the last quest it also shows the level's stars and debrief, with a Back to levels button.
+- The run no longer ends when the quests are done; it only ends if the cell dies. Finishing every quest saves the `l1` level row, which keeps unlocks, XP and the Sun Catcher achievement working. Each quest also saves its own row.
+- Quests from earlier sessions load already ticked, and a level finished before quests existed shows all of its quests ticked.
+- Matter State Sandbox: challenges finished in earlier sessions now show a check mark when you re-enter a level. The level opens on the first unfinished challenge, or free explore if all are done. The only file changed is `src/games/matter-state-sandbox/index.jsx`.
+- Commit: Turn Plant Cell level 1 into sandbox quests and tick saved challenges in both games
+
+## VERSION_46
+- Fixed Plant Cell Level 1 crashing to a blank cream screen right after "Start photosynthesis". The React Compiler reads `celebration.nextQuest` during render to memoise `handleNextQuest` in `src/games/plant-cell/levels/PowerTheCell.jsx`, and `celebration` is `null` until a quest completes. The handler now reads `celebration?.nextQuest ?? null`.
+- Temporary crash/layout probe used to find it (`src/games/plant-cell/ui/DebugProbe.jsx` and its wiring in `index.jsx`) was removed again.
+- Commit: Fix Plant Cell level 1 crash from null quest celebration under React Compiler
+
+## VERSION_47
+- Plant Cell Levels 2 and 3 now play like Level 1: the same sandbox layout (top bar, quest list on the left, stage, bottom controls), 5 quests each with the check-mark list and quest popup, and no ending except a dead cell.
+- The quest logic moved out of Level 1 into the new `src/games/plant-cell/engine/useQuests.js`, which all three levels use. `ui/LabFrame.jsx` now draws the quest list, the Whole plant / Inside a cell toggle, the stage and the quest popup, so each level only supplies its readings, drawings, caption and controls.
+- Level 2 (Keep It Alive): no 55-second weather clock. The player picks the weather (Mild, Heavy rain, Drought, Salty soil) in the bottom bar, next to the channels slider and the vacuole Store / Release buttons. Quests: Make it rain, Bank water in the vacuole, Test the cell wall, Survive salty soil, Ride out a drought. Stars come from the share of the run spent in the healthy turgor band. `stepOsmosis` now takes the picked weather instead of a clock.
+- Level 3 (Cell Emergency): tests, organelle picks and the diagnosis button sit in the bottom bar; monitors and evidence sit in the sidebar. Quests: Run a test, Rule something out, Name the fault, Repair the organelle, Nurse the cell back. A solved case no longer ends the level; "Open a new case" loads the next fault. Stars come from wrong calls in the case that finished the level.
+- Plant cell's bottom control row now sizes to its content (at least 132px, at most 45% of the screen) so Level 3's buttons fit.
+- Removed code nothing used any more: `ui/RunFrame.jsx`, `ui/ViewTabs.jsx`, `ResourceSlider`, `currentWeather`, and their CSS.
+- Commit: Convert Plant Cell levels 2 and 3 to sandbox-style quests
+
+## VERSION_48
+- Rebuilt Plant Cell Level 2 (Keep It Alive) so it only uses what the Week 12 and 13 lessons teach, in plain words students can follow without a teacher explaining.
+- Removed everything the lessons don't cover: the salt-concentration numbers, the membrane-channels slider, the vacuole Store / Release buttons, cytoplasm water, cell health and dying, stars from a "healthy band", and the stomata / carbon dioxide / water-vapour art in the plant picture (`PlantView` got a `showLeafGas` prop; Level 1 still shows it).
+- New controls: "Around the cell" (Pure water / No water / Salty water) and "Show" (The plant / Plant cell vs animal cell).
+- The stage shows two pictures side by side: the whole plant next to a close-up plant cell, or a plant cell next to an animal cell in the same water. The new `ui/WaterCell.jsx` draws them in the lesson widget's style, with a labelled cell wall and a central vacuole that visibly fills and shrinks. The animal cell swells and bursts.
+- The sidebar has a plain one-sentence explanation of what is happening now, a vacuole meter ("Full — firm" / "Part full" / "Low — wilting") and the lesson's key terms.
+- New quests, taken from the lesson scenarios: Let the plant wilt, Water it back up, Fill the cell completely, Plant cell vs animal cell, Salty water. The level can't be failed, so finishing it gives 3 stars.
+- New `engine/water.js` replaces `engine/osmosis.js`. LabFrame hides the Whole plant / Inside a cell toggle when a level doesn't use it.
+- Commit: Rebuild Plant Cell level 2 around the vacuole, turgor and cell wall lessons
+
+## VERSION_49
+- Cleaned Plant Cell Levels 1 and 3 so they only use what the Week 12 and 13 lessons teach, like Level 2.
+- Level 1 (Power the Cell): "Stomata open" is now a plain Carbon dioxide slider, and "Water from roots" is now just Water. Removed the untaught rules: water lost through stomata, soil draining and refilling, and "limiting factor". Photosynthesis still needs all three ingredients, and the cell still uses glucose for energy. Sidebar meters are now Cell health and Glucose store. New quests: Turn on the sunlight, Give it water, Add carbon dioxide, Take one away, Make lots of glucose. The briefing and debrief now mention chlorophyll and mitochondria, as the lessons do.
+- The whole-plant picture (`ui/PlantView.jsx`) no longer draws the stoma close-up, its callout or water vapour; the `showLeafGas` prop is gone.
+- Level 3 (Cell Emergency): removed the tracer dye test, and renamed "Stain the nucleus" to "Check the nucleus and its DNA". Test results and reasoning no longer mention channels, osmosis or dye. The membrane case is now solved from the pure-water and salty-water tests.
+- Every level's sidebar now shows the lesson's key terms (`keyTerms` in `data/levels.js`, drawn by `ui/LabFrame.jsx`).
+- Commit: Keep Plant Cell levels 1 and 3 to lesson content and show key terms in every level
+
+## VERSION_50
+- Reworked Plant Cell Level 2 from a watch-the-meter sandbox into "Predict, Then Test". Each quest is now a round: a plant or animal cell goes into pure water, salty water or no water, the player picks what will happen (stays firm / bursts / shrinks), then runs the test and watches.
+- A wrong prediction shows what really happened, explains why, and lets the player predict again. Stars now come from wrong predictions (`starsByMisses` in `data/levels.js`), so Level 2 is no longer an automatic 3 stars.
+- Six rounds: plant cell in pure water, plant cell in salty water, animal cell in pure water, a shrunken plant cell in pure water, animal cell in salty water, and a plant with no water.
+- New screen `levels/PredictThenTest.jsx` replaces `levels/KeepItAlive.jsx`. `engine/water.js` now steps one cell at a time (`createCellState`, `stepCell`, `outcomeOf`). Reuses the existing WaterCell and PlantView art.
+- Commit: Rework Plant Cell level 2 into a predict-then-test round game
+
+## VERSION_51
+- Plant Cell Level 2 is now "What Happens If?" — a prediction level on Level 1's photosynthesis, replacing the cell wall / animal cell / water rounds.
+- Five rounds, each asking "What do you think will happen if…?": the sunlight is blocked, the plant gets no water, the stomata close (no carbon dioxide), the sunlight dims to 20%, and everything is turned up to full.
+- Each round: the plant runs normally while the player picks one of three answers, then "Let's see it happen" makes the change and plays it for 5 seconds in the plant and cell views. A right answer completes the quest; a wrong one highlights the right answer, explains why, costs a star and offers Try again.
+- Rounds, questions, answers and explanations all live in `data/levels.js` (`quests[].question`, `change`, `choices`). `levels/PredictThenTest.jsx` now runs on `engine/photosynthesis.js`. `engine/water.js` and `ui/WaterCell.jsx` are no longer used by any level.
+- Commit: Turn Plant Cell level 2 into What Happens If? photosynthesis predictions
+
+## VERSION_52
+- Plant Cell level briefing now opens over the level list instead of a blank screen: `index.jsx` keeps `LevelSelect` mounted behind `EducationalModal` during the brief stage.
+- `.pc-modal` in `styles.css` blurs what is behind it (`backdrop-filter: blur(6px)`) and its dark tint is lighter (0.45 → 0.32) so the level cards stay visible.
+- Commit: Blur the level list behind the Plant Cell briefing popup
+
+## VERSION_53
+- Mystery Lab expedition map now fills its whole card. `.ml-world` in `expedition.css` was locked to a 10:7 box sized from the card's height (`min(100%, calc((100cqh - 35px) * 10 / 7))`), which squeezed the map into the middle and left empty bands down both sides; it is now `width: 100%; height: 100%`.
+- Dropped the now-unused `container-type` rules that only existed to feed that calculation.
+- Commit: Make the Mystery Lab map fill its card instead of sitting squished in the middle
+
+## VERSION_54
+- Fixed the Mystery Lab map looking zoomed in after VERSION_53: sprite widths were percentages of the map's width, so widening the map magnified every tree, pond and building by roughly 40%.
+- `ExpeditionMap.jsx` now sizes every sprite off the map's height via `spriteWidth()` (`calc(<n> * 10cqh / 7)`), so sprites stay at their designed size at any card shape and the landmarks spread out instead of crowding. `.ml-world` declares `container-type: size` to make that work, and the factory smoke is sized the same way.
+- Commit: Size Mystery Lab map sprites off the map height so a wide map does not zoom in
+
+## VERSION_55
+- Removed the `lab-bench` table sprite drawn over the Lab Tent on the Mystery Lab map (`ExpeditionMap.jsx`).
+- Commit: Remove the bench sprite from the Mystery Lab map tent
+
+## VERSION_56
+- Mystery Lab opening screen now runs full-bleed: added `full-bleed` class on `<main className="screen">` when `screen === "opening"` (src/games/mystery-lab/index.jsx) and matching CSS (`.screen.full-bleed` drops the 1280px max-width + page padding; `.ml-opening-card` drops radius/border/shadow) in src/games/mystery-lab/styles.css.
+- Commit: Make Mystery Lab opening screen edge-to-edge full-bleed
+
+## VERSION_57
+- Every Mystery Lab screen now spans the full window: dropped `max-width: 1280px` + `margin: 0 auto` from `.screen` in src/games/mystery-lab/styles.css (page gutter padding kept for the card screens; opening stays padding-0 full-bleed).
+- Commit: Let all Mystery Lab screens span the full window width
+
+## VERSION_58
+- Mystery Lab cutscene (intro) screen now full-bleed too: `full-bleed` class extended to `screen === "intro"` in src/games/mystery-lab/index.jsx, and the intro stage's `borderRadius: 20` dropped in src/games/mystery-lab/screens-a.jsx.
+- Commit: Make the Mystery Lab intro cutscene run edge-to-edge
+
+## VERSION_59
+- Redesigned Mystery Lab's opening screen as a measured case-file layout with a clear title and investigation CTA, compact scientific-method sequence, and grouped case metadata.
+- Rebuilt the hero art as one grounded pond scene with a shared horizon, factory, healthy and polluted ponds, and a wider Detective Hoot welcome bubble; the scene now follows light and dark theme tokens and respects reduced motion.
+- Commit: Redesign the Mystery Lab opening case file
+
+## VERSION_60
+- Reimagined the Mystery Lab opening as a single lively, full-bleed Maple Creek map: the generated art keeps a calm left-side clearing for the live case-file UI and shows the factory, contaminated runoff, both ponds, wildlife and Detective Hoot together on the right.
+- Restyled the live title with a chunky game-display treatment and retained the controls, accessible text, dark-theme contrast wash, and short-screen CTA behavior.
+- Commit: Turn the Mystery Lab opening into a full illustrated map
+
+## VERSION_61
+- Fixed the Mystery Lab opening map failing to render by making it an explicit, base-URL-aware `<img>` layer below the UI, with its contrast wash rendered as a separate layer.
+- Commit: Fix the Mystery Lab opening map rendering
+
+## VERSION_62
+- Fixed the opening map crop: it now preserves the complete generated landscape, anchored to the right beside the case-file clearing, instead of using `cover` to cut off its top and bottom.
+- Commit: Show the complete Mystery Lab opening map
+
+## VERSION_63
+- Made the opening map span the full wide hero without a visible fitted-image edge or crop, and softened its saturation so it sits more naturally with SciQuest's flatter game UI.
+- Commit: Extend the Mystery Lab opening map across the hero
+
+## VERSION_64
+- Replaced the opening map with a purpose-built panoramic, flatter game illustration. Its single watershed now visibly runs from the factory outlet through polluted Pond A and downstream to healthy Pond B, with the left-side case-file clearing kept open.
+- Commit: Regenerate a coherent panoramic Mystery Lab map
+
+## VERSION_65
+- Rebuilt the opening background as two separate pond vignettes: factory runoff terminates at polluted Pond A, while Pond B sits beyond a tree-and-ridge divider with no shared stream or water connection.
+- Commit: Separate the Mystery Lab opening pond locations
+
+## VERSION_66
+- Added a transparent, hand-lettered title-lockup asset for “The Dying Pond Mystery” and now render it inside the opening screen's semantic H1.
+- Commit: Add a custom Dying Pond title lockup
+
+## VERSION_67
+- Removed the opening's premise and Hoot quote copy, leaving the title and actions as the focus.
+- Added transparent generated investigation and case-briefing emblems to the two real opening buttons.
+- Commit: Focus the Mystery Lab opening actions with custom button art
+
+## VERSION_68
+- Mystery Lab opening: removed the light-mode cream fade over the map art (`--opening-map-wash: none` in src/games/mystery-lab/styles.css; dark-mode wash kept for text contrast).
+- Removed the "Episode 01 · Grade 7 Science" tag above the title (src/games/mystery-lab/screens-a.jsx) and its now-unused `.ml-opening-episode` CSS rule.
+- Commit: Drop title fade and episode tag from Mystery Lab opening
+
+## VERSION_69
+- Mystery Lab opening title lockup now bobs gently: added the existing `float` class (`ml-float-y`, 4s, ±6px + ±1° tilt) to the title `<img>` in src/games/mystery-lab/screens-a.jsx; already disabled under `prefers-reduced-motion`.
+- Commit: Animate Mystery Lab opening title with a gentle bob
+
+## VERSION_70
+- Mystery Lab opening: the "01 Observe → 04 Conclude" step line now sits on a solid paper pill (bg `--bg-paper`, border, card shadow, 13px `--text`) so it reads over the map art; step numbers use `--primary` in dark mode for contrast (src/games/mystery-lab/styles.css).
+- Commit: Put Mystery Lab opening step line on a readable paper pill
+
+## VERSION_71
+- Mystery Lab opening buttons: "Case briefing" is now a solid paper button (bg `--bg-paper`, 2px `--primary` border, 4px `--primary-d` press shadow) sized to match "Start Investigation"; both opening buttons get a yellow `:focus-visible` ring (src/games/mystery-lab/styles.css).
+- Commit: Make Mystery Lab opening buttons solid and matched
+
+## VERSION_72
+- Mystery Lab opening: removed the "01 Observe → 04 Conclude" step pill under the buttons (JSX + `MissionStep` helper in src/games/mystery-lab/screens-a.jsx, `.ml-opening-pills` / `.ml-opening-step` rules in src/games/mystery-lab/styles.css).
+- Commit: Remove the method-steps pill from Mystery Lab opening
+
+## VERSION_73
+- Mystery Lab cutscene: dropped the flat vector props that doubled up on the painted backdrops — sun disc, static/animated clouds and all 30 `<Tree>` sprites on the Peaceful and Mission panels, plus the grove frame and prop SVGs on Mission (src/games/mystery-lab/screens-a.jsx).
+- Foliage frames (`foreground-grove.png`, `alarm-marsh-frame.png`) no longer use `scaleY()` — they keep their painted aspect and are widened to 116% / sunk below the stage so the canopies crop off the top instead of looking squashed (src/games/mystery-lab/styles.css).
+- Ponds are now positioned with plain `left`/`right`/`bottom` per panel instead of a fixed 270px width + `translateX(-50%) scale()`, so each panel's pond sits on the ground at a sane size.
+- Compare panel's centre seam and "?" moved from inline styles to `.ml-compare-seam` / `.ml-compare-question`.
+- "Skip intro" moved from top-left to bottom-right so it no longer sits under the game shell's overlay Back pill.
+- Commit: Fix Mystery Lab cutscene layering, foliage distortion and skip-button overlap
+
+## VERSION_74
+- Fixed the giant floating pond in the Mystery Lab cutscene: an `<img>` is a replaced element, so `left` + `right` + `width: auto` makes it keep its intrinsic 1536px width and drop `right`. Each pond now sets an explicit `width` and is centred with `left = (100 - width) / 2` (src/games/mystery-lab/styles.css).
+- Foliage frames no longer crop the tree canopies: `.ml-cutscene-grove` / `.ml-cutscene-alarm-frame` now use `inset: 0` + `object-fit: cover` + `object-position: center top`, so the crop falls on the low ground strip at the bottom instead of cutting the treetops.
+- `ml-grove-sway` animates `transform` on a 1.02-scaled image instead of `margin-left`, which used to shift the whole layer and expose a strip of backdrop at the edge.
+- Butterflies moved down onto the meadow (were floating in the sky).
+- Commit: Centre the cutscene ponds and stop cropping the foreground canopies
+
+## VERSION_75
+- Mystery Lab now owns its back control, so the game shell's dark overlay Back pill no longer sits on top of the HUD's "Mystery Lab / EP 01 - Dying Pond" title: added `mystery-lab` to `GAMES_WITH_OWN_BACK` (src/pages/GamePlayPage.jsx).
+- HUD: the exit button moved from the far right (where it was never rendered, since `onExit` was not passed) to the far left of the bar as an icon-only ghost back arrow, and `index.jsx` now passes `onExit` to it (src/games/mystery-lab/shared.jsx, src/games/mystery-lab/index.jsx).
+- The opening and intro screens draw no HUD, so they get their own round back button at top-left; the repeated floating-control style is now one `FLOATING_BTN` const shared by back/mute/theme.
+- Added the SciQuest back arrow (`M19 12H5M11 6l-6 6 6 6`) to the Mystery Lab `Lucide` icon map as `arrowLeft`.
+- Commit: Give Mystery Lab its own back button instead of the overlapping shell pill
+
+## VERSION_76
+- The in-game `Pond` sprite now draws the painted cutscene pond (`/games/mystery-lab/cutscene/pond-healthy.png` / `pond-polluted.png`) instead of the flat `art/pond-*.png` blob. Same 3:2 aspect, and the intro cutscene already loads both files, so the observation screen gets them from cache (src/games/mystery-lab/world.jsx).
+- The painted pond's water sits lower inside its frame than the old blob, so the Pond A/B clue hotspots were nudged back onto open water in `CLUE_POS` — deadFish/healthyFish 60%,70% -> 58%,65%; clearWater 40%,70% -> 44%,65%; murky 56%,49% -> 54%,56%; smell 40%,45% -> 44%,47%. `rx`/`ry` ripple centres updated to match (src/games/mystery-lab/screens-b.jsx).
+- Commit: Use the painted cutscene pond art in the observation screens
+
+## VERSION_77
+- Observation screen pond is much bigger: the wrapper's `translateX(-50%) scale(1.8)` on a `size={260}` Pond is replaced by a flex-centred wrapper at `bottom: -76` with `size={660}`, so the pond spans ~12-88% of the scene card instead of ~28-72%. The negative bottom pushes the art's transparent under-rim padding off the card and keeps the rim clear of the Pond A/B toggle (src/games/mystery-lab/screens-b.jsx).
+- All clue hotspots re-placed for the larger pond and spread out instead of clustering: deadFish 40%,62%; murky 66%,60%; temp 80%,70%; smell 32%,40%; healthyFish 55%,66%; clearWater 36%,58%; tempB 78%,72%. `rx`/`ry` ripple centres updated to match.
+- Commit: Enlarge the observation pond and re-place the clue hotspots
+
+## VERSION_78
+- Both observation thermometers scaled up from `width={48}` to `width={84}` (height follows, 72px -> 126px), so the 34 C / 22 C readings are legible next to the enlarged pond (src/games/mystery-lab/screens-b.jsx).
+- Pond B's thermometer moved from 78% to 84% across, since at the bigger size its bulb hung over the water instead of standing in the bank; `rx` updated to match.
+- Commit: Enlarge the observation thermometers and reseat Pond B's on the bank
+
+## VERSION_79
+- Removed the dark "Pond A / Pond B" switcher pill that floated at the bottom of the observation scene. Switching ponds still works from the "Switch to Pond A/B" button in the screen header, so nothing is lost and the enlarged pond now has the full card (src/games/mystery-lab/screens-b.jsx).
+- Commit: Remove the floating pond switcher pill from the observation scene
+
+## VERSION_80
+- The Ask/Hypothesise screen is now two sequential steps instead of one two-column dump: step 1 shows only "Pick a question" with a Next button (disabled until a question is picked), step 2 shows only "Pick hypotheses" plus the linked-evidence panel, with "Back to map" (disabled until at least one hypothesis) and a ghost "Question" button to step back. Driven by local `step` state, so no new route or app-level state (src/games/mystery-lab/screens-b.jsx).
+- Header shows the live phase ("Phase 2 - Ask" / "Phase 3 - Hypothesise") and a "Step N of 2" chip; Hoot's line and mood now react to the step, including a nudge when the wrong question is picked.
+- Hypothesis sticky notes now lay out `repeat(auto-fit, minmax(210px, 1fr))` so they fill the full-width card instead of a half-width column.
+- Commit: Split the ask/hypothesise screen into two guided steps
+
+## VERSION_81
+- Added docs/asset-prompts/mystery-lab-lab-tent.md: a Codex art brief to revamp the Lab Tent and its five mini-games (21 PNGs). Follows the plant-cell.md shape - a consumer table linking every file to the exact inline SVG it replaces in screens-c.jsx, the game's real hex palette pulled from styles.css and the TESTS/POLLUTION_LEVELS/TEMP_CONTAINERS tables, per-asset export sizes, and identical-frame rules for the three pH strip states, the three pollution vials and the two contaminant states.
+- Commit: Add the Codex asset prompt for the Mystery Lab tent mini-games
+
+## VERSION_82
+- Level icons now use five star tiers cut from `public/level-stars/Five-Tier Rounded Star Icon Set-Photoroom.png` into `star-tier-1..5.png` (256 × 256, centered, uniform padding).
+- `src/lib/level-icons.js` maps level → tier with `ceil(level / 3)` (1–3, 4–6, 7–9, 10–12, 13–15) and loads from `level-stars/`.
+- Removed old `public/level-stars/star-level-01..15.png`; rewrote `public/level-stars/PROMPTS.md` for the tier set.
+- Commit: Switch level icons to five 3-level star tiers cut from new star sheet
+
+## VERSION_83
+- Mystery Lab temperature mini-game: removed the old SVG beaker (outline, brown rim, tick marks) that was drawn over the new `temp-beaker-glass.png`. `ContainerBeaker` in `src/games/mystery-lab/screens-c.jsx` now draws water + dipped thermometer behind the PNG, shows the PNG at full opacity and true aspect ratio, and moves the ✓ badge clear of the lid.
+- Commit: Fix Mystery Lab temperature beakers double-drawn over new glass art
+
+## VERSION_84
+- Mystery Lab Phase 5 storyboard (`src/games/mystery-lab/screens-d.jsx`) now fits on one screen: comic panels use a viewport-scaled height (`clamp(104px, 19vh, 160px)`) instead of a 4:3.4 aspect ratio, with less strip padding; filled panels stack the scene icon above the caption so they don't overlap.
+- Clue cards use an auto-fill grid (`minmax(190px, 1fr)`, 4 across on desktop) with slimmer padding and icons; the "Pick the clue" line folded into the hint row; "Drop on a panel" → "Tap to place" (it's a click).
+- Commit: Compact Mystery Lab storyboard so panels and clues fit without scrolling
+
+## VERSION_85
+- Mystery Lab Phase 6 report (`ConclusionScreen` in `src/games/mystery-lab/screens-d.jsx`) is now a 3-step wizard: one question per step (Cause → Evidence → Explain) with clickable step pills, Back/Next footer, and "Close the Case" on the last step. Next stays disabled until the step's requirement is met.
+- Detective Hoot's sidebar tip changes per step; the old sidebar submit button and requirements line were folded into the form footer.
+- Commit: Turn Mystery Lab final report into a one-question-at-a-time stepper
+
+## VERSION_86
+- Mystery Lab temperature mini-game: °C readings (under each beaker and on the "Which was hottest?" cards) are now coloured on a blue→red scale by temperature (`getTempColor` in `src/games/mystery-lab/screens-c.jsx`, 15 °C = blue, 35 °C = red) instead of all red.
+- Commit: Colour Mystery Lab temperature readings blue-to-red by value
+
+## VERSION_87
+- Mystery Lab victory screen: removed the "Up next · Episode 2 — The Wilting Plant Lab" banner and its Continue button (`src/games/mystery-lab/screens-d.jsx`), plus the now-unused `restart` callback/prop in `src/games/mystery-lab/index.jsx`.
+- Commit: Remove Mystery Lab "Up next" episode banner from victory screen
+
+## VERSION_88
+- Mystery Lab hub thumbnail (`src/assets/mysterylab.png`) replaced with a crop of the "Dying Pond Mystery" opening art (factory, drain pipe, dying pond vs healthy pond, Detective Hoot), 785 × 508. Registry import unchanged.
+- Commit: Replace Mystery Lab hub thumbnail with opening-scene art

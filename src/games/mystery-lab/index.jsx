@@ -4,6 +4,7 @@
    ============================================================ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./styles.css";
+import "./expedition.css";
 import { HUD, Lucide } from "./shared.jsx";
 import { useTheme } from "../../context/ThemeContext";
 import { supabase } from "../../lib/supabase";
@@ -13,6 +14,18 @@ import { ObservationScreen, QuestionScreen, NotebookScreen } from "./screens-b.j
 import { LabScreen } from "./screens-c.jsx";
 import { EvidenceScreen, ConclusionScreen, VictoryScreen } from "./screens-d.jsx";
 import { mlAudio } from "./audio.js";
+
+/* Round controls that float over the full-bleed opening art and the intro cutscene. */
+const FLOATING_BTN = {
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+  width: 36, height: 36,
+  borderRadius: 999,
+  border: "1.5px solid rgba(28,20,16,0.15)",
+  background: "rgba(255,255,255,0.94)",
+  color: "#1c1410",
+  boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
+  cursor: "pointer",
+};
 
 export default function MysteryLab({
   user,
@@ -93,21 +106,6 @@ export default function MysteryLab({
   }, []);
   const addExperiment = useCallback((e) => {
     setExperiments(prev => prev.find(p => p.id === e.id) ? prev : [...prev, e]);
-  }, []);
-
-  const restart = useCallback(() => {
-    setObservations([]);
-    setHypotheses([]);
-    setExperiments([]);
-    setEnergy(5);
-    setEvidenceLinks([]);
-    setCause(null);
-    setSupports([]);
-    setWritten("");
-    setConclusion("");
-    setVictory(null);
-    setQuestion(null);
-    setScreen("opening");
   }, []);
 
   const go = useCallback((id) => {
@@ -198,7 +196,20 @@ export default function MysteryLab({
             onToggleTheme={toggleTheme}
             isMuted={isMuted}
             onToggleMute={toggleMute}
+            onExit={onExit}
           />
+        )}
+
+        {(screen === "opening" || screen === "intro") && onExit && (
+          <button
+            type="button"
+            onClick={onExit}
+            aria-label="Back to games"
+            title="Back to games"
+            style={{ ...FLOATING_BTN, position: "absolute", top: 14, left: 16, zIndex: 60 }}
+          >
+            <Lucide name="arrowLeft" size={17} />
+          </button>
         )}
 
         {screen === "opening" && (
@@ -211,16 +222,7 @@ export default function MysteryLab({
               onClick={toggleMute}
               aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
               aria-pressed={isMuted}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 36, height: 36,
-                borderRadius: 999,
-                border: "1.5px solid rgba(28,20,16,0.15)",
-                background: "rgba(255,255,255,0.94)",
-                color: "#1c1410",
-                boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
-                cursor: "pointer",
-              }}
+              style={FLOATING_BTN}
             >
               <Lucide name={isMuted ? "volumeX" : "volume2"} size={16} />
             </button>
@@ -228,23 +230,14 @@ export default function MysteryLab({
               type="button"
               onClick={toggleTheme}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 36, height: 36,
-                borderRadius: 999,
-                border: "1.5px solid rgba(28,20,16,0.15)",
-                background: "rgba(255,255,255,0.94)",
-                color: "#1c1410",
-                boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
-                cursor: "pointer",
-              }}
+              style={FLOATING_BTN}
             >
               <Lucide name={isDark ? "sun" : "moon"} size={16} />
             </button>
           </div>
         )}
 
-        <main className={`screen${screen === "opening" || screen === "map" || screen === "intro" ? " no-scroll" : ""}`}>
+        <main className={`screen${screen === "opening" || screen === "map" || screen === "intro" ? " no-scroll" : ""}${screen === "opening" || screen === "intro" ? " full-bleed" : ""}`}>
           {screen === "opening"  && <OpeningScreen go={go} />}
           {screen === "intro"    && <IntroScreen go={go} />}
           {screen === "map"      && (
@@ -333,7 +326,6 @@ export default function MysteryLab({
               observations={observations}
               experiments={experiments}
               evidenceLinks={evidenceLinks}
-              restart={restart}
             />
           )}
         </main>

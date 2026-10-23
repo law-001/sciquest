@@ -1,0 +1,112 @@
+/* Flat expedition art direction. All rules remain scoped to Mystery Lab. */
+.mystery-lab-root {
+  --bg: #ebe9d9; --bg-elev: #fffbed; --bg-paper: #fffbed;
+  --text: #263e36; --text-soft: #516052; --muted: #6d7560;
+  --line: #c8ccb6; --line-soft: #d9ddc9;
+  --shadow-card: 0 3px 0 #304a3510, 0 8px 20px #304a3509;
+  --primary: #35755f; --primary-d: #245642;
+  --shadow-press: 0 3px 0 #245642;
+  background-image: none;
+}
+.mystery-lab-root[data-palette] { --primary: #35755f; --primary-d: #245642; --shadow-press: 0 3px 0 #245642; }
+.mystery-lab-root[data-theme="dark"] {
+  --bg: #182a29; --bg-elev: #243b36; --bg-paper: #293f38;
+  --text: #f4eed9; --text-soft: #d4dbc4; --muted: #b3bda6;
+  --line: #486052; --line-soft: #334d43;
+  --primary: #35755f; --primary-d: #183e30;
+  background-image: none;
+}
+.mystery-lab-root .screen { max-width: 1520px; padding: 16px 24px 20px; }
+.mystery-lab-root .hud { background: var(--bg-paper); padding: 12px 24px; border-bottom: 2px solid var(--line); }
+.mystery-lab-root .hud .brand .logo { background: #35755f; border-radius: 12px; box-shadow: none; }
+.mystery-lab-root .hud .stat { border-radius: 10px; box-shadow: none; background: var(--bg); }
+.mystery-lab-root .hud .bar { background: var(--line); }
+.mystery-lab-root .hud .bar > span { background: #739d69; }
+.mystery-lab-root .btn { border-radius: 11px; }
+.mystery-lab-root .btn.lg { box-shadow: 0 4px 0 var(--primary-d); }
+.mystery-lab-root button:focus-visible { outline: 3px solid #d49b2b; outline-offset: 4px; }
+.mystery-lab-root .card { border-radius: 14px; }
+.mystery-lab-root .ml-map-grid { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 20px; height: 100%; min-height: 0; }
+.mystery-lab-root .ml-map-card { position: relative; padding: 0; overflow: hidden; background: #a9c783; border: 2px solid #8b9d73; min-height: 360px; }
+.mystery-lab-root .ml-expedition { height: 100%; min-height: 360px; display: flex; align-items: center; justify-content: center; position: relative; background: #a9c783; isolation: isolate; }
+/* The world fills the card. The terrain SVG stretches with it (preserveAspectRatio="none");
+   sprites keep their own shape and only their positions spread. container-type: size is
+   what lets sprites size themselves off the map's height (the cqh in spriteWidth). */
+.mystery-lab-root .ml-world { width: 100%; height: 100%; position: relative; flex-shrink: 0; transition: filter .6s; container-type: size; }
+.mystery-lab-root .ml-world[data-night="true"] { filter: brightness(.69) saturate(.8); }
+.mystery-lab-root .ml-terrain, .mystery-lab-root .ml-scenery { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mystery-lab-root .ml-world-sprite { display: block; object-fit: contain; user-select: none; }
+.mystery-lab-root .ml-scenery .ml-world-sprite { position: absolute; transform: translate(-50%, -80%); }
+.mystery-lab-root .ml-map-heading { position: absolute; z-index: 3; left: 24px; top: 20px; pointer-events: none; color: #284b3b; }
+.mystery-lab-root .ml-map-heading > span { font: 800 10px 'Trebuchet MS', system-ui, sans-serif; letter-spacing: .19em; }
+.mystery-lab-root .ml-map-heading h2 { font: 900 clamp(22px, 2.6vw, 36px)/1.1 'Trebuchet MS', system-ui, sans-serif; margin: 5px 0; letter-spacing: -.04em; }
+.mystery-lab-root .ml-map-heading p { font-size: 11px; margin: 0; font-weight: 600; }
+.mystery-lab-root .ml-compass { position: absolute; right: 20px; top: 20px; z-index: 3; display: grid; justify-items: center; gap: 5px; color: #375345; font-size: 10px; font-weight: 800; }
+.mystery-lab-root .ml-location { position: absolute; transform: translate(-50%, -50%); border: 0; background: none; padding: 0; cursor: pointer; z-index: 2; outline-offset: 0; }
+.mystery-lab-root .ml-location > img { width: 100%; aspect-ratio: 1; transition: transform .2s; }
+.mystery-lab-root .ml-location[aria-label^="Pond"] > img { aspect-ratio: 1.8; }
+.mystery-lab-root .ml-location:hover:not(:disabled) > img { transform: translateY(-4px); }
+.mystery-lab-root .ml-location:active:not(:disabled) > img { transform: translateY(1px); }
+.mystery-lab-root .ml-location:disabled { cursor: not-allowed; }
+.mystery-lab-root .ml-location-label { position: absolute; top: 94%; left: 50%; transform: translateX(-50%); background: #fff9e6; color: #294939; border: 1px solid #8b9d73; border-radius: 8px; padding: 6px 11px; box-shadow: 0 3px 0 #536c3830; white-space: nowrap; min-width: 104px; }
+.mystery-lab-root .ml-location-name { display: flex; align-items: center; justify-content: center; gap: 5px; font: 900 13px 'Trebuchet MS', system-ui, sans-serif; }
+.mystery-lab-root .ml-location-label small { display: block; font-size: 9px; font-weight: 600; color: #616d55; margin-top: 1px; }
+.mystery-lab-root .ml-location-dot { width: 6px; height: 6px; background: #6a9674; border-radius: 50%; }
+.mystery-lab-root .is-current .ml-location-label { background: #fff0b8; border-color: #ad852c; }
+.mystery-lab-root .is-current .ml-location-dot { background: #b77c25; animation: ml-field-pulse 2.8s ease-in-out infinite; }
+.mystery-lab-root .is-visited .ml-location-label { border-color: #35755f; }
+.mystery-lab-root .ml-map-prop { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 2; }
+.mystery-lab-root .ml-water-life { animation: ml-fish-drift 7s ease-in-out infinite; }
+.mystery-lab-root .ml-map-legend { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 18px; padding: 10px 18px; background: #f7f1dbe8; color: #45563e; font-size: 10px; font-weight: 700; z-index: 4; }
+.mystery-lab-root .ml-map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.mystery-lab-root .ml-map-legend span:last-child { margin-left: auto; font-weight: 500; }
+.mystery-lab-root .ml-map-legend i { width: 8px; height: 8px; border-radius: 2px; background: #54957d; }
+.mystery-lab-root .ml-map-legend span:nth-child(2) i { background: #a38752; }
+.mystery-lab-root .ml-smoke { position: absolute; left: 76%; top: 11%; width: 10cqh; height: 8cqh; pointer-events: none; }
+.mystery-lab-root .ml-smoke i { position: absolute; width: 45%; aspect-ratio: 1; background: #9a9c8b; border-radius: 50%; opacity: 0; animation: ml-field-smoke 7s ease-out infinite; }
+.mystery-lab-root .ml-smoke i:nth-child(2) { animation-delay: 2.3s; }
+.mystery-lab-root .ml-smoke i:nth-child(3) { animation-delay: 4.6s; }
+.mystery-lab-root .ml-map-sidebar { overflow-y: auto !important; gap: 16px; }
+.mystery-lab-root .ml-mission-journal { background: var(--bg-paper); border-top: 7px solid #35755f; border-left: 8px solid #50755b; position: relative; }
+.mystery-lab-root .ml-journal-eyebrow { font-size: 9px; font-weight: 800; letter-spacing: .15em; color: var(--muted); margin-bottom: 8px; }
+.mystery-lab-root .ml-mission-journal ul { gap: 0 !important; }
+.mystery-lab-root .ml-mission-journal li { padding: 12px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px !important; align-items: flex-start !important; }
+.mystery-lab-root .ml-mission-journal li > span:first-child { flex-shrink: 0; }
+.mystery-lab-root .ml-map-sidebar > button { background: #35755f !important; color: #fff9e6; border-color: #245642 !important; min-height: 54px; }
+.mystery-lab-root[data-theme="dark"] .ml-map-sidebar > .card:not(.ml-mission-journal) { background: var(--bg-paper) !important; border-color: var(--line) !important; }
+.mystery-lab-root[data-theme="dark"] .ml-map-sidebar .uppercase-eyebrow { color: #e8c874 !important; }
+.mystery-lab-root[data-theme="dark"] .ml-map-sidebar .chip.teal { color: #b7ead5; }
+.mystery-lab-root .notebook { border-left: 12px solid #50755b; border-radius: 8px 16px 16px 8px; }
+.mystery-lab-root .notebook::before { background: #c89a76; opacity: .45; }
+.mystery-lab-root .ml-opening-hero { background: #dae6bc !important; }
+.mystery-lab-root .ml-opening-hero h1 { color: #274e3c !important; }
+.mystery-lab-root .ml-opening-footer { background: var(--bg-paper) !important; }
+.mystery-lab-root .ml-scene-card { border: 2px solid #8b9d73; }
+@keyframes ml-field-smoke { 0% { transform: translate(0, 18px) scale(.6); opacity: 0; } 25% { opacity: .35; } 100% { transform: translate(25px, -25px) scale(1.5); opacity: 0; } }
+@keyframes ml-field-pulse { 50% { opacity: .4; } }
+@keyframes ml-fish-drift { 50% { transform: translate(-35%, -60%); } }
+@media (max-width: 1100px) {
+  .mystery-lab-root .ml-map-grid { grid-template-columns: minmax(0, 1fr) 235px !important; gap: 12px; }
+  .mystery-lab-root .ml-location-name { font-size: 11px; }
+  .mystery-lab-root .ml-location-label { padding: 4px 7px; min-width: 90px; }
+  .mystery-lab-root .ml-map-heading { left: 14px; top: 12px; }
+}
+@media (max-width: 767px) {
+  .mystery-lab-root .screen { padding: 8px 10px; }
+  .mystery-lab-root .ml-map-grid { grid-template-columns: 1fr !important; height: auto !important; flex: none; grid-auto-rows: max-content; }
+  .mystery-lab-root .ml-map-card { height: calc((100vw - 28px) * .7 + 68px) !important; min-height: 0; }
+  .mystery-lab-root .ml-expedition { min-height: 0; padding: 0; }
+  .mystery-lab-root .ml-map-sidebar { max-height: none; }
+  .mystery-lab-root .ml-map-heading p { display: none; }
+  .mystery-lab-root .ml-map-heading h2 { font-size: 23px; }
+  .mystery-lab-root .ml-map-legend { gap: 10px; font-size: 9px; padding: 8px; }
+  .mystery-lab-root .ml-map-legend span:last-child { display: none; }
+  .mystery-lab-root .hud { padding: 6px 12px; }
+}
+@media (max-height: 520px) {
+  .mystery-lab-root .screen.no-scroll:has(.ml-map-grid) { overflow-y: auto; }
+  .mystery-lab-root .ml-map-grid { flex: none; height: auto; min-height: 360px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mystery-lab-root *, .mystery-lab-root *::before, .mystery-lab-root *::after { animation: none !important; transition: none !important; }
+}

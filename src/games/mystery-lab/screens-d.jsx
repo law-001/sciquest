@@ -95,7 +95,7 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
             <DetectiveHoot size={80} mood="stern" />
             <div>
               <div className="uppercase-eyebrow" style={{ color: "var(--orange-700)" }}>Not so fast, detective!</div>
-              <h3 style={{ margin: "8px 0 6px", fontSize: 20, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
+              <h3 style={{ margin: "8px 0 6px", fontSize: 20, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, color: "var(--text)" }}>
                 {!visitedPondA || !visitedPondB ? "Visit both ponds first" : "Run your lab tests first"}
               </h3>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.5, color: "var(--text-muted)" }}>
@@ -158,22 +158,19 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
       {/* Comic strip across the top */}
       <ComicStrip steps={STORY_STEPS} placed={placed} currentStepIdx={currentStepIdx} justPlaced={justPlaced} />
 
-      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
+      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16 }}>
         {/* clue pile + prompt */}
-        <div className="card" style={{ padding: 18, minHeight: 240 }}>
+        <div className="card" style={{ padding: 16 }}>
           {!isComplete ? (
             <>
               <div className="row gap-3" style={{ alignItems: "center", flexWrap: "wrap" }}>
                 <span className="chip orange" style={{ fontSize: 12 }}>Panel {currentStepIdx + 1} · {currentStep.title}</span>
-                <span className="text-muted" style={{ fontSize: 12, fontWeight: 700 }}>{currentStep.placeholder}</span>
+                <span className="text-muted" style={{ fontSize: 12, fontWeight: 700 }}>{currentStep.placeholder} Pick the clue that fits.</span>
               </div>
-              <h3 style={{ marginTop: 14, fontSize: 22, fontFamily: "Caveat", fontWeight: 700, color: "var(--text)" }}>
+              <h3 style={{ margin: "8px 0 0", fontSize: 20, fontFamily: "Comic Sans MS, cursive", fontWeight: 700, color: "var(--text)" }}>
                 "{currentStep.prompt}"
               </h3>
-              <div className="text-soft" style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                Pick the clue that fits this panel.
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 18 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 10, marginTop: 12 }}>
                 {STORY_CLUES.filter(c => !placed.includes(c.id)).map(c => (
                   <ClueCard key={c.id} clue={c} shaking={shake === c.id} onClick={() => onPickClue(c)} />
                 ))}
@@ -213,7 +210,7 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
 
           <div className="card" style={{ padding: 14 }}>
             <div className="uppercase-eyebrow">Story progress</div>
-            <div style={{ fontSize: 26, fontFamily: "Nunito", fontWeight: 900, marginTop: 4 }}>
+            <div style={{ fontSize: 26, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, marginTop: 4 }}>
               {placed.length} <span className="text-muted" style={{ fontWeight: 700, fontSize: 14 }}>of 5 panels</span>
             </div>
             <div className="bar" style={{ marginTop: 8 }}>
@@ -234,7 +231,7 @@ function ComicStrip({ steps, placed, currentStepIdx, justPlaced }) {
   return (
     <div style={{
       position: "relative",
-      padding: "20px 16px",
+      padding: "12px 16px",
       background: "var(--ink-900)",
       borderRadius: 16,
       boxShadow: "var(--shadow-card)",
@@ -256,7 +253,7 @@ function ComicStrip({ steps, placed, currentStepIdx, justPlaced }) {
         display: "grid",
         gridTemplateColumns: "repeat(5, 1fr) ",
         gap: 10,
-        margin: "16px 0",
+        margin: "12px 0",
         position: "relative",
       }}>
         {steps.map((s, i) => {
@@ -285,7 +282,8 @@ function ComicPanel({ step, idx, filled, isCurrent, isJustPlaced, nextFilled }) 
     <div style={{ position: "relative" }}>
       <div className={isJustPlaced ? "bounce-in" : ""} style={{
         position: "relative",
-        aspectRatio: "4 / 3.4",
+        // Viewport-scaled height (not aspect ratio) keeps strip + clue grid on one screen.
+        height: "clamp(104px, 19vh, 160px)",
         background: filled ? "#fffaee" : "#2a1f17",
         border: isCurrent ? "3px solid var(--accent)" : "3px solid var(--ink-700)",
         borderRadius: 10,
@@ -300,7 +298,7 @@ function ComicPanel({ step, idx, filled, isCurrent, isJustPlaced, nextFilled }) 
           color: filled ? "#fde047" : "#a89579",
           padding: "2px 8px",
           borderRadius: 4,
-          fontFamily: "Nunito",
+          fontFamily: "Trebuchet MS, system-ui, sans-serif",
           fontWeight: 900,
           fontSize: 11,
           letterSpacing: "0.06em",
@@ -313,12 +311,12 @@ function ComicPanel({ step, idx, filled, isCurrent, isJustPlaced, nextFilled }) 
           <div style={{
             position: "absolute", inset: 0, display: "grid", placeItems: "center",
             color: "var(--accent)",
-            fontFamily: "Caveat", fontWeight: 700, fontSize: 28,
+            fontFamily: "Comic Sans MS, cursive", fontWeight: 700, fontSize: 28,
             textAlign: "center", padding: 12,
           }}>
             <div>
               <div style={{ fontSize: 36, opacity: 0.8 }}>?</div>
-              <div style={{ fontSize: 11, fontFamily: "Nunito", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.85 }}>Solve me</div>
+              <div style={{ fontSize: 11, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.85 }}>Solve me</div>
             </div>
           </div>
         )}
@@ -328,7 +326,7 @@ function ComicPanel({ step, idx, filled, isCurrent, isJustPlaced, nextFilled }) 
           <div style={{
             position: "absolute", inset: 0, display: "grid", placeItems: "center",
             color: "rgba(253,246,227,0.25)",
-            fontFamily: "Nunito", fontWeight: 900, fontSize: 40,
+            fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 40,
           }}>
             ·
           </div>
@@ -336,26 +334,26 @@ function ComicPanel({ step, idx, filled, isCurrent, isJustPlaced, nextFilled }) 
 
         {/* Filled panel — scene illustration */}
         {filled && (
-          <>
-            <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 10 }}>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, minHeight: 0 }}>
               <SceneIllustration name={step.scene} />
             </div>
             {/* caption ribbon at bottom */}
             <div style={{
-              position: "absolute", left: 6, right: 6, bottom: 6,
+              margin: 6,
               background: "rgba(28,20,16,0.92)",
               color: "#fdf6e3",
               padding: "5px 8px",
               borderRadius: 4,
-              fontFamily: "Caveat",
+              fontFamily: "Comic Sans MS, cursive",
               fontWeight: 700,
-              fontSize: 12,
+              fontSize: 11,
               lineHeight: 1.2,
               textAlign: "center",
             }}>
               {step.caption}
             </div>
-          </>
+          </div>
         )}
 
         {/* Panel title (small) on bottom-left when not filled */}
@@ -363,7 +361,7 @@ function ComicPanel({ step, idx, filled, isCurrent, isJustPlaced, nextFilled }) 
           <div style={{
             position: "absolute", left: 6, right: 6, bottom: 6,
             color: isCurrent ? "var(--accent)" : "#a89579",
-            fontFamily: "Nunito",
+            fontFamily: "Trebuchet MS, system-ui, sans-serif",
             fontWeight: 800,
             fontSize: 11,
             letterSpacing: "0.04em",
@@ -416,13 +414,13 @@ function SceneIllustration({ name }) {
       position: "relative",
     }}>
       <div style={{
-        width: 56, height: 56, borderRadius: 14,
+        width: 40, height: 40, borderRadius: 12,
         background: c.accent,
         display: "grid", placeItems: "center",
         color: dark ? "#fde047" : "white",
         boxShadow: "0 4px 0 rgba(0,0,0,0.15)",
       }}>
-        <Lucide name={c.icon} size={28} strokeWidth={2.2} />
+        <Lucide name={c.icon} size={20} strokeWidth={2.2} />
       </div>
       <div style={{
         position: "absolute", top: 6, right: 6,
@@ -430,7 +428,7 @@ function SceneIllustration({ name }) {
         color: dark ? "white" : "#fdf6e3",
         padding: "2px 7px",
         borderRadius: 4,
-        fontFamily: "Nunito",
+        fontFamily: "Trebuchet MS, system-ui, sans-serif",
         fontWeight: 900,
         fontSize: 9,
         letterSpacing: "0.06em",
@@ -446,30 +444,31 @@ function ClueCard({ clue, shaking, onClick }) {
       onClick={onClick}
       className={`card lift ${shaking ? "shake" : ""}`}
       style={{
-        padding: "14px 14px",
+        padding: "8px 12px",
+        minHeight: 56,
         textAlign: "left",
         background: "var(--bg-elev)",
         border: "1.5px solid var(--line)",
         display: "flex",
-        gap: 12,
+        gap: 10,
         alignItems: "center",
         cursor: "pointer",
-        fontFamily: "Nunito",
+        fontFamily: "Trebuchet MS, system-ui, sans-serif",
       }}
     >
       <div style={{
-        width: 44, height: 44, borderRadius: 12,
+        width: 36, height: 36, borderRadius: 10,
         background: "var(--orange-100)", color: "var(--orange-700)",
         display: "grid", placeItems: "center",
         border: "1.5px solid var(--orange-200)",
         flexShrink: 0,
       }}>
-        <Lucide name={clue.icon} size={20} />
+        <Lucide name={clue.icon} size={18} />
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontWeight: 800, fontSize: 14, lineHeight: 1.2 }}>{clue.label}</div>
         <div className="text-muted" style={{ fontSize: 11, fontWeight: 700, marginTop: 2, letterSpacing: "0.04em" }}>
-          Drop on a panel
+          Tap to place
         </div>
       </div>
     </button>
@@ -484,7 +483,7 @@ function CompletedStory({ steps }) {
         <span className="chip green"><Lucide name="check" size={12} strokeWidth={3} /> Story complete</span>
         <span className="text-muted" style={{ fontSize: 12, fontWeight: 700 }}>5 of 5 panels filled</span>
       </div>
-      <h3 style={{ marginTop: 14, fontSize: 22, fontFamily: "Nunito", fontWeight: 900 }}>
+      <h3 style={{ marginTop: 14, fontSize: 22, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900 }}>
         The case of Pond A, in five panels.
       </h3>
       <div style={{
@@ -496,7 +495,7 @@ function CompletedStory({ steps }) {
         backgroundPosition: "0 24px",
         border: "1.5px solid var(--line)",
         borderRadius: 12,
-        fontFamily: "Kalam",
+        fontFamily: "Comic Sans MS, cursive",
         fontSize: 18,
         lineHeight: 1.55,
         color: "var(--text)",
@@ -533,7 +532,18 @@ const SUPPORTS = [
   { id: "fishCount",    text: "Fish were not counted last week",     good: false },
 ];
 
+const REPORT_STEPS = [
+  { label: "Cause",    need: "Pick 1 cause",          hoot: "Pick ONE cause. Which one do your tests actually point to?" },
+  { label: "Evidence", need: "Pick 2+ pieces",        hoot: "Now list the evidence that proves it. Skip anything that doesn't help." },
+  { label: "Explain",  need: "Write 12+ characters",  hoot: "Explain like you're telling another detective. Then close the case." },
+];
+
 function ConclusionScreen({ cause, setCause, supports, setSupports, written, setWritten, setConclusion, onVictory }) {
+  // One question per step so the report never needs scrolling.
+  const [step, setStep] = useState(0);
+  const isStepDone = [!!cause, supports.length >= 2, written.trim().length >= 12];
+  const isLastStep = step === REPORT_STEPS.length - 1;
+
   const toggleSupport = (id) => {
     setSupports(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   };
@@ -571,8 +581,40 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
             <div className="tag">Confidential</div>
           </div>
 
+          <div className="row gap-2" style={{ marginBottom: 18, flexWrap: "wrap" }}>
+            {REPORT_STEPS.map((rs, i) => {
+              const isCurrent = i === step;
+              const canJump = isStepDone.slice(0, i).every(Boolean);
+              return (
+                <button
+                  key={rs.label}
+                  onClick={() => canJump && setStep(i)}
+                  disabled={!canJump}
+                  aria-current={isCurrent ? "step" : undefined}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    minHeight: 36, padding: "6px 12px", borderRadius: 999,
+                    border: isCurrent ? "2px solid var(--primary)" : "1.5px solid var(--line)",
+                    background: isCurrent ? "var(--orange-100)" : "var(--bg-elev)",
+                    color: "var(--text)", opacity: canJump ? 1 : 0.5,
+                    cursor: canJump ? "pointer" : "default",
+                    fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 13,
+                  }}
+                >
+                  <span style={{
+                    width: 20, height: 20, borderRadius: 999, display: "grid", placeItems: "center",
+                    background: isStepDone[i] ? "var(--teal-500)" : "var(--ink-300)", color: "white", fontSize: 11,
+                  }}>
+                    {isStepDone[i] ? <Lucide name="check" size={12} strokeWidth={3} /> : i + 1}
+                  </span>
+                  {rs.label}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Q1 — main cause */}
-          <div>
+          {step === 0 && <div>
             <div className="uppercase-eyebrow">Q1 · Main cause</div>
             <h4 style={{ fontSize: 16, margin: "4px 0 12px" }}>What MOST likely caused the fish deaths?</h4>
             <div className="col gap-2">
@@ -588,7 +630,7 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
                     display: "flex", gap: 12, alignItems: "center",
                     cursor: "pointer",
                     boxShadow: active ? "0 0 0 2px var(--primary)" : "var(--shadow-card)",
-                    fontFamily: "Nunito",
+                    fontFamily: "Trebuchet MS, system-ui, sans-serif",
                     fontWeight: 700,
                     fontSize: 14,
                   }}>
@@ -605,12 +647,10 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
                 );
               })}
             </div>
-          </div>
-
-          <div className="divider-dot" style={{ margin: "20px 0" }} />
+          </div>}
 
           {/* Q2 — supports */}
-          <div>
+          {step === 1 && <div>
             <div className="uppercase-eyebrow">Q2 · Supporting evidence</div>
             <h4 style={{ fontSize: 16, margin: "4px 0 12px" }}>Which evidence supports your answer? (pick all that apply)</h4>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -641,12 +681,10 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
                 );
               })}
             </div>
-          </div>
-
-          <div className="divider-dot" style={{ margin: "20px 0" }} />
+          </div>}
 
           {/* Q3 — written explanation */}
-          <div>
+          {step === 2 && <div>
             <div className="uppercase-eyebrow">Q3 · Explain in your own words</div>
             <h4 style={{ fontSize: 16, margin: "4px 0 12px" }}>Why is your answer correct? Use your evidence.</h4>
             <textarea
@@ -657,7 +695,7 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
                 width: "100%",
                 minHeight: 90,
                 padding: 14,
-                fontFamily: "Kalam",
+                fontFamily: "Comic Sans MS, cursive",
                 fontSize: 17,
                 lineHeight: 1.5,
                 background: "var(--bg-paper)",
@@ -673,6 +711,30 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
             <div className="text-muted" style={{ fontSize: 11, marginTop: 6 }}>
               {written.trim().split(/\s+/).filter(Boolean).length} words · aim for 30+ for full marks
             </div>
+          </div>}
+
+          <div className="row between" style={{ alignItems: "center", marginTop: 20, gap: 12 }}>
+            {step > 0 ? (
+              <button className="btn ghost" onClick={() => setStep(step - 1)}>
+                <Lucide name="chevronLeft" size={16} /> Back
+              </button>
+            ) : <span />}
+            <div className="row gap-3" style={{ alignItems: "center" }}>
+              {!isStepDone[step] && (
+                <span className="text-muted" style={{ fontSize: 12, fontWeight: 700 }}>{REPORT_STEPS[step].need}</span>
+              )}
+              {isLastStep ? (
+                <button className="btn" disabled={!isStepDone.every(Boolean)} onClick={submit}
+                  style={{ opacity: isStepDone.every(Boolean) ? 1 : 0.5 }}>
+                  <Lucide name="award" size={18} /> Close the Case
+                </button>
+              ) : (
+                <button className="btn" disabled={!isStepDone[step]} onClick={() => setStep(step + 1)}
+                  style={{ opacity: isStepDone[step] ? 1 : 0.5 }}>
+                  Next <Lucide name="chevronRight" size={16} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -684,26 +746,9 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
               <DetectiveHoot size={120} mood="stern" />
             </div>
             <div className="uppercase-eyebrow" style={{ marginTop: 12 }}>Detective Hoot</div>
-            <p style={{ margin: "4px 0 0", fontFamily: "Kalam", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              "Pick one cause. List the evidence that proves it. Explain like you're telling another detective. <b>Then submit.</b>"
+            <p style={{ margin: "4px 0 0", fontFamily: "Comic Sans MS, cursive", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
+              "{REPORT_STEPS[step].hoot}"
             </p>
-          </div>
-
-          <button
-            className="btn lg"
-            disabled={!cause || supports.length < 2 || written.trim().length < 12}
-            onClick={submit}
-            style={{
-              opacity: !cause || supports.length < 2 || written.trim().length < 12 ? 0.5 : 1,
-              width: "100%", justifyContent: "center",
-            }}
-          >
-            <Lucide name="award" size={20} />
-            Close the Case
-          </button>
-
-          <div className="text-muted" style={{ fontSize: 12, textAlign: "center" }}>
-            Required: 1 cause · 2+ evidence · 12+ words
           </div>
         </div>
       </div>
@@ -713,7 +758,7 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
 
 
 /* ===== Screen 9: Victory / Case Closed ===== */
-function VictoryScreen({ victory, observations, experiments, evidenceLinks, restart }) {
+function VictoryScreen({ victory, observations, experiments, evidenceLinks }) {
   const v = victory || { stars: { accuracy: 1, evidence: 1, thinking: 1 }, causeRight: false };
   const totalStars = v.stars.accuracy + v.stars.evidence + v.stars.thinking;
 
@@ -739,11 +784,11 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
           {/* Masthead */}
           <div style={{ borderBottom: "4px double var(--text)", paddingBottom: 12, marginBottom: 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap" }}>
-              <div style={{ fontFamily: "Caveat", fontSize: 16, fontWeight: 700 }}>Vol. I · No. 001</div>
+              <div style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, fontWeight: 700 }}>Vol. I · No. 001</div>
               <h1 className="h-display" style={{ fontSize: 34, fontFamily: "serif", fontWeight: 900, letterSpacing: "-0.01em" }}>
                 THE MAPLE TIMES
               </h1>
-              <div style={{ fontFamily: "Caveat", fontSize: 16, fontWeight: 700 }}>Friday · 50¢</div>
+              <div style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, fontWeight: 700 }}>Friday · 50¢</div>
             </div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textAlign: "center", marginTop: 4 }}>
               EST. 1928 · "ALL THE SCIENCE THAT FITS"
@@ -756,7 +801,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
               ★ BREAKING ★ ★ BREAKING ★
             </div>
             <h2 style={{
-              fontFamily: "Nunito",
+              fontFamily: "Trebuchet MS, system-ui, sans-serif",
               fontWeight: 900,
               fontSize: 46,
               lineHeight: 1,
@@ -766,7 +811,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
             }}>
               MYSTERY SOLVED!
             </h2>
-            <div style={{ fontFamily: "Caveat", fontSize: 26, fontWeight: 700, marginTop: 6, color: "var(--orange-500)" }}>
+            <div style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 26, fontWeight: 700, marginTop: 6, color: "var(--orange-500)" }}>
               {v.causeRight
                 ? "Junior detective traces fish deaths to factory waste."
                 : "Detective files theory · town still investigating."}
@@ -776,7 +821,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
           {/* 2-col body */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginTop: 18, borderTop: "2px solid var(--text)", paddingTop: 18 }}>
             <div>
-              <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+              <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
                 Case at a glance
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.55, margin: 0, fontWeight: 500, color: "var(--text)", columnFill: "balance" }}>
@@ -789,11 +834,11 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
                 low oxygen → fish death</i>. The Mayor&#39;s office
                 has been notified.
               </p>
-              <div style={{ marginTop: 14, padding: 12, border: "2px dashed var(--line)", fontFamily: "Caveat", fontSize: 19, fontWeight: 700, lineHeight: 1.3, color: "var(--text)" }}>
+              <div style={{ marginTop: 14, padding: 12, border: "2px dashed var(--line)", fontFamily: "Comic Sans MS, cursive", fontSize: 19, fontWeight: 700, lineHeight: 1.3, color: "var(--text)" }}>
                 "I checked the temperature, the smell, the colour —
                 then I tested everything in the lab. Pond B was the
                 control. Science works."
-                <div style={{ fontSize: 13, fontWeight: 800, marginTop: 6, fontFamily: "Nunito", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, marginTop: 6, fontFamily: "Trebuchet MS, system-ui, sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   — Junior Detective, age 12
                 </div>
               </div>
@@ -822,12 +867,12 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
                     <Pond sick size={200} />
                   </div>
                 </div>
-                <div style={{ fontFamily: "Caveat", fontSize: 16, textAlign: "center", marginTop: 4 }}>
+                <div style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, textAlign: "center", marginTop: 4 }}>
                   Pond A — the scene of the crime
                 </div>
               </div>
 
-              <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 By the numbers
               </div>
               <ul style={{ paddingLeft: 18, margin: "8px 0 0", fontSize: 13, lineHeight: 1.7 }}>
@@ -865,34 +910,12 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks, rest
           <div style={{ position: "relative", marginTop: 20, marginBottom: 12, display: "inline-block" }}>
             <ScientificMethodBadge />
           </div>
-          <div style={{ fontFamily: "Nunito", fontWeight: 800, fontSize: 14, color: "var(--text)" }}>
+          <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14, color: "var(--text)" }}>
             +{xpAward} XP · Level 4 → Level 5
           </div>
         </div>
       </div>
 
-      {/* Next case */}
-      <div className="card" style={{ padding: 20, display: "flex", gap: 20, alignItems: "center", background: "var(--ink-900)", color: "#fdf6e3", borderColor: "var(--ink-700)" }}>
-        <div style={{
-          width: 64, height: 64, borderRadius: 16,
-          background: "var(--teal-600)",
-          display: "grid", placeItems: "center",
-          flexShrink: 0,
-        }}>
-          <Lucide name="leaf" size={28} color="white" />
-        </div>
-        <div className="grow">
-          <div className="uppercase-eyebrow" style={{ color: "var(--yellow-300)" }}>Up next · Episode 2</div>
-          <h3 className="title-lg" style={{ color: "white", marginTop: 4 }}>The Wilting Plant Lab</h3>
-          <p className="text-soft" style={{ margin: "4px 0 0", color: "#d8c9a8", fontSize: 14 }}>
-            The school greenhouse is in trouble. Same scientific method · new variables.
-          </p>
-        </div>
-        <button className="btn lg teal" onClick={restart}>
-          <Lucide name="play" size={18} />
-          Continue
-        </button>
-      </div>
     </div>
   );
 }
@@ -904,7 +927,7 @@ function StarRow({ label, icon, stars, sub }) {
         <Lucide name={icon} size={18} />
       </div>
       <div>
-        <div style={{ fontFamily: "Nunito", fontWeight: 900 }}>{label}</div>
+        <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900 }}>{label}</div>
         <div className="text-soft" style={{ fontSize: 12 }}>{sub}</div>
       </div>
       <div style={{ display: "flex", gap: 4 }}>
@@ -957,7 +980,7 @@ function ScientificMethodBadge() {
       </g>
       {/* banner text */}
       <path d="M30 100 L130 100 L120 116 L40 116 Z" fill="#1c1410" />
-      <text x="80" y="112" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="11" fill="#fde047" letterSpacing="2">DETECTIVE</text>
+      <text x="80" y="112" textAnchor="middle" fontFamily="Trebuchet MS, system-ui, sans-serif" fontWeight="900" fontSize="11" fill="#fde047" letterSpacing="2">DETECTIVE</text>
     </svg>
   );
 }

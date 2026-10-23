@@ -4,7 +4,7 @@
 import React, { useState, useCallback } from "react";
 import { mlAudio } from "./audio.js";
 import { DetectiveHoot, Lucide, NotebookBadge } from "./shared.jsx";
-import { Pond, Factory, Reed, Tree, Cloud, Thermometer, SmellVapor } from "./world.jsx";
+import { Pond, Reed, Tree, Cloud } from "./world.jsx";
 
 /* ===== Screen 3: Observation Scene ===== */
 
@@ -38,6 +38,10 @@ function ClueWrapper({ found, onClick, style, children, anim }) {
       </button>
     </div>
   );
+}
+
+function ClueSprite({ name, alt, width }) {
+  return <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/${name}`} alt={alt} draggable="false" style={{ width, height: "auto", display: "block", userSelect: "none" }} />;
 }
 
 function StandaloneDeadFish({ rot = 0, scale = 1 }) {
@@ -142,15 +146,15 @@ const POND_B_CLUES = [
 // rx/ry = ripple center in scene % — keep in sync with left/top when you move things.
 const CLUE_POS = {
   // Pond A
-  deadFish:    { left: "60%", top: "70%", transform: "translate(-50%, -50%)", rx: 60, ry: 70 },
-  murky:       { left: "56%", top: "49%", transform: "translate(-50%, -50%)", rx: 56, ry: 49 },
-  temp:        { left: "74%", top: "54%", transform: "translate(-50%, -50%)", rx: 74, ry: 54 },
-  smell:       { left: "40%", top: "45%", transform: "translate(-50%, 0)",    rx: 35, ry: 45 },
-  factoryPipe: { top: 60,     right: 30,                                       rx: 92, ry: 14 },
+  deadFish:    { left: "40%", top: "62%", transform: "translate(-50%, -50%)", rx: 40, ry: 62 },
+  murky:       { left: "66%", top: "60%", transform: "translate(-50%, -50%)", rx: 66, ry: 60 },
+  temp:        { left: "80%", top: "70%", transform: "translate(-50%, -50%)", rx: 80, ry: 70 },
+  smell:       { left: "32%", top: "40%", transform: "translate(-50%, 0)",    rx: 32, ry: 48 },
+  factoryPipe: { top: 34,     right: 18,                                       rx: 92, ry: 14 },
   // Pond B
-  healthyFish: { left: "60%", top: "70%", transform: "translate(-50%, -50%)", rx: 60, ry: 70 },
-  clearWater:  { left: "40%", top: "70%", transform: "translate(-50%, -50%)", rx: 40, ry: 70 },
-  tempB:       { left: "74%", top: "54%", transform: "translate(-50%, -50%)", rx: 74, ry: 54 },
+  healthyFish: { left: "55%", top: "66%", transform: "translate(-50%, -50%)", rx: 55, ry: 66 },
+  clearWater:  { left: "36%", top: "58%", transform: "translate(-50%, -50%)", rx: 36, ry: 58 },
+  tempB:       { left: "84%", top: "72%", transform: "translate(-50%, -50%)", rx: 84, ry: 72 },
 };
 // Strips rx/ry before spreading to style — they're not valid CSS props
 function cluePos(id) {
@@ -233,17 +237,22 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
         <div className="card ml-scene-card" style={{
           padding: 0, position: "relative", overflow: "hidden",
           height: 460,
-          background: sick
-            ? "linear-gradient(180deg, #fcd6a3 0%, #f4a261 35%, #7c5a30 60%, #3d2e1a 100%)"
-            : "linear-gradient(180deg, #d1fae5 0%, #6ee7b7 35%, #14b8a6 60%, #0d9488 100%)",
+          backgroundColor: sick ? "#7c5a30" : "#6ee7b7",
+          backgroundImage: `url(${import.meta.env.BASE_URL}games/mystery-lab/art/observation-backdrop-${sick ? "polluted" : "healthy"}-v1.png)`,
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
         }}>
           {/* sky scatter */}
           <div style={{ position: "absolute", top: 18, left: 30 }}><Cloud /></div>
           <div style={{ position: "absolute", top: 36, right: 60, transform: "scale(0.7)" }}><Cloud /></div>
 
-          {/* Pond — fish suppressed so interactive versions below are the only ones */}
-          <div style={{ position: "absolute", left: "50%", bottom: 60, transform: "translateX(-50%) scale(1.8)" }}>
-            <Pond sick={sick} dead={sick ? 5 : 0} size={260} hideFish />
+          {/* Pond - fish suppressed so interactive versions below are the only ones.
+              size = pond width in px (bigger = bigger pond). The art carries ~15% transparent
+              padding under the mud rim, so bottom is negative to push that padding off-card;
+              raising size means dropping bottom further to keep the rim clear of the A/B toggle. */}
+          <div style={{ position: "absolute", left: 0, right: 0, bottom: -76, display: "flex", justifyContent: "center" }}>
+            <Pond sick={sick} dead={sick ? 5 : 0} size={660} hideFish />
           </div>
 
           {/* Reeds */}
@@ -259,9 +268,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
               style={cluePos("factoryPipe")}
               anim="ml-shimmer 2.2s ease-in-out infinite"
             >
-              <div style={{ transform: "scale(0.6)", transformOrigin: "top right" }}>
-                <Factory />
-              </div>
+              <ClueSprite name="clue-drain-pipe.png" alt="Factory drainage pipe spilling contaminated wastewater" width={150} />
             </ClueWrapper>
           )}
 
@@ -277,26 +284,22 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
             <>
               {/* SMELL — green-yellow vapor rising above the pond */}
               <ClueWrapper found={!!obs("smell")} onClick={handleClue("smell")} style={cluePos("smell")} anim="ml-shimmer 3s ease-in-out infinite">
-                <SmellVapor width={120} height={86} />
+                <ClueSprite name="clue-chemical-vapor.png" alt="Sharp chemical vapour" width={96} />
               </ClueWrapper>
 
               {/* DEAD FISH — three fish floating belly-up */}
               <ClueWrapper found={!!obs("deadFish")} onClick={handleClue("deadFish")} style={cluePos("deadFish")} anim="ml-float-y 2.8s ease-in-out infinite">
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
-                  <StandaloneDeadFish rot={-28} scale={1.5} />
-                  <div style={{ marginLeft: 22 }}><StandaloneDeadFish rot={18} scale={1.25} /></div>
-                  <div style={{ marginLeft: 10 }}><StandaloneDeadFish rot={-8} scale={1.1} /></div>
-                </div>
+                <ClueSprite name="clue-dead-fish.png" alt="Several dead fish floating belly-up" width={102} />
               </ClueWrapper>
 
               {/* MURKY WATER — dark pollution patch in the water */}
               <ClueWrapper found={!!obs("murky")} onClick={handleClue("murky")} style={cluePos("murky")} anim="ml-shimmer 3.5s ease-in-out infinite">
-                <MurkyPatch />
+                <ClueSprite name="clue-murky-water.png" alt="Murky brown contamination in the water" width={124} />
               </ClueWrapper>
 
               {/* THERMOMETER — hot reading stuck in pond bank */}
               <ClueWrapper found={!!obs("temp")} onClick={handleClue("temp")} style={cluePos("temp")} anim="ml-shimmer 2.5s ease-in-out infinite">
-                <Thermometer hot size={80} />
+                <ClueSprite name="clue-thermometer-hot.png" alt="Thermometer reading 34 degrees Celsius" width={84} />
               </ClueWrapper>
             </>
           )}
@@ -306,20 +309,17 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
             <>
               {/* HEALTHY FISH — two fish swimming actively */}
               <ClueWrapper found={!!obs("healthyFish")} onClick={handleClue("healthyFish")} style={cluePos("healthyFish")} anim="ml-float-y 2.2s ease-in-out infinite">
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-                  <StandaloneFishie rot={-8} color="#f97316" stroke="#c2410c" scale={1.5} />
-                  <div style={{ marginLeft: 28 }}><StandaloneFishie rot={14} color="#fb923c" stroke="#c2410c" scale={1.2} /></div>
-                </div>
+                <ClueSprite name="clue-healthy-fish.png" alt="Two healthy fish swimming" width={106} />
               </ClueWrapper>
 
               {/* CLEAR WATER — light ripple patch in the water */}
               <ClueWrapper found={!!obs("clearWater")} onClick={handleClue("clearWater")} style={cluePos("clearWater")} anim="ml-shimmer 3s ease-in-out infinite">
-                <ClearWaterRipple />
+                <ClueSprite name="clue-clear-water.png" alt="Clear water ripples" width={112} />
               </ClueWrapper>
 
               {/* THERMOMETER B — normal reading */}
               <ClueWrapper found={!!obs("tempB")} onClick={handleClue("tempB")} style={cluePos("tempB")} anim="ml-shimmer 2.5s ease-in-out infinite">
-                <Thermometer hot={false} size={80} />
+                <ClueSprite name="clue-thermometer-cool.png" alt="Thermometer reading 22 degrees Celsius" width={84} />
               </ClueWrapper>
             </>
           )}
@@ -346,7 +346,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
               {popText.isHint ? (
                 <>
                   <DetectiveHoot size={40} />
-                  <div className="grow" style={{ fontFamily: "Kalam", fontSize: 15, fontWeight: 700, fontStyle: "italic", opacity: 0.95 }}>
+                  <div className="grow" style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 15, fontWeight: 700, fontStyle: "italic", opacity: 0.95 }}>
                     "{popText.hint}"
                   </div>
                 </>
@@ -360,36 +360,18 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
                     <Lucide name={popText.icon} size={20} color="white" />
                   </div>
                   <div className="grow">
-                    <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 15 }}>{popText.label}</div>
-                    <div style={{ fontSize: 13, fontWeight: 500, opacity: 0.9, fontFamily: "Kalam" }}>"{popText.obs}"</div>
+                    <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 15 }}>{popText.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, opacity: 0.9, fontFamily: "Comic Sans MS, cursive" }}>"{popText.obs}"</div>
                   </div>
                   <div style={{
                     background: "var(--yellow-400)", color: "#1c1410",
                     padding: "4px 10px", borderRadius: 999,
-                    fontFamily: "Nunito", fontWeight: 900, fontSize: 13,
+                    fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 13,
                   }}>+{popText.xp} XP</div>
                 </>
               )}
             </div>
           )}
-
-          {/* pond switcher tabs */}
-          <div style={{
-            position: "absolute", bottom: 18, left: "50%", transform: "translateX(-50%)",
-            background: "rgba(28,20,16,0.92)", borderRadius: 999, padding: 4,
-            display: "flex", gap: 4,
-          }}>
-            {["A","B"].map(p => (
-              <button key={p} onClick={() => setPond(p)} style={{
-                border: 0, padding: "8px 18px", borderRadius: 999,
-                background: pond === p ? "var(--primary)" : "transparent",
-                color: pond === p ? "white" : "rgba(253,246,227,0.7)",
-                fontFamily: "Nunito", fontWeight: 800, fontSize: 13,
-              }}>
-                Pond {p} {p === "A" ? "🔴" : "✅"}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Side: clue list + mentor */}
@@ -421,7 +403,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
                     }}>
                       <Lucide name={found ? "check" : c.icon} size={15} />
                     </div>
-                    <div className="grow" style={{ fontSize: 13, fontFamily: "Nunito", fontWeight: 700 }}>
+                    <div className="grow" style={{ fontSize: 13, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 700 }}>
                       {found ? c.label : "??? ??? ???"}
                     </div>
                     {found && <span style={{ fontSize: 11, fontWeight: 800, color: "var(--orange-700)" }}>+{c.xp}</span>}
@@ -484,6 +466,9 @@ const HYPOTHESES = [
 
 function QuestionScreen({ go, observations, question, setQuestion, hypotheses, setHypotheses }) {
   const [hoverHyp, setHoverHyp] = useState(null);
+  // Ask and hypothesise are one screen but two steps, so a pick is never made before the
+  // question it answers is on the table.
+  const [step, setStep] = useState(1);
 
   const toggleHyp = (id) => {
     setHypotheses(prev => {
@@ -495,13 +480,15 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
 
   return (
     <div data-screen-label="04 Hypothesis" className="col gap-4">
-      <div>
-        <div className="uppercase-eyebrow">Phase 2 + 3 · Ask · Hypothesise</div>
-        <h2 className="title-xl">Build your case</h2>
+      <div className="row between" style={{ alignItems: "center" }}>
+        <div>
+          <div className="uppercase-eyebrow">{step === 1 ? "Phase 2 · Ask" : "Phase 3 · Hypothesise"}</div>
+          <h2 className="title-xl">Build your case</h2>
+        </div>
+        <span className="chip teal">Step {step} of 2</span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 20 }}>
-        {/* Step 1: Question */}
+      {step === 1 && (
         <div className="card" style={{ padding: 22 }}>
           <div className="row between" style={{ alignItems: "center" }}>
             <h3 className="title-lg">1 · Pick a question</h3>
@@ -540,11 +527,11 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
                       {active && <Lucide name={q.correct ? "check" : "x"} size={16} strokeWidth={3} />}
                     </div>
                     <div className="grow">
-                      <div style={{ fontFamily: "Nunito", fontWeight: 800, fontSize: 15 }}>{q.text}</div>
+                      <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 15 }}>{q.text}</div>
                       {showFeedback && (
                         <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-soft)", display: "flex", gap: 6, alignItems: "center" }}>
                           <DetectiveHoot size={28} />
-                          <span style={{ fontFamily: "Kalam", fontWeight: 700 }}>"{q.hint}"</span>
+                          <span style={{ fontFamily: "Comic Sans MS, cursive", fontWeight: 700 }}>"{q.hint}"</span>
                         </div>
                       )}
                     </div>
@@ -554,8 +541,9 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
             })}
           </div>
         </div>
+      )}
 
-        {/* Step 2: Hypotheses */}
+      {step === 2 && (
         <div className="card" style={{ padding: 22, background: "var(--bg-paper)" }}>
           <div className="row between" style={{ alignItems: "center" }}>
             <h3 className="title-lg">2 · Pick hypotheses</h3>
@@ -564,7 +552,7 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
           <p className="text-soft" style={{ margin: "6px 0 16px", fontSize: 14 }}>
             A hypothesis is an <i>educated guess</i> you can test. Multiple can be reasonable.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14 }}>
             {HYPOTHESES.map(h => {
               const picked = hypotheses.includes(h.id);
               return (
@@ -635,30 +623,54 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mentor + CTA */}
       <div className="card" style={{ padding: 18, background: "var(--teal-50, #f0fdfa)", borderColor: "var(--teal-200)", display: "flex", gap: 18, alignItems: "center" }}>
-        <DetectiveHoot size={84} />
+        <DetectiveHoot size={84} mood={step === 1 ? "thinking" : hypotheses.includes("h4") ? "stern" : "happy"} />
         <div className="grow">
           <div className="uppercase-eyebrow" style={{ color: "var(--teal-800)" }}>Hoot, scientific mentor</div>
-          <p style={{ margin: "4px 0 0", fontFamily: "Nunito", fontWeight: 700, fontSize: 15 }}>
-            {hypotheses.length === 0
-              ? "Pick at least one hypothesis. Best detectives test more than one to be safe."
-              : hypotheses.includes("h4")
-                ? "Hmm — \"aliens\" isn't testable. Replace it with something measurable."
-                : "Nice picks. Let's go to the lab and gather evidence. Tests cost energy — choose wisely."}
+          <p style={{ margin: "4px 0 0", fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 700, fontSize: 15 }}>
+            {step === 1
+              ? !question
+                ? "Start with the question. Which one can your own observations actually answer?"
+                : question === "q1"
+                  ? "That's the case-cracker. Hit Next and turn it into hypotheses you can test."
+                  : "That one won't crack this case. Read your notebook again, then pick another."
+              : hypotheses.length === 0
+                ? "Pick at least one hypothesis. Best detectives test more than one to be safe."
+                : hypotheses.includes("h4")
+                  ? "Hmm — \"aliens\" isn't testable. Replace it with something measurable."
+                  : "Nice picks. Let's go to the lab and gather evidence. Tests cost energy — choose wisely."}
           </p>
         </div>
-        <button
-          className="btn lg"
-          disabled={hypotheses.length === 0 || !question}
-          onClick={() => go("map")}
-          style={{ opacity: hypotheses.length === 0 || !question ? 0.5 : 1 }}
-        >
-          Back to map
-          <Lucide name="map" size={18} />
-        </button>
+        {step === 2 && (
+          <button className="btn ghost" onClick={() => setStep(1)}>
+            <Lucide name="chevronLeft" size={16} />
+            Question
+          </button>
+        )}
+        {step === 1 ? (
+          <button
+            className="btn lg"
+            disabled={!question}
+            onClick={() => setStep(2)}
+            style={{ opacity: question ? 1 : 0.5 }}
+          >
+            Next
+            <Lucide name="chevronRight" size={18} />
+          </button>
+        ) : (
+          <button
+            className="btn lg"
+            disabled={hypotheses.length === 0}
+            onClick={() => go("map")}
+            style={{ opacity: hypotheses.length === 0 ? 0.5 : 1 }}
+          >
+            Back to map
+            <Lucide name="map" size={18} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -704,7 +716,7 @@ function NotebookScreen({ go, observations, question, hypotheses, experiments, c
                 borderRadius: 12,
                 textAlign: "left",
                 display: "flex", gap: 10, alignItems: "center",
-                fontFamily: "Nunito",
+                fontFamily: "Trebuchet MS, system-ui, sans-serif",
                 fontWeight: 800,
                 color: active ? "var(--primary)" : "var(--text-soft)",
                 boxShadow: active ? "var(--shadow-card)" : "none",
@@ -745,11 +757,11 @@ function ObsPage({ observations }) {
   return (
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Observations</h3>
-      <div className="text-soft" style={{ fontFamily: "Kalam", fontSize: 14 }}>Maple Creek · Day 1 · cloudy</div>
+      <div className="text-soft" style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 14 }}>Maple Creek · Day 1 · cloudy</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 24 }}>
         <div>
-          <div style={{ display: "inline-block", background: "#fee2e2", color: "#991b1b", padding: "4px 12px", borderRadius: 999, fontFamily: "Nunito", fontWeight: 800, fontSize: 13, marginBottom: 12 }}>POND A · SICK</div>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6, fontFamily: "Kalam", fontSize: 17 }}>
+          <div style={{ display: "inline-block", background: "#fee2e2", color: "#991b1b", padding: "4px 12px", borderRadius: 999, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 13, marginBottom: 12 }}>POND A · SICK</div>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6, fontFamily: "Comic Sans MS, cursive", fontSize: 17 }}>
             {a.length === 0 && <li style={{ color: "var(--muted)", fontStyle: "italic" }}>No observations yet.</li>}
             {a.map(o => (
               <li key={o.id} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
@@ -760,8 +772,8 @@ function ObsPage({ observations }) {
           </ul>
         </div>
         <div>
-          <div style={{ display: "inline-block", background: "#dcfce7", color: "#166534", padding: "4px 12px", borderRadius: 999, fontFamily: "Nunito", fontWeight: 800, fontSize: 13, marginBottom: 12 }}>POND B · HEALTHY</div>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6, fontFamily: "Kalam", fontSize: 17 }}>
+          <div style={{ display: "inline-block", background: "#dcfce7", color: "#166534", padding: "4px 12px", borderRadius: 999, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 13, marginBottom: 12 }}>POND B · HEALTHY</div>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6, fontFamily: "Comic Sans MS, cursive", fontSize: 17 }}>
             {b.length === 0 && <li style={{ color: "var(--muted)", fontStyle: "italic" }}>No observations yet.</li>}
             {b.map(o => (
               <li key={o.id} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
@@ -786,10 +798,10 @@ function QuesPage({ question }) {
   return (
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Questions</h3>
-      <div style={{ marginTop: 18, padding: 16, border: "2px dashed var(--orange-400)", borderRadius: 12, background: "var(--orange-50)", fontFamily: "Kalam", fontSize: 22, fontWeight: 700, color: "var(--ink-900)" }}>
+      <div style={{ marginTop: 18, padding: 16, border: "2px dashed var(--orange-400)", borderRadius: 12, background: "var(--orange-50)", fontFamily: "Comic Sans MS, cursive", fontSize: 22, fontWeight: 700, color: "var(--ink-900)" }}>
         {question === "q1" ? "Why are fish dying in Pond A but not Pond B?" : "[ Pick a question first — go back to the Question screen. ]"}
       </div>
-      <div className="text-soft" style={{ marginTop: 18, fontFamily: "Kalam", fontSize: 16, lineHeight: 1.5 }}>
+      <div className="text-soft" style={{ marginTop: 18, fontFamily: "Comic Sans MS, cursive", fontSize: 16, lineHeight: 1.5 }}>
         A good scientific question is <b>specific</b>, <b>testable</b>, and <b>tied to what you observed</b>. 
         It points you somewhere — not just curiosity in the air.
       </div>
@@ -802,12 +814,12 @@ function HypPage({ hypotheses }) {
   return (
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Hypotheses</h3>
-      <p style={{ fontFamily: "Kalam", fontSize: 16, margin: "6px 0 18px" }}>An <b>educated guess</b> we can test.</p>
+      <p style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, margin: "6px 0 18px" }}>An <b>educated guess</b> we can test.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {picks.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Kalam", fontSize: 18 }}>No hypotheses yet.</div>}
+        {picks.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Comic Sans MS, cursive", fontSize: 18 }}>No hypotheses yet.</div>}
         {picks.map((h, i) => (
           <div key={h.id} className={`sticky ${h.color}`} style={{ transform: `rotate(${i % 2 ? 2 : -2}deg)`, fontSize: 15 }}>
-            <div style={{ fontSize: 11, fontFamily: "Nunito", fontWeight: 800, opacity: 0.7, marginBottom: 4 }}>H{i + 1}</div>
+            <div style={{ fontSize: 11, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, opacity: 0.7, marginBottom: 4 }}>H{i + 1}</div>
             {h.text}
           </div>
         ))}
@@ -820,11 +832,11 @@ function ExpPage({ experiments }) {
   return (
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Experiments</h3>
-      <p style={{ fontFamily: "Kalam", fontSize: 16, margin: "6px 0 18px" }}>What I tested · and how.</p>
-      {experiments.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Kalam", fontSize: 18 }}>Run tests in the Lab Tent.</div>}
+      <p style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, margin: "6px 0 18px" }}>What I tested · and how.</p>
+      {experiments.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Comic Sans MS, cursive", fontSize: 18 }}>Run tests in the Lab Tent.</div>}
       <div className="col gap-3">
         {experiments.map(e => (
-          <div key={e.id} style={{ padding: 14, background: "var(--bg-elev)", borderRadius: 10, border: "1.5px solid var(--line)", fontFamily: "Kalam", fontSize: 16 }}>
+          <div key={e.id} style={{ padding: 14, background: "var(--bg-elev)", borderRadius: 10, border: "1.5px solid var(--line)", fontFamily: "Comic Sans MS, cursive", fontSize: 16 }}>
             <b>{e.label}.</b> Method: {e.method}.
           </div>
         ))}
@@ -837,8 +849,8 @@ function ResPage({ experiments }) {
   return (
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Results</h3>
-      <p style={{ fontFamily: "Kalam", fontSize: 16, margin: "6px 0 18px" }}>Numbers don't lie.</p>
-      {experiments.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Kalam", fontSize: 18 }}>No results yet.</div>}
+      <p style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, margin: "6px 0 18px" }}>Numbers don't lie.</p>
+      {experiments.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Comic Sans MS, cursive", fontSize: 18 }}>No results yet.</div>}
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter", fontSize: 14 }}>
         {experiments.length > 0 && (
           <thead>
@@ -871,8 +883,8 @@ function ConcPage({ conclusion }) {
   return (
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Conclusion</h3>
-      <p style={{ fontFamily: "Kalam", fontSize: 16, margin: "6px 0 18px" }}>Closing the case.</p>
-      <div style={{ padding: 16, border: "2px dashed var(--orange-400)", borderRadius: 12, background: "var(--orange-50)", fontFamily: "Kalam", fontSize: 18, lineHeight: 1.5 }}>
+      <p style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, margin: "6px 0 18px" }}>Closing the case.</p>
+      <div style={{ padding: 16, border: "2px dashed var(--orange-400)", borderRadius: 12, background: "var(--orange-50)", fontFamily: "Comic Sans MS, cursive", fontSize: 18, lineHeight: 1.5 }}>
         {conclusion || "Submit your final report from the Conclusion screen."}
       </div>
     </div>

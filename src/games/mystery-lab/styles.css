@@ -2,7 +2,6 @@
    Mystery Lab — SciQuest design tokens (scoped to .mystery-lab-root)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;700&family=Kalam:wght@400;700&display=swap');
 
 @keyframes ml-float-y {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
@@ -54,6 +53,28 @@
 @keyframes ml-btn-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(20,184,166,0.5), 0 4px 0 rgba(0,0,0,0.18); }
   50%       { box-shadow: 0 0 0 8px rgba(20,184,166,0), 0 4px 0 rgba(0,0,0,0.18); }
+}
+@keyframes ml-scene-shimmer {
+  0%, 100% { transform: translateX(-8%) skewX(-8deg); opacity: .35; }
+  50% { transform: translateX(12%) skewX(-8deg); opacity: .72; }
+}
+@keyframes ml-ember-rise {
+  from { transform: translateY(12px) scale(.7); opacity: 0; }
+  35% { opacity: .9; }
+  to { transform: translateY(-110px) scale(1.15); opacity: 0; }
+}
+@keyframes ml-parallax-drift {
+  0%, 100% { transform: translateX(-2%) translateY(0); }
+  50% { transform: translateX(1.5%) translateY(-3px); }
+}
+@keyframes ml-smoke-drift {
+  from { transform: translateX(0) translateY(0) scale(.92); opacity: .44; }
+  50% { opacity: .68; }
+  to { transform: translateX(-12%) translateY(-12px) scale(1.04); opacity: .18; }
+}
+@keyframes ml-grove-sway {
+  0%, 100% { transform: scale(1.02) translateX(-0.25%); }
+  50% { transform: scale(1.02) translateX(0.25%); }
 }
 
 .mystery-lab-root {
@@ -182,8 +203,108 @@
 
   *, *::before, *::after { box-sizing: border-box; }
 
-  h1, h2, h3, h4 { font-family: 'Nunito', sans-serif; font-weight: 900; letter-spacing: -0.01em; margin: 0; }
-  .h-display { font-family: 'Nunito', sans-serif; font-weight: 900; letter-spacing: -0.02em; }
+  /* Cinematic intro: layered landscape keeps each story panel readable at a glance. */
+  .ml-cinematic-scene::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 8;
+    background: linear-gradient(90deg, rgba(20, 40, 42, .14), transparent 24%, transparent 76%, rgba(20, 40, 42, .12));
+  }
+  .ml-cutscene-art { position: absolute; display: block; pointer-events: none; user-select: none; }
+  .ml-cutscene-backdrop { z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .ml-cutscene-compare-backdrop { z-index: 0; top: 0; bottom: 0; width: 50%; height: 100%; object-fit: cover; }
+  .ml-cutscene-compare-backdrop-healthy { left: 0; object-position: 52% center; }
+  .ml-cutscene-compare-backdrop-polluted { right: 0; object-position: 50% center; }
+  .ml-cutscene-ridge { z-index: 0; bottom: 13%; left: -7%; width: 114%; height: auto; opacity: .76; animation: ml-parallax-drift 13s ease-in-out infinite; }
+  .ml-cutscene-ridge-mission { bottom: 17%; opacity: .58; animation-duration: 17s; }
+  /* An <img> is a replaced element: with left AND right set it keeps its intrinsic width and
+     drops `right`, so each pond needs an explicit width. Centre = left (100 - width) / 2. */
+  .ml-cutscene-pond { z-index: 4; height: auto; filter: drop-shadow(0 10px 10px rgba(28,20,16,.22)); }
+  .ml-cutscene-pond-peaceful { width: 20%; left: 40%; bottom: 6%; }
+  .ml-cutscene-pond-alarm { width: 30%; left: 35%; bottom: 8%; }
+  .ml-cutscene-pond-compare-healthy { width: 26%; left: 12%; bottom: 10%; }
+  .ml-cutscene-pond-compare-polluted { width: 26%; left: 62%; bottom: 10%; }
+  /* Foliage frames are painted 2:1 but the stage is far wider, so they cover the stage and crop
+     from the BOTTOM (`object-position: center top`) — tree canopies stay whole and only the low
+     ground strip runs off under the speech bar. Never scaleY() these: it flattens the trees. */
+  .ml-cutscene-grove { z-index: 6; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; animation: ml-grove-sway 14s ease-in-out infinite; }
+  .ml-cutscene-smoke { z-index: 2; top: 4%; right: 3%; width: min(53%, 650px); height: auto; opacity: .58; animation: ml-smoke-drift 8s ease-in-out infinite alternate; }
+  .ml-cutscene-alarm-frame { z-index: 6; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .ml-compare-seam { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; margin-left: -1px; z-index: 2; background: rgba(28,20,16,.55); }
+  .ml-compare-question {
+    position: absolute; top: 34%; left: 0; right: 0; z-index: 3;
+    text-align: center; pointer-events: none;
+    font-family: "Trebuchet MS", system-ui, sans-serif; font-weight: 900; font-size: 80px; line-height: 1;
+    color: #fef9c3; text-shadow: 0 0 30px rgba(0,0,0,.9), 0 4px 12px rgba(0,0,0,.6);
+  }
+  .ml-cutscene-compare-bank { z-index: 5; bottom: -2%; height: 60%; width: auto; }
+  .ml-cutscene-compare-healthy { left: -2%; }
+  .ml-cutscene-compare-polluted { right: -2%; }
+  .ml-scene-hills {
+    position: absolute;
+    left: -8%; right: -8%; bottom: 17%; height: 35%;
+    background:
+      radial-gradient(ellipse at 16% 100%, #65a30d 0 29%, transparent 30%),
+      radial-gradient(ellipse at 43% 100%, #4d9b68 0 30%, transparent 31%),
+      radial-gradient(ellipse at 72% 100%, #5ca55c 0 28%, transparent 29%),
+      radial-gradient(ellipse at 95% 100%, #4d9b68 0 26%, transparent 27%);
+    opacity: .48;
+  }
+  .ml-scene-meadow-glow {
+    position: absolute;
+    left: 18%; right: 18%; bottom: 13%; height: 20%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(254, 249, 195, .52), transparent 67%);
+    filter: blur(12px);
+  }
+  .ml-scene-creek {
+    position: absolute;
+    width: 22%; height: 58%; left: 48%; bottom: -35%;
+    border: 9px solid rgba(125, 211, 252, .38);
+    border-radius: 52% 46% 0 0;
+    transform: translateX(-50%) rotate(-4deg);
+    background: linear-gradient(90deg, rgba(224, 242, 254, .36), rgba(14, 165, 233, .42), rgba(224, 242, 254, .25));
+    box-shadow: inset 12px 0 18px rgba(255,255,255,.18), 0 0 20px rgba(14,165,233,.15);
+  }
+  .ml-scene-creek::after {
+    content: "";
+    position: absolute;
+    top: 18%; left: 15%; width: 72%; height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.75);
+    box-shadow: 14px 80px 0 rgba(255,255,255,.48), -8px 158px 0 rgba(255,255,255,.42);
+    animation: ml-scene-shimmer 3.8s ease-in-out infinite;
+  }
+  .ml-scene-alarm::after { background: radial-gradient(ellipse at 50% 42%, transparent 20%, rgba(10, 2, 0, .52) 100%); }
+  .ml-scene-haze {
+    position: absolute; inset: 8% -10% 0;
+    background: radial-gradient(ellipse at 30% 68%, rgba(249,115,22,.18), transparent 26%), radial-gradient(ellipse at 70% 44%, rgba(220,38,38,.22), transparent 28%);
+    filter: blur(18px);
+  }
+  .ml-scene-embers, .ml-scene-embers::before, .ml-scene-embers::after {
+    position: absolute;
+    width: 5px; height: 5px; border-radius: 999px;
+    background: #fb923c;
+    box-shadow: 88px 42px #facc15, 212px 88px #fb923c, 360px 22px #f97316, 515px 72px #facc15, 690px 38px #fb923c, 850px 95px #f97316;
+    animation: ml-ember-rise 4.5s ease-in infinite;
+  }
+  .ml-scene-embers { bottom: 20%; left: 10%; opacity: .65; }
+  .ml-scene-embers::before, .ml-scene-embers::after { content: ""; left: 18vw; top: 12px; animation-delay: -1.5s; }
+  .ml-scene-embers::after { left: 46vw; top: 38px; animation-delay: -3s; }
+  .ml-compare-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; box-shadow: inset 0 0 65px rgba(28,20,16,.30); }
+  .ml-mission-rays {
+    position: absolute; top: -44%; left: 50%; width: 76%; aspect-ratio: 1;
+    transform: translateX(-50%);
+    background: repeating-conic-gradient(from 10deg, rgba(254,249,195,.42) 0 8deg, transparent 8deg 22deg);
+    opacity: .72;
+  }
+  .ml-hoot-hero-wrap { width: clamp(150px, 17vw, 230px); z-index: 9 !important; }
+  .ml-hoot-hero { display: block; width: 100%; height: auto; filter: drop-shadow(0 12px 10px rgba(65, 42, 20, .25)); }
+
+  h1, h2, h3, h4 { font-family: 'Trebuchet MS', sans-serif; font-weight: 900; letter-spacing: -0.01em; margin: 0; }
+  .h-display { font-family: 'Trebuchet MS', sans-serif; font-weight: 900; letter-spacing: -0.02em; }
   .h-hand    { font-family: 'Caveat', cursive; }
   .h-note    { font-family: 'Kalam', cursive; }
 
@@ -206,7 +327,7 @@
     background: var(--bg);
     border-bottom: 1.5px solid var(--line-soft);
   }
-  .hud .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-family: 'Nunito'; }
+  .hud .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-family: 'Trebuchet MS', system-ui, sans-serif; }
   .hud .brand .logo {
     width: 36px; height: 36px;
     border-radius: 10px;
@@ -244,7 +365,7 @@
     padding: 13px 22px;
     border-radius: 14px;
     font-weight: 800;
-    font-family: 'Nunito';
+    font-family: 'Trebuchet MS', system-ui, sans-serif;
     letter-spacing: 0.01em;
     display: inline-flex;
     align-items: center;
@@ -295,8 +416,6 @@
   .screen {
     flex: 1;
     width: 100%;
-    max-width: 1280px;
-    margin: 0 auto;
     padding: 12px 20px 16px;
     min-height: 0;
     overflow-y: auto;
@@ -313,6 +432,14 @@
   }
   .screen-tight { max-width: 1180px; }
 
+  /* Opening screen is one full-bleed illustration — no page gutters, no card frame */
+  .screen.full-bleed { padding: 0; }
+  .screen.full-bleed .ml-opening-card {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
   .mascot {
     display: inline-block;
     position: relative;
@@ -326,7 +453,7 @@
     border: 2px solid var(--ink-900);
     border-radius: 18px;
     padding: 12px 16px;
-    font-family: 'Nunito';
+    font-family: 'Trebuchet MS', system-ui, sans-serif;
     font-weight: 700;
     font-size: 14px;
     color: var(--text);
@@ -448,7 +575,7 @@
     border-radius: 999px;
     font-size: 11px;
     font-weight: 800;
-    font-family: 'Nunito';
+    font-family: 'Trebuchet MS', system-ui, sans-serif;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -481,7 +608,7 @@
     padding: 10px 14px;
     border-radius: 10px;
     font-weight: 700;
-    font-family: 'Nunito';
+    font-family: 'Trebuchet MS', system-ui, sans-serif;
     font-size: 14px;
     display: flex; align-items: center; justify-content: center; gap: 6px;
     transition: all .15s;
@@ -552,6 +679,57 @@
 
 /* ===== Mystery Lab — Responsive ===== */
 
+/* ===== Mystery Lab opening case file ===== */
+.mystery-lab-root .ml-opening {
+  --opening-map: url('/games/mystery-lab/art/opening-map-v2.png');
+  --opening-map-wash: none;
+}
+.mystery-lab-root[data-theme="dark"] .ml-opening {
+  --opening-map-wash: linear-gradient(90deg, rgba(20, 17, 13, .83) 0%, rgba(20, 17, 13, .72) 41%, rgba(20, 17, 13, .35) 59%, rgba(20, 17, 13, .18) 100%);
+}
+.mystery-lab-root[data-theme="dark"] .ml-opening-hero { background: var(--bg-paper); }
+.mystery-lab-root .ml-opening-card { background: var(--bg); }
+.mystery-lab-root .ml-opening-hero { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #e4f1bd; }
+.mystery-lab-root .ml-opening-map-art, .mystery-lab-root .ml-opening-map-wash { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mystery-lab-root .ml-opening-map-art { display: block; object-fit: fill; object-position: center; filter: saturate(.82) contrast(.98); }
+.mystery-lab-root .ml-opening-map-wash { background: var(--opening-map-wash); }
+.mystery-lab-root .ml-opening-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(330px, 560px) minmax(440px, 1fr); gap: clamp(24px, 4vw, 80px); height: 100%; padding: clamp(78px, 10vh, 112px) clamp(24px, 5vw, 96px) clamp(18px, 3vh, 34px); }
+.mystery-lab-root .ml-opening-copy { z-index: 2; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; max-width: min(46ch, 560px); }
+.mystery-lab-root .ml-opening-title { width: min(100%, 470px); margin: 14px 0 0; line-height: 0; }
+.mystery-lab-root .ml-opening-title img { display: block; width: 100%; height: auto; }
+.mystery-lab-root .ml-opening-desc { max-width: 46ch; margin: 16px 0 0; color: var(--text-soft); font-size: clamp(14px, 1.15vw, 17px); line-height: 1.55; font-weight: 550; }
+.mystery-lab-root .ml-opening-hoot-line { max-width: 42ch; margin: 10px 0 0; color: var(--text); font-family: 'Trebuchet MS', sans-serif; font-size: 13px; font-weight: 700; line-height: 1.35; }
+.mystery-lab-root .ml-opening-btns { align-items: center; margin-top: 22px; flex-wrap: wrap; }
+.mystery-lab-root .ml-opening-btns .btn { min-height: 44px; }
+.mystery-lab-root .ml-opening-btns .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.mystery-lab-root .ml-opening-btns .btn.ghost {
+  padding: 18px 24px;
+  font-size: 17px;
+  border-radius: 18px;
+  background: var(--bg-paper);
+  border: 2px solid var(--primary);
+  color: var(--text);
+  box-shadow: 0 4px 0 var(--primary-d), var(--shadow-card);
+}
+.mystery-lab-root .ml-opening-btns .btn.ghost:hover { background: var(--bg-elev); }
+.mystery-lab-root .ml-opening-btns .btn.ghost:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-d); }
+.mystery-lab-root .ml-opening-button-art { display: block; width: 24px; height: 24px; object-fit: contain; flex: 0 0 auto; }
+.mystery-lab-root .ml-opening-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 12px 28px; padding: 14px clamp(24px, 5vw, 96px) 16px; background: var(--bg-elev); border-top: 1px solid var(--line); }
+.mystery-lab-root .ml-opening-case-row { display: flex; gap: 10px; align-items: center; min-width: max-content; }
+.mystery-lab-root .ml-opening-case-row > div:last-child { color: var(--text); }
+.mystery-lab-root .ml-opening-case-row .uppercase-eyebrow { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .mystery-lab-root .ml-opening .float,
+  .mystery-lab-root .ml-cinematic-scene .float,
+  .mystery-lab-root .ml-scene-creek::after,
+  .mystery-lab-root .ml-scene-embers,
+  .mystery-lab-root .ml-scene-embers::before,
+  .mystery-lab-root .ml-scene-embers::after,
+  .mystery-lab-root .ml-cutscene-ridge,
+  .mystery-lab-root .ml-cutscene-grove,
+  .mystery-lab-root .ml-cutscene-smoke { animation: none; }
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   .mystery-lab-root .ml-map-grid { grid-template-columns: 1fr 220px !important; }
   .mystery-lab-root .ml-2col-grid { grid-template-columns: 1fr 260px !important; }
@@ -599,6 +777,7 @@
   .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr !important; height: auto !important; }
   .mystery-lab-root .ml-opening-scene { display: none !important; }
   .mystery-lab-root .ml-opening-desc { display: none !important; }
+  .mystery-lab-root .ml-opening-hoot-line { display: none !important; }
   .mystery-lab-root .ml-opening-pills { display: none !important; }
   .mystery-lab-root .ml-opening-btns { margin-top: 10px !important; }
   .mystery-lab-root .ml-opening-footer {

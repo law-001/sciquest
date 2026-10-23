@@ -88,7 +88,7 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
             <DetectiveHoot size={80} mood="stern" />
             <div>
               <div className="uppercase-eyebrow" style={{ color: "var(--orange-700)" }}>Not so fast, detective!</div>
-              <h3 style={{ margin: "8px 0 6px", fontSize: 20, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
+              <h3 style={{ margin: "8px 0 6px", fontSize: 20, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, color: "var(--text)" }}>
                 You haven't visited the ponds yet
               </h3>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.5, color: "var(--text-muted)" }}>
@@ -149,17 +149,10 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
           background: "linear-gradient(180deg, #fef3c7 0%, #fed7aa 70%, #f97316 100%)",
           minHeight: 460,
         }}>
-          {/* Tent stripes background */}
-          <svg style={{ position: "absolute", left: 0, top: 0, width: "100%", height: 80 }} viewBox="0 0 800 80" preserveAspectRatio="none">
-            <path d="M0 0 L800 0 L800 50 L0 80 Z" fill="#f97316" />
-            <path d="M0 0 L100 0 L80 70 L0 80 Z M150 0 L250 0 L230 60 L130 75 Z M300 0 L400 0 L380 55 L280 70 Z M450 0 L550 0 L530 50 L430 65 Z M600 0 L700 0 L680 45 L580 60 Z" fill="#fde047" />
-          </svg>
+          <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/tent-canopy.png`} alt="" aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, width: "100%", height: 80, objectFit: "cover", objectPosition: "top", pointerEvents: "none" }} />
 
           {/* Bench surface */}
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, background: "linear-gradient(180deg, #f8efd1 0%, #e6d6b9 100%)", borderTop: "4px solid #5b4530" }}>
-            {/* wood plank lines */}
-            <div style={{ position: "absolute", inset: 0, opacity: 0.3, background: "repeating-linear-gradient(0deg, #846346 0 1px, transparent 1px 80px)" }} />
-          </div>
+          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, backgroundImage: `url(${import.meta.env.BASE_URL}games/mystery-lab/art/bench-surface.png)`, backgroundSize: "cover", backgroundPosition: "center", borderTop: "4px solid #5b4530" }} />
 
           {/* Title above tools */}
           <div style={{ position: "absolute", top: 24, left: 32, right: 32, zIndex: 2 }}>
@@ -197,7 +190,7 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
                   onMouseLeave={e => can && (e.currentTarget.style.transform = "")}
                 >
                   <LabTool test={t} />
-                  <div style={{ marginTop: 12, fontFamily: "Nunito", fontWeight: 900, fontSize: 14, color: done ? "var(--teal-700)" : "var(--text)" }}>
+                  <div style={{ marginTop: 12, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 14, color: done ? "var(--teal-700)" : "var(--text)" }}>
                     {t.label}
                   </div>
                   <div className="text-soft" style={{ fontSize: 11, fontWeight: 600 }}>{done ? "✓ completed" : t.desc}</div>
@@ -207,7 +200,7 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
                     borderRadius: 999,
                     background: done ? "var(--teal-500)" : "var(--ink-900)",
                     color: done ? "white" : "var(--yellow-300)",
-                    fontFamily: "Nunito",
+                    fontFamily: "Trebuchet MS, system-ui, sans-serif",
                   }}>
                     {done ? "DONE" : `–${t.cost}⚡`}
                   </div>
@@ -218,10 +211,10 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
 
           {/* Bubbling beaker decoration */}
           <div style={{ position: "absolute", left: 24, top: 130, zIndex: 1 }}>
-            <Beaker color="#14b8a6" />
+            <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/bench-beaker-teal.png`} alt="" aria-hidden="true" style={{ width: 56, height: 90, objectFit: "contain" }} />
           </div>
           <div style={{ position: "absolute", right: 24, top: 110, zIndex: 1 }}>
-            <Beaker color="#f97316" small />
+            <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/bench-beaker-orange.png`} alt="" aria-hidden="true" style={{ width: 40, height: 70, objectFit: "contain" }} />
           </div>
         </div>
 
@@ -315,13 +308,14 @@ function LabToolWrap({ children }) {
   return <div style={{ height: 90, display: "grid", placeItems: "center", position: "relative" }}>{children}</div>;
 }
 
+const TOOL_ART = {
+  ph: "tool-ph-strip.png", oxygen: "tool-oxygen-probe.png", temp: "tool-thermometer.png",
+  pollution: "tool-pollution-vial.png", micro: "tool-microscope.png",
+};
+
 function LabTool({ test }) {
-  if (test.id === "ph") return <LabToolWrap><PHStrip color={test.color} /></LabToolWrap>;
-  if (test.id === "oxygen") return <LabToolWrap><OxygenProbe /></LabToolWrap>;
-  if (test.id === "temp") return <LabToolWrap><Thermometer /></LabToolWrap>;
-  if (test.id === "pollution") return <LabToolWrap><PollutionTube /></LabToolWrap>;
-  if (test.id === "micro") return <LabToolWrap><Microscope /></LabToolWrap>;
-  return null;
+  const file = TOOL_ART[test.id];
+  return file ? <LabToolWrap><img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/${file}`} alt="" draggable="false" style={{ maxWidth: 76, maxHeight: 82, objectFit: "contain" }} /></LabToolWrap> : null;
 }
 
 function PHStrip({ color }) {
@@ -332,7 +326,7 @@ function PHStrip({ color }) {
       <rect x="24" y="58" width="10" height="6" fill="#dc2626" />
       <rect x="24" y="52" width="10" height="6" fill="#f97316" />
       <rect x="24" y="46" width="10" height="6" fill="#facc15" />
-      <text x="29" y="22" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="9" fill="#1c1410">pH</text>
+      <text x="29" y="22" textAnchor="middle" fontFamily="Trebuchet MS, system-ui, sans-serif" fontWeight="900" fontSize="9" fill="#1c1410">pH</text>
     </svg>
   );
 }
@@ -341,7 +335,7 @@ function OxygenProbe() {
     <svg width="60" height="84" viewBox="0 0 60 84">
       <rect x="22" y="40" width="16" height="38" rx="3" fill="#1c1410" />
       <rect x="24" y="44" width="12" height="14" fill="#0ea5e9" />
-      <text x="30" y="54" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="7" fill="white">O₂</text>
+      <text x="30" y="54" textAnchor="middle" fontFamily="Trebuchet MS, system-ui, sans-serif" fontWeight="900" fontSize="7" fill="white">O₂</text>
       <line x1="30" y1="40" x2="30" y2="14" stroke="#5b4530" strokeWidth="2" />
       <circle cx="30" cy="10" r="6" fill="#0ea5e9" stroke="#1c1410" strokeWidth="2" />
     </svg>
@@ -360,15 +354,8 @@ function Thermometer() {
   );
 }
 function PollutionTube({ color = "#f97316" }) {
-  return (
-    <svg width="60" height="84" viewBox="0 0 60 84">
-      <rect x="22" y="8" width="16" height="60" rx="8" fill="#fdf6e3" stroke="#1c1410" strokeWidth="2" />
-      <rect x="24" y="38" width="12" height="28" rx="6" style={{ fill: color, transition: "fill 0.6s ease" }} />
-      <rect x="20" y="6" width="20" height="6" rx="2" fill="#5b4530" />
-      <circle cx="30" cy="52" r="2" fill="#1c1410" opacity="0.4" />
-      <circle cx="32" cy="60" r="1.5" fill="#1c1410" opacity="0.4" />
-    </svg>
-  );
+  const vial = color === "#8b5cf6" ? "vial-acid.png" : color === "#dc2626" ? "vial-thermal.png" : "vial-metal.png";
+  return <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/${vial}`} alt="Pond water sample vial" style={{ width: 60, height: 84, objectFit: "contain" }} />;
 }
 function Microscope() {
   return (
@@ -408,9 +395,12 @@ function TestMiniGame({ test, phase, onComplete, onClose }) {
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.85 }}>Mini-game</div>
             <h3 style={{ fontSize: 20, margin: 0 }}>{test.label}</h3>
           </div>
-          <button onClick={onClose} className="btn icon ghost" style={{ background: "rgba(255,255,255,0.15)", border: 0, color: "white" }}>
-            <Lucide name="x" size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/${TOOL_ART[test.id]}`} alt="" draggable="false" style={{ width: 44, height: 44, objectFit: "contain", filter: "drop-shadow(0 2px 0 rgba(0,0,0,0.12))" }} />
+            <button onClick={onClose} className="btn icon ghost" style={{ background: "rgba(255,255,255,0.15)", border: 0, color: "white" }}>
+              <Lucide name="x" size={18} />
+            </button>
+          </div>
         </div>
 
         <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>
@@ -435,7 +425,7 @@ function MiniGameRunner({ test, onComplete }) {
 function PHBeakerSVG() {
   return (
     <svg width="110" height="140" viewBox="0 0 110 140" style={{ filter: "drop-shadow(0 6px 0 rgba(0,0,0,0.15))", overflow: "visible" }}>
-      <text x="55" y="14" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="11" fill="#7c5a30">POND A</text>
+      <text x="55" y="14" textAnchor="middle" fontFamily="Trebuchet MS, system-ui, sans-serif" fontWeight="900" fontSize="11" fill="#7c5a30">POND A</text>
       <rect x="14" y="20" width="82" height="12" rx="6" fill="#5b4530" stroke="#1c1410" strokeWidth="1.5" />
       <path d="M22 32 L22 124 Q22 134 32 134 L78 134 Q88 134 88 124 L88 32 Z" fill="#fdf6e3" stroke="#1c1410" strokeWidth="2" />
       <path d="M24 62 L24 122 Q24 132 33 132 L77 132 Q86 132 86 122 L86 62 Z" fill="#7c5a30" opacity="0.72" />
@@ -513,7 +503,7 @@ function PHMiniGame({ onDone }) {
     }
   };
 
-  const stripColor = dipProgress < 30 ? "#e2e8f0" : dipProgress < 70 ? "#fbbf24" : "#f97316";
+  const stripAsset = dipProgress < 30 ? "ph-strip-dry.png" : dipProgress < 70 ? "ph-strip-wet.png" : "ph-strip-acidic.png";
   const stripTopPx = dipProgress * 1.15;
 
   /* ── PHASE 1: DIP ── */
@@ -536,7 +526,7 @@ function PHMiniGame({ onDone }) {
       </button>
     );
     const progressMsg = isDipping && dipProgress < 100 && (
-      <div style={{ textAlign: "center", fontFamily: "Nunito", fontWeight: 700, fontSize: 13, color: "var(--text-soft)" }}>
+      <div style={{ textAlign: "center", fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 700, fontSize: 13, color: "var(--text-soft)" }}>
         {dipProgress < 50 ? "Going in…" : "The color is changing! 🎨"}
       </div>
     );
@@ -544,7 +534,7 @@ function PHMiniGame({ onDone }) {
     return (
       <div style={{ padding: "8px 0" }}>
         <div style={{ textAlign: "center", marginBottom: isCompact ? 6 : 16 }}>
-          <div style={{ fontSize: isCompact ? 15 : 18, fontFamily: "Nunito", fontWeight: 900, color: "var(--text)" }}>
+          <div style={{ fontSize: isCompact ? 15 : 18, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, color: "var(--text)" }}>
             Dip the pH strip into Pond A water!
           </div>
           {!isCompact && (
@@ -558,7 +548,7 @@ function PHMiniGame({ onDone }) {
           {/* Jar + strip */}
           <div style={{ position: "relative", height: jarH, width: isCompact ? 120 : "100%", flexShrink: 0, display: "flex", justifyContent: "center", overflow: "hidden" }}>
             <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)" }}>
-              <PHBeakerSVG />
+              <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/ph-jar.png`} alt="Pond A water sample" style={{ width: 110, height: 140, objectFit: "contain" }} />
             </div>
             <div style={{
               position: "absolute",
@@ -568,14 +558,7 @@ function PHMiniGame({ onDone }) {
               zIndex: 10,
               pointerEvents: "none",
             }}>
-              <svg width="28" height="88" viewBox="0 0 28 88">
-                <rect x="8" y="0" width="12" height="66" rx="2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.5" />
-                <rect x="10" y="42" width="8" height="22" style={{ fill: stripColor, transition: "fill 0.4s ease" }} />
-                <text x="14" y="16" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="7" fill="#475569">pH</text>
-                {[22, 30, 38].map(y => (
-                  <line key={y} x1="20" y1={y} x2="24" y2={y} stroke="#94a3b8" strokeWidth="1" />
-                ))}
-              </svg>
+              <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/${stripAsset}`} alt="pH strip" style={{ width: 28, height: 88, objectFit: "contain" }} />
             </div>
           </div>
 
@@ -603,7 +586,7 @@ function PHMiniGame({ onDone }) {
   return (
     <div style={{ padding: "8px 0" }}>
       <div style={{ textAlign: "center", marginBottom: 14 }}>
-        <div style={{ fontSize: 18, fontFamily: "Nunito", fontWeight: 900 }}>
+        <div style={{ fontSize: 18, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900 }}>
           What pH does the strip show?
         </div>
         <div style={{ fontSize: 13, color: "var(--text-soft)", fontWeight: 600, marginTop: 4 }}>
@@ -613,18 +596,13 @@ function PHMiniGame({ onDone }) {
 
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <svg width="32" height="84" viewBox="0 0 32 84">
-            <rect x="9"  y="0"  width="14" height="62" rx="2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.5" />
-            <rect x="11" y="38" width="10" height="22" fill="#f97316" />
-            <rect x="11" y="50" width="10" height="8"  fill="#ef4444" />
-            <text x="16" y="14" textAnchor="middle" fontFamily="Nunito" fontWeight="900" fontSize="7" fill="#475569">pH</text>
-          </svg>
-          <span style={{ fontFamily: "Nunito", fontWeight: 800, fontSize: 11, color: "#f97316" }}>Your strip</span>
+          <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/ph-strip-acidic.png`} alt="Acidic pH strip" style={{ width: 32, height: 84, objectFit: "contain" }} />
+          <span style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 11, color: "#f97316" }}>Your strip</span>
         </div>
 
         <div style={{ flex: 1 }}>
           <div style={{ height: 18, borderRadius: 9, background: "linear-gradient(90deg, #dc2626 0%, #f97316 18%, #facc15 34%, #22c55e 50%, #3b82f6 68%, #8b5cf6 100%)", border: "1.5px solid var(--line)" }} />
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontFamily: "Nunito", fontWeight: 700, fontSize: 10, color: "var(--text-soft)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 700, fontSize: 10, color: "var(--text-soft)" }}>
             <span>1 · Very acidic</span>
             <span>7 · Neutral</span>
             <span>14 · Very basic</span>
@@ -633,12 +611,12 @@ function PHMiniGame({ onDone }) {
       </div>
 
       {isCorrect === false && (
-        <div style={{ marginBottom: 12, padding: "9px 14px", borderRadius: 10, background: "#fee2e2", color: "#991b1b", fontFamily: "Nunito", fontWeight: 800, fontSize: 14, textAlign: "center" }}>
+        <div style={{ marginBottom: 12, padding: "9px 14px", borderRadius: 10, background: "#fee2e2", color: "#991b1b", fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14, textAlign: "center" }}>
           Not quite! Orange-red color = acidic. Look at the left side of the scale! 🔴
         </div>
       )}
       {isCorrect === true && (
-        <div style={{ marginBottom: 12, padding: "9px 14px", borderRadius: 10, background: "#dcfce7", color: "#166534", fontFamily: "Nunito", fontWeight: 800, fontSize: 14, textAlign: "center" }}>
+        <div style={{ marginBottom: 12, padding: "9px 14px", borderRadius: 10, background: "#dcfce7", color: "#166534", fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14, textAlign: "center" }}>
           Correct! 🎉 pH 4.5 = ACIDIC — that's bad for fish!
         </div>
       )}
@@ -666,7 +644,7 @@ function PHMiniGame({ onDone }) {
               onMouseLeave={e => selected === null && (e.currentTarget.style.transform = "")}
             >
               <div style={{ width: 28, height: 28, borderRadius: 8, background: opt.color, margin: "0 auto 8px" }} />
-              <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 16, color: opt.color }}>{opt.label}</div>
+              <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 16, color: opt.color }}>{opt.label}</div>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-soft)", marginTop: 2 }}>{opt.desc}</div>
             </button>
           );
@@ -751,7 +729,7 @@ function OxygenMiniGame({ onDone }) {
             <span key={i} style={{
               width: 26, height: 26, borderRadius: 999,
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "Nunito", fontWeight: 900, fontSize: 12,
+              fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 12,
               background: i < level ? "#34d399" : i === level ? "#0ea5e9" : "#e5e7eb",
               color: i <= level ? "white" : "#9ca3af",
               border: i === level ? "2px solid #1c1410" : "2px solid transparent",
@@ -766,7 +744,7 @@ function OxygenMiniGame({ onDone }) {
           marginBottom: 12, padding: "8px 14px", borderRadius: 10,
           background: flash === "hit" ? "#dcfce7" : "#fee2e2",
           color: flash === "hit" ? "#166534" : "#991b1b",
-          fontFamily: "Nunito", fontWeight: 800, fontSize: 14, textAlign: "center",
+          fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14, textAlign: "center",
         }}>
           {flash === "hit"
             ? (level < OXYGEN_LEVELS.length - 1 ? "Nice! Next level!" : "Perfect!")
@@ -787,7 +765,7 @@ function OxygenMiniGame({ onDone }) {
           background: "#1c1410", borderRadius: 3,
         }} />
       </div>
-      <div style={{ marginTop: 6, fontSize: 12, fontWeight: 700, color: "var(--text-soft)", fontFamily: "Nunito", textAlign: "right" }}>
+      <div style={{ marginTop: 6, fontSize: 12, fontWeight: 700, color: "var(--text-soft)", fontFamily: "Trebuchet MS, system-ui, sans-serif", textAlign: "right" }}>
         {cfg.label} · green shrinks, bar speeds up each round
       </div>
       <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
@@ -806,59 +784,43 @@ const TEMP_CONTAINERS = [
   { id: "pondB", label: "Pond B", temp: 22, waterColor: "#7dd3fc", labelColor: "#0369a1" },
 ];
 
-function DragThermometer({ scale = 1 }) {
-  const w = Math.round(32 * scale), h = Math.round(106 * scale);
-  return (
-    <svg width={w} height={h} viewBox="0 0 32 106" style={{ display: "block" }}>
-      <rect x="10" y="0" width="12" height="70" rx="6" fill="#fef9f0" stroke="#1c1410" strokeWidth="2" />
-      <rect x="13" y="28" width="6" height="42" fill="#ef4444" />
-      {[6, 14, 22].map(y => (
-        <line key={y} x1="22" y1={y + 6} x2="27" y2={y + 6} stroke="#9ca3af" strokeWidth="1.5" />
-      ))}
-      {[14, 24, 34, 44, 54, 64].map(y => (
-        <line key={y} x1="22" y1={y} x2="28" y2={y} stroke="#1c1410" strokeWidth="1.2" />
-      ))}
-      <circle cx="16" cy="82" r="13" fill="#ef4444" stroke="#1c1410" strokeWidth="2" />
-      <ellipse cx="11" cy="77" rx="4" ry="3" fill="rgba(255,255,255,0.38)" transform="rotate(-20 11 77)" />
-    </svg>
-  );
+// Reading colour slides from blue (coldest sample) to red (hottest) so the
+// numbers read like a thermometer; both ends stay dark enough for text contrast.
+const TEMP_COLD = 15, TEMP_HOT = 35;
+const COLD_RGB = [37, 99, 235], HOT_RGB = [220, 38, 38];
+function getTempColor(temp) {
+  const t = Math.min(1, Math.max(0, (temp - TEMP_COLD) / (TEMP_HOT - TEMP_COLD)));
+  const [r, g, b] = COLD_RGB.map((c, i) => Math.round(c + (HOT_RGB[i] - c) * t));
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
-function ContainerBeaker({ id, waterColor, dipping, isDone, scale = 1 }) {
+function DragThermometer({ scale = 1 }) {
+  return <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/temp-thermometer.png`} alt="Thermometer" draggable="false" style={{ display: "block", width: Math.round(38 * scale), height: Math.round(106 * scale), objectFit: "contain" }} />;
+}
+
+function ContainerBeaker({ waterColor, dipping, isDone, scale = 1 }) {
   const w = Math.round(90 * scale), h = Math.round(122 * scale);
   return (
     <svg width={w} height={h} viewBox="0 0 90 122" style={{ overflow: "visible", display: "block" }}>
-      <defs>
-        <clipPath id={`bc2-${id}`}>
-          <rect x="12" y="28" width="66" height="82" rx="4" />
-        </clipPath>
-      </defs>
-      {/* water fill */}
-      <rect x="12" y="52" width="66" height="58" fill={waterColor} opacity="0.85" clipPath={`url(#bc2-${id})`} />
-      {/* thermometer — stem overflows above SVG bounds; rim is drawn after to mask the insertion gap */}
+      {/* Water + dipped thermometer sit behind the glass PNG: its body is translucent so they show
+          through, and its opaque lid hides where the thermometer enters. Glass interior ≈ x 18–73, y 56–110. */}
+      <rect x="18" y="72" width="55" height="38" rx="6" fill={waterColor} opacity="0.85" />
       {dipping && (
         <>
-          <rect x="41" y="-38" width="8" height="100" rx="4" fill="#fef9f0" stroke="#1c1410" strokeWidth="1.5" />
-          <rect x="43" y="-20" width="4" height="82" fill="#ef4444" />
-          <circle cx="45" cy="72" r="11" fill="#ef4444" stroke="#1c1410" strokeWidth="1.5" />
-          <ellipse cx="40" cy="67" rx="4" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-20 40 67)" />
-          <ellipse cx="45" cy="52" rx="28" ry="5" fill="white" opacity="0.4">
-            <animate attributeName="rx" values="28;36;28" dur="1s" repeatCount="indefinite" />
+          <rect x="41" y="-38" width="8" height="128" rx="4" fill="#fef9f0" stroke="#1c1410" strokeWidth="1.5" />
+          <rect x="43" y="-20" width="4" height="110" fill="#ef4444" />
+          <circle cx="45" cy="96" r="10" fill="#ef4444" stroke="#1c1410" strokeWidth="1.5" />
+          <ellipse cx="45" cy="72" rx="24" ry="4" fill="white" opacity="0.4">
+            <animate attributeName="rx" values="24;30;24" dur="1s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.4;0.07;0.4" dur="1s" repeatCount="indefinite" />
           </ellipse>
         </>
       )}
-      {/* beaker body outline */}
-      <rect x="12" y="28" width="66" height="82" rx="8" fill="none" stroke="#1c1410" strokeWidth="2.5" />
-      {/* rim — drawn last so it covers the thermometer at the insertion point */}
-      <rect x="8" y="18" width="74" height="14" rx="6" fill="#5b4530" stroke="#1c1410" strokeWidth="1.5" />
-      <line x1="12" y1="66" x2="26" y2="66" stroke="#1c1410" strokeWidth="1" opacity="0.4" />
-      <line x1="12" y1="82" x2="26" y2="82" stroke="#1c1410" strokeWidth="1" opacity="0.4" />
-      <line x1="12" y1="98" x2="26" y2="98" stroke="#1c1410" strokeWidth="1" opacity="0.4" />
+      <image href={`${import.meta.env.BASE_URL}games/mystery-lab/art/temp-beaker-glass.png`} x="0" y="25" width="90" height="97" />
       {isDone && (
         <>
-          <circle cx="74" cy="34" r="13" fill="#22c55e" stroke="white" strokeWidth="2" />
-          <text x="74" y="39" textAnchor="middle" fill="white" fontSize="15" fontWeight="900">✓</text>
+          <circle cx="78" cy="46" r="13" fill="#22c55e" stroke="white" strokeWidth="2" />
+          <text x="78" y="51" textAnchor="middle" fill="white" fontSize="15" fontWeight="900">✓</text>
         </>
       )}
     </svg>
@@ -988,7 +950,7 @@ function TempMiniGame({ onDone }) {
   if (phase === "question") {
     return (
       <div style={{ padding: "20px 0" }}>
-        <p style={{ margin: "0 0 20px", fontFamily: "Nunito", fontWeight: 800, fontSize: 17, textAlign: "center" }}>
+        <p style={{ margin: "0 0 20px", fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 17, textAlign: "center" }}>
           Which sample was the hottest?
         </p>
         {answer && (
@@ -996,7 +958,7 @@ function TempMiniGame({ onDone }) {
             marginBottom: 14, padding: "10px 16px", borderRadius: 10, textAlign: "center",
             background: isCorrect ? "#dcfce7" : "#fee2e2",
             color: isCorrect ? "#166534" : "#991b1b",
-            fontFamily: "Nunito", fontWeight: 800, fontSize: 14,
+            fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14,
           }}>
             {isCorrect
               ? `Correct! Pond A is hottest at ${measured.pondA}°C — dangerously warm.`
@@ -1024,10 +986,10 @@ function TempMiniGame({ onDone }) {
                 onMouseEnter={e => !answer && (e.currentTarget.style.transform = "translateY(-4px)")}
                 onMouseLeave={e => !answer && (e.currentTarget.style.transform = "")}
               >
-                <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 14, color: c.labelColor, marginBottom: 8 }}>
+                <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 14, color: c.labelColor, marginBottom: 8 }}>
                   {c.label}
                 </div>
-                <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 26, color: "#ef4444" }}>
+                <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 26, color: getTempColor(measured[c.id]) }}>
                   {measured[c.id]}°C
                 </div>
               </button>
@@ -1066,7 +1028,7 @@ function TempMiniGame({ onDone }) {
                 <div style={{ height: Math.round(120 * bs), display: "flex", alignItems: "center" }}>
                   {isCurrentDip && (
                     <div style={{
-                      fontFamily: "Nunito", fontWeight: 900, fontSize: 22, color: "#ef4444",
+                      fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 22, color: "#ef4444",
                       background: "white", borderRadius: 999, padding: "2px 12px",
                       boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
                     }}>
@@ -1075,14 +1037,14 @@ function TempMiniGame({ onDone }) {
                   )}
                 </div>
                 <div ref={el => containerRefs.current[c.id] = el}>
-                  <ContainerBeaker id={c.id} waterColor={c.waterColor} dipping={isCurrentDip} isDone={isDone} scale={bs} />
+                  <ContainerBeaker waterColor={c.waterColor} dipping={isCurrentDip} isDone={isDone} scale={bs} />
                 </div>
-                <div style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 13, color: c.labelColor }}>
+                <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 13, color: c.labelColor }}>
                   {c.label}
                 </div>
                 <div style={{
-                  fontFamily: "Nunito", fontWeight: 900, fontSize: 17,
-                  color: isDone ? "#ef4444" : "var(--text-muted)", minHeight: 24,
+                  fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 17,
+                  color: isDone ? getTempColor(measured[c.id]) : "var(--text-muted)", minHeight: 24,
                 }}>
                   {isDone ? `${measured[c.id]}°C` : "—"}
                 </div>
@@ -1119,7 +1081,7 @@ function TempMiniGame({ onDone }) {
             position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)",
             background: "rgba(28,20,16,0.72)", color: "#fde047",
             padding: "4px 14px", borderRadius: 999,
-            fontFamily: "Nunito", fontWeight: 800, fontSize: 12,
+            fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 12,
             whiteSpace: "nowrap", pointerEvents: "none",
           }}>
             ☝ Grab & drag into a container
@@ -1128,7 +1090,7 @@ function TempMiniGame({ onDone }) {
 
         <div style={{
           position: "absolute", top: 12, right: 14,
-          fontFamily: "Nunito", fontWeight: 800, fontSize: 12,
+          fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 12,
           color: "rgba(28,20,16,0.5)",
         }}>
           {Object.keys(measured).length}/{TEMP_CONTAINERS.length}
@@ -1242,7 +1204,7 @@ function PollutionMiniGame({ onDone }) {
             <span key={i} style={{
               width: 26, height: 26, borderRadius: 999,
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "Nunito", fontWeight: 900, fontSize: 12,
+              fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 12,
               background: i < level ? "#34d399" : i === level ? currentStep.vialColor : "#e5e7eb",
               color: i <= level ? "white" : "#9ca3af",
               border: i === level ? "2px solid #1c1410" : "2px solid transparent",
@@ -1271,7 +1233,7 @@ function PollutionMiniGame({ onDone }) {
           marginBottom: 12, padding: "8px 14px", borderRadius: 10,
           background: flash === "miss" ? "#fee2e2" : "#dcfce7",
           color: flash === "miss" ? "#991b1b" : "#166534",
-          fontFamily: "Nunito", fontWeight: 800, fontSize: 14, textAlign: "center",
+          fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14, textAlign: "center",
         }}>
           {flash === "hit" && seqIdx < cfg.sequence.length - 1 && "Correct! Vial changing…"}
           {flash === "hit" && seqIdx === cfg.sequence.length - 1 && level < POLLUTION_LEVELS.length - 1 && "Level up!"}
@@ -1291,7 +1253,7 @@ function PollutionMiniGame({ onDone }) {
           flexShrink: 0,
         }}>
           <PollutionTube color={currentStep.vialColor} />
-          <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "Nunito", color: "var(--text-soft)" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "Trebuchet MS, system-ui, sans-serif", color: "var(--text-soft)" }}>
             Pond A
           </div>
         </div>
@@ -1310,7 +1272,7 @@ function PollutionMiniGame({ onDone }) {
                   transition: "border .15s, background .15s",
                 }}>
                 <span style={{ width: 18, height: 18, background: o.color, borderRadius: 4, flexShrink: 0 }} />
-                <span style={{ fontFamily: "Nunito", fontWeight: 800, fontSize: 14 }}>{o.label}</span>
+                <span style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 14 }}>{o.label}</span>
                 {isWrong && <Lucide name="x" size={15} color="#ef4444" />}
               </button>
             );
@@ -1318,7 +1280,7 @@ function PollutionMiniGame({ onDone }) {
         </div>
       </div>
 
-      <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "var(--text-soft)", fontFamily: "Nunito", textAlign: "right" }}>
+      <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "var(--text-soft)", fontFamily: "Trebuchet MS, system-ui, sans-serif", textAlign: "right" }}>
         {cfg.label} · vial {seqIdx + 1}/{cfg.sequence.length} · more choices each round
       </div>
     </div>
@@ -1333,39 +1295,8 @@ const MICRO_TARGETS = [
   { x: 38, y: 68, vx: -0.46, vy: -0.32 },
 ];
 
-function MetallicVirus({ uid, size = 44 }) {
-  const bodyR = 11, spikeLen = 7, tipR = 2.5, numSpikes = 10;
-  const cx = 22, dim = 44;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${dim} ${dim}`} style={{ display: "block" }}>
-      <defs>
-        <radialGradient id={`mvb-${uid}`} cx="38%" cy="32%" r="65%">
-          <stop offset="0%" stopColor="#d0e4ee" />
-          <stop offset="50%" stopColor="#6a90a4" />
-          <stop offset="100%" stopColor="#243c4e" />
-        </radialGradient>
-        <radialGradient id={`mvs-${uid}`} cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#b8d0de" />
-          <stop offset="100%" stopColor="#2e5060" />
-        </radialGradient>
-      </defs>
-      {Array.from({ length: numSpikes }, (_, i) => {
-        const a = (i / numSpikes) * Math.PI * 2 - Math.PI / 2;
-        const x1 = cx + Math.cos(a) * bodyR * 0.9;
-        const y1 = cx + Math.sin(a) * bodyR * 0.9;
-        const x2 = cx + Math.cos(a) * (bodyR + spikeLen);
-        const y2 = cx + Math.sin(a) * (bodyR + spikeLen);
-        return (
-          <g key={i}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={`url(#mvs-${uid})`} strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx={x2} cy={y2} r={tipR} fill={`url(#mvs-${uid})`} stroke="#182e3a" strokeWidth="0.8" />
-          </g>
-        );
-      })}
-      <circle cx={cx} cy={cx} r={bodyR} fill={`url(#mvb-${uid})`} stroke="#182e3a" strokeWidth="1.8" />
-      <ellipse cx={cx - 3.5} cy={cx - 3.5} rx={3.5} ry={2} fill="rgba(255,255,255,0.5)" transform={`rotate(-35 ${cx - 3.5} ${cx - 3.5})`} />
-    </svg>
-  );
+function MetallicVirus({ size = 44 }) {
+  return <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/micro-contaminant.png`} alt="Metallic contaminant" draggable="false" style={{ width: size, height: size, display: "block", objectFit: "contain" }} />;
 }
 
 function MicroMiniGame({ onDone }) {
@@ -1416,21 +1347,10 @@ function MicroMiniGame({ onDone }) {
         aspectRatio: "1.6",
         maxHeight: "min(340px, 42vh)",
         borderRadius: 999,
-        background: "radial-gradient(circle, rgba(20,184,166,0.3), rgba(20,184,166,0.05))",
-        border: "8px solid #1c1410",
+        background: `url(${import.meta.env.BASE_URL}games/mystery-lab/art/micro-field.png) center / 100% 100% no-repeat`,
+        border: "none",
         overflow: "hidden",
       }}>
-        {Array.from({ length: 20 }).map((_, i) => (
-          <span key={i} style={{
-            position: "absolute",
-            left: `${(i * 37) % 95}%`,
-            top: `${(i * 53) % 90}%`,
-            width: 12, height: 12,
-            borderRadius: 999,
-            background: "rgba(20,184,166,0.4)",
-            border: "1px solid rgba(20,184,166,0.6)",
-          }} />
-        ))}
         {MICRO_TARGETS.map((_, i) => {
           const got = found.includes(i);
           const pos = positions[i];
@@ -1449,17 +1369,9 @@ function MicroMiniGame({ onDone }) {
               }}
             >
               {got ? (
-                <div style={{
-                  width: Math.round(30 * vs), height: Math.round(30 * vs), borderRadius: 999,
-                  background: "var(--teal-500)",
-                  display: "grid", placeItems: "center",
-                  border: "2.5px solid white",
-                  boxShadow: "0 0 0 3px rgba(20,184,166,0.4)",
-                }}>
-                  <Lucide name="check" size={Math.round(14 * vs)} strokeWidth={3} color="white" />
-                </div>
+                <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/micro-contaminant-found.png`} alt="Contaminant found" draggable="false" style={{ width: vDim, height: vDim, objectFit: "contain" }} />
               ) : (
-                <MetallicVirus uid={i} size={vDim} />
+                <MetallicVirus size={vDim} />
               )}
             </button>
           );
@@ -1478,7 +1390,7 @@ function MiniGameResults({ test, onClose }) {
       </div>
       <div className="card" style={{ background: "var(--orange-50)", padding: 14, display: "flex", gap: 12, alignItems: "center" }}>
         <DetectiveHoot size={48} />
-        <div style={{ flex: 1, fontFamily: "Kalam", fontSize: 16, fontWeight: 600 }}>
+        <div style={{ flex: 1, fontFamily: "Comic Sans MS, cursive", fontSize: 16, fontWeight: 600 }}>
           {test.verdict === "support" && `Big difference between ponds! Strong evidence.`}
           {test.verdict === "partial" && `There's a difference, but it might not be the whole story.`}
         </div>

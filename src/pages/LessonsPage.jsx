@@ -48,6 +48,7 @@ import {
 import { weekMaxXp } from "../lib/week-xp";
 import { useAuth } from "../context/AuthContext";
 import { xpToNextLevel, levelFromXp } from "../lib/xp-config";
+import { levelIconSrc } from "../lib/level-icons";
 
 const ICON_MAP = {
   Shapes, // 1. Scientific Models
@@ -205,9 +206,11 @@ export function LessonsPage({
           </div>
           <Card className="p-4 flex items-center gap-6 bg-white dark:bg-stone-800 border-2 border-primary-100 dark:border-stone-700">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center">
-                <Star className="w-6 h-6 text-accent-500 fill-accent-500" />
-              </div>
+              <img
+                src={levelIconSrc(level)}
+                alt={`Level ${level} icon`}
+                className="w-12 h-12 shrink-0 object-contain"
+              />
               <div>
                 <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
                   Current Level
