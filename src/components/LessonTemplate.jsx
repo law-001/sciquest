@@ -27,6 +27,23 @@ export { SLOT_MAP }
 // back with one flick, so the button would just be in the way.
 const TOP_BUTTON_AFTER_PX = 640
 
+// Wall-clock form of a quiz window edge, e.g. "Fri, Oct 3 at 4:00 PM".
+function formatWindowTime(iso) {
+  if (!iso) return ""
+  const at = new Date(iso)
+  if (Number.isNaN(at.getTime())) return ""
+  const date = at.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })
+  const time = at.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  })
+  return `${date} at ${time}`
+}
+
 function ReferencesSection({ references }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -111,6 +128,10 @@ export function LessonTemplate({
   onLessonSelect,
   quizLocked = false,
   personalQuizGrant = null,
+  // The quiz's scheduled window ({ from, until } ISO instants) and where the
+  // clock currently sits in it: "none" | "before" | "open" | "after".
+  quizWindow = null,
+  quizWindowState = "none",
 }) {
   const [activeSection, setActiveSection] = useState(0);
   const [prevLessonId, setPrevLessonId] = useState(lesson?.id);
@@ -567,8 +588,16 @@ export function LessonTemplate({
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   {quizLocked ? (
                     <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-400 dark:text-stone-500 font-bold cursor-not-allowed select-none">
-                      <Lock className="w-5 h-5" />
-                      Quiz Locked by Teacher
+                      {quizWindowState === "before" ? (
+                        <Clock className="w-5 h-5" />
+                      ) : (
+                        <Lock className="w-5 h-5" />
+                      )}
+                      {quizWindowState === "before"
+                        ? `Quiz Opens ${formatWindowTime(quizWindow?.from)}`
+                        : quizWindowState === "after"
+                          ? "Quiz Window Has Closed"
+                          : "Quiz Locked by Teacher"}
                     </div>
                   ) : (
                     <Button
@@ -584,6 +613,21 @@ export function LessonTemplate({
                     Back to Lessons
                   </Button>
                 </div>
+                {quizLocked &&
+                  (quizWindowState === "before" ||
+                    quizWindowState === "after") && (
+                  <p className="mt-5 text-sm font-bold text-stone-500 dark:text-stone-400">
+                    {quizWindowState === "before"
+                      ? `Your teacher set this quiz to open ${formatWindowTime(quizWindow?.from)}${quizWindow?.until ? ` and close ${formatWindowTime(quizWindow.until)}` : ""}.`
+                      : `This quiz closed ${formatWindowTime(quizWindow?.until)}. Ask your teacher to open it for you if you missed it.`}
+                  </p>
+                )}
+                {!quizLocked && quizWindowState === "open" && quizWindow?.until && (
+                  <p className="mt-5 text-sm font-bold text-accent-700 dark:text-accent-400">
+                    Open now — this quiz closes {formatWindowTime(quizWindow.until)}.
+                    All your attempts have to be finished by then.
+                  </p>
+                )}
                 {!quizLocked && personalQuizGrant && (
                   <p className="mt-5 text-sm font-bold text-secondary-700 dark:text-secondary-400">
                     Your teacher re-opened this quiz just for you

@@ -14,6 +14,7 @@ export function QuizPage({
   maxAttempts = null,
   showCorrectAnswers = true,
   closesAt = null,
+  closesReason = null,
 }) {
   const { weeks, getQuiz } = useLessonsData();
   const allLessons = weeks.flatMap((w) => w.lessons);
@@ -58,6 +59,7 @@ export function QuizPage({
       maxAttempts={maxAttempts}
       showCorrectAnswers={showCorrectAnswers}
       closesAt={closesAt}
+      closesReason={closesReason}
     />
   );
 }

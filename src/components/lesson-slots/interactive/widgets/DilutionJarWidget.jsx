@@ -1,45 +1,94 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// w07-l1 signature interactive — diluting without removing anything.
+// w07-l1 signature interactive: diluting without removing anything.
 //
-// The particles are stored in normalised coordinates inside the liquid, so when
-// water goes in and the surface rises they are literally spread through a
-// bigger space. The count on screen never changes while you add water — the
-// colour lightens because the same number of particles is sharing more volume,
-// which is the one thing about dilution that a still picture cannot show.
+// The particles live in normalised coordinates inside the liquid, so when the
+// tap runs and the surface rises they are literally spread through a bigger
+// space. The count on screen never changes while water goes in, and the colour
+// lightens because the same particles share more volume. That is the one thing
+// about dilution a still picture cannot show.
 //
-// The second route halves the solute instead: pour half the jar away and top it
-// back up. Same volume, half the particles, and the concentration halves too.
+// The second route halves the solute instead: pour half the jar into the waste
+// beaker, then top it back up. Same volume, half the particles, half the
+// concentration. The waste beaker keeps filling, so "I poured some away" stays
+// visible after the pour has finished.
+//
+// The scene paints its own wall and bench, so its contrast is the same on cream
+// and on stone-900 and the widget never has to know about the theme.
 
+// Drawn at the stage's own shape (about 16:10) so the scene fills the frame.
 const W = 620
-const H = 330
+const H = 390
+// Wall and bench run past the viewBox so a cropped edge never shows a seam.
+// Nothing readable goes in this margin.
+const BLEED = 60
 
-const JX = 118
-const JW = 236
-const JY = 44
-const JH = 254
+const BENCH_Y = 340
+
+const JX = 56
+const JW = 196
+const JY = 96
+const JH = 242
+const FLOOR = JY + JH - 4
+
 const MAX_ML = 400
 const MAX_G = 60
 
-const COL_X = 470
-const COL_W = 46
-const COL_TOP = 62
-const COL_BOT = 288
+const TAP_X = JX + JW / 2
+const TAP_Y = 86
+
+const WX = 276
+const WW = 76
+const WTOP = 262
+const WBOT = 338
+
+const SHEET_X = 372
+const SHEET_Y = 26
+const SHEET_W = 222
+const SHEET_H = 290
+
+const COL_X = 414
+const COL_W = 44
+const COL_TOP = 104
+const COL_BOT = 272
 const COL_MAX_PCT = 26
 
 const TARGET_PCT = 6
 const TOLERANCE_PCT = 0.4
 
+const INK = '#57534e'
+const INK_MID = '#78716c'
+
 const GOALS = [
-  { id: 'water', label: 'Diluted by adding water', hint: 'Add water. Count the particles before and after — the number does not change.' },
-  { id: 'halve', label: 'Diluted by pouring half away', hint: 'Pour half the jar out and top it back up with water.' },
-  { id: 'target', label: `Hit ${TARGET_PCT.toFixed(1)} % m/m`, hint: `Get the readout inside ${(TARGET_PCT - TOLERANCE_PCT).toFixed(1)} – ${(TARGET_PCT + TOLERANCE_PCT).toFixed(1)} % m/m.` },
+  {
+    id: 'water',
+    label: 'Diluted by adding water',
+    hint: 'Add water and watch the particle count. It never changes.',
+  },
+  {
+    id: 'halve',
+    label: 'Diluted by pouring half away',
+    hint: 'Pour half the jar out, then top it back up.',
+  },
+  {
+    id: 'target',
+    label: `Hit ${TARGET_PCT.toFixed(1)} % m/m`,
+    hint: `Land the readout between ${(TARGET_PCT - TOLERANCE_PCT).toFixed(1)} and ${(TARGET_PCT + TOLERANCE_PCT).toFixed(1)} %.`,
+  },
 ]
 
 const percent = (g, ml) => (g + ml === 0 ? 0 : (g / (g + ml)) * 100)
+
+const particleCount = (g) => Math.min(160, Math.round(g * 2.6))
+
+const stateFor = (pct) => {
+  if (Math.abs(pct - TARGET_PCT) <= TOLERANCE_PCT) return { label: 'on target', ink: '#0d9488' }
+  if (pct > 12) return { label: 'concentrated', ink: '#b45309' }
+  return { label: 'dilute', ink: '#2563eb' }
+}
 
 function makeParticles() {
   return Array.from({ length: 160 }, () => {
@@ -53,14 +102,73 @@ function makeParticles() {
   })
 }
 
-const colY = (pct) => COL_BOT - (Math.min(pct, COL_MAX_PCT) / COL_MAX_PCT) * (COL_BOT - COL_TOP)
+const colY = (pct) =>
+  COL_BOT - (Math.min(pct, COL_MAX_PCT) / COL_MAX_PCT) * (COL_BOT - COL_TOP)
 
-function drawScene(ctx, { parts, shown, surfaceY, pct, solute, water }) {
-  ctx.clearRect(0, 0, W, H)
+const surfaceFor = (ml) => FLOOR - (ml / MAX_ML) * (JH - 16)
 
-  // ── Jar ──
+// ── Scene furniture ─────────────────────────────────────────────────────────
+
+function drawRoom(ctx) {
+  ctx.fillStyle = '#f2f7fc'
+  ctx.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2)
+  ctx.fillStyle = '#e7d9c3'
+  ctx.fillRect(-BLEED, BENCH_Y, W + BLEED * 2, H + BLEED - BENCH_Y)
+  ctx.fillStyle = 'rgba(120,113,108,0.25)'
+  ctx.fillRect(-BLEED, BENCH_Y, W + BLEED * 2, 2)
+}
+
+// The tap is where the water button lands in the picture: the handle turns and
+// a stream falls while water is going in, so adding water is an event on the
+// bench rather than a number ticking up in a panel.
+function drawTap(ctx, pouring, tick) {
+  ctx.fillStyle = '#a8a29e'
+  ctx.fillRect(-BLEED, 44, TAP_X + 14 + BLEED, 12)
+  ctx.fillStyle = '#d6d3d1'
+  ctx.fillRect(-BLEED, 44, TAP_X + 14 + BLEED, 3)
+
+  ctx.fillStyle = '#a8a29e'
+  ctx.beginPath()
+  ctx.roundRect(TAP_X - 7, 44, 14, TAP_Y - 44, 3)
+  ctx.fill()
+
   ctx.strokeStyle = '#78716c'
+  ctx.lineWidth = 4
+  ctx.beginPath()
+  ctx.moveTo(TAP_X, 44)
+  ctx.lineTo(TAP_X, 30)
+  ctx.stroke()
+  ctx.save()
+  ctx.translate(TAP_X, 28)
+  ctx.rotate(pouring ? Math.sin(tick / 4) * 0.5 : 0)
+  ctx.fillStyle = '#f97316'
+  ctx.beginPath()
+  ctx.roundRect(-18, -4, 36, 8, 4)
+  ctx.fill()
+  ctx.restore()
+
+  if (!pouring) return
+
+  ctx.fillStyle = 'rgba(123,201,207,0.75)'
+  ctx.fillRect(TAP_X - 4, TAP_Y, 8, BENCH_Y - TAP_Y)
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'
+  ctx.fillRect(TAP_X - 1, TAP_Y, 2, BENCH_Y - TAP_Y)
+}
+
+// Glass first, then the liquid, then the graduations, so the jar reads as a
+// container rather than an outline behind some dots.
+function drawJarGlass(ctx) {
+  ctx.fillStyle = 'rgba(87,83,78,0.16)'
+  ctx.beginPath()
+  ctx.ellipse(JX + JW / 2, BENCH_Y + 3, JW / 2 + 16, 8, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.fillStyle = 'rgba(255,255,255,0.55)'
+  ctx.fillRect(JX, JY, JW, JH)
+
+  ctx.strokeStyle = INK_MID
   ctx.lineWidth = 3
+  ctx.lineJoin = 'round'
   ctx.beginPath()
   ctx.moveTo(JX, JY)
   ctx.lineTo(JX, JY + JH)
@@ -68,50 +176,141 @@ function drawScene(ctx, { parts, shown, surfaceY, pct, solute, water }) {
   ctx.lineTo(JX + JW, JY)
   ctx.stroke()
 
-  // Colour intensity is particles-per-volume, computed, never chosen.
-  const density = water > 0 ? solute / water : 0
+  // Rim and pour lip: the parts that make it a jar rather than a box, and the
+  // lip is where the pour-away stream leaves from.
+  ctx.beginPath()
+  ctx.ellipse(JX + JW / 2, JY, JW / 2, 8, 0, 0, Math.PI * 2)
+  ctx.fillStyle = '#ffffff'
+  ctx.fill()
+  ctx.strokeStyle = INK_MID
+  ctx.lineWidth = 2.5
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(JX + JW - 2, JY - 3)
+  ctx.quadraticCurveTo(JX + JW + 17, JY, JX + JW + 15, JY + 14)
+  ctx.stroke()
+}
+
+function drawLiquid(ctx, surfaceY, density) {
   const alpha = Math.min(0.82, density * 2.6)
   ctx.fillStyle = `rgba(217,119,6,${alpha.toFixed(3)})`
   ctx.fillRect(JX + 2, surfaceY, JW - 4, JY + JH - surfaceY - 1)
+
+  // Meniscus: the curved surface the lesson asks students to read from.
   ctx.strokeStyle = '#b45309'
-  ctx.lineWidth = 2
+  ctx.lineWidth = 2.5
   ctx.beginPath()
   ctx.moveTo(JX + 2, surfaceY)
-  ctx.lineTo(JX + JW - 2, surfaceY)
+  ctx.quadraticCurveTo(JX + JW / 2, surfaceY + 8, JX + JW - 2, surfaceY)
   ctx.stroke()
 
-  const span = JY + JH - 6 - surfaceY
-  ctx.fillStyle = '#7c2d12'
-  for (let i = 0; i < shown; i += 1) {
-    const p = parts[i]
-    ctx.beginPath()
-    ctx.arc(JX + 8 + p.nx * (JW - 16), surfaceY + 4 + p.ny * span, 3.6, 0, Math.PI * 2)
-    ctx.fill()
-  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'
+  ctx.lineWidth = 5
+  ctx.beginPath()
+  ctx.moveTo(JX + 13, surfaceY + 16)
+  ctx.lineTo(JX + 13, JY + JH - 20)
+  ctx.stroke()
+}
 
-  // Volume scale down the side of the jar.
-  ctx.strokeStyle = '#a8a29e'
-  ctx.lineWidth = 1.5
-  ctx.fillStyle = '#78716c'
+function drawGraduations(ctx, water, surfaceY) {
+  ctx.strokeStyle = 'rgba(87,83,78,0.55)'
+  ctx.fillStyle = INK_MID
   ctx.font = '700 10px system-ui, sans-serif'
   ctx.textAlign = 'right'
   for (let ml = 100; ml <= MAX_ML; ml += 100) {
-    const y = JY + JH - (ml / MAX_ML) * (JH - 8)
+    const y = surfaceFor(ml)
+    ctx.lineWidth = 1.8
     ctx.beginPath()
-    ctx.moveTo(JX + JW - 16, y)
-    ctx.lineTo(JX + JW, y)
+    ctx.moveTo(JX + JW - 22, y)
+    ctx.lineTo(JX + JW - 3, y)
     ctx.stroke()
-    ctx.fillText(`${ml}`, JX + JW - 20, y + 4)
+    ctx.fillText(`${ml}`, JX + JW - 26, y + 4)
   }
 
-  ctx.textAlign = 'left'
-  ctx.font = '800 13px system-ui, sans-serif'
-  ctx.fillText(`${solute} g solute in ${water} mL water`, JX, JY - 22)
-  ctx.font = '700 12px system-ui, sans-serif'
-  ctx.fillText(`${shown} particles on screen`, JX, JY - 6)
+  // The reading, level with the surface, on the free side of the jar.
+  ctx.strokeStyle = '#b45309'
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.moveTo(JX - 28, surfaceY)
+  ctx.lineTo(JX - 2, surfaceY)
+  ctx.stroke()
+  ctx.fillStyle = '#b45309'
+  ctx.font = '800 11px system-ui, sans-serif'
+  ctx.textAlign = 'right'
+  ctx.fillText(`${water} mL`, JX - 4, surfaceY - 6)
+}
 
-  // ── Concentration column ──
-  ctx.strokeStyle = '#78716c'
+// What the student poured away has to go somewhere, and it stays there, so the
+// second route leaves a mark on the bench instead of only on a counter.
+function drawWasteBeaker(ctx, poured) {
+  ctx.fillStyle = 'rgba(87,83,78,0.16)'
+  ctx.beginPath()
+  ctx.ellipse(WX + WW / 2, BENCH_Y + 2, WW / 2 + 8, 6, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  const level = Math.min(1, poured / 600)
+  const top = WBOT - level * (WBOT - WTOP - 8)
+
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'
+  ctx.fillRect(WX, WTOP, WW, WBOT - WTOP)
+  if (level > 0) {
+    ctx.fillStyle = 'rgba(217,119,6,0.35)'
+    ctx.fillRect(WX + 2, top, WW - 4, WBOT - top - 1)
+  }
+
+  ctx.strokeStyle = INK_MID
+  ctx.lineWidth = 2.5
+  ctx.lineJoin = 'round'
+  ctx.beginPath()
+  ctx.moveTo(WX, WTOP)
+  ctx.lineTo(WX, WBOT)
+  ctx.lineTo(WX + WW, WBOT)
+  ctx.lineTo(WX + WW, WTOP)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.ellipse(WX + WW / 2, WTOP, WW / 2, 5, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.fillStyle = INK_MID
+  ctx.font = '700 11px system-ui, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('poured away', WX + WW / 2, WTOP - 14)
+}
+
+function drawPourOut(ctx, surfaceY) {
+  ctx.strokeStyle = 'rgba(217,119,6,0.6)'
+  ctx.lineWidth = 9
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(JX + JW + 8, Math.min(surfaceY + 6, JY + 44))
+  ctx.quadraticCurveTo(WX + 4, JY + 96, WX + WW / 2, WTOP + 10)
+  ctx.stroke()
+  ctx.lineCap = 'butt'
+}
+
+function drawChart(ctx, pct, state) {
+  ctx.fillStyle = '#fffdf7'
+  ctx.strokeStyle = '#e7e5e4'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.roundRect(SHEET_X, SHEET_Y, SHEET_W, SHEET_H, 6)
+  ctx.fill()
+  ctx.stroke()
+  ctx.fillStyle = '#d6d3d1'
+  ctx.beginPath()
+  ctx.arc(SHEET_X + SHEET_W / 2, SHEET_Y + 10, 5, 0, Math.PI * 2)
+  ctx.fill()
+
+  const mid = SHEET_X + SHEET_W / 2
+  ctx.fillStyle = INK
+  ctx.font = '800 13px system-ui, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('% m/m', mid, SHEET_Y + 32)
+  ctx.fillStyle = INK_MID
+  ctx.font = '700 10px system-ui, sans-serif'
+  ctx.fillText('solute mass ÷ total mass × 100', mid, SHEET_Y + 52)
+
+  ctx.strokeStyle = INK_MID
   ctx.lineWidth = 2.5
   ctx.strokeRect(COL_X, COL_TOP, COL_W, COL_BOT - COL_TOP)
 
@@ -135,36 +334,82 @@ function drawScene(ctx, { parts, shown, surfaceY, pct, solute, water }) {
   ctx.fillStyle = '#d97706'
   ctx.fillRect(COL_X + 1, fillTop, COL_W - 2, COL_BOT - fillTop - 1)
 
-  ctx.fillStyle = '#78716c'
+  ctx.fillStyle = INK_MID
   ctx.font = '700 10px system-ui, sans-serif'
   ctx.textAlign = 'right'
-  for (const p of [0, 5, 10, 15, 20, 25]) {
-    ctx.fillText(`${p}`, COL_X - 6, colY(p) + 4)
-  }
-  ctx.font = '800 12px system-ui, sans-serif'
+  for (const p of [0, 5, 10, 15, 20, 25]) ctx.fillText(`${p}`, COL_X - 8, colY(p) + 4)
+
+  ctx.fillStyle = INK
+  ctx.font = '900 17px system-ui, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('% m/m', COL_X + COL_W / 2, COL_TOP - 12)
-  ctx.font = '900 15px system-ui, sans-serif'
-  ctx.fillText(`${pct.toFixed(1)} %`, COL_X + COL_W / 2, COL_BOT + 22)
+  ctx.fillText(`${pct.toFixed(1)} %`, COL_X + COL_W / 2, COL_BOT + 26)
+  ctx.fillStyle = state.ink
+  ctx.font = '800 12px system-ui, sans-serif'
+  ctx.fillText(state.label, COL_X + COL_W / 2, COL_BOT + 44)
+}
+
+function drawScene(ctx, { parts, shown, water, solute, pouringIn, pouringOut, poured, tick }) {
+  ctx.clearRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2)
+
+  const pct = percent(solute, water)
+  const surfaceY = surfaceFor(water)
+  const density = water > 0 ? solute / water : 0
+
+  drawRoom(ctx)
+  drawChart(ctx, pct, stateFor(pct))
+  drawWasteBeaker(ctx, poured)
+  drawTap(ctx, pouringIn, tick)
+
+  drawJarGlass(ctx)
+  drawLiquid(ctx, surfaceY, density)
+
+  const span = JY + JH - 10 - surfaceY
+  ctx.fillStyle = '#7c2d12'
+  for (let i = 0; i < shown; i += 1) {
+    const p = parts[i]
+    ctx.beginPath()
+    ctx.arc(JX + 10 + p.nx * (JW - 20), surfaceY + 8 + p.ny * span, 3.6, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  drawGraduations(ctx, water, surfaceY)
+  if (pouringOut) drawPourOut(ctx, surfaceY)
+
+  // In-picture labels, each sitting against the part it names.
+  ctx.fillStyle = '#7c2d12'
+  ctx.font = '800 13px system-ui, sans-serif'
+  ctx.textAlign = 'left'
+  ctx.fillText(`${shown} solute particles`, JX, JY - 32)
+  ctx.fillStyle = INK_MID
+  ctx.font = '700 11px system-ui, sans-serif'
+  ctx.fillText('only pouring removes them', JX, JY - 16)
+
+  ctx.textAlign = 'center'
+  ctx.fillText(`${solute} g solute`, JX + JW / 2, BENCH_Y + 20)
 }
 
 export default function DilutionJarWidget({ onSolved }) {
   const canvasRef = useRef(null)
   const partsRef = useRef(makeParticles())
-  const liveRef = useRef({ solute: 20, water: 80 })
+  const liveRef = useRef({ solute: 20, water: 80, poured: 0 })
+  const pourInRef = useRef(0)
+  const pourOutRef = useRef(0)
   const drawRef = useRef(null)
   const stillRef = useRef(false)
 
   const [solute, setSolute] = useState(20)
   const [water, setWater] = useState(80)
+  const [poured, setPoured] = useState(0)
   const [done, setDone] = useState([])
 
   const pct = percent(solute, water)
   const onTarget = Math.abs(pct - TARGET_PCT) <= TOLERANCE_PCT
+  const state = stateFor(pct)
+  const shown = particleCount(solute)
 
   useEffect(() => {
-    liveRef.current = { solute, water }
-  }, [solute, water])
+    liveRef.current = { solute, water, poured }
+  }, [solute, water, poured])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -179,24 +424,38 @@ export default function DilutionJarWidget({ onSolved }) {
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     stillRef.current = still
     let raf = 0
+    let tick = 0
 
     function step() {
-      const { solute: s, water: w } = liveRef.current
+      const c = liveRef.current
       const parts = partsRef.current
-      const shown = Math.min(parts.length, Math.round(s * 2.6))
-      const surfaceY = JY + JH - 4 - (w / MAX_ML) * (JH - 10)
+      const count = particleCount(c.solute)
 
-      for (let i = 0; i < shown; i += 1) {
-        const p = parts[i]
-        p.nx += p.vx * 0.004
-        p.ny += p.vy * 0.006
-        if (p.nx < 0.02) { p.nx = 0.02; p.vx = Math.abs(p.vx) }
-        if (p.nx > 0.98) { p.nx = 0.98; p.vx = -Math.abs(p.vx) }
-        if (p.ny < 0.02) { p.ny = 0.02; p.vy = Math.abs(p.vy) }
-        if (p.ny > 0.98) { p.ny = 0.98; p.vy = -Math.abs(p.vy) }
+      if (!still) {
+        tick += 1
+        if (pourInRef.current > 0) pourInRef.current -= 1
+        if (pourOutRef.current > 0) pourOutRef.current -= 1
+        for (let i = 0; i < count; i += 1) {
+          const p = parts[i]
+          p.nx += p.vx * 0.004
+          p.ny += p.vy * 0.006
+          if (p.nx < 0.02) { p.nx = 0.02; p.vx = Math.abs(p.vx) }
+          if (p.nx > 0.98) { p.nx = 0.98; p.vx = -Math.abs(p.vx) }
+          if (p.ny < 0.02) { p.ny = 0.02; p.vy = Math.abs(p.vy) }
+          if (p.ny > 0.98) { p.ny = 0.98; p.vy = -Math.abs(p.vy) }
+        }
       }
 
-      drawScene(ctx, { parts, shown, surfaceY, pct: percent(s, w), solute: s, water: w })
+      drawScene(ctx, {
+        parts,
+        shown: count,
+        water: c.water,
+        solute: c.solute,
+        pouringIn: pourInRef.current > 0,
+        pouringOut: pourOutRef.current > 0,
+        poured: c.poured,
+        tick,
+      })
 
       if (!still) raf = requestAnimationFrame(step)
     }
@@ -208,7 +467,7 @@ export default function DilutionJarWidget({ onSolved }) {
 
   useEffect(() => {
     if (stillRef.current) drawRef.current?.()
-  }, [solute, water])
+  }, [solute, water, poured])
 
   function apply(nextSolute, nextWater, route) {
     setSolute(nextSolute)
@@ -227,16 +486,27 @@ export default function DilutionJarWidget({ onSolved }) {
     })
   }
 
+  function addWater() {
+    if (!stillRef.current) pourInRef.current = 30
+    apply(solute, Math.min(MAX_ML, water + 10), 'water')
+  }
+
+  function pourHalf() {
+    if (!stillRef.current) pourOutRef.current = 34
+    setPoured((p) => p + Math.round(water / 2))
+    apply(Math.round(solute / 2), water, 'halve')
+  }
+
   return (
     <>
       <SimLayout
         stage={
-          <Stage>
+          <Stage bleed>
             <canvas
               ref={canvasRef}
               role="img"
-              aria-label={`Jar holding ${solute} grams of solute in ${water} millilitres of water — ${pct.toFixed(1)} percent by mass.`}
-              style={{ ...STAGE_MEDIA, aspectRatio: `${W} / ${H}` }}
+              aria-label={`A jar on a bench holding ${solute} grams of solute in ${water} millilitres of water, with ${shown} particles on screen. The wall chart reads ${pct.toFixed(1)} percent by mass, which is ${state.label}.`}
+              style={stageFill(W, H)}
             />
           </Stage>
         }
@@ -252,11 +522,13 @@ export default function DilutionJarWidget({ onSolved }) {
               }`}
             >
               <p className="text-sm font-black text-stone-900 dark:text-white">
-                {pct.toFixed(1)} % m/m — {onTarget ? 'on target' : pct > 12 ? 'concentrated' : 'dilute'}
+                {pct.toFixed(1)} % m/m, {state.label}
+              </p>
+              <p className="mt-0.5 text-sm font-bold text-stone-700 dark:text-stone-200">
+                {solute} g in {water} mL
               </p>
               <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                {solute} g of solute sharing {water} mL of water. Concentration is mass of
-                solute ÷ total mass, so it changes when either number does.
+                {shown} particles are in the jar right now.
               </p>
             </div>
 
@@ -265,32 +537,31 @@ export default function DilutionJarWidget({ onSolved }) {
                 type="button"
                 onClick={() => apply(Math.min(MAX_G, solute + 5), water, null)}
                 disabled={solute >= MAX_G}
-                className="min-h-11 rounded-xl bg-primary-500 px-3 py-3 text-xs font-black text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+                className="min-h-11 rounded-xl bg-primary-500 px-3 py-3 text-sm font-black text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
               >
-                + 5 g solute
+                🥄 Add 5 g
               </button>
               <button
                 type="button"
-                onClick={() => apply(solute, Math.min(MAX_ML, water + 10), 'water')}
+                onClick={addWater}
                 disabled={water >= MAX_ML}
-                className="min-h-11 rounded-xl bg-secondary-600 px-3 py-3 text-xs font-black text-white transition-colors hover:bg-secondary-700 disabled:opacity-50"
+                className="min-h-11 rounded-xl bg-secondary-600 px-3 py-3 text-sm font-black text-white transition-colors hover:bg-secondary-700 disabled:opacity-50"
               >
-                + 10 mL water
+                💧 Add 10 mL
               </button>
             </div>
 
             <div>
               <button
                 type="button"
-                onClick={() => apply(Math.round(solute / 2), water, 'halve')}
+                onClick={pourHalf}
                 disabled={solute < 2}
                 className="min-h-11 w-full rounded-xl border-2 border-accent-500 bg-accent-50 px-3 py-2 text-sm font-black text-accent-700 transition-colors disabled:opacity-50 dark:bg-accent-700/25 dark:text-accent-100"
               >
-                Pour half away, top back up with water
+                Pour half away
               </button>
               <p className="mt-1 text-xs font-medium text-stone-500 dark:text-stone-400">
-                The other route to a dilute solution: same volume in the jar, half as much
-                solute left in it.
+                It tops back up with water: same volume, half the solute.
               </p>
             </div>
 
@@ -299,12 +570,12 @@ export default function DilutionJarWidget({ onSolved }) {
               onClick={() => apply(20, 80, null)}
               className="min-h-11 w-full rounded-xl border-2 border-stone-300 bg-white px-3 py-2 text-sm font-black text-stone-600 transition-colors dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300"
             >
-              Start over — 20 g in 80 mL
+              Start over
             </button>
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Routes found — {done.length} of {GOALS.length}
+                Routes found: {done.length} of {GOALS.length}
               </p>
               <ul className="space-y-1.5">
                 {GOALS.map((g) => {
@@ -319,7 +590,7 @@ export default function DilutionJarWidget({ onSolved }) {
                       }`}
                     >
                       <p className="text-xs font-black text-stone-900 dark:text-white">
-                        {hit ? '✓ Done — ' : 'Not yet — '}
+                        {hit ? '✓ Done: ' : 'Not yet: '}
                         {g.label}
                       </p>
                       {!hit && (
@@ -337,8 +608,8 @@ export default function DilutionJarWidget({ onSolved }) {
       />
 
       <p aria-live="polite" className="sr-only">
-        {solute} grams of solute in {water} millilitres of water — {pct.toFixed(1)} percent
-        by mass.
+        {pct.toFixed(1)} percent by mass, {state.label}. {solute} grams of solute in{' '}
+        {water} millilitres of water.
       </p>
     </>
   )

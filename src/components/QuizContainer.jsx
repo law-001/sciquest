@@ -168,6 +168,18 @@ function formatCloseCountdown(totalSec) {
 // When the floating "quiz closes in" warning appears.
 const CLOSE_WARNING_SEC = 5 * 60;
 
+// Wall-clock form of a close time, for the screen a late arrival sees.
+function formatCloseTime(ms) {
+  if (!Number.isFinite(ms)) return "";
+  return new Date(ms).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 // Confetti positions computed at module load — not during render — so Math.random is safe here.
 const CONFETTI_ITEMS = Array.from({ length: 50 }, () => ({
   left: `${Math.random() * 100}%`,
@@ -217,9 +229,11 @@ export function QuizContainer({
   timeLimitSeconds = null,
   maxAttempts = null,
   showCorrectAnswers = true,
-  // ISO end of the student's personal access window (teacher re-opened a
-  // closed quiz for them). null = no end time applies.
+  // ISO instant at which this quiz stops accepting answers. null = no end
+  // time applies. `closesReason` says which rule set it: "schedule" for the
+  // quiz's dated window, "grant" for a teacher re-opening it for this student.
   closesAt = null,
+  closesReason = null,
 }) {
   const { questions } = quiz;
   const { user } = useAuth();
@@ -638,7 +652,7 @@ export function QuizContainer({
     );
   }
 
-  // ── Closed screen — the personal window ended before this visit ─────────────
+  // ── Closed screen — the window ended before this visit ─────────────────────
   if (isClosedNow && !wasOpenOnScreen) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-4 bg-[#fdf6e3] dark:bg-stone-900">
@@ -650,9 +664,9 @@ export function QuizContainer({
             This quiz has closed
           </h2>
           <p className="text-stone-500 dark:text-stone-400 font-bold mb-6">
-            The time your teacher gave you for
-            {lesson ? ` "${lesson.title}"` : " this quiz"} has ended. Ask your
-            teacher if you need more time.
+            {closesReason === "schedule"
+              ? `The window for${lesson ? ` "${lesson.title}"` : " this quiz"} closed at ${formatCloseTime(closesAtMs)}. Ask your teacher to open it for you if you missed it.`
+              : `The time your teacher gave you for${lesson ? ` "${lesson.title}"` : " this quiz"} has ended. Ask your teacher if you need more time.`}
           </p>
           <Button variant="primary" size="lg" onClick={onExit}>
             Back to Lessons
@@ -858,7 +872,7 @@ export function QuizContainer({
         </div>
       </div>
 
-      {/* Floating warning for the last few minutes of a personal window —
+      {/* Floating warning for the last few minutes before the quiz closes —
           fixed so it stays visible wherever the student has scrolled. The
           spacer lets the Submit footer scroll clear of it. */}
       {showCloseWarning && (

@@ -71,6 +71,7 @@ export default function FlipCardsSection({
       intro={intro}
       instruction={`Tap a card to reveal the answer — ${seenCount} of ${cards.length} revealed`}
       isComplete={isComplete}
+      explainer={data?.explainer}
       status={
         isComplete
           ? 'All cards revealed.'

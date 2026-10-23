@@ -41,10 +41,18 @@ export const week15 = {
       signature: {
         widgetId: "mitosis-run",
         heading: "Watch It: Scrub a Division",
-        intro:
-          "Every chromosome position is computed from where the slider is, so dragging backwards runs the division in reverse rather than replaying a recording. The plant/animal switch changes only the last leg — a furrow pinching in, or a plate built outward.",
-        instruction: "Run it both ways and see both endings",
+        intro: "One slider runs the whole division, forwards or backwards.",
+        instruction: "Run it forwards and back, then switch to a plant cell",
         xp: 25,
+        explainer: {
+          title: "What the slider showed you",
+          points: [
+            "Dragging backwards worked because each chromosome position is worked out from the slider, not replayed from a recording.",
+            "The chromatids only split in anaphase, so each pole ended with a full set of four chromosomes.",
+            "The animal cell pinched inward. The plant cell built a plate outward, because a wall cannot be pinched.",
+            "Both endings left two cells with matching chromosomes, which is the whole point of mitosis.",
+          ],
+        },
       },
 
       sections: [
@@ -345,10 +353,18 @@ export const week15 = {
       signature: {
         widgetId: "crossover-lab",
         heading: "Watch It: Drag the Crossover",
-        intro:
-          "Four chromatids, six gene loci. Move the crossover by one gene and two of the four gametes at the end change with it — they are computed from where you dragged. The counter beside them shows the halving happening once, at meiosis I, and not again.",
+        intro: "Move the crossover one gene and two gametes change with it.",
         instruction: "Place a crossover, then run both divisions",
         xp: 25,
+        explainer: {
+          title: "Where your four gametes came from",
+          points: [
+            "Sliding the crossover changed the gene bands on two of the four gametes, and left the other two untouched.",
+            "The count halved once, at meiosis I. Meiosis II split the chromatids but did not halve it again.",
+            "With no crossover you only ever got two kinds of gamete, pure orange and pure teal.",
+            "That swap is why no two of your gametes carry the same set of genes.",
+          ],
+        },
       },
 
       sections: [

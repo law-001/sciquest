@@ -36,11 +36,19 @@ export const week17 = {
 
       signature: {
         widgetId: "clone-bench",
-        heading: "Watch It: Four Ways to Copy Yourself",
-        intro:
-          "The bacterium stretches and closes a wall across itself, the bud swells until it drops, the broken starfish arm regrows what it is missing, the runner crawls out and roots. Then one disease sweeps the field — and because every organism is identical, it misses none of them.",
-        instruction: "Run all four, then release the disease",
+        heading: "Watch It: Copy Yourself Four Ways",
+        intro: "One parent, four methods, and every offspring an exact copy.",
+        instruction: "Run all four methods, then release the disease.",
         xp: 25,
+        explainer: {
+          title: "Why clones share one weakness",
+          points: [
+            "You ran four methods, and every one of them needed just a single parent.",
+            "Each offspring you made carried a copy of the parent's genes, so your field held no variety.",
+            "The disease found the same weakness in all of them, and nothing was left standing.",
+            "Mixed genes would have left a few individuals the disease could not touch.",
+          ],
+        },
       },
 
       sections: [

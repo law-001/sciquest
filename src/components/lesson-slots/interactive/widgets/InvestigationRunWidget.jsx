@@ -1,26 +1,39 @@
 import React, { useEffect, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// L2 signature interactive — a fair test you set up and then watch run.
+// L2 signature interactive: a fair test you set up and then watch run.
 //
 // Two pots side by side. Everything about them is identical except the one
-// thing the student sets: hours of light. Press run and fourteen days play out
-// — the sun crosses, the stems climb, leaves unfold, and the graph plots itself
+// thing the student sets: hours of light. Press run and fourteen days play out,
+// the sun crosses, the stems climb, leaves unfold, and the graph plots itself
 // day by day. The conclusion is then computed from the heights that actually
 // came out, so it is a reading of the data rather than a prepared answer.
+//
+// The light each pot gets is drawn as a beam over that pot, so the one thing
+// being changed is visible in the picture instead of only in the slider.
+//
+// The bench is drawn at the stage's own shape (about 16:10) and bleeds past the
+// viewBox, so it fills the frame instead of sitting in a tall narrow strip.
 
-const POT_W = 330
-const POT_H = 342
+const W = 620
+const H = 400
+const BLEED = 60
 const CH_W = 300
 const CH_H = 200
 const DAYS = 14
 
 const CONTROL_LIGHT = 4
+const MAX_LIGHT = 16
 
-// Height in cm on a given day. More light grows faster, but the plant tops out
-// — it cannot grow forever, and the flattening is visible on the graph.
+// Bench geometry. `BASE` is the soil line every plant grows up from.
+const BASE = 286
+const BENCH_Y = 345
+const PX_PER_CM = 8.7
+
+// Height in cm on a given day. More light grows faster, but the plant tops out,
+// it cannot grow forever, and the flattening is visible on the graph.
 function heightOn(day, hours) {
   const rate = 0.55 + hours * 0.42
   return Number((22 * (1 - Math.exp((-rate * day) / 14))).toFixed(1))
@@ -66,16 +79,28 @@ export default function InvestigationRunWidget({ onSolved }) {
     <>
       <SimLayout
         stage={
-          <Stage>
+          <Stage bleed>
             <svg
-              viewBox={`0 0 ${POT_W} ${POT_H}`}
+              viewBox={`0 0 ${W} ${H}`}
+              preserveAspectRatio="xMidYMid slice"
               role="img"
               aria-label={`Day ${day} of ${DAYS}. Pot A is ${controlH} centimetres, Pot B is ${testH} centimetres.`}
-              style={STAGE_MEDIA}
+              style={stageFill(W, H)}
             >
-              <Sun day={day} hours={hours} />
-              <Pot x={48} label="Pot A — control" sub={`${CONTROL_LIGHT} h light`} height={controlH} colour="#0d9488" />
-              <Pot x={196} label="Pot B — test" sub={`${hours} h light`} height={testH} colour="#c2410c" />
+              <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={H + BLEED * 2} fill="#fdfaf3" />
+              <rect x={-BLEED} y={BENCH_Y} width={W + BLEED * 2} height="13" fill="#e7d9c3" />
+              <rect x={-BLEED} y={BENCH_Y + 13} width={W + BLEED * 2} height={H + BLEED} fill="#f3ead9" />
+
+              <Sun day={day} />
+              <LightBeam cx={190} hours={CONTROL_LIGHT} />
+              <LightBeam cx={430} hours={hours} />
+
+              <Pot cx={190} label="Pot A (control)" sub={`${CONTROL_LIGHT} h light`} height={controlH} colour="#0d9488" />
+              <Pot cx={430} label="Pot B (test)" sub={`${hours} h light`} height={testH} colour="#c2410c" />
+
+              <text x="26" y="36" fontSize="14" fontWeight="800" fill="#78716c">
+                Day {day} of {DAYS}
+              </text>
             </svg>
           </Stage>
         }
@@ -83,13 +108,11 @@ export default function InvestigationRunWidget({ onSolved }) {
           <>
             <div className="rounded-xl border-2 border-accent-300 bg-accent-50 p-3 dark:border-accent-600 dark:bg-accent-700/20">
               <p className="text-xs font-black uppercase tracking-wider text-accent-700 dark:text-accent-100">
-                Step 1 — the hypothesis
+                1 · Hypothesis
               </p>
               <p className="mt-1 text-sm font-black text-stone-900 dark:text-white">
-                If a bean plant gets{' '}
-                <span className="text-primary-600 dark:text-primary-300">{hours} hours</span> of
-                light a day instead of {CONTROL_LIGHT}, then it will grow{' '}
-                {hours > CONTROL_LIGHT ? 'taller' : hours < CONTROL_LIGHT ? 'shorter' : 'the same'}.
+                More light,{' '}
+                {hours > CONTROL_LIGHT ? 'taller' : hours < CONTROL_LIGHT ? 'shorter' : 'same'} plant.
               </p>
             </div>
 
@@ -98,22 +121,19 @@ export default function InvestigationRunWidget({ onSolved }) {
                 htmlFor="inv-hours"
                 className="mb-1 block text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400"
               >
-                Step 2 — light for Pot B: {hours} h a day
+                2 · Light for Pot B: {hours} h a day
               </label>
               <input
                 id="inv-hours"
                 type="range"
                 min={0}
-                max={16}
+                max={MAX_LIGHT}
                 step={1}
                 value={hours}
                 disabled={running}
                 onChange={(e) => setHours(Number(e.target.value))}
                 className="h-11 w-full accent-orange-500 disabled:opacity-50"
               />
-              <p className="text-xs font-medium text-stone-500 dark:text-stone-400">
-                Same soil, water, pot and seed in both. That is what makes it a fair test.
-              </p>
             </div>
 
             <button
@@ -122,7 +142,7 @@ export default function InvestigationRunWidget({ onSolved }) {
               disabled={running}
               className="min-h-11 w-full rounded-xl bg-primary-500 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
             >
-              {running ? `Running — day ${day}` : done ? 'Run it again' : 'Step 3 — run the experiment'}
+              {running ? `Running, day ${day}` : done ? 'Run it again' : '3 · Run the 14 days'}
             </button>
 
             <div className="rounded-xl border-2 border-stone-200 bg-white p-2 dark:border-stone-600 dark:bg-stone-800">
@@ -132,25 +152,14 @@ export default function InvestigationRunWidget({ onSolved }) {
             {done && (
               <div className="rounded-xl border-2 border-secondary-400 bg-secondary-50 p-3 dark:border-secondary-600 dark:bg-secondary-700/25">
                 <p className="text-xs font-black uppercase tracking-wider text-secondary-700 dark:text-secondary-100">
-                  Step 4 — the conclusion, read off your own data
+                  4 · Your result
                 </p>
                 <p className="mt-1 text-sm font-black text-stone-900 dark:text-white">
                   {gap > 0.4
                     ? `Pot B finished ${gap} cm taller than Pot A.`
                     : gap < -0.4
                       ? `Pot B finished ${Math.abs(gap)} cm shorter than Pot A.`
-                      : 'Both pots finished at almost exactly the same height.'}
-                </p>
-                <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                  {gap > 0.4
-                    ? 'Light was the only difference between the pots, so the extra height can be pinned on the light and nothing else.'
-                    : gap < -0.4
-                      ? 'Less light gave less growth. A result that goes against your prediction is still a real result.'
-                      : 'You changed nothing, so there was nothing for the plants to respond to.'}
-                </p>
-                <p className="mt-2 text-xs font-medium text-stone-600 dark:text-stone-300">
-                  Step 5 — communicate: that graph is what you would publish, so someone
-                  else can run the same test and check your curve.
+                      : 'Both pots finished at the same height.'}
                 </p>
               </div>
             )}
@@ -167,27 +176,27 @@ export default function InvestigationRunWidget({ onSolved }) {
 
 // ── Scene parts ───────────────────────────────────────────────────────────────
 
-function Sun({ day, hours }) {
+// The sun is the calendar: it walks across the sky as the days tick by.
+function Sun({ day }) {
   const a = Math.PI * (0.12 + (day / DAYS) * 0.76)
-  const cx = POT_W / 2 - Math.cos(a) * 118
-  const cy = 62 - Math.sin(a) * 34
-  const bright = Math.min(1, hours / 12)
+  const cx = W / 2 - Math.cos(a) * 235
+  const cy = 92 - Math.sin(a) * 48
   return (
     <g>
-      <circle cx={cx} cy={cy} r="18" fill="#facc15" opacity={0.35 + bright * 0.65} />
+      <circle cx={cx} cy={cy} r="19" fill="#facc15" />
+      <circle cx={cx} cy={cy} r="19" fill="none" stroke="#eab308" strokeWidth="2" />
       {Array.from({ length: 8 }).map((_, i) => {
         const ra = (i / 8) * Math.PI * 2
         return (
           <line
             key={i}
-            x1={cx + Math.cos(ra) * 22}
-            y1={cy + Math.sin(ra) * 22}
-            x2={cx + Math.cos(ra) * (26 + bright * 8)}
-            y2={cy + Math.sin(ra) * (26 + bright * 8)}
+            x1={cx + Math.cos(ra) * 24}
+            y1={cy + Math.sin(ra) * 24}
+            x2={cx + Math.cos(ra) * 32}
+            y2={cy + Math.sin(ra) * 32}
             stroke="#facc15"
             strokeWidth="3"
             strokeLinecap="round"
-            opacity={0.3 + bright * 0.7}
           />
         )
       })}
@@ -195,69 +204,93 @@ function Sun({ day, hours }) {
   )
 }
 
-// One pot. Stem height comes straight from the measured cm, and a leaf pair
-// unfolds every 4 cm, so growth is legible without reading the number.
-function Pot({ x, label, sub, height, colour }) {
-  const base = 248
-  const px = 26 // pixels per cm
-  const stem = height * (px / 3)
+// The one thing being changed, drawn: a beam over each pot whose strength is
+// that pot's hours of light. Zero hours leaves the pot in the dark.
+function LightBeam({ cx, hours }) {
+  const strength = hours / MAX_LIGHT
+  const top = 112
+  return (
+    <g>
+      <path
+        d={`M ${cx - 20} ${top} L ${cx + 20} ${top} L ${cx + 74} ${BASE} L ${cx - 74} ${BASE} Z`}
+        fill="#facc15"
+        opacity={0.06 + strength * 0.3}
+      />
+      {Array.from({ length: 5 }).map((_, i) => (
+        <line
+          key={i}
+          x1={cx - 16 + i * 8}
+          y1={top + 5}
+          x2={cx - 56 + i * 28}
+          y2={BASE - 7}
+          stroke="#fbbf24"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity={0.12 + strength * 0.55}
+        />
+      ))}
+      <text x={cx} y={top - 8} fontSize="13" fontWeight="800" fill="#a16207" textAnchor="middle">
+        {hours} h
+      </text>
+    </g>
+  )
+}
+
+// One pot, drawn around its own centre so the bench can be laid out by moving
+// the pots rather than by editing every coordinate inside one. Stem height
+// comes straight from the measured cm, and a leaf pair unfolds every 4 cm, so
+// growth is legible without reading the number.
+function Pot({ cx, label, sub, height, colour }) {
+  const stem = height * PX_PER_CM
   const leaves = Math.floor(height / 4)
 
   return (
-    <g>
-      <rect x={x} y={base} width="90" height="46" rx="6" fill="#b45309" />
-      <rect x={x - 6} y={base - 10} width="102" height="14" rx="5" fill="#92400e" />
-      <rect x={x + 6} y={base - 6} width="78" height="8" rx="4" fill="#44403c" />
+    <g transform={`translate(${cx} ${BASE})`}>
+      {/* Pot: tapered body, thrown rim, a tray under it and soil on top. */}
+      <path d="M -60 0 L 60 0 L 51 52 L -51 52 Z" fill="#b45309" />
+      <path d="M -52 5 L -44 48" stroke="#92400e" strokeWidth="3" opacity="0.5" />
+      <rect x="-55" y="52" width="110" height="7" rx="3" fill="#78350f" />
+      <rect x="-66" y="-11" width="132" height="15" rx="5" fill="#92400e" />
+      <rect x="-52" y="-8" width="104" height="11" rx="4" fill="#44403c" />
+      {[-36, -12, 12, 36].map((dx, i) => (
+        <circle key={dx} cx={dx} cy={-2 + (i % 2)} r="1.8" fill="#78716c" />
+      ))}
 
-      <line
-        x1={x + 45}
-        y1={base - 6}
-        x2={x + 45}
-        y2={base - 6 - stem}
-        stroke={colour}
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
+      <line x1="0" y1="-6" x2="0" y2={-6 - stem} stroke={colour} strokeWidth="7" strokeLinecap="round" />
       {Array.from({ length: leaves }).map((_, i) => {
-        const ly = base - 12 - ((i + 1) / (leaves + 1)) * stem
+        const ly = -12 - ((i + 1) / (leaves + 1)) * stem
         const side = i % 2 === 0 ? 1 : -1
         return (
-          <ellipse
-            key={i}
-            cx={x + 45 + side * 17}
-            cy={ly}
-            rx="17"
-            ry="8"
-            fill={colour}
-            opacity="0.85"
-            transform={`rotate(${side * -18} ${x + 45 + side * 17} ${ly})`}
-          />
+          <g key={i} transform={`translate(0 ${ly}) scale(${side} 1) rotate(-16)`}>
+            <path d="M 0 0 Q 15 -13 34 -6 Q 16 8 0 0 Z" fill={colour} opacity="0.9" />
+            <path d="M 2 -1 Q 16 -5 31 -6" stroke="#fff" strokeWidth="1.3" fill="none" opacity="0.7" />
+          </g>
         )
       })}
-      {stem > 6 && <circle cx={x + 45} cy={base - 6 - stem} r="5" fill={colour} />}
+      {stem > 6 && <circle cx="0" cy={-6 - stem} r="5.5" fill={colour} />}
 
       {/* A ruler, so the height is a measurement and not a vibe. */}
-      <line x1={x - 18} y1={base - 6} x2={x - 18} y2={base - 6 - 24 * (px / 3)} stroke="#a8a29e" strokeWidth="2" />
+      <line x1="-86" y1="-6" x2="-86" y2={-6 - 24 * PX_PER_CM} stroke="#a8a29e" strokeWidth="2" />
       {[0, 5, 10, 15, 20].map((cm) => (
         <g key={cm}>
           <line
-            x1={x - 24}
-            y1={base - 6 - cm * (px / 3)}
-            x2={x - 12}
-            y2={base - 6 - cm * (px / 3)}
+            x1="-92"
+            y1={-6 - cm * PX_PER_CM}
+            x2="-80"
+            y2={-6 - cm * PX_PER_CM}
             stroke="#a8a29e"
             strokeWidth="2"
           />
-          <text x={x - 28} y={base - 2 - cm * (px / 3)} fontSize="9" fontWeight="700" fill="#78716c" textAnchor="end">
+          <text x="-96" y={-2 - cm * PX_PER_CM} fontSize="10" fontWeight="700" fill="#78716c" textAnchor="end">
             {cm}
           </text>
         </g>
       ))}
 
-      <text x={x + 45} y={base + 64} fontSize="13" fontWeight="800" fill="#57534e" textAnchor="middle">
+      <text x="0" y="86" fontSize="14" fontWeight="800" fill="#57534e" textAnchor="middle">
         {label}
       </text>
-      <text x={x + 45} y={base + 79} fontSize="12" fontWeight="700" fill="#78716c" textAnchor="middle">
+      <text x="0" y="104" fontSize="13" fontWeight="700" fill="#78716c" textAnchor="middle">
         {sub} · {height} cm
       </text>
     </g>
@@ -287,7 +320,7 @@ function Chart({ day, hours }) {
       style={{ display: 'block' }}
     >
       <text x="4" y="14" fontSize="12" fontWeight="800" fill="#78716c">
-        Step 3 — data being collected
+        Your data
       </text>
       <text x="4" y="28" fontSize="11" fontWeight="700" fill="#a8a29e">
         height in cm

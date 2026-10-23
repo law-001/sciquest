@@ -5,11 +5,11 @@ import React from 'react'
 // thing they are steering to reach the control that steers it.
 //
 // On `lg` and up the grid is given one explicit height, which both columns then
-// fill — that is what keeps the picture and the control panel the same height
+// fill, and that is what keeps the picture and the control panel the same height
 // instead of each ending wherever its own content happens to run out. The
 // picture letterboxes inside its share; the panel scrolls inside its own.
 //
-// Below `lg` it stacks — picture first, then controls — which is the only
+// Below `lg` it stacks, picture first and then controls, which is the only
 // arrangement that works on a phone, and the fixed height is dropped so nothing
 // is squeezed.
 export default function SimLayout({ stage, panel }) {
@@ -25,9 +25,15 @@ export default function SimLayout({ stage, panel }) {
 
 // The bordered frame a stage picture sits in. It fills the row height it is
 // given, and centres the picture in whatever space that leaves.
-export function Stage({ children }) {
+// `bleed` is for a scene that fills the frame edge to edge (see stageFill):
+// the padding would otherwise show a ring of gradient around the artwork.
+export function Stage({ bleed = false, children }) {
   return (
-    <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-stone-200 bg-gradient-to-b from-white to-orange-50/50 p-2 dark:border-stone-600 dark:from-stone-800 dark:to-stone-900">
+    <div
+      className={`flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-stone-200 bg-gradient-to-b from-white to-orange-50/50 dark:border-stone-600 dark:from-stone-800 dark:to-stone-900 ${
+        bleed ? '' : 'p-2'
+      }`}
+    >
       {children}
     </div>
   )

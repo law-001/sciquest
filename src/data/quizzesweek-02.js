@@ -1,9 +1,9 @@
 // Week 2 quizzes — Grade 7 Science: Particle Model of Matter
 
 export const QUIZZES_WEEK_02 = {
-  // ── Lesson 4: What is Matter? — matching + short-answer ──────────────────
-  "lesson-4": {
-    lessonId: "lesson-4",
+  // ── Lesson 1: What is Matter? — matching + short-answer ──────────────────
+  "w02-l1": {
+    lessonId: "w02-l1",
     title: "What is Matter?",
     description:
       "Match phase changes and demonstrate your understanding of the particle theory and states of matter.",
@@ -67,9 +67,9 @@ export const QUIZZES_WEEK_02 = {
     ],
   },
 
-  // ── Lesson 5: Particle Theory of Matter — identification ─────────────────
-  "lesson-5": {
-    lessonId: "lesson-5",
+  // ── Lesson 2: Particle Theory of Matter — identification ─────────────────
+  "w02-l2": {
+    lessonId: "w02-l2",
     title: "Particle Theory of Matter",
     description:
       "Read each question carefully. Identify the correct scientific term being described in each item. Spelling counts.",

@@ -62,11 +62,18 @@ const week01 = {
 
       signature: {
         widgetId: "model-gallery",
-        heading: "Watch It: Four Models Doing Their Job",
-        intro:
-          "A bridge flexing under a truck, an atom with electrons going round, a formula plotting itself, a hurricane tracking up a coast. Run each one and watch what it is for.",
+        heading: "Watch It: Four Models at Work",
         instruction: "Run all four models",
         xp: 25,
+        explainer: {
+          title: "Four jobs, four kinds of model",
+          points: [
+            "The bridge was a small copy. Engineers break the model instead of the real bridge.",
+            "The atom was a picture of an idea. Nothing was to scale, but the idea is right.",
+            "The fish graph was a formula, handing you a number for any year you ask for.",
+            "The storm was a computer running the world forward. The cone widened the further ahead it looked.",
+          ],
+        },
       },
 
       sections: [
@@ -325,11 +332,18 @@ const week01 = {
 
       signature: {
         widgetId: "investigation-run",
-        heading: "Watch It: Fourteen Days of Growing",
-        intro:
-          "Set the one thing you are allowed to change, then watch two bean plants grow day by day while the graph plots itself.",
-        instruction: "Set the light, then run the full 14 days",
+        heading: "Run It: Fourteen Days of Growing",
+        instruction: "Set the light, then run the 14 days",
         xp: 25,
+        explainer: {
+          title: "Why your test was fair",
+          points: [
+            "Same soil, water, pot and seed in both. Only the light was different.",
+            "So any difference in height had to come from the light and nothing else.",
+            "Pot A was the control, the pot you measure the other one against.",
+            "The graph is your data. Someone else can run it and check your curve.",
+          ],
+        },
       },
 
       sections: [
@@ -633,11 +647,18 @@ const week01 = {
 
       signature: {
         widgetId: "globe-unroll",
-        heading: "Watch It: Unroll the Globe",
-        intro:
-          "Drag the globe flat and watch Greenland swell to the size of Africa. Same coastlines, same maths — just flattened.",
+        heading: "Unroll It: Globe to Flat Map",
         instruction: "Unroll it all the way, then roll it back",
         xp: 25,
+        explainer: {
+          title: "Every map trades something away",
+          points: [
+            "The globe kept real sizes and shapes, but half the world was round the back.",
+            "Flat, you could see the whole world at once, and the poles ballooned.",
+            "Greenland ended up drawn many times too big, sitting next to Africa.",
+            "A model can be useful and wrong at the same time. You pick which cost you can live with.",
+          ],
+        },
       },
 
       sections: [

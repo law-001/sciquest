@@ -37,10 +37,18 @@ export const week14 = {
       signature: {
         widgetId: "surface-volume",
         heading: "Watch It: The Middle Starves First",
-        intro:
-          "Nutrients diffuse the same twenty micrometres in however big the cell gets, so the fed shell never thickens — the starved core just grows. Watch the surface area and the volume race each other as you drag, then divide and see the core shrink.",
+        intro: "Nutrients only reach 20 µm in. Grow the cell and watch.",
         instruction: "Grow it until the centre starves, then divide",
         xp: 25,
+        explainer: {
+          title: "Why size forces a cell to divide",
+          points: [
+            "The teal dots always stopped at the same depth, so the fed shell stayed 20 µm thick however big you made the cell.",
+            "On the growth race the volume curve pulled away from the surface curve, because volume cubes the radius and surface only squares it.",
+            "So the starved core grew while the fed shell did not, and the mitochondria in the middle greyed out.",
+            "Dividing halved the volume, and each daughter came out with a smaller core than its parent had.",
+          ],
+        },
       },
 
       sections: [
@@ -332,10 +340,18 @@ export const week14 = {
       signature: {
         widgetId: "cycle-dial",
         heading: "Watch It: Turn the Cycle by Hand",
-        intro:
-          "One dial drives it all. Through S phase each chromosome grows its second chromatid a little at a time and the DNA graph steps up with it — nowhere else. Damage the DNA and the dial physically will not turn past G₂.",
+        intro: "One dial runs the whole cycle. Turn it and watch the cell.",
         instruction: "Turn a full cycle, then trigger the checkpoint",
         xp: 25,
+        explainer: {
+          title: "What the dial showed you",
+          points: [
+            "Each chromosome grew its second chromatid only while you were inside S, and the DNA graph stepped up in that band and nowhere else.",
+            "G₁, S and G₂ took up most of the ring. Mitosis was the short red slice where the chromosomes lined up and were pulled apart.",
+            "With the DNA damaged, the dial refused to move past G₂. The checkpoint held the cell rather than letting it copy a fault into two new cells.",
+            "Repairing the damage opened the gate again, which is what a healthy cell does before it is allowed to divide.",
+          ],
+        },
       },
 
       sections: [

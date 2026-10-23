@@ -40,11 +40,20 @@ export const week18 = {
 
       signature: {
         widgetId: "variation-batch",
-        heading: "Watch It: Twelve Offspring, No Two Alike",
+        heading: "Watch It: Twelve Offspring, All Different",
         intro:
-          "Set the two parents and cross them; twelve offspring are born one at a time, each a different draw. Then fire the same disease that wiped out the clone field — it grips one band of shell tones, and the spread puts some of the litter outside it.",
-        instruction: "Breed a litter of twelve, then stress it",
+          "Two parents, twelve offspring, and a disease that cannot catch them all.",
+        instruction: "Breed twelve offspring, then release the disease.",
         xp: 25,
+        explainer: {
+          title: "Why the litter beat the disease",
+          points: [
+            "Every offspring took a different mix of the two parents, so no two shells matched.",
+            "The disease gripped one band of tones, and your litter spread past both edges of it.",
+            "A clone field has one shell tone, so the same disease takes all of it.",
+            "Setting both parents inside the parasite zone removed that spread, and nothing survived.",
+          ],
+        },
       },
 
       sections: [
@@ -332,9 +341,18 @@ export const week18 = {
         widgetId: "energy-flow",
         heading: "Watch It: Turn an Arrow Round",
         intro:
-          "Energy travels as packets you can see, and which organisms are fed is worked out by walking from the sun along the arrows that currently point the right way. Reverse one and everything behind it starves. Then add links, remove the frog, and find out what a web does that a chain cannot.",
-        instruction: "Feed the chain, break it, then build the web",
+          "Arrows carry the energy. Reverse one and everything behind it starves.",
+        instruction: "Feed the chain, break it, then build the web.",
         xp: 25,
+        explainer: {
+          title: "What the arrows were carrying",
+          points: [
+            "Reversing one arrow starved everything behind it, because the energy had no way through.",
+            "The arrows point from the eaten to the eater, which is the direction energy travels.",
+            "Removing the frog broke the chain, and the snake and hawk got nothing.",
+            "In the web the hawk had a second route through the rabbit, so it kept eating.",
+          ],
+        },
       },
 
       sections: [

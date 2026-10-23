@@ -15,6 +15,8 @@ export function LessonContentPage({
   onLessonSelect,
   quizLocked = false,
   personalQuizGrant = null,
+  quizWindow = null,
+  quizWindowState = "none",
 }) {
   const { weeks } = useLessonsData();
   const week =
@@ -38,6 +40,8 @@ export function LessonContentPage({
       onLessonSelect={onLessonSelect}
       quizLocked={quizLocked}
       personalQuizGrant={personalQuizGrant}
+      quizWindow={quizWindow}
+      quizWindowState={quizWindowState}
     />
   );
 }

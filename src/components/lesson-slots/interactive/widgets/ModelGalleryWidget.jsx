@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// L1 signature interactive — four working models on one bench.
+// L1 signature interactive: four working models on one bench.
 //
 // Each of the four kinds of scientific model is built here as the thing itself
 // and left running: a bridge that flexes under a truck, an atom with orbiting
@@ -12,38 +12,38 @@ import { STAGE_MEDIA } from '../stageMedia'
 // this kind of model FOR" lands without a paragraph explaining it.
 //
 // A single clock tick drives every scene; each scene is pure SVG drawn from it.
+//
+// Every scene is drawn at the stage's own shape (about 16:10) and paints its
+// own ground out past the viewBox, so it fills the frame edge to edge in both
+// themes instead of floating in a band of empty gradient.
 
 const W = 620
-const H = 300
+const H = 390
 
 const MODELS = [
   {
     id: 'physical',
     label: 'Physical model',
-    tag: 'A small copy you can build and break',
+    tag: 'A small copy',
     job: 'Will this bridge hold a loaded truck?',
-    reads: 'The deck sags under the load and springs back. Engineers add weight until it fails — on the model, not on the real bridge.',
   },
   {
     id: 'conceptual',
     label: 'Conceptual model',
-    tag: 'A picture of an idea nobody can see',
+    tag: 'A picture of an idea',
     job: 'What is inside an atom?',
-    reads: 'Nothing here is drawn to scale, and it is not meant to be. It carries the idea: a heavy nucleus with light electrons in shells around it.',
   },
   {
     id: 'mathematical',
     label: 'Mathematical model',
-    tag: 'A formula that gives you a number',
-    job: 'How many fish will be in the lake in ten years?',
-    reads: 'The curve is the formula being calculated year by year. Feed it this year and it hands you a number for any year you ask for.',
+    tag: 'A formula',
+    job: 'How many fish in ten years?',
   },
   {
     id: 'simulation',
     label: 'Simulation model',
-    tag: 'A computer running the world forward',
-    job: 'Where will this hurricane be in three days?',
-    reads: 'The computer steps the storm forward hour by hour. The widening cone is the forecast getting less certain the further ahead it looks.',
+    tag: 'A computer running it',
+    job: 'Where will this storm go next?',
   },
 ]
 
@@ -91,12 +91,13 @@ export default function ModelGalleryWidget({ onSolved }) {
               The job: {model.job}
             </p>
             <div className="min-h-0 flex-1">
-              <Stage>
+              <Stage bleed>
                 <svg
                   viewBox={`0 0 ${W} ${H}`}
+                  preserveAspectRatio="xMidYMid slice"
                   role="img"
                   aria-label={`${model.label} running: ${model.job}`}
-                  style={STAGE_MEDIA}
+                  style={stageFill(W, H)}
                 >
                   {active === 'physical' && <BridgeScene t={t} />}
                   {active === 'conceptual' && <AtomScene t={t} />}
@@ -133,17 +134,8 @@ export default function ModelGalleryWidget({ onSolved }) {
               ))}
             </div>
 
-            <div className="rounded-xl border-2 border-secondary-300 bg-secondary-50 p-3 dark:border-secondary-600 dark:bg-secondary-700/25">
-              <p className="text-xs font-black uppercase tracking-wider text-secondary-700 dark:text-secondary-100">
-                What you are watching
-              </p>
-              <p className="mt-1 text-sm font-medium text-stone-700 dark:text-stone-200">
-                {model.reads}
-              </p>
-            </div>
-
             <p className="text-sm font-black text-stone-700 dark:text-stone-200">
-              Models run — {ran.length} of {MODELS.length}
+              Models run: {ran.length} of {MODELS.length}
             </p>
           </>
         }
@@ -156,17 +148,25 @@ export default function ModelGalleryWidget({ onSolved }) {
   )
 }
 
+// Everything outside this margin can be cropped by the stage, so no label or
+// readout is placed there.
+const BLEED = 60
+
 // ── Scenes ────────────────────────────────────────────────────────────────────
 
 // A truck crosses; the deck sags most when the truck is over mid-span.
 //
 // Deck and main cable are both quadratic curves between the same two towers, so
-// a hanger is drawn between the two curves evaluated at the same x — that is
-// what keeps it from poking out through the cable or below the deck.
-const DECK_L = 47
-const DECK_R = W - 47
-const DECK_Y = 150
-const CABLE_TOP = 60
+// a hanger is drawn between the two curves evaluated at the same x, which is
+// what keeps it from poking out through the cable or below the deck. A dashed
+// line marks where the unloaded deck sat, so the sag is something you can see
+// rather than something you have to be told about.
+const DECK_L = 52
+const DECK_R = W - 52
+const DECK_Y = 196
+const CABLE_TOP = 96
+const WATER_Y = 300
+const PIER_FOOT = 330
 
 // x is linear in t for these curves (the control point sits at the midpoint),
 // so t can be recovered from x directly.
@@ -178,16 +178,60 @@ function BridgeScene({ t }) {
   const mid = W / 2
   const truckMid = x + 40
   const load = Math.max(0, 1 - Math.abs(truckMid - mid) / 220)
-  const sag = load * 26
+  const sag = load * 30
   const deckCtrl = DECK_Y + sag * 2
 
   const deckYAt = (px) => quadY(tAtX(px), deckCtrl)
+  const deckPath = `M ${DECK_L} ${DECK_Y} Q ${mid} ${deckCtrl} ${DECK_R} ${DECK_Y}`
 
   return (
     <g>
-      <rect x="0" y="230" width={W} height="70" fill="#e7d9c3" />
-      <rect x="30" y="150" width="34" height="80" rx="4" fill="#a8a29e" />
-      <rect x={W - 64} y="150" width="34" height="80" rx="4" fill="#a8a29e" />
+      <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={H + BLEED * 2} fill="#eaf4fb" />
+
+      {/* A few clouds, so the sky above the cable is sky and not blank. */}
+      {[
+        [110, 58, 1],
+        [470, 44, 0.8],
+      ].map(([cx, cy, s]) => (
+        <g key={cx} transform={`translate(${cx} ${cy}) scale(${s})`}>
+          <ellipse rx="34" ry="14" fill="#ffffff" opacity="0.85" />
+          <ellipse cx="-22" cy="4" rx="20" ry="10" fill="#ffffff" opacity="0.85" />
+          <ellipse cx="24" cy="5" rx="18" ry="9" fill="#ffffff" opacity="0.85" />
+        </g>
+      ))}
+
+      {/* River, banks and the piers standing in it. */}
+      <rect x={-BLEED} y={WATER_Y} width={W + BLEED * 2} height={H + BLEED - WATER_Y} fill="#9fd0d8" />
+      <path d={`M ${-BLEED} ${WATER_Y} L ${-BLEED} ${H + BLEED} L 120 ${H + BLEED} Q 84 ${WATER_Y + 6} ${-BLEED} ${WATER_Y} Z`} fill="#cbb994" />
+      <path
+        d={`M ${W + BLEED} ${WATER_Y} L ${W + BLEED} ${H + BLEED} L ${W - 120} ${H + BLEED} Q ${W - 84} ${WATER_Y + 6} ${W + BLEED} ${WATER_Y} Z`}
+        fill="#cbb994"
+      />
+      {[0, 1, 2, 3].map((i) => (
+        <line
+          key={i}
+          x1={150 + i * 110}
+          y1={WATER_Y + 24 + i * 16}
+          x2={236 + i * 110}
+          y2={WATER_Y + 24 + i * 16}
+          stroke="#7fbcc6"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+      ))}
+
+      {/* Towers, with the cross-bracing that keeps a real one standing. */}
+      {[32, W - 68].map((tx) => (
+        <g key={tx}>
+          <rect x={tx} y={DECK_Y} width="36" height={PIER_FOOT - DECK_Y} fill="#a8a29e" />
+          <rect x={tx - 6} y={DECK_Y - 9} width="48" height="11" rx="3" fill="#78716c" />
+          <path
+            d={`M ${tx + 4} 216 L ${tx + 32} 250 M ${tx + 32} 216 L ${tx + 4} 250 M ${tx + 4} 256 L ${tx + 32} 290 M ${tx + 32} 256 L ${tx + 4} 290`}
+            stroke="#78716c"
+            strokeWidth="3"
+          />
+        </g>
+      ))}
 
       {/* Main cable. */}
       <path
@@ -214,42 +258,78 @@ function BridgeScene({ t }) {
         )
       })}
 
-      {/* Deck, bending under the load. Drawn last so the hangers meet it. */}
-      <path
-        d={`M ${DECK_L} ${DECK_Y} Q ${mid} ${deckCtrl} ${DECK_R} ${DECK_Y}`}
-        stroke="#c2410c"
-        strokeWidth="9"
-        fill="none"
-        strokeLinecap="round"
+      {/* Where the deck sits with nothing on it. */}
+      <line
+        x1={DECK_L}
+        y1={DECK_Y}
+        x2={DECK_R}
+        y2={DECK_Y}
+        stroke="#78716c"
+        strokeWidth="2"
+        strokeDasharray="6 7"
+        opacity="0.75"
       />
 
+      {/* Deck, bending under the load. Drawn last so the hangers meet it. */}
+      <path d={deckPath} stroke="#c2410c" strokeWidth="10" fill="none" strokeLinecap="round" />
+      <path d={deckPath} stroke="#fed7aa" strokeWidth="2" strokeDasharray="16 14" fill="none" />
+
       {/* Truck, riding on the deck wherever the deck happens to be. */}
-      <g transform={`translate(${x} ${deckYAt(truckMid) - 8})`}>
-        <rect x="0" y="-30" width="56" height="30" rx="4" fill="#0f766e" />
-        <rect x="56" y="-20" width="26" height="20" rx="4" fill="#14b8a6" />
-        <circle cx="16" cy="3" r="7" fill="#292524" />
-        <circle cx="66" cy="3" r="7" fill="#292524" />
+      <g transform={`translate(${x} ${deckYAt(truckMid) - 9})`}>
+        <rect x="0" y="-32" width="58" height="32" rx="4" fill="#0f766e" />
+        {[12, 25, 38, 50].map((rx) => (
+          <line key={rx} x1={rx} y1="-30" x2={rx} y2="-2" stroke="#115e59" strokeWidth="2" />
+        ))}
+        <rect x="58" y="-23" width="27" height="23" rx="4" fill="#14b8a6" />
+        <rect x="62" y="-19" width="16" height="11" rx="2" fill="#cffafe" />
+        <rect x="81" y="-8" width="5" height="5" rx="1" fill="#0f766e" />
+        <circle cx="17" cy="3" r="7.5" fill="#292524" />
+        <circle cx="17" cy="3" r="3" fill="#a8a29e" />
+        <circle cx="68" cy="3" r="7.5" fill="#292524" />
+        <circle cx="68" cy="3" r="3" fill="#a8a29e" />
       </g>
 
-      {/* Load gauge — the same sag, said as a number. */}
-      <rect x={W - 150} y="22" width="128" height="46" rx="10" fill="#fff" stroke="#d6d3d1" strokeWidth="2" />
-      <text x={W - 138} y="40" fontSize="11" fontWeight="700" fill="#78716c">DECK LOAD</text>
-      <rect x={W - 138} y="48" width="104" height="9" rx="4.5" fill="#e7e5e4" />
-      <rect x={W - 138} y="48" width={104 * load} height="9" rx="4.5" fill={load > 0.75 ? '#ef4444' : '#f97316'} />
+      {sag > 5 && (
+        <text
+          x={mid}
+          y={deckCtrl / 2 + DECK_Y / 2 + 40}
+          fontSize="12"
+          fontWeight="800"
+          fill="#9a3412"
+          textAnchor="middle"
+        >
+          deck sags here
+        </text>
+      )}
+
+      {/* Load gauge: the same sag, said as a number. */}
+      <rect x={W - 158} y="26" width="132" height="48" rx="10" fill="#fff" stroke="#d6d3d1" strokeWidth="2" />
+      <text x={W - 146} y="45" fontSize="11" fontWeight="700" fill="#78716c">DECK LOAD</text>
+      <rect x={W - 146} y="53" width="108" height="10" rx="5" fill="#e7e5e4" />
+      <rect x={W - 146} y="53" width={108 * load} height="10" rx="5" fill={load > 0.75 ? '#ef4444' : '#f97316'} />
     </g>
   )
 }
 
-// Nucleus plus two electron shells. Not to scale, and that is the point.
+// Nucleus plus two electron shells. Not to scale, and that is the point, so
+// the nucleus is built out of countable protons and neutrons rather than a
+// blob, and each electron drags a short trail showing the way it is going.
 function AtomScene({ t }) {
   const cx = W / 2
-  const cy = H / 2
+  const cy = 205
   const shells = [
-    { r: 70, n: 2, speed: 1 },
-    { r: 118, n: 8, speed: -0.55 },
+    { r: 82, n: 2, speed: 1, name: 'shell 1' },
+    { r: 146, n: 8, speed: -0.55, name: 'shell 2' },
   ]
+  const NUCLEONS = [
+    [-15, -7, true], [0, -15, false], [15, -6, true], [-8, 8, false],
+    [8, 10, true], [0, 0, false], [-18, 5, false], [18, 7, true],
+  ]
+
   return (
     <g>
+      <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={H + BLEED * 2} fill="#f6f7fb" />
+
       {shells.map((s) => (
         <ellipse
           key={s.r}
@@ -263,41 +343,93 @@ function AtomScene({ t }) {
           strokeDasharray="5 5"
         />
       ))}
+      {shells.map((s) => (
+        <text
+          key={`${s.r}-name`}
+          x={cx + s.r + 6}
+          y={cy - 8}
+          fontSize="11"
+          fontWeight="800"
+          fill="#a8a29e"
+        >
+          {s.name}
+        </text>
+      ))}
 
-      <circle cx={cx} cy={cy} r="30" fill="#f97316" />
-      <circle cx={cx - 9} cy={cy - 8} r="9" fill="#ea580c" />
-      <circle cx={cx + 10} cy={cy + 6} r="9" fill="#fb923c" />
-      <text x={cx} y={cy + 52} fontSize="12" fontWeight="800" fill="#78716c" textAnchor="middle">
+      {/* Nucleus: protons carry a +, neutrons carry nothing. */}
+      <circle cx={cx} cy={cy} r="34" fill="#fed7aa" opacity="0.7" />
+      {NUCLEONS.map(([dx, dy, isProton], i) => (
+        <g key={i}>
+          <circle cx={cx + dx} cy={cy + dy} r="10" fill={isProton ? '#f97316' : '#a8a29e'} />
+          {isProton && (
+            <path
+              d={`M ${cx + dx - 4.5} ${cy + dy} h 9 M ${cx + dx} ${cy + dy - 4.5} v 9`}
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          )}
+        </g>
+      ))}
+      <text x={cx} y={cy + 60} fontSize="12" fontWeight="800" fill="#78716c" textAnchor="middle">
         nucleus
       </text>
 
       {shells.map((s) =>
         Array.from({ length: s.n }).map((_, i) => {
           const a = t * Math.PI * 2 * s.speed + (i / s.n) * Math.PI * 2
+          const trail = a - 0.28 * Math.sign(s.speed)
           return (
-            <circle
-              key={`${s.r}-${i}`}
-              cx={cx + Math.cos(a) * s.r}
-              cy={cy + Math.sin(a) * s.r * 0.62}
-              r="8"
-              fill="#3BAFA9"
-            />
+            <g key={`${s.r}-${i}`}>
+              <path
+                d={`M ${cx + Math.cos(trail) * s.r} ${cy + Math.sin(trail) * s.r * 0.62} L ${
+                  cx + Math.cos(a) * s.r
+                } ${cy + Math.sin(a) * s.r * 0.62}`}
+                stroke="#3BAFA9"
+                strokeWidth="4"
+                strokeLinecap="round"
+                opacity="0.35"
+              />
+              <circle
+                cx={cx + Math.cos(a) * s.r}
+                cy={cy + Math.sin(a) * s.r * 0.62}
+                r="9"
+                fill="#3BAFA9"
+              />
+              <path
+                d={`M ${cx + Math.cos(a) * s.r - 4.5} ${cy + Math.sin(a) * s.r * 0.62} h 9`}
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </g>
           )
         }),
       )}
-      <text x="20" y="26" fontSize="12" fontWeight="800" fill="#78716c">
-        electrons (teal) — not drawn to scale
+
+      <g>
+        <circle cx="34" cy="34" r="7" fill="#f97316" />
+        <text x="46" y="38" fontSize="11" fontWeight="800" fill="#78716c">proton</text>
+        <circle cx="110" cy="34" r="7" fill="#a8a29e" />
+        <text x="122" y="38" fontSize="11" fontWeight="800" fill="#78716c">neutron</text>
+        <circle cx="200" cy="34" r="7" fill="#3BAFA9" />
+        <text x="212" y="38" fontSize="11" fontWeight="800" fill="#78716c">electron</text>
+      </g>
+      <text x={W - 24} y="38" fontSize="11" fontWeight="800" fill="#a8a29e" textAnchor="end">
+        not to scale
       </text>
     </g>
   )
 }
 
 // The curve is drawn point by point, so the formula is visibly being computed.
+// The lake it is counting sits along the bottom, and the line the fish cannot
+// grow past is drawn in, so the curve flattening reads as the lake filling up.
 function GraphScene({ t }) {
-  const x0 = 70
-  const y0 = 250
-  const x1 = W - 40
-  const y1 = 50
+  const x0 = 78
+  const y0 = 300
+  const x1 = W - 42
+  const y1 = 66
   const years = 10
   const shown = Math.max(1, Math.round(t * years))
   // N = 400 x 1.18^year, capped by the lake.
@@ -305,10 +437,24 @@ function GraphScene({ t }) {
   const px = (y) => x0 + (y / years) * (x1 - x0)
   const py = (v) => y0 - (v / 2000) * (y0 - y1)
 
-  const pts = Array.from({ length: shown + 1 }, (_, y) => `${px(y)},${py(value(y))}`).join(' ')
+  const coords = Array.from({ length: shown + 1 }, (_, y) => [px(y), py(value(y))])
+  const pts = coords.map((c) => c.join(',')).join(' ')
+  const head = coords[coords.length - 1]
 
   return (
     <g>
+      <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={H + BLEED * 2} fill="#ffffff" />
+
+      {/* The lake being counted. */}
+      <rect x={x0} y={y0 + 6} width={x1 - x0} height="30" rx="7" fill="#d7eef1" />
+      {[0, 1, 2, 3].map((i) => (
+        <g key={i} transform={`translate(${x0 + 40 + i * 128} ${y0 + 22})`}>
+          <ellipse rx="10" ry="5.5" fill="#3BAFA9" />
+          <path d="M 9 0 L 17 -6 L 17 6 Z" fill="#3BAFA9" />
+          <circle cx="-4.5" cy="-1.6" r="1.5" fill="#fff" />
+        </g>
+      ))}
+
       <line x1={x0} y1={y0} x2={x1} y2={y0} stroke="#a8a29e" strokeWidth="3" />
       <line x1={x0} y1={y0} x2={x0} y2={y1} stroke="#a8a29e" strokeWidth="3" />
       {[0, 500, 1000, 1500, 2000].map((v) => (
@@ -319,20 +465,41 @@ function GraphScene({ t }) {
           </text>
         </g>
       ))}
-      <text x={(x0 + x1) / 2} y={y0 + 30} fontSize="12" fontWeight="800" fill="#78716c" textAnchor="middle">
+
+      {/* The ceiling the formula runs into. */}
+      <line x1={x0} y1={py(2000)} x2={x1} y2={py(2000)} stroke="#c2410c" strokeWidth="2" strokeDasharray="8 6" />
+      <text x={x1} y={py(2000) - 8} fontSize="11" fontWeight="800" fill="#c2410c" textAnchor="end">
+        lake is full
+      </text>
+
+      <text x={(x0 + x1) / 2} y={y0 + 58} fontSize="12" fontWeight="800" fill="#78716c" textAnchor="middle">
         years from now
       </text>
+      <text
+        x="26"
+        y={(y0 + y1) / 2}
+        fontSize="12"
+        fontWeight="800"
+        fill="#78716c"
+        textAnchor="middle"
+        transform={`rotate(-90 26 ${(y0 + y1) / 2})`}
+      >
+        fish in the lake
+      </text>
 
+      <polyline points={`${x0},${y0} ${pts} ${head[0]},${y0}`} fill="#ccfbf1" opacity="0.7" stroke="none" />
       <polyline points={pts} fill="none" stroke="#0d9488" strokeWidth="4" strokeLinejoin="round" />
-      {Array.from({ length: shown + 1 }).map((_, y) => (
-        <circle key={y} cx={px(y)} cy={py(value(y))} r="5" fill="#0d9488" />
+      {coords.map(([cx, cy], y) => (
+        <circle key={y} cx={cx} cy={cy} r="5" fill="#0d9488" />
       ))}
+      {/* The year being worked out right now. */}
+      <circle cx={head[0]} cy={head[1]} r="11" fill="none" stroke="#0d9488" strokeWidth="2.5" opacity="0.6" />
 
-      <rect x={x1 - 190} y="24" width="180" height="52" rx="10" fill="#fff" stroke="#d6d3d1" strokeWidth="2" />
-      <text x={x1 - 178} y="44" fontSize="12" fontWeight="800" fill="#292524">
+      <rect x={x1 - 194} y="30" width="184" height="54" rx="10" fill="#fff" stroke="#d6d3d1" strokeWidth="2" />
+      <text x={x1 - 182} y="51" fontSize="12" fontWeight="800" fill="#292524">
         N = 400 × 1.18ʸᵉᵃʳ
       </text>
-      <text x={x1 - 178} y="64" fontSize="12" fontWeight="700" fill="#0d9488">
+      <text x={x1 - 182} y="71" fontSize="12" fontWeight="700" fill="#0d9488">
         year {shown} → {Math.round(value(shown))} fish
       </text>
     </g>
@@ -340,13 +507,15 @@ function GraphScene({ t }) {
 }
 
 // The storm walks its track; the cone behind it is the uncertainty growing.
+// Two coastal towns sit under the track, so "where will it go" is a question
+// about somewhere rather than about a dot.
 function StormScene({ t }) {
   const track = [
-    [90, 250],
-    [180, 210],
-    [270, 165],
-    [370, 120],
-    [480, 78],
+    [92, 322],
+    [182, 270],
+    [272, 212],
+    [372, 156],
+    [482, 100],
   ]
   const seg = Math.min(t * (track.length - 1), track.length - 1.0001)
   const i = Math.floor(seg)
@@ -355,21 +524,53 @@ function StormScene({ t }) {
   const y = track[i][1] + (track[i + 1][1] - track[i][1]) * f
 
   const conePath =
-    `M ${track[0][0]} ${track[0][1] - 12} ` +
-    track.map((p, k) => `L ${p[0]} ${p[1] - 12 - k * 11}`).join(' ') +
-    ` L ${track[track.length - 1][0]} ${track[track.length - 1][1] + 12 + (track.length - 1) * 11} ` +
+    `M ${track[0][0]} ${track[0][1] - 14} ` +
+    track.map((p, k) => `L ${p[0]} ${p[1] - 14 - k * 13}`).join(' ') +
+    ` L ${track[track.length - 1][0]} ${track[track.length - 1][1] + 14 + (track.length - 1) * 13} ` +
     track
       .slice()
       .reverse()
-      .map((p, k) => `L ${p[0]} ${p[1] + 12 + (track.length - 1 - k) * 11}`)
+      .map((p, k) => `L ${p[0]} ${p[1] + 14 + (track.length - 1 - k) * 13}`)
       .join(' ') +
     ' Z'
 
   return (
     <g>
-      <rect x="0" y="0" width={W} height={H} fill="#dbeafe" />
-      <path d={`M 0 ${H} L 0 200 Q 120 250 240 235 Q 380 218 ${W} 265 L ${W} ${H} Z`} fill="#bbf7d0" />
-      <path d={`M 0 200 Q 120 250 240 235 Q 380 218 ${W} 265`} stroke="#65a30d" strokeWidth="3" fill="none" />
+      <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={H + BLEED * 2} fill="#dbeafe" />
+      {[0, 1, 2, 3].map((k) => (
+        <line
+          key={k}
+          x1={44 + k * 150}
+          y1={48 + k * 20}
+          x2={116 + k * 150}
+          y2={48 + k * 20}
+          stroke="#bfdbfe"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+      ))}
+
+      <path
+        d={`M ${-BLEED} ${H + BLEED} L ${-BLEED} 258 Q 120 318 240 302 Q 380 283 ${W + BLEED} 338 L ${W + BLEED} ${H + BLEED} Z`}
+        fill="#bbf7d0"
+      />
+      <path d={`M ${-BLEED} 258 Q 120 318 240 302 Q 380 283 ${W + BLEED} 338`} stroke="#65a30d" strokeWidth="3" fill="none" />
+      <ellipse cx="462" cy="250" rx="48" ry="19" fill="#bbf7d0" />
+      <ellipse cx="462" cy="250" rx="48" ry="19" fill="none" stroke="#65a30d" strokeWidth="2.5" />
+
+      {/* Towns under the forecast. */}
+      {[
+        [128, 312, 'Tacloban'],
+        [336, 294, 'Legazpi'],
+      ].map(([tx, ty, name]) => (
+        <g key={name}>
+          <circle cx={tx} cy={ty} r="5" fill="#166534" />
+          <circle cx={tx} cy={ty} r="10" fill="none" stroke="#166534" strokeWidth="1.5" opacity="0.5" />
+          <text x={tx} y={ty + 24} fontSize="11" fontWeight="800" fill="#166534" textAnchor="middle">
+            {name}
+          </text>
+        </g>
+      ))}
 
       <path d={conePath} fill="rgba(249,115,22,0.18)" stroke="#fdba74" strokeWidth="2" />
       <polyline
@@ -380,25 +581,35 @@ function StormScene({ t }) {
         strokeDasharray="7 6"
       />
       {track.map((p, k) => (
-        <circle key={k} cx={p[0]} cy={p[1]} r="4" fill="#c2410c" />
+        <g key={k}>
+          <circle cx={p[0]} cy={p[1]} r="4.5" fill="#c2410c" />
+          {k > 0 && (
+            <text x={p[0]} y={p[1] + 22} fontSize="10" fontWeight="800" fill="#9a3412" textAnchor="middle">
+              day {k}
+            </text>
+          )}
+        </g>
       ))}
 
-      {/* Spiral storm — the arms turn as it travels. */}
-      <g transform={`translate(${x} ${y}) rotate(${t * 720})`}>
-        <circle r="26" fill="rgba(255,255,255,0.85)" />
-        {[0, 120, 240].map((a) => (
-          <path
-            key={a}
-            d="M 0 0 Q 16 -10 26 -4 Q 14 4 0 0"
-            fill="#94a3b8"
-            transform={`rotate(${a})`}
-          />
-        ))}
-        <circle r="5" fill="#475569" />
+      {/* Spiral storm: the arms turn as it travels, rain bands and all. */}
+      <g transform={`translate(${x} ${y})`}>
+        <circle r="40" fill="rgba(148,163,184,0.22)" />
+        <g transform={`rotate(${t * 720})`}>
+          <circle r="30" fill="rgba(255,255,255,0.85)" />
+          {[0, 90, 180, 270].map((a) => (
+            <path
+              key={a}
+              d="M 0 0 Q 21 -13 35 -6 Q 19 6 0 0"
+              fill="#94a3b8"
+              transform={`rotate(${a})`}
+            />
+          ))}
+          <circle r="8" fill="none" stroke="#475569" strokeWidth="3" />
+        </g>
       </g>
 
-      <text x="20" y="28" fontSize="12" fontWeight="800" fill="#334155">
-        day {Math.min(3, Math.floor(t * 3) + 1)} of 3 — forecast cone widens as it looks further ahead
+      <text x="26" y="36" fontSize="12" fontWeight="800" fill="#334155">
+        day {Math.min(3, Math.floor(t * 3) + 1)} of 3: the cone is how unsure it is
       </text>
     </g>
   )

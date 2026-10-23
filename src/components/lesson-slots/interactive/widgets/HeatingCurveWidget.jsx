@@ -1,34 +1,69 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// w04-l1 signature interactive — the heating curve drawing itself.
+// w04-l1 signature interactive: the heating curve drawing itself.
 //
 // Heat goes in at a steady rate, so the x-axis is both "heat added" and "time".
 // The graph is not a picture of a heating curve: it is plotted from the same
 // energy number that is driving the lattice next to it, point by point, which
-// is what makes the plateau something the student sits through. Cooling walks
-// the head of the curve back down the way it came.
+// is what makes the plateau something the student sits through.
 //
-// The vacuum pump swaps the route for the sublimation one — one plateau instead
-// of two, and the liquid stage visibly never happens.
+// Three things carry the lesson visually, and all three move off the same
+// number: the particles in the beaker, the red column in the thermometer, and
+// the head of the curve. During a plateau the hotplate keeps glowing while the
+// column sits perfectly still, which is the whole point of the lesson.
+//
+// The scene paints its own wall and bench, so its contrast is the same on cream
+// and on stone-900 and the widget never has to know about the theme.
 
-const W = 720
-const H = 340
+const W = 640
+// Drawn at the stage's own shape (about 16:10) so the scene fills the frame.
+const H = 400
+// The wall and bench run past the viewBox on every side, so a cropped edge
+// never shows a seam. Nothing readable goes in this margin.
+const BLEED = 60
 
-const BX = 46
-const BY = 56
-const BW = 210
-const BH = 200
+const BENCH_Y = 348
 
-const GX0 = 330
-const GX1 = 694
-const GY_TOP = 52
-const GY_BOT = 288
+// Beaker interior. The particles bounce off these walls and the glass is drawn
+// around them, so "it fills the beaker" stays one fact rather than two.
+const BX = 66
+const BW = 148
+const BY = 148
+const BH = 170
+
+// Where a liquid settles, and where the meniscus is drawn.
+const POOL_Y = BY + BH * 0.46
+
+const PLATE_X = 38
+const PLATE_W = 204
+const PLATE_Y = 323
+const PLATE_H = 25
+
+// Thermometer. The column maps temperature straight onto a y value, which is
+// why yCol below is a subtraction and not a scaling.
+const TX = 200
+const T_TOP = 138
+const T_BULB_Y = 300
+const T_COL_BOT = 296
+const yCol = (t) => 276 - Math.max(-20, Math.min(130, t))
+
+// The chart paper pinned to the wall, and the axes drawn on it.
+const SHEET_X = 282
+const SHEET_Y = 30
+const SHEET_W = 342
+const SHEET_H = 306
+const GX0 = 332
+const GX1 = 606
+const GY_TOP = 68
+const GY_BOT = 292
 
 const N = 24
 const R = 6
+const SITE_GAP = 19
+const BOND_REACH = SITE_GAP * 1.3
 
 const E_MAX = 115
 const E_MELT_START = 20
@@ -36,11 +71,16 @@ const E_MELT_END = 32
 const E_BOIL_START = 72
 const E_BOIL_END = 100
 
+const INK = 'rgba(41,37,36,0.95)'
+const INK_MID = 'rgba(87,83,78,0.95)'
+const RULE = 'rgba(120,113,108,0.45)'
+const GLASS = 'rgba(87,83,78,0.55)'
+
 const GOALS = [
-  { id: 'melt', label: 'Melting plateau drawn', hint: 'Hold heat until the line goes flat at 0 °C and stays flat.' },
-  { id: 'boil', label: 'Boiling plateau drawn', hint: 'Keep holding heat — the second flat run is at 100 °C.' },
-  { id: 'reverse', label: 'Curve retraced backwards', hint: 'Hold cool and walk the head of the line back down through a plateau.' },
-  { id: 'sublime', label: 'Sublimation route taken', hint: 'Turn the vacuum pump on, cool to solid, then heat back up.' },
+  { id: 'melt', label: 'Melting plateau drawn', hint: 'Hold heat until the line goes flat at 0 °C.' },
+  { id: 'boil', label: 'Boiling plateau drawn', hint: 'Keep holding heat. The second flat run sits at 100 °C.' },
+  { id: 'reverse', label: 'Curve retraced backwards', hint: 'Hold cool and walk the head of the line back down.' },
+  { id: 'sublime', label: 'Sublimation route taken', hint: 'Turn the vacuum pump on, cool to solid, then heat up.' },
 ]
 
 function tempFor(e, vacuum) {
@@ -58,18 +98,19 @@ function tempFor(e, vacuum) {
 
 function stateFor(e, vacuum) {
   if (vacuum) {
-    if (e < E_MELT_START) return { id: 'solid', label: 'Solid — ice', colour: '#7FB3EA', panel: 'border-[#7FB3EA] bg-[#DDEEFF] dark:bg-[#7FB3EA]/15', note: 'Locked lattice. With the pump on there is no liquid stage ahead of it at all.' }
-    if (e < E_MELT_END) return { id: 'subliming', label: 'Subliming — flat and holding', colour: '#8FB6C8', panel: 'border-[#8FB6C8] bg-[#DDEEFF] dark:bg-[#8FB6C8]/15', note: 'The line has gone flat. Every bit of heat is tearing particles straight off the solid and into vapour — the liquid stage is skipped.' }
-    return { id: 'gas', label: 'Gas — water vapour', colour: '#9AA7B8', panel: 'border-stone-300 bg-stone-100 dark:border-stone-500 dark:bg-stone-700/50', note: 'Free particles filling the whole vessel. They went there straight from the solid.' }
+    if (e < E_MELT_START) return { id: 'solid', label: 'Solid: ice', colour: '#7FB3EA', panel: 'border-[#7FB3EA] bg-[#DDEEFF] dark:bg-[#7FB3EA]/15' }
+    if (e < E_MELT_END) return { id: 'subliming', label: 'Subliming at 0 °C', colour: '#8FB6C8', panel: 'border-[#8FB6C8] bg-[#DDEEFF] dark:bg-[#8FB6C8]/15' }
+    return { id: 'gas', label: 'Gas: water vapour', colour: '#9AA7B8', panel: 'border-stone-300 bg-stone-100 dark:border-stone-500 dark:bg-stone-700/50' }
   }
-  if (e < E_MELT_START) return { id: 'solid', label: 'Solid — ice', colour: '#7FB3EA', panel: 'border-[#7FB3EA] bg-[#DDEEFF] dark:bg-[#7FB3EA]/15', note: 'Particles shiver on fixed lattice sites. The line is climbing because the heat is going into speed.' }
-  if (e < E_MELT_END) return { id: 'melting', label: 'Melting — 0 °C and holding', colour: '#5FBBC8', panel: 'border-[#5FBBC8] bg-[#DDEEFF] dark:bg-[#5FBBC8]/15', note: 'The line has gone flat. Heat is still going in, but it is being spent breaking the lattice, not raising the temperature.' }
-  if (e < E_BOIL_START) return { id: 'liquid', label: 'Liquid — water', colour: '#3BAFA9', panel: 'border-[#3BAFA9] bg-[#7BC9CF]/25 dark:bg-[#3BAFA9]/15', note: 'The lattice is gone. Particles slide over each other and the line climbs again.' }
-  if (e < E_BOIL_END) return { id: 'boiling', label: 'Boiling — 100 °C and holding', colour: '#7FC4C0', panel: 'border-[#7FC4C0] bg-[#7BC9CF]/25 dark:bg-[#7FC4C0]/15', note: 'Flat again, and for much longer. Pulling particles clean away from each other costs far more heat than melting did.' }
-  return { id: 'gas', label: 'Gas — water vapour', colour: '#9AA7B8', panel: 'border-stone-300 bg-stone-100 dark:border-stone-500 dark:bg-stone-700/50', note: 'Every particle has escaped. With nothing left to break, the line climbs steeply again.' }
+  if (e < E_MELT_START) return { id: 'solid', label: 'Solid: ice', colour: '#7FB3EA', panel: 'border-[#7FB3EA] bg-[#DDEEFF] dark:bg-[#7FB3EA]/15' }
+  if (e < E_MELT_END) return { id: 'melting', label: 'Melting at 0 °C', colour: '#5FBBC8', panel: 'border-[#5FBBC8] bg-[#DDEEFF] dark:bg-[#5FBBC8]/15' }
+  if (e < E_BOIL_START) return { id: 'liquid', label: 'Liquid: water', colour: '#3BAFA9', panel: 'border-[#3BAFA9] bg-[#7BC9CF]/25 dark:bg-[#3BAFA9]/15' }
+  if (e < E_BOIL_END) return { id: 'boiling', label: 'Boiling at 100 °C', colour: '#7FC4C0', panel: 'border-[#7FC4C0] bg-[#7BC9CF]/25 dark:bg-[#7FC4C0]/15' }
+  return { id: 'gas', label: 'Gas: water vapour', colour: '#9AA7B8', panel: 'border-stone-300 bg-stone-100 dark:border-stone-500 dark:bg-stone-700/50' }
 }
 
 const IS_SOLID = { solid: true, melting: true, subliming: true }
+const IS_POOLED = { liquid: true, boiling: true }
 
 function makeParticles() {
   return Array.from({ length: N }, (_, i) => {
@@ -85,40 +126,357 @@ function makeParticles() {
   })
 }
 
+// Six columns of four, parked clear of the graduation marks on the left wall
+// and clear of the thermometer bulb on the right.
 function siteFor(i) {
   const cols = 6
-  const gap = 28
-  const x0 = BX + BW / 2 - ((cols - 1) * gap) / 2
-  const y0 = BY + BH - 34 - Math.floor((N - 1) / cols) * gap
-  return { x: x0 + (i % cols) * gap, y: y0 + Math.floor(i / cols) * gap }
+  return {
+    x: 86 + (i % cols) * SITE_GAP,
+    y: 302 - (Math.floor((N - 1) / cols) - Math.floor(i / cols)) * SITE_GAP,
+  }
 }
 
 const px = (e) => GX0 + (e / E_MAX) * (GX1 - GX0)
 const py = (t) => GY_BOT - ((t + 20) / 150) * (GY_BOT - GY_TOP)
 
-function drawScene(ctx, { state, parts, held, vacuum, energy, maxE, temp }) {
-  ctx.clearRect(0, 0, W, H)
+// ── Scene furniture ─────────────────────────────────────────────────────────
 
-  // ── The vessel ──
-  ctx.strokeStyle = '#78716c'
-  ctx.lineWidth = 3
+function drawRoom(ctx) {
+  ctx.fillStyle = '#f2f7fc'
+  ctx.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2)
+  ctx.fillStyle = '#e7d9c3'
+  ctx.fillRect(-BLEED, BENCH_Y, W + BLEED * 2, H + BLEED - BENCH_Y)
+  ctx.fillStyle = 'rgba(120,113,108,0.25)'
+  ctx.fillRect(-BLEED, BENCH_Y, W + BLEED * 2, 2)
+}
+
+function drawPlate(ctx, held, temp) {
+  ctx.fillStyle = 'rgba(87,83,78,0.16)'
   ctx.beginPath()
-  ctx.moveTo(BX, BY)
-  ctx.lineTo(BX, BY + BH)
-  ctx.lineTo(BX + BW, BY + BH)
-  ctx.lineTo(BX + BW, BY)
+  ctx.ellipse(140, BENCH_Y + 3, 112, 8, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.fillStyle = '#78716c'
+  ctx.beginPath()
+  ctx.roundRect(PLATE_X, PLATE_Y, PLATE_W, PLATE_H, 4)
+  ctx.fill()
+  ctx.fillStyle = '#a8a29e'
+  ctx.fillRect(PLATE_X, PLATE_Y, PLATE_W, 3)
+
+  ctx.fillStyle = held === 'heat' ? '#f97316' : held === 'cool' ? '#60a5fa' : '#d6d3d1'
+  ctx.beginPath()
+  ctx.arc(PLATE_X + 16, PLATE_Y + 13, 5, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.fillStyle = '#44403c'
+  ctx.beginPath()
+  ctx.roundRect(148, PLATE_Y + 5, 88, 16, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#a8a29e'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
+  ctx.fillStyle = '#fb923c'
+  ctx.font = '800 12px system-ui, sans-serif'
+  ctx.textAlign = 'right'
+  ctx.fillText(`${Math.round(temp)} °C`, 228, PLATE_Y + 17)
+
+  // The band under the beaker base is where heat crosses into the substance,
+  // so it has to keep glowing through a plateau.
+  if (held) {
+    ctx.fillStyle = held === 'heat' ? 'rgba(249,115,22,0.75)' : 'rgba(96,165,250,0.75)'
+    ctx.beginPath()
+    ctx.roundRect(BX - 5, PLATE_Y - 5, BW + 10, 6, 3)
+    ctx.fill()
+  }
+
+  ctx.fillStyle = INK_MID
+  ctx.font = '700 12px system-ui, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText(
+    held === 'heat' ? 'heat going in' : held === 'cool' ? 'heat coming out' : 'plate off',
+    140,
+    BENCH_Y + 18,
+  )
+}
+
+function drawBeakerGlass(ctx) {
+  ctx.strokeStyle = GLASS
+  ctx.lineWidth = 4
+  ctx.lineJoin = 'round'
+  ctx.beginPath()
+  ctx.moveTo(BX - 2, BY)
+  ctx.lineTo(BX - 2, BY + BH)
+  ctx.lineTo(BX + BW + 2, BY + BH)
+  ctx.lineTo(BX + BW + 2, BY)
   ctx.stroke()
 
-  if (vacuum) {
-    ctx.setLineDash([6, 5])
-    ctx.strokeStyle = '#a855f7'
-    ctx.lineWidth = 2
-    ctx.strokeRect(BX - 14, BY - 22, BW + 28, BH + 36)
+  // Graduation marks on the left wall, long and short alternating the way a
+  // real beaker's are.
+  ctx.strokeStyle = 'rgba(87,83,78,0.45)'
+  ctx.lineWidth = 1.5
+  for (let k = 1; k <= 4; k += 1) {
+    const y = BY + BH - (k * BH) / 5
+    ctx.beginPath()
+    ctx.moveTo(BX + 1, y)
+    ctx.lineTo(BX + (k % 2 === 0 ? 16 : 10), y)
+    ctx.stroke()
+  }
+}
+
+function drawBeakerRim(ctx) {
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'
+  ctx.strokeStyle = GLASS
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ctx.roundRect(BX - 8, BY - 5, BW + 16, 9, 4)
+  ctx.fill()
+  ctx.stroke()
+
+  // Pour lip on the right.
+  ctx.beginPath()
+  ctx.moveTo(BX + BW + 6, BY - 3)
+  ctx.quadraticCurveTo(BX + BW + 20, BY + 2, BX + BW + 6, BY + 8)
+  ctx.stroke()
+}
+
+function drawLiquid(ctx, stateId, tick) {
+  if (!IS_POOLED[stateId]) return
+  ctx.fillStyle = 'rgba(59,175,169,0.20)'
+  ctx.fillRect(BX, POOL_Y, BW, BY + BH - POOL_Y)
+
+  if (stateId === 'boiling') {
+    ctx.strokeStyle = 'rgba(59,175,169,0.8)'
+    ctx.lineWidth = 1.5
+    const span = BY + BH - POOL_Y
+    for (let i = 0; i < 3; i += 1) {
+      const y = BY + BH - 8 - ((tick * 1.6 + i * 41) % span)
+      ctx.beginPath()
+      ctx.arc(BX + 34 + i * 42, y, 3.5, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+  }
+}
+
+function drawMeniscus(ctx, stateId) {
+  if (!IS_POOLED[stateId]) return
+  ctx.strokeStyle = '#3BAFA9'
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ctx.moveTo(BX, POOL_Y - 4)
+  ctx.quadraticCurveTo(BX + BW / 2, POOL_Y + 7, BX + BW, POOL_Y - 4)
+  ctx.stroke()
+}
+
+function drawThermometer(ctx, temp) {
+  ctx.fillStyle = 'rgba(255,255,255,0.8)'
+  ctx.strokeStyle = GLASS
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.roundRect(TX - 5, T_TOP, 10, T_BULB_Y - T_TOP, 5)
+  ctx.fill()
+  ctx.stroke()
+
+  const top = yCol(temp)
+  ctx.fillStyle = '#ef4444'
+  ctx.beginPath()
+  ctx.roundRect(TX - 2.5, top, 5, T_COL_BOT - top, 2.5)
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.arc(TX, T_BULB_Y, 9, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = GLASS
+  ctx.stroke()
+
+  // Only the two temperatures the lesson turns on get a mark.
+  ctx.strokeStyle = 'rgba(87,83,78,0.8)'
+  ctx.lineWidth = 1.5
+  for (const t of [0, 100]) {
+    const y = yCol(t)
+    ctx.beginPath()
+    ctx.moveTo(TX - 10, y)
+    ctx.lineTo(TX - 6, y)
+    ctx.moveTo(TX + 6, y)
+    ctx.lineTo(TX + 10, y)
+    ctx.stroke()
+  }
+}
+
+function drawBellJar(ctx) {
+  ctx.fillStyle = 'rgba(168,85,247,0.07)'
+  ctx.strokeStyle = '#a855f7'
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ctx.moveTo(26, BENCH_Y)
+  ctx.lineTo(26, 170)
+  ctx.quadraticCurveTo(140, 50, 254, 170)
+  ctx.lineTo(254, BENCH_Y)
+  ctx.fill()
+  ctx.stroke()
+
+  ctx.fillStyle = 'rgba(168,85,247,0.22)'
+  ctx.beginPath()
+  ctx.roundRect(18, BENCH_Y - 6, 244, 9, 4)
+  ctx.fill()
+}
+
+// Colour alone never says which state this is.
+function drawTag(ctx, text, y, fill, stroke, ink, font) {
+  ctx.font = font
+  const w = ctx.measureText(text).width + 22
+  ctx.fillStyle = fill
+  ctx.strokeStyle = stroke
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.roundRect(14, y, w, 26, 13)
+  ctx.fill()
+  ctx.stroke()
+  ctx.fillStyle = ink
+  ctx.textAlign = 'left'
+  ctx.fillText(text, 25, y + 18)
+}
+
+function drawChart(ctx, { vacuum, energy, maxE }) {
+  ctx.save()
+  ctx.shadowColor = 'rgba(41,37,36,0.20)'
+  ctx.shadowBlur = 10
+  ctx.shadowOffsetY = 4
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.roundRect(SHEET_X, SHEET_Y, SHEET_W, SHEET_H, 6)
+  ctx.fill()
+  ctx.restore()
+
+  ctx.save()
+  ctx.beginPath()
+  ctx.roundRect(SHEET_X, SHEET_Y, SHEET_W, SHEET_H, 6)
+  ctx.clip()
+  ctx.strokeStyle = 'rgba(148,163,184,0.32)'
+  ctx.lineWidth = 1
+  for (let x = SHEET_X + 17; x < SHEET_X + SHEET_W; x += 17) {
+    ctx.beginPath()
+    ctx.moveTo(x, SHEET_Y)
+    ctx.lineTo(x, SHEET_Y + SHEET_H)
+    ctx.stroke()
+  }
+  for (let y = SHEET_Y + 17; y < SHEET_Y + SHEET_H; y += 17) {
+    ctx.beginPath()
+    ctx.moveTo(SHEET_X, y)
+    ctx.lineTo(SHEET_X + SHEET_W, y)
+    ctx.stroke()
+  }
+  ctx.restore()
+
+  ctx.strokeStyle = RULE
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.roundRect(SHEET_X, SHEET_Y, SHEET_W, SHEET_H, 6)
+  ctx.stroke()
+
+  // The two temperatures a change of state happens at.
+  ctx.strokeStyle = 'rgba(87,83,78,0.5)'
+  ctx.lineWidth = 1.5
+  ctx.setLineDash([5, 4])
+  for (const t of [0, 100]) {
+    ctx.beginPath()
+    ctx.moveTo(GX0, py(t))
+    ctx.lineTo(GX1, py(t))
+    ctx.stroke()
+  }
+  ctx.setLineDash([])
+
+  ctx.strokeStyle = INK_MID
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(GX0, GY_TOP)
+  ctx.lineTo(GX0, GY_BOT)
+  ctx.lineTo(GX1, GY_BOT)
+  ctx.stroke()
+
+  ctx.fillStyle = INK_MID
+  ctx.font = '700 11px system-ui, sans-serif'
+  ctx.textAlign = 'right'
+  for (const t of [-20, 0, 50, 100, 130]) {
+    ctx.fillText(`${t}`, GX0 - 7, py(t) + 4)
+  }
+  ctx.fillStyle = INK
+  ctx.textAlign = 'left'
+  ctx.font = '800 12px system-ui, sans-serif'
+  ctx.fillText('temperature °C', GX0 - 6, GY_TOP - 16)
+  ctx.textAlign = 'center'
+  ctx.font = '700 11px system-ui, sans-serif'
+  ctx.fillStyle = INK_MID
+  ctx.fillText('heat added over time', (GX0 + GX1) / 2, GY_BOT + 22)
+
+  // The dashed line is how far the run has ever got; the solid one is where the
+  // head is now, so cooling visibly walks it back.
+  const trace = (limit, colour, width, dash) => {
+    ctx.strokeStyle = colour
+    ctx.lineWidth = width
+    ctx.lineJoin = 'round'
+    ctx.setLineDash(dash)
+    ctx.beginPath()
+    for (let e = 0; e <= limit; e += 0.5) {
+      const x = px(e)
+      const y = py(tempFor(e, vacuum))
+      if (e === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.stroke()
     ctx.setLineDash([])
-    ctx.fillStyle = '#a855f7'
-    ctx.font = '700 12px system-ui, sans-serif'
+  }
+  if (maxE > energy) trace(maxE, '#a8a29e', 2, [5, 4])
+  trace(energy, '#f97316', 3.5, [])
+
+  // A plateau is only named once the student has actually drawn it.
+  const band = (from, to, t, text) => {
+    if (maxE < to) return
+    ctx.fillStyle = 'rgba(249,115,22,0.16)'
+    ctx.fillRect(px(from), py(t) - 5, px(to) - px(from), 10)
+    ctx.fillStyle = '#c2410c'
+    ctx.font = '800 11px system-ui, sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('vacuum — no air pressure', BX + BW / 2, BY - 28)
+    ctx.fillText(text, (px(from) + px(to)) / 2, py(t) - 10)
+  }
+  if (vacuum) {
+    band(E_MELT_START, E_MELT_END, 0, 'subliming, 0 °C')
+  } else {
+    band(E_MELT_START, E_MELT_END, 0, 'melting, 0 °C')
+    band(E_BOIL_START, E_BOIL_END, 100, 'boiling, 100 °C')
+  }
+
+  ctx.fillStyle = '#f97316'
+  ctx.strokeStyle = 'rgba(41,37,36,0.55)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.arc(px(energy), py(tempFor(energy, vacuum)), 5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.stroke()
+}
+
+function drawScene(ctx, { state, parts, held, vacuum, energy, maxE, temp, tick }) {
+  drawRoom(ctx)
+  drawChart(ctx, { vacuum, energy, maxE })
+  drawPlate(ctx, held, temp)
+  drawBeakerGlass(ctx)
+  drawLiquid(ctx, state.id, tick)
+
+  // Bonds are drawn from the lattice sites, so they only appear while the
+  // particles are actually locked onto them.
+  if (IS_SOLID[state.id]) {
+    ctx.strokeStyle = 'rgba(87,83,78,0.35)'
+    ctx.lineWidth = 1.5
+    for (let a = 0; a < parts.length; a += 1) {
+      for (let b = a + 1; b < parts.length; b += 1) {
+        const dx = parts[a].x - parts[b].x
+        const dy = parts[a].y - parts[b].y
+        if (Math.hypot(dx, dy) > BOND_REACH) continue
+        ctx.beginPath()
+        ctx.moveTo(parts[a].x, parts[a].y)
+        ctx.lineTo(parts[b].x, parts[b].y)
+        ctx.stroke()
+      }
+    }
   }
 
   ctx.fillStyle = state.colour
@@ -134,87 +492,15 @@ function drawScene(ctx, { state, parts, held, vacuum, energy, maxE, temp }) {
     ctx.fill()
   }
 
-  // ── Hotplate ──
-  const plateY = BY + BH + 8
-  ctx.fillStyle = '#57534e'
-  ctx.fillRect(BX - 16, plateY, BW + 32, 18)
-  ctx.strokeStyle = held === 'heat' ? '#f97316' : held === 'cool' ? '#60a5fa' : '#a8a29e'
-  ctx.lineWidth = 3
-  for (let i = 0; i < 4; i += 1) {
-    ctx.beginPath()
-    ctx.arc(BX + 26 + i * 52, plateY + 9, 8, 0, Math.PI * 2)
-    ctx.stroke()
+  drawMeniscus(ctx, state.id)
+  drawThermometer(ctx, temp)
+  drawBeakerRim(ctx)
+  if (vacuum) drawBellJar(ctx)
+
+  drawTag(ctx, state.label, 30, 'rgba(255,255,255,0.94)', RULE, INK, '800 14px system-ui, sans-serif')
+  if (vacuum) {
+    drawTag(ctx, 'vacuum, no air', 62, 'rgba(168,85,247,0.16)', '#a855f7', '#6b21a8', '700 11px system-ui, sans-serif')
   }
-  ctx.fillStyle = '#78716c'
-  ctx.font = '700 12px system-ui, sans-serif'
-  ctx.textAlign = 'center'
-  ctx.fillText(
-    held === 'heat' ? 'heat going in' : held === 'cool' ? 'heat coming out' : 'plate idle',
-    BX + BW / 2,
-    plateY + 34,
-  )
-
-  // ── Thermometer readout on the vessel ──
-  ctx.fillStyle = '#78716c'
-  ctx.font = '800 15px system-ui, sans-serif'
-  ctx.textAlign = 'left'
-  ctx.fillText(`${Math.round(temp)} °C`, BX + 4, BY - 12)
-
-  // ── The graph ──
-  ctx.strokeStyle = '#a8a29e'
-  ctx.lineWidth = 1.5
-  ctx.setLineDash([4, 4])
-  for (const t of [0, 100]) {
-    ctx.beginPath()
-    ctx.moveTo(GX0, py(t))
-    ctx.lineTo(GX1, py(t))
-    ctx.stroke()
-  }
-  ctx.setLineDash([])
-
-  ctx.strokeStyle = '#78716c'
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.moveTo(GX0, GY_TOP)
-  ctx.lineTo(GX0, GY_BOT)
-  ctx.lineTo(GX1, GY_BOT)
-  ctx.stroke()
-
-  ctx.fillStyle = '#78716c'
-  ctx.font = '700 11px system-ui, sans-serif'
-  ctx.textAlign = 'right'
-  for (const t of [-20, 0, 50, 100, 130]) {
-    ctx.fillText(`${t}`, GX0 - 6, py(t) + 4)
-  }
-  ctx.textAlign = 'left'
-  ctx.font = '800 12px system-ui, sans-serif'
-  ctx.fillText('temperature °C', GX0 - 4, GY_TOP - 14)
-  ctx.textAlign = 'center'
-  ctx.font = '700 11px system-ui, sans-serif'
-  ctx.fillText('heat added at a steady rate  =  time  →', (GX0 + GX1) / 2, GY_BOT + 20)
-
-  // The faint line is how far the run has ever got; the bold one is where the
-  // head is now, so cooling visibly walks it back.
-  const trace = (limit, colour, width) => {
-    ctx.strokeStyle = colour
-    ctx.lineWidth = width
-    ctx.lineJoin = 'round'
-    ctx.beginPath()
-    for (let e = 0; e <= limit; e += 0.5) {
-      const x = px(e)
-      const y = py(tempFor(e, vacuum))
-      if (e === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
-    }
-    ctx.stroke()
-  }
-  if (maxE > energy) trace(maxE, '#d6d3d1', 2)
-  trace(energy, '#f97316', 3.5)
-
-  ctx.fillStyle = '#f97316'
-  ctx.beginPath()
-  ctx.arc(px(energy), py(tempFor(energy, vacuum)), 5, 0, Math.PI * 2)
-  ctx.fill()
 }
 
 export default function HeatingCurveWidget({ onSolved }) {
@@ -313,7 +599,7 @@ export default function HeatingCurveWidget({ onSolved }) {
         }
         p.x += p.vx * speed
         p.y += p.vy * speed
-        const top = st.id === 'liquid' ? BY + BH * 0.5 : BY + R
+        const top = IS_POOLED[st.id] ? POOL_Y : BY + R
         if (p.y < top) { p.y = top; p.vy = Math.abs(p.vy) }
         if (p.x < BX + R) { p.x = BX + R; p.vx = Math.abs(p.vx) }
         if (p.x > BX + BW - R) { p.x = BX + BW - R; p.vx = -Math.abs(p.vx) }
@@ -328,6 +614,7 @@ export default function HeatingCurveWidget({ onSolved }) {
         energy: live.energy,
         maxE: live.maxE,
         temp: t,
+        tick,
       })
 
       if (!still) raf = requestAnimationFrame(step)
@@ -340,7 +627,7 @@ export default function HeatingCurveWidget({ onSolved }) {
 
   useEffect(() => {
     if (stillRef.current) drawRef.current?.()
-  }, [energy, vacuum, maxE])
+  }, [energy, vacuum, maxE, held])
 
   const holdProps = (kind) => ({
     onPointerDown: () => setHeld(kind),
@@ -355,23 +642,21 @@ export default function HeatingCurveWidget({ onSolved }) {
     <>
       <SimLayout
         stage={
-          <Stage>
+          <Stage bleed>
             <canvas
               ref={canvasRef}
               role="img"
-              aria-label={`Ice on a hotplate at ${temp} degrees Celsius, currently ${state.label}, with the heating curve plotted alongside.`}
-              style={{ ...STAGE_MEDIA, aspectRatio: `${W} / ${H}` }}
+              aria-label={`Ice in a beaker on a hotplate at ${temp} degrees Celsius, currently ${state.label}, with the heating curve drawn on the chart beside it.`}
+              style={stageFill(W, H)}
             />
           </Stage>
         }
         panel={
           <>
             <div className={`rounded-xl border-2 p-3 ${state.panel}`}>
-              <p className="text-sm font-black text-stone-900 dark:text-white">
-                {temp} °C — {state.label}
-              </p>
-              <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                {state.note}
+              <p className="text-2xl font-black text-stone-900 dark:text-white">{temp} °C</p>
+              <p className="mt-0.5 text-sm font-black text-stone-700 dark:text-stone-200">
+                {state.label}
               </p>
             </div>
 
@@ -392,28 +677,22 @@ export default function HeatingCurveWidget({ onSolved }) {
               </button>
             </div>
 
-            <div>
-              <button
-                type="button"
-                onClick={() => setVacuum((v) => !v)}
-                aria-pressed={vacuum}
-                className={`min-h-11 w-full rounded-xl border-2 px-3 py-2 text-sm font-black transition-colors ${
-                  vacuum
-                    ? 'border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-700/25 dark:text-accent-100'
-                    : 'border-stone-300 bg-white text-stone-600 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300'
-                }`}
-              >
-                Vacuum pump: {vacuum ? 'ON' : 'OFF'}
-              </button>
-              <p className="mt-1 text-xs font-medium text-stone-500 dark:text-stone-400">
-                With the pump on the whole route changes — one plateau instead of two,
-                and the liquid stage never happens.
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={() => setVacuum((v) => !v)}
+              aria-pressed={vacuum}
+              className={`min-h-11 w-full rounded-xl border-2 px-3 py-2 text-sm font-black transition-colors ${
+                vacuum
+                  ? 'border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-700/25 dark:text-accent-100'
+                  : 'border-stone-300 bg-white text-stone-600 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300'
+              }`}
+            >
+              Vacuum pump: {vacuum ? 'ON' : 'OFF'}
+            </button>
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Curve drawn — {done.length} of {GOALS.length}
+                Curve drawn: {done.length} of {GOALS.length}
               </p>
               <ul className="space-y-1.5">
                 {GOALS.map((g) => {
@@ -428,7 +707,7 @@ export default function HeatingCurveWidget({ onSolved }) {
                       }`}
                     >
                       <p className="text-xs font-black text-stone-900 dark:text-white">
-                        {hit ? '✓ Done — ' : 'Not yet — '}
+                        {hit ? '✓ Done: ' : 'Not yet: '}
                         {g.label}
                       </p>
                       {!hit && (
@@ -446,8 +725,8 @@ export default function HeatingCurveWidget({ onSolved }) {
       />
 
       <p aria-live="polite" className="sr-only">
-        {temp} degrees Celsius — {state.label}. {done.length} of {GOALS.length} parts of
-        the curve drawn.
+        {temp} degrees Celsius. {state.label}. {done.length} of {GOALS.length} parts of the
+        curve drawn.
       </p>
     </>
   )
