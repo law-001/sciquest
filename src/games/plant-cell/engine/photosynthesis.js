@@ -1,74 +1,44 @@
-// Level 1 model: sunlight + water + carbon dioxide → glucose + oxygen.
-//
-// The reaction runs at the rate of whichever raw material is in shortest
-// supply (the limiting factor), which is the whole point of the level. Pure
-// functions, so the screen only has to draw what comes back.
+// Level 1 model, kept to the lessons: chloroplasts turn sunlight, water and
+// carbon dioxide into glucose and oxygen, and the cell uses glucose for energy.
+// Photosynthesis only runs as fast as the ingredient there is least of, so
+// taking any one away stops it. Pure functions, so the screen only has to draw
+// what comes back.
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-// Above this much water in the cytoplasm, water is no longer what holds
-// photosynthesis back.
-const WATER_SATURATION = 60;
-
-export const LIMITING_LABEL = {
-  light: 'Sunlight',
-  water: 'Water',
-  co2: 'Carbon dioxide',
-  none: 'Nothing',
+export const INPUT_LABEL = {
+  light: 'sunlight',
+  water: 'water',
+  co2: 'carbon dioxide',
 };
 
 export function createPhotosynthesisState(sim) {
   return {
-    elapsed: 0,
-    soil: sim.soilStart,
-    cellWater: sim.cellWaterStart,
     glucose: sim.glucoseStart,
     health: sim.healthStart,
     minHealth: sim.healthStart,
     oxygen: 0,
     rate: 0,
-    limiting: 'light',
-    waterIn: 0,
+    lowest: 'light',
     dead: false,
   };
 }
 
 export function stepPhotosynthesis(state, controls, sim, dt) {
-  const light = controls.light / 100;
-  const co2 = controls.co2 / 100;
-  const uptake = controls.water / 100;
-
-  // Roots can only draw what the soil still holds; the taper keeps the last
-  // drops from cutting off in a single frame.
-  const soilFactor = clamp(state.soil / 12, 0, 1);
-  const waterIn = uptake * soilFactor * sim.uptakePerSec * dt;
-  const soil = clamp(
-    state.soil - uptake * soilFactor * sim.soilDrainPerSec * dt + sim.soilRefillPerSec * dt,
-    0,
-    100,
-  );
-
-  const waterFactor = clamp(state.cellWater / WATER_SATURATION, 0, 1);
-  const rate = Math.min(light, waterFactor, co2);
-  const limiting = rate >= 0.999
-    ? 'none'
-    : rate === light ? 'light' : rate === waterFactor ? 'water' : 'co2';
-
-  // Open stomata and strong light both cost water vapour.
-  const lost = (controls.light * sim.transpirationLight + controls.co2 * sim.transpirationStomata) * dt;
-  const usedByReaction = rate * sim.photosynthesisWaterPerSec * dt;
-  const cellWater = clamp(state.cellWater + waterIn - lost - usedByReaction, 0, 100);
+  const inputs = { light: controls.light / 100, water: controls.water / 100, co2: controls.co2 / 100 };
+  const lowest = Object.keys(inputs).reduce((a, b) => (inputs[b] < inputs[a] ? b : a));
+  const rate = inputs[lowest];
 
   const produced = rate * sim.productionPerSec * dt;
-  const demanded = sim.demandPerSec * dt;
-  let glucose = state.glucose + produced - demanded;
+  const used = sim.demandPerSec * dt;
+  let glucose = state.glucose + produced - used;
   let health = state.health;
 
   if (glucose < 0) {
     // The store ran dry, so the shortfall comes straight out of the cell.
     health -= -glucose * (sim.deficitHealthPerSec / sim.demandPerSec);
     glucose = 0;
-  } else if (glucose > 20 && produced >= demanded) {
+  } else if (glucose > 20 && produced >= used) {
     health += sim.regenHealthPerSec * dt;
   }
 
@@ -76,33 +46,27 @@ export function stepPhotosynthesis(state, controls, sim, dt) {
   health = clamp(health, 0, 100);
 
   return {
-    elapsed: state.elapsed + dt,
-    soil,
-    cellWater,
     glucose,
     health,
     minHealth: Math.min(state.minHealth, health),
     oxygen: state.oxygen + rate * sim.oxygenPerSec * dt,
     rate,
-    limiting,
-    waterIn: waterIn / Math.max(dt, 0.0001),
+    lowest,
     dead: health <= 0,
   };
 }
 
-// Short, honest coaching line for the current reading.
-export function photosynthesisAdvice(state, controls) {
+// One plain sentence about what is happening right now.
+export function photosynthesisAdvice(state) {
+  const lowest = INPUT_LABEL[state.lowest];
   if (state.rate < 0.15) {
-    return { tone: 'bad', text: `Photosynthesis has almost stopped. ${LIMITING_LABEL[state.limiting]} is what is holding it back.` };
+    return { tone: 'bad', text: `Photosynthesis has almost stopped — there is not enough ${lowest}. Chloroplasts need sunlight, water and carbon dioxide.` };
   }
-  if (state.soil < 15 && controls.water > 60) {
-    return { tone: 'warn', text: 'The soil around the roots is nearly dry. Ease off the uptake and let it refill.' };
+  if (state.glucose < 15) {
+    return { tone: 'warn', text: 'The glucose store is nearly empty. The cell needs glucose for energy.' };
   }
-  if (state.cellWater < 25) {
-    return { tone: 'warn', text: 'The cell is drying out — water vapour is escaping through the open stomata.' };
+  if (state.rate < 0.9) {
+    return { tone: 'info', text: `Making glucose at ${Math.round(state.rate * 100)}%. More ${lowest} would speed it up.` };
   }
-  if (state.limiting !== 'none') {
-    return { tone: 'info', text: `Running at ${Math.round(state.rate * 100)}%. ${LIMITING_LABEL[state.limiting]} is the limiting factor.` };
-  }
-  return { tone: 'good', text: 'All three raw materials are plentiful — photosynthesis is running flat out.' };
+  return { tone: 'good', text: 'Plenty of sunlight, water and carbon dioxide — the chloroplasts are making lots of glucose and oxygen.' };
 }

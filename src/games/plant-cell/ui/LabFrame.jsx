@@ -1,11 +1,32 @@
 import { useTheme } from '../../../context/ThemeContext';
 
-// Level 1's shell, laid out like the matter-state sandbox: top bar, info
+// NOTE: borrowed from the shipped sandbox as-is (never edited) so both games
+// show quests the same way — same reason this shell reuses its sq-* classes.
+import { ChallengePanel } from '../../matter-state-sandbox/ui/ChallengePanel';
+import { QuestModal } from './QuestModal';
+
+// Every level's shell, laid out like the matter-state sandbox: top bar, quest
 // sidebar, stage, bottom control bar. It borrows the sandbox's global sq-*
 // classes as they are (never edits them) so both games feel like one platform.
-// The level supplies the sidebar, stage and controls.
+// The level supplies the sidebar readings, both views, a caption and controls.
 
-export function LabFrame({ level, paused, onTogglePause, onRestart, onExit, hud, stage, controls }) {
+export function LabFrame({
+  level,
+  quests,
+  reducedMotion,
+  paused,
+  onTogglePause,
+  onRestart,
+  onExit,
+  view,
+  onViewChange,
+  hud,
+  readout,
+  plant,
+  cell,
+  caption,
+  controls,
+}) {
   const { isDark, toggle: toggleDark } = useTheme();
 
   return (
@@ -64,9 +85,49 @@ export function LabFrame({ level, paused, onTogglePause, onRestart, onExit, hud,
         </div>
 
         <div className="sq-sandbox-main">
-          <aside className="sq-hud" aria-label="Level info">{hud}</aside>
+          <aside className="sq-hud" aria-label="Level info">
+            <ChallengePanel
+              challenges={level.quests}
+              activeChallenge={quests.activeQuest}
+              completedIds={quests.doneQuestIds}
+              holdProgress={quests.holdProgress}
+              reducedMotion={reducedMotion}
+              onSelect={quests.select}
+            />
+            {hud}
+            {level.keyTerms && (
+              <div className="pc-section">
+                <div className="pc-eyebrow">Key terms</div>
+                <ul className="pc-brief__list">
+                  {level.keyTerms.map(({ term, meaning }) => (
+                    <li key={term}><strong>{term}:</strong> {meaning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </aside>
           <div className="sq-stage-wrap">
-            <div className="sq-stage">{stage}</div>
+            <div className="sq-stage">
+              <div className="pc-lab-readout">{readout}</div>
+
+              {onViewChange && (
+                <button
+                  type="button"
+                  className={`pc-lab-viewtoggle${view === 'cell' ? ' is-on' : ''}`}
+                  onClick={() => onViewChange(view === 'plant' ? 'cell' : 'plant')}
+                >
+                  <span aria-hidden="true">{view === 'cell' ? '🪴' : '🔬'}</span>
+                  {view === 'cell' ? 'Whole plant' : 'Inside a cell'}
+                </button>
+              )}
+
+              <div className="pc-lab-stage">
+                <div className={`pc-lab-viewport${view === 'plant' ? ' pc-lab-viewport--plant' : ''}`}>
+                  {view === 'plant' ? plant : cell}
+                </div>
+                {caption}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -88,6 +149,18 @@ export function LabFrame({ level, paused, onTogglePause, onRestart, onExit, hud,
             </button>
           </div>
         </div>
+      )}
+
+      {quests.celebration && (
+        <QuestModal
+          level={level}
+          quest={quests.celebration.quest}
+          nextQuest={quests.celebration.nextQuest}
+          levelStars={quests.celebration.levelStars}
+          onKeepExploring={quests.keepExploring}
+          onNextQuest={quests.nextQuest}
+          onExit={onExit}
+        />
       )}
     </>
   );

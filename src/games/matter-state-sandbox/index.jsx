@@ -102,7 +102,9 @@ export default function MatterStateSandbox({
     : [];
 
   const studentId = profile?.id ?? user?.id ?? null;
-  const { recordCompletion } = useGameProgress(supabase, GAME_ID, studentId);
+  const { progress, recordCompletion } = useGameProgress(supabase, GAME_ID, studentId);
+  // Challenges finished in earlier sessions — shown ticked alongside this session's.
+  const savedIds = progress.filter(r => r.completed).map(r => r.challenge_id);
 
   const liveBus = bus ?? NULL_BUS;
   const { holdProgress, isComplete } = useChallengeTracker(activeChallenge, bus, isPaused);
@@ -138,7 +140,7 @@ export default function MatterStateSandbox({
     if (!selectedLevel) return;
     const lvlChallenges = CHALLENGES.filter(c => c.levelId === selectedLevel.id);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setActiveChallenge(lvlChallenges[0] ?? null);
+    setActiveChallenge(lvlChallenges.find(c => !savedIds.includes(c.id)) ?? null);
   }, [selectedLevel?.id]);
 
   // Record completion exactly once per challenge
@@ -473,7 +475,7 @@ export default function MatterStateSandbox({
             holdProgress={holdProgress}
             reducedMotion={reducedMotion}
             levelChallenges={levelChallenges}
-            completedIds={completedIds}
+            completedIds={[...new Set([...savedIds, ...completedIds])]}
             onSelectChallenge={setActiveChallenge}
           />
 

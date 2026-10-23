@@ -62,6 +62,17 @@ function DetectiveHoot({ size = 96, mood = "happy", speech, speechSide = "right"
 function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDark = false, onToggleTheme, isMuted = false, onToggleMute }) {
   return (
     <div className="hud">
+      {onExit && (
+        <button
+          type="button"
+          onClick={onExit}
+          aria-label="Back to games"
+          title="Back to games"
+          className="btn icon ghost"
+        >
+          <Lucide name="arrowLeft" size={17} />
+        </button>
+      )}
       <div className="brand">
         <div className="logo">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -114,32 +125,6 @@ function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDar
           <Lucide name={isDark ? "sun" : "moon"} size={16} />
         </button>
       )}
-      {onExit && (
-        <button
-          type="button"
-          onClick={onExit}
-          aria-label="Exit Mystery Lab"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "8px 14px",
-            borderRadius: 999,
-            border: "1.5px solid rgba(28,20,16,0.15)",
-            background: "rgba(255,255,255,0.94)",
-            fontFamily: "Nunito, system-ui, sans-serif",
-            fontWeight: 800,
-            fontSize: 13,
-            color: "#1c1410",
-            boxShadow: "0 6px 18px -8px rgba(28,20,16,0.35)",
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        >
-          <Lucide name="x" size={14} />
-          Exit
-        </button>
-      )}
     </div>
   );
 }
@@ -148,6 +133,8 @@ function HUD({ xp = 60, energy = 4, energyMax = 5, progress = 0.2, onExit, isDar
 function Lucide({ name, size = 16, color = "currentColor", strokeWidth = 2 }) {
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth, strokeLinecap: "round", strokeLinejoin: "round" };
   const paths = {
+    navigation: <path d="M12 2L4 21l8-5 8 5L12 2Z" />,
+    lock: <><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V6a4 4 0 018 0v4" /></>,
     search: <><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
     book: <><path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></>,
     map: <><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></>,
@@ -165,6 +152,7 @@ function Lucide({ name, size = 16, color = "currentColor", strokeWidth = 2 }) {
     chevronLeft: <polyline points="15 18 9 12 15 6" />,
     sparkles: <><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z" /><path d="M19 14l.6 1.8L21.5 16.5l-1.9.7L19 19l-.6-1.8L16.5 16.5l1.9-.7z" /></>,
     arrow: <><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>,
+    arrowLeft: <path d="M19 12H5M11 6l-6 6 6 6" />,
     arrowDown: <><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></>,
     pin: <><path d="M12 22s-8-9-8-13a8 8 0 0116 0c0 4-8 13-8 13z" /><circle cx="12" cy="9" r="3" /></>,
     star: <polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2" />,
@@ -217,7 +205,7 @@ function NotebookBadge({ count = 0, onClick }) {
         border: "1.5px solid var(--line)",
         borderRadius: 14,
         cursor: "pointer",
-        fontFamily: "Nunito",
+        fontFamily: "Trebuchet MS, system-ui, sans-serif",
         fontWeight: 800,
       }}
     >
@@ -240,7 +228,7 @@ function CrimeTape({ angle = -2, top = 16, text = "MYSTERY · IN PROGRESS · MYS
       background: "repeating-linear-gradient(90deg, #facc15 0 24px, #1c1410 24px 28px)",
       padding: "8px 0",
       transform: `rotate(${angle}deg)`,
-      fontFamily: "Nunito",
+      fontFamily: "Trebuchet MS, system-ui, sans-serif",
       fontWeight: 900,
       letterSpacing: "0.15em",
       color: "#1c1410",

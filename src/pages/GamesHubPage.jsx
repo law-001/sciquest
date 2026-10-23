@@ -7,7 +7,6 @@ import {
   Activity,
   Cpu,
   FlaskConical,
-  Star,
   Search,
   X,
   LogIn,
@@ -17,6 +16,7 @@ import { supabase } from "../lib/supabase";
 import { listGames } from "../lib/games/registry";
 import { useGameProgress } from "../games/_shared/progress/useGameProgress";
 import { levelFromXp, xpToNextLevel } from "../lib/xp-config";
+import { levelIconSrc } from "../lib/level-icons";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import ProgressBar from "../components/ProgressBar";
@@ -328,9 +328,11 @@ export function GamesHubPage({
 
           <Card className="p-4 flex items-center gap-6 bg-white dark:bg-stone-800 border-2 border-primary-100 dark:border-stone-700">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center">
-                <Star className="w-6 h-6 text-accent-500 fill-accent-500" />
-              </div>
+              <img
+                src={levelIconSrc(level)}
+                alt={`Level ${level} icon`}
+                className="w-12 h-12 shrink-0 object-contain"
+              />
               <div>
                 <p className="text-sm font-bold text-stone-500 dark:text-stone-400">
                   Current Level

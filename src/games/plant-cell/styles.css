@@ -182,7 +182,10 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(20, 16, 8, 0.45);
+  /* The level list stays on screen behind the briefing, blurred back. */
+  z-index: 40;
+  background: rgba(20, 16, 8, 0.32);
+  backdrop-filter: blur(6px);
   overflow-y: auto;
 }
 
@@ -233,107 +236,6 @@
   margin-top: 18px;
 }
 
-/* — Run shell — */
-.pc-run {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.pc-run__head {
-  position: relative;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: clamp(7px, 1.3vh, 12px) 20px;
-  background: var(--pc-surface);
-  border-bottom: 1.5px solid var(--pc-line);
-}
-
-.pc-run__stripe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-}
-
-.pc-run__title {
-  flex: 1;
-  min-width: 0;
-}
-
-.pc-run__objective {
-  margin: 2px 0 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--pc-ink-1);
-}
-
-.pc-run__right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pc-timer {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 96px;
-}
-
-.pc-timer__value {
-  font-family: var(--sq-font-mono), ui-monospace, monospace;
-  font-size: 15px;
-  font-weight: 700;
-  text-align: right;
-}
-
-.pc-timer__track {
-  display: block;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--pc-line-soft);
-  overflow: hidden;
-}
-
-.pc-timer__fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-}
-
-.pc-run__body {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-}
-
-.pc-run__stage {
-  min-width: 0;
-  padding: var(--pc-pad);
-  overflow: hidden;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-}
-
-.pc-run__panel {
-  min-width: 0;
-  padding: var(--pc-pad);
-  /* Nothing here should need scrolling on a desktop window; this is only a
-     safety net for very short ones. */
-  overflow-y: auto;
-  background: var(--pc-surface);
-  border-left: 1.5px solid var(--pc-line);
-  display: flex;
-  flex-direction: column;
-  gap: var(--pc-gap);
-}
-
 @media (max-width: 900px) {
   .pc-root {
     --pc-gap: 12px;
@@ -343,25 +245,6 @@
     --pc-control: 44px;
   }
 
-  .pc-run__body {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    overflow-y: auto;
-  }
-
-  .pc-run__panel {
-    border-left: none;
-    border-top: 1.5px solid var(--pc-line);
-    overflow: visible;
-  }
-
-  .pc-run__stage {
-    overflow: visible;
-  }
-
-  .pc-stage {
-    height: auto;
-  }
 
   .pc-cell {
     height: auto;
@@ -369,17 +252,6 @@
 }
 
 /* — Stage — */
-.pc-stage {
-  width: 100%;
-  max-width: 620px;
-  height: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--pc-gap);
-}
-
 /* The drawing takes whatever height is left once the captions have theirs,
    and letterboxes inside it — that is what keeps the level off a scrollbar. */
 .pc-cell {
@@ -390,10 +262,7 @@
   display: block;
 }
 
-.pc-viewtabs,
-.pc-equation,
-.pc-weather,
-.pc-flow {
+.pc-equation {
   flex-shrink: 0;
 }
 
@@ -402,27 +271,24 @@
   transition: all 0.25s linear;
 }
 
+.pc-turgor-arrows {
+  animation: pc-turgor-pulse 850ms ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes pc-turgor-pulse {
+  from { opacity: 0.55; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1.06); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pc-cell__membrane,
   .pc-cell__vacuole ellipse {
     transition: none;
   }
-}
 
-.pc-viewtabs {
-  display: flex;
-  gap: 8px;
-}
-
-.pc-viewtabs .pc-btn {
-  min-height: 44px;
-}
-
-.pc-viewtabs .pc-btn[aria-pressed='true'] {
-  background: var(--pc-surface-2);
-  border-color: var(--pc-green);
-  color: var(--pc-green);
-  font-weight: 700;
+  .pc-turgor-arrows { animation: none; }
 }
 
 .pc-hotspot {
@@ -459,42 +325,7 @@
   color: var(--pc-ink-4);
 }
 
-.pc-weather {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--pc-radius);
-  background: var(--pc-surface);
-  border: 1.5px solid var(--pc-line);
-  font-size: 14px;
-}
-
-.pc-weather__icon {
-  font-size: 24px;
-}
-
-.pc-weather__note {
-  display: block;
-  font-size: 13px;
-  color: var(--pc-ink-3);
-}
-
-.pc-flow {
-  margin: 0;
-  text-align: center;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--pc-ink-2);
-}
-
 /* — Meters and chips — */
-.pc-panel__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--pc-gap);
-}
-
 .pc-meter__head {
   display: flex;
   align-items: baseline;
@@ -592,32 +423,6 @@
 }
 
 /* — Controls — */
-.pc-slider__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 2px;
-  cursor: pointer;
-}
-
-.pc-slider__label {
-  font-size: var(--pc-text);
-  font-weight: 600;
-}
-
-.pc-slider__value {
-  font-size: var(--pc-text);
-  font-weight: 800;
-}
-
-.pc-slider__hint {
-  margin: 2px 0 0;
-  font-size: var(--pc-text-sm);
-  line-height: 1.45;
-  color: var(--pc-ink-3);
-}
-
 .pc-range {
   width: 100%;
   height: var(--pc-control);
@@ -965,6 +770,33 @@
   padding: 52px 14px 14px;
 }
 
+/* The room is a stage-sized layer. The SVG above it still uses its original
+   320 × 220 viewBox, so the plant, window and simulation effects keep
+   their established scale while the room artwork expands into the wide area. */
+.pc-lab-viewport {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.pc-lab-viewport--plant {
+  background-image:
+    url('/games/plant-cell/art/room-decor-cabinet.png'),
+    url('/games/plant-cell/art/room-decor-workbench.png'),
+    url('/games/plant-cell/art/room-wall-wide.png');
+  background-position: 14% bottom, 86% bottom, center;
+  background-size: auto 62%, auto 62%, cover;
+  background-repeat: no-repeat;
+}
+
+.pc-lab-viewport > .pc-cell {
+  position: relative;
+  z-index: 1;
+}
+
 .pc-lab-readout {
   position: absolute;
   top: 16px;
@@ -1016,8 +848,27 @@
   outline-offset: 2px;
 }
 
+/* The sandbox's fixed 132px control row is too short for level 3's test and
+   organelle buttons, so plant cell lets it size to its content. */
+.pc-root .sq-sandbox-shell {
+  grid-template-rows: 60px minmax(0, 1fr) auto;
+}
+
 .sq-sandbox-bottom.pc-lab-bottom {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  min-height: 132px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.pc-lab-bottom .pc-test {
+  min-height: 0;
+  padding: 5px 10px;
+}
+
+.pc-lab-bottom .pc-test__label {
+  font-size: 12.5px;
 }
 
 .pc-lab-bottom .pc-range {

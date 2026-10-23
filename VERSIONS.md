@@ -400,339 +400,230 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Commit: Give Plant Cell Level 1 the sandbox-style layout
 
 ## VERSION_45
-- Teachers can now schedule when each quiz is available: a dated window with an "Opens" and a "Closes" time (e.g. 4:00–5:00 PM). Outside it the quiz is locked for the class; inside it students get all of their attempts.
-- New migration `supabase/migrations/20260921000000_quiz_schedule_window.sql`:
-  - Adds `quiz_settings.available_from` / `available_until` (timestamptz, both nullable) plus a check that the close time is after the open time.
-  - New `is_quiz_scheduled_open(lesson_id)` and a rewritten `is_quiz_open_for()` that ANDs the window into the existing publish gates, so the `quiz_attempts` insert policy rejects an attempt sent outside the window. A `quiz_student_access` grant still overrides it — that is the make-up path for a student who missed the window.
-  - The closing edge gets the same 2-minute server grace as grants so an auto-submit fired at the bell still saves.
-- `supabase/schema.sql`: added the `quiz_settings` table (it was missing from the snapshot), its RLS policies, `is_quiz_scheduled_open`, and the window term in `is_quiz_open_for`.
-- `src/lib/quizSettings.js`: `getQuizWindow`, `getQuizWindowState` ("none" | "before" | "open" | "after") and `saveQuizWindow`; fetch/realtime now carry the two new columns through a shared `toEntry`.
-- `src/App.jsx`: `isQuizClosedForClass` now also fails outside the window; `getQuizClosesAt` became `getQuizClose`, returning the close instant plus which rule set it, and taking whichever of the grant / window runs longest. An extra clock tick is scheduled exactly on the next window edge so a quiz unlocks at its opening minute rather than up to 60s late.
-- Teacher portal (`src/pages/TeacherPortalPage.jsx`): new `QuizScheduleControl` in each quiz card's Settings panel — an on/off switch, two `datetime-local` fields, a Save button, a live status line, and an amber warning when the window is shorter than `time limit × attempts`. Quiz cards show a schedule chip, and "Open for a student" now treats a closed window as closed for the class.
-- Students: the lesson CTA says "Quiz Opens <time>" / "Quiz Window Has Closed" instead of a bare lock, and shows the closing time while the quiz is open; the quiz's countdown, auto-submit and "closed" screen now cover schedule windows as well as personal grants.
-- Commit: Let teachers schedule a per-quiz availability window
+- Plant Cell Level 1 (Power the Cell) now plays like the matter-state sandbox. There is no 30-second timer. Instead there are 5 quests, each completed by holding a condition for a few seconds: Open the stomata, Turn up the sun, Draw water from the roots, Find the limiting factor, and Full power. They live in `quests[]` in `src/games/plant-cell/data/levels.js`.
+- The left sidebar lists the quests using the sandbox's `ChallengePanel`, imported as-is. The active quest shows a hold-progress bar, and finished quests get a check mark. Clicking a quest makes it active.
+- The new `src/games/plant-cell/ui/QuestModal.jsx` pops up when a quest completes. It shows the quest's science note plus Keep exploring and Next quest buttons, and the sim pauses while it is open. After the last quest it also shows the level's stars and debrief, with a Back to levels button.
+- The run no longer ends when the quests are done; it only ends if the cell dies. Finishing every quest saves the `l1` level row, which keeps unlocks, XP and the Sun Catcher achievement working. Each quest also saves its own row.
+- Quests from earlier sessions load already ticked, and a level finished before quests existed shows all of its quests ticked.
+- Matter State Sandbox: challenges finished in earlier sessions now show a check mark when you re-enter a level. The level opens on the first unfinished challenge, or free explore if all are done. The only file changed is `src/games/matter-state-sandbox/index.jsx`.
+- Commit: Turn Plant Cell level 1 into sandbox quests and tick saved challenges in both games
 
 ## VERSION_46
-- New skill `.claude/skills/refine-interactive/SKILL.md`, invoked as `/refine-interactive [lesson id | widget id | slot type]`. It drives a one-section-at-a-time refinement pass over lesson interactives.
-- Encodes the three goals: more detailed illustration, front-of-card text cut to instructions only, and a whole-section card flip that reveals the explanation once the block reports complete.
-- Specifies a single shared `ExplainerFlip` shell (to be built on first run) wired only into `InteractiveFrame.jsx` and `SignatureWidgetSection.jsx`: front never unmounts, locked until complete, click guard so Reset and controls still work, grid-stacked faces instead of a hardcoded height, `inert` + `aria-hidden` on the turned-away face, cross-fade under `prefers-reduced-motion`.
-- Sets per-slot word budgets for front copy and the `explainer: { title, points[] }` shape for back copy, including where it lives in `src/data/lessonsweek-*.js` and `DEFAULT_SLOT_DATA`.
-- Commit: Add /refine-interactive skill for lesson interactive refinement passes
+- Fixed Plant Cell Level 1 crashing to a blank cream screen right after "Start photosynthesis". The React Compiler reads `celebration.nextQuest` during render to memoise `handleNextQuest` in `src/games/plant-cell/levels/PowerTheCell.jsx`, and `celebration` is `null` until a quest completes. The handler now reads `celebration?.nextQuest ?? null`.
+- Temporary crash/layout probe used to find it (`src/games/plant-cell/ui/DebugProbe.jsx` and its wiring in `index.jsx`) was removed again.
+- Commit: Fix Plant Cell level 1 crash from null quest celebration under React Compiler
 
 ## VERSION_47
-- New shared `src/components/lesson-slots/interactive/ExplainerFlip.jsx`: once an interactive block reports complete, the whole card can be clicked (or the "What just happened?" strip pressed) to turn over and show a short explanation of what the student just did. The front is rotated away, never unmounted, so a running simulation keeps its state; clicks that start on a control (Reset, slider, canvas, button) don't trigger the flip; focus follows the flip because the turned-away face is `inert`; a block with no `explainer` renders exactly as before.
-- `src/index.css`: new `.sq-explain-flip*` block — both faces share one grid cell so the card sizes itself, and `prefers-reduced-motion` cross-fades instead of rotating. The existing `.sq-flip` rules are untouched.
-- Wired into `InteractiveFrame.jsx` (new `explainer` prop) and `SignatureWidgetSection.jsx` (`signature.explainer`); the six interactive slots pass `data.explainer` through.
-- `DragLabelSection.jsx`: the drag ghost now renders through a portal to `document.body`. It is positioned in viewport coordinates, and the flip's `perspective` ancestor would otherwise become its containing block and offset it mid-drag.
-- Week 1 interactives refined — more detailed illustrations, front text cut to instructions:
-  - `ModelGalleryWidget`: each scene now paints its own ground so it holds contrast in both themes; the bridge gained a river, banks, braced towers, road markings, a dashed no-load line and a detailed truck; the atom gained countable protons/neutrons, shell labels, electron trails and a legend; the fish graph gained the lake, a "lake is full" ceiling, axis labels and a filled area; the storm gained coastal towns, day markers, rain bands and an eye. The four per-model explanation paragraphs were removed from the panel.
-  - `InvestigationRunWidget`: each pot now has a light beam whose strength is that pot's hours, so the variable being changed is visible in the picture; tapered pots, trays, soil, veined leaves and a day counter. The five "Step N" prose blocks became four short labels plus the result line.
-  - `GlobeUnrollWidget`: added South America and Australia in muted grey, globe shading and rim that fade as it flattens, and latitude labels; the two paragraph "costs you" panels became a Globe / Flat map seen-or-not pair.
-- `src/data/lessonsweek-01.js`: all three signature blocks got shorter headings, no `intro`, and a new `explainer` with the removed prose compressed into 4 short points.
-- Commit: Add explainer card flip and refine week 1 interactives
+- Plant Cell Levels 2 and 3 now play like Level 1: the same sandbox layout (top bar, quest list on the left, stage, bottom controls), 5 quests each with the check-mark list and quest popup, and no ending except a dead cell.
+- The quest logic moved out of Level 1 into the new `src/games/plant-cell/engine/useQuests.js`, which all three levels use. `ui/LabFrame.jsx` now draws the quest list, the Whole plant / Inside a cell toggle, the stage and the quest popup, so each level only supplies its readings, drawings, caption and controls.
+- Level 2 (Keep It Alive): no 55-second weather clock. The player picks the weather (Mild, Heavy rain, Drought, Salty soil) in the bottom bar, next to the channels slider and the vacuole Store / Release buttons. Quests: Make it rain, Bank water in the vacuole, Test the cell wall, Survive salty soil, Ride out a drought. Stars come from the share of the run spent in the healthy turgor band. `stepOsmosis` now takes the picked weather instead of a clock.
+- Level 3 (Cell Emergency): tests, organelle picks and the diagnosis button sit in the bottom bar; monitors and evidence sit in the sidebar. Quests: Run a test, Rule something out, Name the fault, Repair the organelle, Nurse the cell back. A solved case no longer ends the level; "Open a new case" loads the next fault. Stars come from wrong calls in the case that finished the level.
+- Plant cell's bottom control row now sizes to its content (at least 132px, at most 45% of the screen) so Level 3's buttons fit.
+- Removed code nothing used any more: `ui/RunFrame.jsx`, `ui/ViewTabs.jsx`, `ResourceSlider`, `currentWeather`, and their CSS.
+- Commit: Convert Plant Cell levels 2 and 3 to sandbox-style quests
 
 ## VERSION_48
-- Fixed the dead space above and below every simulation. The stage column is about 16:10 but the scenes were authored at other ratios, so `preserveAspectRatio` letterboxed the difference.
-  - New `stageFill(w, h)` in `stageMedia.js` plus a `bleed` prop on `Stage`: the scene covers the frame the way `background-size: cover` does, using `preserveAspectRatio="xMidYMid slice"` for SVG and `object-fit: cover` for canvas, with an `aspect-ratio` that stops the picture collapsing on a phone.
-  - Scenes re-authored near 16:10 with their ground bleeding past the viewBox: model gallery 620x390, investigation bench 620x400 (pots now sit side by side on a wide bench instead of a tall narrow strip), globe 620x390, particle box 640x400, phase bench 640x400, burner scene 620x400 (the burner's foot was previously cut off at 360), pour test 680x425, container test 608x380.
-  - The lab scenes now paint their own wall and bench, which also fixes their contrast in dark mode.
-- Weeks 2 and 3 interactives refined the same way as week 1: `particle-lab`, `pour-test`, `state-change-lab`, `container-test` and `phase-bench` each got an `explainer` back card, lost their `intro`, and had the per-state explanation paragraph cut from the panel. The state label and the readouts stay on the front.
-- No em dashes anywhere in weeks 1 to 3: lesson data, interactive widgets, the shared interactive components, and the skill itself. Rewritten as colons, commas or full stops.
-- `.claude/skills/refine-interactive/SKILL.md`: added the fill-the-stage rule (author at 16:10, bleed the ground, render with slice or cover, never distort or hardcode a height) and the no-em-dash rule.
-- Commit: Fill the stage on every interactive and refine weeks 2 and 3
+- Rebuilt Plant Cell Level 2 (Keep It Alive) so it only uses what the Week 12 and 13 lessons teach, in plain words students can follow without a teacher explaining.
+- Removed everything the lessons don't cover: the salt-concentration numbers, the membrane-channels slider, the vacuole Store / Release buttons, cytoplasm water, cell health and dying, stars from a "healthy band", and the stomata / carbon dioxide / water-vapour art in the plant picture (`PlantView` got a `showLeafGas` prop; Level 1 still shows it).
+- New controls: "Around the cell" (Pure water / No water / Salty water) and "Show" (The plant / Plant cell vs animal cell).
+- The stage shows two pictures side by side: the whole plant next to a close-up plant cell, or a plant cell next to an animal cell in the same water. The new `ui/WaterCell.jsx` draws them in the lesson widget's style, with a labelled cell wall and a central vacuole that visibly fills and shrinks. The animal cell swells and bursts.
+- The sidebar has a plain one-sentence explanation of what is happening now, a vacuole meter ("Full — firm" / "Part full" / "Low — wilting") and the lesson's key terms.
+- New quests, taken from the lesson scenarios: Let the plant wilt, Water it back up, Fill the cell completely, Plant cell vs animal cell, Salty water. The level can't be failed, so finishing it gives 3 stars.
+- New `engine/water.js` replaces `engine/osmosis.js`. LabFrame hides the Whole plant / Inside a cell toggle when a level doesn't use it.
+- Commit: Rebuild Plant Cell level 2 around the vacuole, turgor and cell wall lessons
 
 ## VERSION_49
-- Week 2 illustration detail pass, the part weeks 2 and 3 were missing after VERSION_48.
-- `ParticleLabWidget`: the flat tinted rectangle is now a sealed glass jar. The simulation bounces off the jar's inner walls (new `IN_L/IN_R/IN_T/IN_B` constants shared by the physics and the drawing) instead of the canvas edge, so "it fills the whole container" is one fact rather than two kept in step by hand. Added lattice bonds drawn only in the solid state, a curved surface on the liquid, a working thermometer whose mercury tracks the slider, a sealed lid, a bench with the jar's shadow, and a state tag so colour is never the only signal.
-- `PourTestWidget`: the flask now has the neck scale and the single etched 100 mL calibration ring its whole premise rests on, so a 4 mL shortfall is visibly a drop in the neck. Source cylinders became graduated measuring cylinders with a pouring lip, a foot and 10 mL marks. The measured surface curves into a meniscus, and the flask has a shadow on the bench.
-- `StateChangeLabWidget`: the beaker rested on nothing above the burner, so it now sits on wire gauze over a tripod, which is also why the heat arrives spread out. The thermometer hangs from a retort stand instead of floating. Added a meniscus on the water surface and vapour wisps that only appear once there is vapour to leave.
-- `ContainerTestWidget`: vessels gained a foot, a pouring lip, graduations up the left wall and a shadow on the bench; the liquid surface curves; the syringe gained finger flanges and a nozzle, and is excluded from the lip and foot it would never have.
-- Commit: Detail pass on the week 2 interactive illustrations
+- Cleaned Plant Cell Levels 1 and 3 so they only use what the Week 12 and 13 lessons teach, like Level 2.
+- Level 1 (Power the Cell): "Stomata open" is now a plain Carbon dioxide slider, and "Water from roots" is now just Water. Removed the untaught rules: water lost through stomata, soil draining and refilling, and "limiting factor". Photosynthesis still needs all three ingredients, and the cell still uses glucose for energy. Sidebar meters are now Cell health and Glucose store. New quests: Turn on the sunlight, Give it water, Add carbon dioxide, Take one away, Make lots of glucose. The briefing and debrief now mention chlorophyll and mitochondria, as the lessons do.
+- The whole-plant picture (`ui/PlantView.jsx`) no longer draws the stoma close-up, its callout or water vapour; the `showLeafGas` prop is gone.
+- Level 3 (Cell Emergency): removed the tracer dye test, and renamed "Stain the nucleus" to "Check the nucleus and its DNA". Test results and reasoning no longer mention channels, osmosis or dye. The membrane case is now solved from the pure-water and salty-water tests.
+- Every level's sidebar now shows the lesson's key terms (`keyTerms` in `data/levels.js`, drawn by `ui/LabFrame.jsx`).
+- Commit: Keep Plant Cell levels 1 and 3 to lesson content and show key terms in every level
 
 ## VERSION_50
-- `container-test` refinement pass.
-- Removed 6 dead `note` strings from `SAMPLES` and `CONTAINERS`. Nothing had read them since the explanation moved to the back of the card in VERSION_48.
-- The checklist stated each conclusion on the front ("A solid keeps its shape and volume in every container") while the back card stated the same four again. The front now lists only the job to do ("Put the ice in all three containers"), and the separate hint line is gone because the task was the hint. Four fewer sentences on screen and no duplication.
-- The reading was one long sentence. It is now two readouts, `40.0 mL` under "Volume" and a height under "Height", with the full sentence kept for the screen reader where a whole sentence is what you want.
-- New height ruler down the left of the bench, in centimetres, with a bar showing what the sample is standing at right now. This is the block's stated pay-off: the same 40 mL stands twice as tall in the syringe as in the beaker, which was a number in the panel with nothing to read it against. `PX_PER_CM` is shared by the ruler and the readout so the two cannot disagree.
-- The ice block now draws its own outline, so its silhouette is visibly identical in all three containers, which is what "a solid keeps its shape" means.
-- Back card point 2 now names the height the ruler shows.
-- Commit: Refine the container test with a height ruler and a shorter front
+- Reworked Plant Cell Level 2 from a watch-the-meter sandbox into "Predict, Then Test". Each quest is now a round: a plant or animal cell goes into pure water, salty water or no water, the player picks what will happen (stays firm / bursts / shrinks), then runs the test and watches.
+- A wrong prediction shows what really happened, explains why, and lets the player predict again. Stars now come from wrong predictions (`starsByMisses` in `data/levels.js`), so Level 2 is no longer an automatic 3 stars.
+- Six rounds: plant cell in pure water, plant cell in salty water, animal cell in pure water, a shrunken plant cell in pure water, animal cell in salty water, and a plant with no water.
+- New screen `levels/PredictThenTest.jsx` replaces `levels/KeepItAlive.jsx`. `engine/water.js` now steps one cell at a time (`createCellState`, `stepCell`, `outcomeOf`). Reuses the existing WaterCell and PlantView art.
+- Commit: Rework Plant Cell level 2 into a predict-then-test round game
 
 ## VERSION_51
-- `phase-bench` (week 3 lesson 1) refinement pass. Week 3 lesson 2 is the comic strip Performance Task: it has no signature widget and only presentational slots, so it has nothing this skill applies to and was left alone.
-- The widget's own `aria-label` said "sealed chamber" but no chamber was ever drawn, just particles on a flat tinted rectangle. There is now a steel vacuum chamber with a bolted flange, feet and a viewport, and the simulation bounces off the chamber's inner walls (new `IN_L/IN_R/IN_T/IN_B`) instead of the canvas edge, so "it fills the chamber" is one fact rather than two kept in step by hand.
-- Added lattice bonds drawn only in the solid phase, so watching them vanish is the lattice breaking; a curved surface on the liquid; a bench with the chamber's shadow; and a phase tag in the picture so colour is never the only signal.
-- New energy gauge down the right, banded in each phase's own colour with a marker at the current setting. It shows that one slider covers all five phases and where in the range the student is standing.
-- Plasma: the code comment claimed the "+ and −" marks carried the charge, but only the + was ever drawn on the ions. The free electrons now carry their −.
-- Removed 5 dead `note` strings, unread since VERSION_48 moved the explanation to the back of the card.
-- Front text: "Energy in the chamber" became "Energy", and "Same substance the whole way. Only the energy changes." is gone, since the heading and the back card both already say it.
-- Back card: the title restated the lesson heading, so it is now "Energy alone changed the phase", and the plasma point is in past tense like the rest.
-- Commit: Refine the phase bench with a real chamber and an energy gauge
+- Plant Cell Level 2 is now "What Happens If?" — a prediction level on Level 1's photosynthesis, replacing the cell wall / animal cell / water rounds.
+- Five rounds, each asking "What do you think will happen if…?": the sunlight is blocked, the plant gets no water, the stomata close (no carbon dioxide), the sunlight dims to 20%, and everything is turned up to full.
+- Each round: the plant runs normally while the player picks one of three answers, then "Let's see it happen" makes the change and plays it for 5 seconds in the plant and cell views. A right answer completes the quest; a wrong one highlights the right answer, explains why, costs a star and offers Try again.
+- Rounds, questions, answers and explanations all live in `data/levels.js` (`quests[].question`, `change`, `choices`). `levels/PredictThenTest.jsx` now runs on `engine/photosynthesis.js`. `engine/water.js` and `ui/WaterCell.jsx` are no longer used by any level.
+- Commit: Turn Plant Cell level 2 into What Happens If? photosynthesis predictions
 
 ## VERSION_52
-- Renumbered the two Week 2 lessons: they now read "Lesson 1" and "Lesson 2" instead of "Lesson 4" and "Lesson 5" (`badge` + `lessonNumber` in `src/data/lessonsweek-02.js`).
-- Moved their ids onto the per-week `wNN-lN` scheme used by weeks 3+: `lesson-4` -> `w02-l1`, `lesson-5` -> `w02-l2` (plain `lesson-1`/`lesson-2` would collide with Week 1). Updated `src/data/quizzesweek-02.js` keys and `lessonId`s to match.
-- New migration `supabase/migrations/20260921010000_week2_lesson_ids.sql` renames the ids in place across `curriculum_lessons`, `lessons`, `quizzes`, `quiz_settings`, `quiz_student_access`, `quiz_attempts`, `student_progress`, `lesson_interactions`, `lesson_materials` and both publish-state id arrays, so teacher overrides, student progress and XP follow the lesson instead of being orphaned.
-- Refreshed the `curriculum_lessons` note in `supabase/schema.sql` and the Week 2 rows/id-scheme note in `INTERACTIVE_SECTIONS.md`.
-- Commit: renumber Week 2 lessons to 1-2 and move their ids to the w02-lN scheme
+- Plant Cell level briefing now opens over the level list instead of a blank screen: `index.jsx` keeps `LevelSelect` mounted behind `EducationalModal` during the brief stage.
+- `.pc-modal` in `styles.css` blurs what is behind it (`backdrop-filter: blur(6px)`) and its dark tint is lighter (0.45 → 0.32) so the level cards stay visible.
+- Commit: Blur the level list behind the Plant Cell briefing popup
 
 ## VERSION_53
-- Refined the Week 4 Lesson 1 signature interactive (`heating-curve`) so the picture carries the lesson and the explanation moved to the back of the card.
-- Redrew the scene at 640x400 (the stage's own 16:10 shape) with a bleeding wall and bench, `stageFill` + `<Stage bleed>`, so it fills the frame instead of letterboxing inside it.
-- Real apparatus instead of boxes: a beaker with a rim, pour lip, graduation marks and a meniscus, lattice bonds that stretch and snap, rising bubbles while boiling, a hotplate with an indicator LED, a digital readout and a glow band under the beaker base, and a bell jar for the vacuum route.
-- Added a thermometer whose red column tracks the temperature, so a plateau is now visible as the column sitting still while the hotplate keeps glowing.
-- The graph moved onto chart paper pinned to the wall, with a grid, dashed guides at 0 and 100 °C, a dashed ghost of the furthest run, and plateau bands that only get named once the student has drawn them.
-- Front copy on a diet: the intro is one sentence, the instruction is one imperative, the five paragraph-length state `note` strings are gone, and the vacuum explainer paragraph moved to the back. Removed every em dash from student-facing text.
-- New `signature.explainer` on the lesson, so finishing all four goals now unlocks the flip.
-- Commit: Refine the heating curve with real apparatus and a thermometer
+- Mystery Lab expedition map now fills its whole card. `.ml-world` in `expedition.css` was locked to a 10:7 box sized from the card's height (`min(100%, calc((100cqh - 35px) * 10 / 7))`), which squeezed the map into the middle and left empty bands down both sides; it is now `width: 100%; height: 100%`.
+- Dropped the now-unused `container-type` rules that only existed to feed that calculation.
+- Commit: Make the Mystery Lab map fill its card instead of sitting squished in the middle
 
 ## VERSION_54
-- Refined both Week 5 signature interactives: `investigation-rig` (Lesson 1) and `meniscus-bench` (Lesson 2). Neither lesson has any interactive slots in its `layout[]`, so the signature widget is the whole scope in each.
-- Both scenes were redrawn at 620x390 (the stage's own 16:10 shape) with a bleeding wall and floor, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so they cover the frame instead of letterboxing inside it. `investigation-rig` was 600x330 and `meniscus-bench` was 620x360, both on `STAGE_MEDIA`.
-- `InvestigationRigWidget`: the belt now runs on two rollers with spokes that turn, stands on legs down to a workshop floor, and the modules bolt into a top and bottom mounting rail. A fitted module has bolt heads, a viewport onto its gears and a `FITTED` name plate; a pulled one shows the empty socket and its two bare rails. The sample is a potted seedling on a carrier plate instead of a rounded rectangle, and `JAMMED` moved below the belt where it no longer collides with the modules.
-- `InvestigationRigWidget` honours `prefers-reduced-motion`: the belt dashes and gear spokes hold still, and only the sample moves.
-- `MeniscusBenchWidget`: the cylinder gained a pour lip, a rim ellipse, a weighted foot, a glass highlight, a `50 mL` capacity band and ticks every 2 mL on both walls instead of every 5 on one. The balance gained feet, a pan column, a sample beaker on the pan, and a `TARE` button on its body that turns teal once zeroed. Both sit on a bench with their own shadow, and the eye now slides along a visible dashed track.
-- Front copy on a diet in both. L1 intro is one sentence and the instruction drops the word "confound"; the five `jam` strings, the caption and the three goal hints are all inside budget. L2 heading went from 7 words to 5, the intro from a 40-word paragraph to one sentence, the slider label to "Eye height", and the panel reading is now two readouts rather than one long sentence. Every em dash in student-facing text is gone.
-- Fixed L2's record message: a rejected reading said "Recorded ..." while recording nothing. It now says "Not recorded" and names how far off the eye is.
-- New `signature.explainer` on both lessons, so finishing the goals unlocks the flip.
-- Commit: Refine the Week 5 investigation rig and meniscus bench
+- Fixed the Mystery Lab map looking zoomed in after VERSION_53: sprite widths were percentages of the map's width, so widening the map magnified every tree, pond and building by roughly 40%.
+- `ExpeditionMap.jsx` now sizes every sprite off the map's height via `spriteWidth()` (`calc(<n> * 10cqh / 7)`), so sprites stay at their designed size at any card shape and the landmarks spread out instead of crowding. `.ml-world` declares `container-type: size` to make that work, and the factory smoke is sized the same way.
+- Commit: Size Mystery Lab map sprites off the map height so a wide map does not zoom in
 
 ## VERSION_55
-- Re-centred the Week 5 Lesson 1 machine (`investigation-rig`). Its content sat from x=14 to x=574 in a 620-wide viewBox, so `slice` cropping (about 40 units a side at the shapes the stage actually takes) ate the left edge of module 1 while leaving bare wall on the right.
-- Added `SAFE_L`/`SAFE_R` (40 units in from each edge) and laid the machine out between them: `X0` 14 -> 49, `PITCH` 100 -> 92, `HOUSE_W` 92 -> 84, tray 493-569. The whole composition is now centred on 309 with nothing but wall and floor outside the safe inset.
-- Filled the vertical dead space at the bottom: modules moved down (`HOUSE_Y` 100 -> 110) and the belt with them (`BELT_Y` 282 -> 306, `FLOOR_Y` 348 -> 362), so the floor is a strip rather than a third of the picture.
-- Added a drive motor under the left roller with a belt line to it, which gives the lower-left something structural instead of empty floor.
-- `sampleX` is now derived from `X0`, `HOUSE_W` and `PITCH` instead of the three magic numbers it used, so the sample cannot drift off the module centres when the spacing is retuned.
-- Week 5 Lesson 2 (`meniscus-bench`): the balance ran to x=580, right where a side crop lands. Its parts are now offset from one `BAL_X = 388` constant, moving it 16 units inboard.
-- Commit: Re-centre the Week 5 machine inside the stage crop
+- Removed the `lab-bench` table sprite drawn over the Lab Tent on the Mystery Lab map (`ExpeditionMap.jsx`).
+- Commit: Remove the bench sprite from the Mystery Lab map tent
 
 ## VERSION_56
-- Week 6 Lesson 1 (`solubility-beaker`): re-authored the scene at the stage's own shape. It was 660x330 (a 2:1 strip) drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
-- Gave the scene a room: a lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam.
-- The beaker gained a rim ellipse, a pour lip, graduation ticks, a `100 mL` printed band, a curved meniscus, a highlight stripe and a shadow on the bench. It was three straight lines and a flat rectangle before.
-- Every control now changes the picture, not just a readout: the hotplate's element band brightens with the temperature slider and sheds heat wisps above 42 °C, the stirring rod sweeps across the beaker with a swirl in the water while the stirrer is on, and `Crushed: YES` swaps the heap of 12 big cubes for a bed of 26-wide fine grains carrying the same mass.
-- Moved the solubility curve onto a sheet of chart paper pinned to the wall, and added leader-line labels inside the picture (`dissolved N g`, `on the bottom N g`, `sugar cubes` / `crushed sugar`).
-- Front copy on a diet: `intro` cut from 36 words to 9, `instruction` to 8, the four `STATUS` notes from paragraphs to one line each, and the two panel helper lines to six words each. Removed every em dash from the widget and its lesson data.
-- Added `signature.explainer` to `w06-l1`, so the section now flips to a "Why the beaker stopped taking sugar" back once all four solutions have been made.
-- Commit: Refine the Week 6 solubility beaker illustration and copy, add its explainer flip
+- Mystery Lab opening screen now runs full-bleed: added `full-bleed` class on `<main className="screen">` when `screen === "opening"` (src/games/mystery-lab/index.jsx) and matching CSS (`.screen.full-bleed` drops the 1280px max-width + page padding; `.ml-opening-card` drops radius/border/shadow) in src/games/mystery-lab/styles.css.
+- Commit: Make Mystery Lab opening screen edge-to-edge full-bleed
 
 ## VERSION_57
-- Week 7 Lesson 1 (`dilution-jar`): re-authored the scene at the stage's own shape. It was 620x330 drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
-- Gave the scene a room: a lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam.
-- The jar gained a rim ellipse, a pour lip, a curved meniscus, a highlight stripe, graduation ticks with mL numbers, a surface reading on a leader line and a shadow on the bench. It was four straight lines and a flat rectangle before.
-- Both controls now change the picture: `Add 10 mL` opens a wall tap whose orange handle turns while a stream falls into the jar, and `Pour half away` sends a stream over the lip into a waste beaker on the bench whose level stays up afterwards.
-- Moved the `% m/m` column onto a sheet pinned to the wall with the formula printed on it, and added in-picture labels (`N solute particles`, `only pouring removes them`, `N g solute`) so the point of the activity is readable without the panel.
-- Week 7 Lesson 2 (`titration-drip`): same re-author, 620x340 to 620x390 with bleed and `stageFill`. The burette now hangs from a retort stand with a base, rod and clamp instead of floating, has graduation ticks and a stopcock whose orange handle turns a quarter while `Hold to drip` is pressed.
-- The flask gained a rim, a neck, a curved indicator surface and a bench shadow; the salt stacks in offset rows with a `salt crystals` leader label; the pH scale moved onto a wall chart with `acid` / `neutral` / `base` band names so the scale never relies on colour alone, and the ion tally moved onto that chart.
-- Front copy on a diet across both: `intro` cut from 33 to 9 words and 38 to 11 words, control labels down to three words or fewer (`Add 5 g`, `Pour half away`, `One drop`, `Hold to drip`, `Fresh flask`), status notes from paragraphs to one line, and every goal hint under 14 words. Removed every em dash from both widgets and their lesson data.
-- Added `signature.explainer` to `w07-l1` and `w07-l2`, so each section flips to a "Why the colour faded" / "Why the pH jumped at the end" back once every goal is met.
-- Commit: Refine the Week 7 dilution jar and titration drip illustrations and copy, add their explainer flips
+- Every Mystery Lab screen now spans the full window: dropped `max-width: 1280px` + `margin: 0 auto` from `.screen` in src/games/mystery-lab/styles.css (page gutter padding kept for the card screens; opening stays padding-0 full-bleed).
+- Commit: Let all Mystery Lab screens span the full window width
 
 ## VERSION_58
-- Week 8 Lesson 1 (`equipment-bench`): re-authored the scene at the stage's own shape. It was 620x340 drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `preserveAspectRatio="xMidYMid slice"`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
-- Gave all four instruments a room: a tiled lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam. Every instrument now casts a shadow on the bench.
-- Bunsen burner: added a wall gas tap with an orange handle and a rubber hose running to the burner inlet, a knurled collar whose air hole widens as the slider opens, a barrel highlight and a chimney base. The flame keeps its outer cone and gains an inner cone that only appears once air is getting in.
-- Balance: the pan now carries a real sample beaker whose contents rise with the mass, and the body gained a spirit level whose bubble slides while the pan swings, a `TARE` button, a monospace display and feet.
-- Filter funnel: the funnel hangs from a retort stand (base, rod, boss head, ring clamp) instead of a bare bracket. The paper cone is fluted, the receiving beaker gained a rim, a pour lip, a meniscus, a highlight and mL graduations, and the mud wedge builds at the apex while the filtrate climbs the ticks.
-- Microscope: replaced the stick figure with a full compound scope. Foot, C arm, body tube, eyepiece, a three-objective nosepiece, stage with clips and slide, a lamp throwing light up through the specimen, and coarse and fine focus knobs that turn with the slider. The focus knob now raises and lowers the stage, so the gap under the objective is visible rather than only stated.
-- Added one pinned wall card that carries the live number for whichever instrument is out (flame tip °C, balance reading, filtrate mL, focus error), in the same corner in all four views.
-- Week 8 Lesson 2 (`hazard-cabinet`): same re-author, 620x340 to 620x390 with bleed, slice and `stageFill`, and the same wall/bench room.
-- The cabinet is now a real wall cabinet: frame, `HAZARD STORE` plate, mounting brackets, two shelves and four labelled bottles with necks and caps. The four GHS pictograms are drawn as SVG paths (flame, skull and crossbones, corroding hand and plate, flame over circle) instead of emoji glyphs, so they look the same on every device.
-- Every demonstration gained structure: the corrosive drips from a dropper bottle onto a steel plate raised on two blocks, the flammable beaker stands on the bench with its vapour drifting to a wall socket that sparks, the toxic drop goes into a tank with gravel and a plant, and the oxidiser's ember sits on a heatproof mat beside an oxygen cylinder.
-- Lab floor: both students are now drawn with heads, faces, hair and lab gowns, the burner sits on a proper base, the boiling tube hangs in a clamp on a stand, and the spill and cordon cone sit on the floor with leader-line labels.
-- Front copy on a diet across both lessons: L1 heading 7 words to 5 and its intro from a 47-word paragraph to one sentence; L2 heading 7 words to 6 and its intro from 53 words to one sentence. Control labels are three words or fewer (`Air collar`, `Mass on pan`, `Pour mixture`, `Focus knob`), helper lines are one short sentence each, and every goal hint is under 14 words. Removed every em dash from both widgets and their lesson data.
-- Added `signature.explainer` to `w08-l1` and `w08-l2`, so each section flips to a "Why each tool has one job" / "Why the symbols are worth reading" back once every goal is met.
-- Commit: Refine the Week 8 equipment bench and hazard cabinet illustrations and copy, add their explainer flips
+- Mystery Lab cutscene (intro) screen now full-bleed too: `full-bleed` class extended to `screen === "intro"` in src/games/mystery-lab/index.jsx, and the intro stage's `borderRadius: 20` dropped in src/games/mystery-lab/screens-a.jsx.
+- Commit: Make the Mystery Lab intro cutscene run edge-to-edge
 
 ## VERSION_59
-- Week 11 Lesson 1 (`focus-scope`): re-authored the scene at the stage's own shape. It was 620x340 drawn with `STAGE_MEDIA`/`contain`, so it letterboxed with bars of gradient above and below. Now 620x390 with a 60-unit `BLEED`, `preserveAspectRatio="xMidYMid slice"`, `stageFill(W, H)` and `<Stage bleed>`, so it fills the frame.
-- Gave the instrument a room: a lab wall and a bench that both run past the viewBox, so the widget reads the same on cream and on stone-900 and a cropped edge never shows a seam. The scope and the wet mount both cast shadows on the bench.
-- Replaced the stick-figure scope with a full compound microscope: horseshoe foot, lamp with a visible light cone, condenser and iris diaphragm riding under the stage, stage with clips and slide, a three-objective turret whose two spare lenses swing out of the light path, arm, body tube and eyepiece.
-- The objective barrels are now measured, not decorative: each one is drawn exactly long enough that its tip meets the slide at the coarse setting that cracks it, so the crash is something a student can watch closing instead of a message that appears.
-- Both focus knobs turn with the slider that drives them (coarse outside, fine on the same shaft), so the control and the part it moves are visibly the same thing.
-- Moved the wet mount out of the instrument and onto the bench: a glass slide with a water drop, the specimen in it, a mounted needle holding the coverslip at the chosen angle, and the trapped bubbles drawn on the slide as well as in the field of view.
-- Added a pinned wall card carrying the live numbers (total magnification, sharp/blurred/cracked, the sharp band in µm), and gave the field of view a real eyepiece barrel, a `field of view` plate and cells with a proper wall, cytoplasm and nucleolus.
-- Week 11 Lesson 2 (`scope-through-time`): same re-author, 620x340 to 620x390 with bleed, slice and `stageFill`, and the same wall and bench room.
-- All three instruments are now the real objects. 1665: a leather barrel with gold tooling on a turned pillar, cork on a pin, and the oil lamp and water globe that made it usable. 1830: a brass compound scope with a horseshoe foot, curved arm, swivel mirror and an objective drawn as two stacked glasses. 1933: a vacuum column with an electron gun, three magnetic lens coils, a specimen airlock, a fluorescent viewing screen and a hosed vacuum pump.
-- Added a year rail across the wall with the three anchor years notched on it and a marker that travels as the slider moves, so the slider's value lives in the picture. Cork cells are now irregular boxes rather than one repeated rectangle.
-- Front copy on a diet across both lessons: L1 heading 7 words to 5 and its intro from a 60-word paragraph to one sentence of 7; L2 heading 8 words to 6 and its intro from 44 words to one sentence of 10. Control labels are three words or fewer (`Objective lens`, `Coarse focus`, `Fine focus`, `Coverslip angle`, `Fresh slide`), status notes are one line each, and every goal hint is under 14 words. Removed every em dash from both widgets and their signature data.
-- Added `signature.explainer` to `w11-l1` and `w11-l2`, so each section flips to a "Why fine focus exists" / "Why better lenses found more" back once every goal is met.
-- Commit: Refine the Week 11 microscope and scope-through-time illustrations and copy, add their explainer flips
-
-## VERSION_59
-- Week 8 Lesson 2 (`hazard-cabinet`): padded the left side of the wall cabinet. It started at x=24 in a 620-wide viewBox with its mounting brackets at x=16, so `slice` cropping (roughly 40 units a side at the shapes the stage takes) ate the bracket and the cabinet's left frame.
-- Added a `CAB_X = 56` constant and laid the cabinet out from it: frame 56-220 (was 24-200), width 176 -> 164, back panel and warning plate inset to match, brackets now at x=48. The four bottles are positioned off `CAB_X` too, so the shelves stay centred if the cabinet moves again.
-- Moved the blown-up diamond and its name from x=262 to x=272 to keep the gap between the cabinet and the demonstration area even.
-- Lab floor: both people are now actual figures. Added a shared `Student` component drawing sloped shoulders, a lab gown with a collar V, a centre seam and buttons, a neck, ears, eyebrows, eyes, a nose and a mouth, one arm hanging with a visible hand and one arm reaching for the equipment their hazard belongs to. They were a rounded rectangle with a circle and two dots on top.
-- Student at the burner: the hair is now a fringe plus a separate loose length that drapes toward the flame as the hazard grows, and tying it back turns that length into a bun with an orange tie. The burner gained a collar so it reads as a burner rather than a post.
-- Student at the boiling tube: the goggles are a real strap plus two tinted lenses over the eyes instead of a flat bar, and the tube now hangs in a clamp on a stand with a base rather than floating beside a rod.
-- Both status labels moved from y=140 to y=132 so the new hair and goggles do not run into them.
-- Commit: Pad the Week 8 hazard cabinet and redraw the lab floor students as figures
+- Redesigned Mystery Lab's opening screen as a measured case-file layout with a clear title and investigation CTA, compact scientific-method sequence, and grouped case metadata.
+- Rebuilt the hero art as one grounded pond scene with a shared horizon, factory, healthy and polluted ponds, and a wider Detective Hoot welcome bubble; the scene now follows light and dark theme tokens and respects reduced motion.
+- Commit: Redesign the Mystery Lab opening case file
 
 ## VERSION_60
-- Week 8 Lesson 2 (`hazard-cabinet`), lab floor: the loose hair on the left student was a triangle that grew sideways out of the head, so it read as a spike pointing at the burner rather than as hair.
-- Replaced it with a lock that hangs. Two `sway`/`drop` values in `LabFloor` swing the lock further out and further down as the hazard grows, and the path curves down over the shoulder and chest so the tip ends up beside the flame while the whole length still drapes under its own weight.
-- Added a lighter strand line along the lock so it reads as hair rather than a flat blob.
-- The tied-back state gained a short sweep from the fringe up to the bun, and the bun and its tie moved 2 units right so they sit behind the head instead of on top of the fringe.
-- Commit: Redraw the loose hair on the Week 8 lab floor so it hangs instead of pointing
+- Reimagined the Mystery Lab opening as a single lively, full-bleed Maple Creek map: the generated art keeps a calm left-side clearing for the live case-file UI and shows the factory, contaminated runoff, both ponds, wildlife and Detective Hoot together on the right.
+- Restyled the live title with a chunky game-display treatment and retained the controls, accessible text, dark-theme contrast wash, and short-screen CTA behavior.
+- Commit: Turn the Mystery Lab opening into a full illustrated map
 
 ## VERSION_61
-- Week 12 Lesson 1 (`scope-field`): the scene is now the eyepiece view itself. Redrawn at 620x390 with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so the microscope barrel fills the stage corner to corner instead of a 620x340 disc floating in gradient.
-- Added a `Barrel` component (ribbed body, lit top edge, engraved graduations around the rim) and an engraved readout plate on the right carrying objective zoom, the cell in view, its type badge, where the DNA is, and six inspection pips.
-- More structure in the cells: nuclear envelope with pores plus a nucleolus, mitochondria with cristae, scattered ribosomes, a double cell wall and veined chloroplasts on the palisade cell, myelin blocks and branched dendrites on the neuron, a midpiece on the sperm cell, pili on E. coli, and stacked thylakoid rings in the cyanobacterium. The prokaryote interior is now a real closed DNA loop labelled `loose DNA loop`, not a squiggle.
-- Added drifting grit inside the field so it reads as a wet mount.
-- Week 12 Lesson 2 (`cell-cutaway`): redrawn at 620x390 with the same bleed/slice/stageFill treatment. The cell now fills the frame and the extracellular fluid bleeds past the viewBox.
-- The membrane is a real phospholipid bilayer: two head rings with channel proteins sunk through them, switching to a red dashed double line when it is off. Nucleus gained an envelope, ten pores and chromatin threads; the rough ER is folded sheets studded with ribosomes; the Golgi is a four-cisterna stack with vesicles budding off the rim; mitochondria have inner membranes and cristae and now emit visible ATP dots toward the centre when powered.
-- Replaced the floating sentence at the foot of the cell with a readout plate: `PROTEINS OUT PER MINUTE`, the number, and `stops at the golgi` / `line running`.
-- Front copy on a diet across both lessons: L1 intro from a 43-word paragraph to one sentence of 10, L2 intro from 45 words to 9. Instructions are one imperative sentence each, every organelle and cell blurb is one line, and the closing hint on L2 is 8 words. Removed every em dash from both widgets and their signature data.
-- Added `signature.explainer` to `w12-l1` and `w12-l2`, so each section flips to a "Why cells come in two kinds" / "Why one failure stops the line" back once every goal is met.
-- Commit: Refine the Week 12 cell field and cell cutaway illustrations and copy, add their explainer flips
-
-## VERSION_60
-- Week 8 Lesson 2 (`hazard-cabinet`): the student at the burner now has hair on both sides. It was a single lock on her right, hanging off the edge of the shoulder; now a length leaves each temple, clears the jaw, drapes over its own shoulder and comes to rest on her chest.
-- Kept the hazard intact: only the right length carries `sway` and `drop`, so it still swings out and down until its tip is beside the flame, which is what the `cm from flame` readout measures. The left length hangs still.
-- Both lengths have their own highlight strand, and both inner edges are drawn outside the eyes so no hair crosses her face. The tied-back bun state is unchanged.
-- Commit: Drape the hazard-cabinet student's hair over both shoulders onto her chest
+- Fixed the Mystery Lab opening map failing to render by making it an explicit, base-URL-aware `<img>` layer below the UI, with its contrast wash rendered as a separate layer.
+- Commit: Fix the Mystery Lab opening map rendering
 
 ## VERSION_62
-- Week 12 Lesson 1 (`scope-field`): the in-cell labels were drawn inside the zoom transform, so at 3.2x `no nucleus` and `loose DNA loop` rendered at roughly three times their authored size and ran straight over the drawing.
-- Added a `PinLabel` helper that keeps the label pinned to the cell but counter-scales the glyphs by `1 / zoom`, so a label is the same size on screen at 1x and at 6x. Gave it a cream halo (`stroke` plus `paintOrder`) so it stays readable over a tinted cell body.
-- Moved the prokaryote labels clear of the body (`-30` and `34` in cell units, was `-22` and `27`) now that they no longer grow with the zoom.
-- The orange selection ring and the teal seen rings are now hidden once the view is past 2.5x. At 3.2x a 46-unit ring filled the whole field, and the plate already names the cell in view.
-- Week 12 Lesson 2 (`cell-cutaway`): the `mitochondrion` label sat at x=142 y=340 and ran under the readout plate that started at x=176. Renamed it `mitochondria` (two are drawn), moved it above its organelle at x=146 y=264, and nudged the bottom-left mitochondrion to [146, 296].
-- Moved the readout plate to x=202 y=310, 196 x 56, so it sits inside the cytoplasm clear of both the mitochondria label and the Golgi label.
-- Added a `short` name to each organelle and replaced `firstStop` (a name string that was matched back against the list) with a `stopped` organelle object, so the plate can read `stops at the Golgi` instead of `stops at the golgi apparatus` overrunning the number beside it.
-- Commit: Counter-scale the Week 12 cell labels and clear the cutaway readout plate overlap
-
-## VERSION_61
-- Week 8 Lesson 2 (`hazard-cabinet`): her hair is no longer a filled silhouette. Both falling lengths are now bundles of 14 separate wavy strands drawn by a new `HairFall` component, each with its own start point, stroke width, shade and wave phase, so the bundle has a broken edge and gaps you can see through.
-- Added a three-tone `HAIR_TINTS` palette (`#78350F`, `#92400E`, `#5C2A0B`) mixed strand by strand. One flat brown was most of why it read as a cut-out shape rather than hair.
-- `sway` and `drop` now build up down each strand instead of moving the whole shape, because hair pivots at the head: the roots stay put and only the ends travel toward the flame.
-- Kept the crown as a filled cap, since scalp does not show through the top of a head, but scalloped its lower edge and ran five strand lines over it. The bun in the tied-back state got the same treatment.
-- Commit: Redraw the hazard-cabinet student's hair as wavy per-strand bundles
+- Fixed the opening map crop: it now preserves the complete generated landscape, anchored to the right beside the case-file clearing, instead of using `cover` to cut off its top and bottom.
+- Commit: Show the complete Mystery Lab opening map
 
 ## VERSION_63
-- Week 13 Lesson 1 (`cell-morph`): redrew the scene at the stage's own shape (620 x 390) with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so the cell fills the frame instead of floating in a band of gradient.
-- The organelles are drawn as objects now, not dots: the nucleus has a double envelope, pores, a nucleolus and chromatin; the mitochondria have cristae; there is a rough ER with ribosomes on it, a three-sac Golgi with budding vesicles, lysosomes with enzyme specks, and centrioles as a paired cylinder with triplets. Chloroplasts are ellipses with grana stacks.
-- The cell wall is two layers now (a filled cellulose band plus a dashed inner line), and turgor closes the gap between membrane and wall from 16 to 5 units as the water rises, with four outward push marks.
-- Water entering is visible: solute dots outside fade as the water gets purer, and blue dots march in from both sides toward the membrane.
-- Chloroplasts and the vacuole are positioned off the box edges so they hug the wall as the cell grows; every shared organelle is on a fixed coordinate, so the "these never move" claim is literally true (dropped the old wobble that broke it).
-- Front copy on a diet: `intro` is one line, control labels are "Animal to plant" and "Water outside" with the readout split out, the long note under the status went to the back of the card, and a one-line "Next" hint names the next step. No em dashes left in student-facing text.
-- Added `signature.explainer` to `w13-l1`, so finishing all four steps unlocks the flip explaining what the student just saw.
-- Commit: Refine the Week 13 cell-morph interactive and add its explainer flip
+- Made the opening map span the full wide hero without a visible fitted-image edge or crop, and softened its saturation so it sits more naturally with SciQuest's flatter game UI.
+- Commit: Extend the Mystery Lab opening map across the hero
 
 ## VERSION_64
-- Week 13 Lesson 1 (`cell-morph`): no label is drawn over the artwork any more. A new `Tag` component puts each label in a gutter beside the cell (`LEFT_TEXT`/`RIGHT_TEXT`) and draws a line with an arrowhead from the text to the part it names.
-- Labelled parts: nucleus, centrioles and chloroplasts on the left; mitochondria, lysosomes and the central vacuole on the right; cell wall still above the wall, now with its own arrow down onto it.
-- Shrank the cell to clear those gutters (`bw` 190 to 280, `bh` 190 to 204, was 212 to 324 / 212 to 228) and moved every organelle to match: nucleus (246, 174) r32, mitochondria (336, 136) and (340, 200), ER at y 236 and 248, Golgi at y 224 to 244, free ribosomes at y 208 to 220, lysosomes (288, 168) and (296, 192), centrioles at (212, 112).
-- Vacuole now starts at x 306 and runs y `T+34` to `B-34`, so the mitochondria arrow passes above it; the top turgor marks moved off the chloroplast row to `CX ± 60`.
-- Commit: Move the Week 13 cell-morph labels out of the drawing onto arrows
+- Replaced the opening map with a purpose-built panoramic, flatter game illustration. Its single watershed now visibly runs from the factory outlet through polluted Pond A and downstream to healthy Pond B, with the left-side case-file clearing kept open.
+- Commit: Regenerate a coherent panoramic Mystery Lab map
 
 ## VERSION_65
-- Week 13 Lesson 1 (`cell-morph`): the centriole pair sat at (212, 112), which is outside the round animal cell (the box is 190 wide with a 95 radius, so that corner is off the circle). Moved it right and down to (266, 119) and (280, 123), with the triplet dots at 286 + i * 8, cy 128.5.
-- The spot clears the nucleus at (246, 174) r32 and the upper mitochondrion at x 310, and stays inside the circle in animal form.
-- Pointed the `centrioles` arrow at the pair's new left edge, (262, 126), was (210, 118).
-- Commit: Move the Week 13 centrioles back inside the animal cell
+- Rebuilt the opening background as two separate pond vignettes: factory runoff terminates at polluted Pond A, while Pond B sits beyond a tree-and-ridge divider with no shared stream or water connection.
+- Commit: Separate the Mystery Lab opening pond locations
 
 ## VERSION_66
-- Fixed signup code resending to use Supabase's confirmation resend endpoint instead of repeating registration and its student-number duplicate check.
-- Preserve resend error messages so email provider failures and rate limits are visible; normalize email addresses for signup, resend, and verification.
-- Commit: Fix signup confirmation resend and expose delivery errors
+- Added a transparent, hand-lettered title-lockup asset for “The Dying Pond Mystery” and now render it inside the opening screen's semantic H1.
+- Commit: Add a custom Dying Pond title lockup
 
 ## VERSION_67
-- Week 14 Lesson 1 (`surface-volume`): redrawn at the stage's own shape (620 x 390) with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so the scene fills the frame instead of letterboxing.
-- The cell is an object now, not a circle: cytoplasm, a washed fed shell, a double membrane line, a nucleus with nucleolus and chromatin, mitochondria in the shell and in the core, nutrients drifting in the fluid outside, nutrients crossing the membrane, and a visible pile-up of nutrients at the inner edge of the shell where diffusion stops.
-- Core mitochondria grey out when the core starves, so the starvation is shown by the drawing and not only by a number.
-- Replaced the five-number readout plate inside the picture with an instrument card: a growth-race graph plotting surface and volume against the same baseline, a "volume fed" bar, and a legend. The raw numbers moved to the control panel.
-- Radius range is now 30 to 100 µm at a 1.07 draw scale, chosen so both daughters still fit side by side after Divide.
-- Front copy on a diet: `intro` is one line, the slider label is "Cell radius" with the value split out, the button is "Divide the cell", and the long note under the status became a one-line next-step hint. No em dashes left in student-facing text.
-- Added `signature.explainer` to `w14-l1`, so finishing both steps unlocks the flip.
-- Commit: Refine the Week 14 surface-volume interactive and add its explainer flip
+- Removed the opening's premise and Hoot quote copy, leaving the title and actions as the focus.
+- Added transparent generated investigation and case-briefing emblems to the two real opening buttons.
+- Commit: Focus the Mystery Lab opening actions with custom button art
 
 ## VERSION_68
-- Week 14 Lesson 2 (`cycle-dial`): same stage treatment (620 x 390, 60-unit bleed, slice, `stageFill`, `<Stage bleed>`).
-- A live cell now sits inside the dial and is drawn entirely from the dial position: it grows through interphase, its chromatin doubles through S, the nuclear envelope breaks down in early M, the chromosomes condense and line up on the equator, the chromatids are pulled to the poles, a cleavage furrow bites in from both sides, and at position 99 it is two separate cells.
-- The furrow is a mask plus a clipped pair of arcs, so the membrane stays one continuous line around the narrowing waist instead of two circles crossing each other.
-- Dropped the centre-to-rim handle spoke (it crossed the cell) for a knob riding on the ring, added hour ticks, and made the G₂ marker read as a gate that thickens and turns red when the DNA is damaged.
-- Chromosome close-up redrawn with banding and a centromere disc; the DNA graph now has phase tint bands behind it so it ties back to the ring.
-- Front copy on a diet: `intro` is one line, phase notes cut to one short sentence each, the slider label is "Dial position" with the value split out, and the standing "Damage it, then try..." line became a hint that only appears once the DNA is damaged. No em dashes left in student-facing text.
-- Added `signature.explainer` to `w14-l2`, so finishing both steps unlocks the flip.
-- Commit: Refine the Week 14 cycle-dial interactive and add its explainer flip
+- Mystery Lab opening: removed the light-mode cream fade over the map art (`--opening-map-wash: none` in src/games/mystery-lab/styles.css; dark-mode wash kept for text contrast).
+- Removed the "Episode 01 · Grade 7 Science" tag above the title (src/games/mystery-lab/screens-a.jsx) and its now-unused `.ml-opening-episode` CSS rule.
+- Commit: Drop title fade and episode tag from Mystery Lab opening
 
 ## VERSION_69
-- Week 14 Lessons 1 and 2: the instrument card beside each illustration was being cropped away. The stage column runs at about 1.48 wide to 1 tall, not the 1.59 the scene is drawn at, so `slice` cuts roughly 25 units off each side, and more on a narrower window.
-- Both scenes now keep every readable thing between x 60 and x 560, leaving a 60-unit crop margin of pure background on each side. The cards moved from x 372/356 width 232/250 to x 352 width 204, and their contents moved with them.
-- Week 14 Lesson 1 (`surface-volume`): cell centre 190 to 200, draw scale 1.07 to 0.83 and `R_MIN` 30 to 34, so the two daughters still fit inside the band after Divide (they now span x 65 to 335). Graph box is 168 x 100 at (370, 88); the fed bar, legend and state caption moved up to match.
-- Week 14 Lesson 2 (`cycle-dial`): dial centre 176 to 202, `R_OUT` 134 to 130, `R_IN` 94 to 92. Chromosome close-up spacing 60 to 50 and the DNA graph 200 x 84 to 164 x 80 so both sit inside the narrower card.
-- Fixed the cleavage furrow. The bite circles were being driven to a centre distance of `biteR * 0.34`, which is inside their own radius, so the two bites met in the middle and cut a horizontal channel through the cell, leaving two crescents joined at their sides. They now stop at `biteR + NECK_HALF`, which pinches a 14-unit neck at the equator and leaves a proper peanut before the cell separates at position 99.
-- Commit: Keep the Week 14 stage instruments inside the crop-safe band and fix the cleavage furrow
+- Mystery Lab opening title lockup now bobs gently: added the existing `float` class (`ml-float-y`, 4s, ±6px + ±1° tilt) to the title `<img>` in src/games/mystery-lab/screens-a.jsx; already disabled under `prefers-reduced-motion`.
+- Commit: Animate Mystery Lab opening title with a gentle bob
 
 ## VERSION_70
-- Week 15 Lesson 1 (`mitosis-run`): scene re-authored at 620 x 390 with a 60-unit bleed, `preserveAspectRatio="xMidYMid slice"`, `stageFill` and `<Stage bleed>`, so it fills the stage instead of sitting in a band of empty gradient. Readable content stays between x 60 and x 560, y 40 and y 352.
-- Chromosomes are now one morphing strand each: a long wavy thread when loose, a short fat rod once coiled, with a centromere disc joining the sisters. Dragging back uncoils them. Added a nucleolus that fades in prophase, spindle poles with asters on the animal cell, cytoplasm grain, chloroplasts and a double wall on the plant cell, the contractile ring drawn as a drawstring across the furrow, and Golgi vesicles that line up then fuse into the cell plate.
-- Added a six-segment stage track along the bottom with a scrub marker, so PMAT is visible in the picture, plus one stage-gated in-picture label at a time (nucleus opening / metaphase plate / fibres pulling / cleavage furrow or cell plate).
-- Stage boundaries retimed to 0-14-36-54-74-88-100 so each track segment is wide enough for its own name.
-- Front copy on a diet: `intro` cut to one line, stage notes to one short sentence each, the slider helper to "Drag it backwards too.", the cell-type buttons to "Animal cell" / "Plant cell" with the explanation moved to the back. Added a Reset button.
-- Week 15 Lesson 2 (`crossover-lab`): same stage treatment at 620 x 390 with bleed and slice. Gene letters A to F now ride on every band and a gene ruler runs down the left of the tetrad, so the swap is readable without relying on colour. Added a from-mother / from-father key, a cell outline around the tetrad, "untouched" / "swapped" strand labels, and a thicker orange outline on the gametes that came out mixed.
-- Counter strip rebuilt at the new height and its labels cut to "n = 23, 46 chromatids" style with no em dashes.
-- Front copy on a diet: `intro` cut to one line, step notes to one sentence, the recombinant card is now a readout plus a nudge only when no crossover is set, and "Back to the tetrad" became "Reset".
-- Added `signature.explainer` to `w15-l1` and `w15-l2`, so finishing each one unlocks the flip.
-- Commit: Refine the Week 15 mitosis and crossover interactives and add their explainer flips
+- Mystery Lab opening: the "01 Observe → 04 Conclude" step line now sits on a solid paper pill (bg `--bg-paper`, border, card shadow, 13px `--text`) so it reads over the map art; step numbers use `--primary` in dark mode for contrast (src/games/mystery-lab/styles.css).
+- Commit: Put Mystery Lab opening step line on a readable paper pill
 
 ## VERSION_71
-- Week 15 Lesson 2 (`crossover-lab`): fixed overlapping text in the tetrad. The four strands were evenly spaced 38 apart, so the per-strand "untouched" / "swapped" captions under them ran into each other and read as "swappedswapped".
-- Strands regrouped two and two at x offsets -62, -30, +30, +62, which is what a tetrad actually looks like (two chromosomes, each already two chromatids) and opens a 60-unit gap down the middle for the chiasma.
-- Dropped the per-strand captions and the redundant gene ruler, whose "gene" header was sitting on the cell outline. Every band already carries its own gene letter. In their place: one orange bracket under the two strands that changed, labelled "swapped".
-- The chiasma cross now straddles the crossover boundary (`cutY - 9` to `cutY + 9`) instead of hanging below it onto the next gene band, and the caption reads "swapped from gene F down".
-- Moved the colour key inside the `step === 0` branch and into the top-left corner at x 66, where the cell ellipse never reaches, instead of x 470 where it sat on the membrane.
-- Meiosis I chromatid spacing 38 to 32, to match the new within-pair gap.
-- Week 15 Lesson 1 (`mitosis-run`): plant chloroplasts moved to +/- 178 x, +/- 44 and 48 y so they clear the stage-gated labels, and the prophase tag shortened from "nucleus opening" to "nucleus" and moved to (CX - 146, CY - 64) so it no longer touches the nuclear envelope.
-- Commit: Fix overlapping labels in the Week 15 tetrad illustration
+- Mystery Lab opening buttons: "Case briefing" is now a solid paper button (bg `--bg-paper`, 2px `--primary` border, 4px `--primary-d` press shadow) sized to match "Start Investigation"; both opening buttons get a yellow `:focus-visible` ring (src/games/mystery-lab/styles.css).
+- Commit: Make Mystery Lab opening buttons solid and matched
 
 ## VERSION_72
-- Week 16 Lesson 2 (`fusion-bench`): rebuilt the illustration. The scene is now authored at 620x390 (the stage's own ~16:10 shape), the fluid background bleeds 60 units past the viewBox, and it renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>`, so it fills the frame instead of sitting in a 620x340 letterbox.
-- The three cells are drawn as the actual objects instead of a circle with four bars. Sperm: acrosome cap, nucleus, midpiece, and a tail that beats from the animation tick. Egg: corona radiata, zona pellucida, yolk-packed cytoplasm, nucleus. Body cell: membrane, mitochondria, nucleus.
-- New `Chroms` helper draws one bar per chromosome copy, so haploid reads as four singles, diploid as four pairs and a failed 69 as four triples with the surplus copy in red, with an "a whole extra set" callout pointing at it.
-- A viable zygote now cleaves inside a drawn fertilisation membrane, 1 to 2 to 4 to 8 cells on a hand-placed pack, every cell still showing its diploid pair of bars.
-- Added a pairing check: 46 is necessary but not sufficient, so egg + egg and sperm + sperm no longer count as a zygote. They fuse, fail, and report "46, but two of the same / needs one of each".
-- New bench readout strip along the bottom: left slot, right slot and result, each with its name and count.
-- Front copy on a diet. Heading "Watch It: Build a Zygote", intro one sentence, instruction "Make a real zygote, then make one that fails", per-cell notes cut to one short line each, action button "Drive them together".
-- Added `signature.explainer` to `w16-l2` so finishing the block unlocks the flip.
-- Reduced motion now jumps straight to the finished 8-cell embryo instead of running the fuse and cleave tweens.
-- Commit: Rebuild the Week 16 fertilisation interactive and add its explainer flip
+- Mystery Lab opening: removed the "01 Observe → 04 Conclude" step pill under the buttons (JSX + `MissionStep` helper in src/games/mystery-lab/screens-a.jsx, `.ml-opening-pills` / `.ml-opening-step` rules in src/games/mystery-lab/styles.css).
+- Commit: Remove the method-steps pill from Mystery Lab opening
 
 ## VERSION_73
-- Week 17 Lesson 1 (`clone-bench`): rebuilt the illustration. The scene is now authored at 620x390 (the stage's own ~16:10 shape), the background and the strawberry soil bleed 60 units past the viewBox, and it renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>`, so it fills the frame instead of sitting in a 620x340 letterbox.
-- All four organisms redrawn as the real thing. Bacterium: rod body with a waisted outline that pinches shut, a DNA loop that duplicates and separates, ribosomes and flagella. Yeast: cell wall, vacuole, old bud scars, a neck that pinches, and a nucleus copy that travels into the bud. Starfish: five tapered arms with tube feet and a madreporite, the broken piece keeping a share of the central disc. Strawberry: soil band, trifoliate leaves, roots, and a runner that walks a second plant out and roots it.
-- Layout regions fixed so nothing can be cropped: organism name at y 42, scene centred at (310, 128), bench divider at y 248, the clone field at y 312, disease verdict at y 350.
-- The disease sweep is now a real progressive wave (`SWEEP_TICKS`) instead of an always-on sine tick that killed the whole field on the first frame. Dead clones get X eyes as well as a grey tint, so it is not colour alone.
-- Dropped the permanent 70ms idle timer. Motion now only runs while a method or the sweep is running.
-- "Release the disease" is gated on all four methods being run, which matches the hint line and makes completion deterministic.
-- Front copy on a diet. Heading "Watch It: Copy Yourself Four Ways", intro one sentence, instruction "Run all four methods, then release the disease.", per-method paragraphs replaced by a one-line "what to watch for", in-picture captions cut to four words or fewer, em dashes removed.
-- Added `signature.explainer` to `w17-l1` so finishing the block unlocks the flip.
-- Commit: Rebuild the Week 17 asexual reproduction interactive and add its explainer flip
+- Mystery Lab cutscene: dropped the flat vector props that doubled up on the painted backdrops — sun disc, static/animated clouds and all 30 `<Tree>` sprites on the Peaceful and Mission panels, plus the grove frame and prop SVGs on Mission (src/games/mystery-lab/screens-a.jsx).
+- Foliage frames (`foreground-grove.png`, `alarm-marsh-frame.png`) no longer use `scaleY()` — they keep their painted aspect and are widened to 116% / sunk below the stage so the canopies crop off the top instead of looking squashed (src/games/mystery-lab/styles.css).
+- Ponds are now positioned with plain `left`/`right`/`bottom` per panel instead of a fixed 270px width + `translateX(-50%) scale()`, so each panel's pond sits on the ground at a sane size.
+- Compare panel's centre seam and "?" moved from inline styles to `.ml-compare-seam` / `.ml-compare-question`.
+- "Skip intro" moved from top-left to bottom-right so it no longer sits under the game shell's overlay Back pill.
+- Commit: Fix Mystery Lab cutscene layering, foliage distortion and skip-button overlap
 
 ## VERSION_74
-- Week 18 Lesson 1 (`variation-batch`): rebuilt the illustration. Scene re-authored at 620x390 (the stage's own ~16:10 shape), meadow, foliage and grass tufts bleed 60 units past the viewBox, and it now renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>` instead of letterboxing inside a 620x340 box.
-- Beetles redrawn as beetles: six legs, two antennae, head with eyes, pronotum, wing cases with the split down the middle, a shell highlight and spots. Killed offspring land on their backs with their legs in the air instead of just turning grey.
-- The shell-tone scale is now a field chart pinned in the scene, with a `pale`/`dark` gradient bar, the parasite zone drawn on it, and one triangle marker per offspring born, so the spread appears on the scale at the same moment it appears on the ground.
-- The two parents now sit on leaves with a dashed cross joining them, so the picture shows where the litter came from.
-- Front copy on a diet. Heading "Watch It: Twelve Offspring, All Different", one-sentence intro, instruction "Breed twelve offspring, then release the disease.", control labels cut to three words, status line reduced to a readout, and the panel paragraph replaced by a single hint that only shows while a goal is still open.
-- Week 18 Lesson 2 (`energy-flow`): same stage treatment, plus a real meadow with sky, hills, a mid-ground band and a foreground band.
-- All seven nodes redrawn as organisms instead of tinted circles: rayed sun, grass tuft with seed heads, grasshopper with a hind leg and antennae, frog with eyes and folded back legs, coiled snake with a tongue, hawk with spread wings, hooked beak and talons, and a rabbit with ears and a tail. Starving ones go grey with a red outline, a red dashed ring and a "no food" label, so it is never colour alone.
-- Dropped the in-picture instruction caption; the instruction lives on the front and the panel buttons carry the same actions.
-- Front copy on a diet on both blocks, em dashes removed from copy and comments.
-- Added `signature.explainer` to `w18-l1` and `w18-l2` so finishing either block unlocks the flip.
-- Commit: Rebuild both Week 18 interactives and add their explainer flips
+- Fixed the giant floating pond in the Mystery Lab cutscene: an `<img>` is a replaced element, so `left` + `right` + `width: auto` makes it keep its intrinsic 1536px width and drop `right`. Each pond now sets an explicit `width` and is centred with `left = (100 - width) / 2` (src/games/mystery-lab/styles.css).
+- Foliage frames no longer crop the tree canopies: `.ml-cutscene-grove` / `.ml-cutscene-alarm-frame` now use `inset: 0` + `object-fit: cover` + `object-position: center top`, so the crop falls on the low ground strip at the bottom instead of cutting the treetops.
+- `ml-grove-sway` animates `transform` on a 1.02-scaled image instead of `margin-left`, which used to shift the whole layer and expose a strip of backdrop at the edge.
+- Butterflies moved down onto the meadow (were floating in the sky).
+- Commit: Centre the cutscene ponds and stop cropping the foreground canopies
 
 ## VERSION_75
-- Week 19 Lesson 1 (`ten-percent`): rebuilt the illustration. Scene re-authored at 620x390 (the stage's own ~16:10 shape), sky, meadow and grass tufts bleed 60 units past the viewBox, and it now renders with `preserveAspectRatio="xMidYMid slice"` + `stageFill` + `<Stage bleed>` instead of letterboxing inside a 620x340 box.
-- Trophic levels are drawn as organisms standing on their own bar: three grass tufts, a grasshopper with a hind leg and antennae, a frog with eye bumps and folded legs, and a coiled snake with a tongue. Tier widths still come from the cube root of the surviving fraction, with a 30-unit floor so the 1-unit bar can carry its label.
-- Added a bleeding sun in the top-left corner with a dashed ray into the base bar and a "sunlight in" label, so the picture shows where the 1000 units come from.
-- Heat plumes now carry a "90% heat" label, and a "10% up" chip appears beside each gap the student has actually climbed, so both halves of the rule are visible.
-- Nutrient loop nodes redrawn as pictures: a grey dead snake with an X eye, a two-mushroom decomposer, a soil mound with mineral flecks and a new grass tuft. Nodes sit on the four diagonals and their labels ride paper chips, so nothing crowds the dashed ring.
-- Front copy on a diet. Heading "Watch It: Energy Out, Atoms Round", one-sentence intro, instruction "Send energy to the top, then follow one carbon atom.", control labels cut to three words ("Send energy up", "Start again", "Follow one atom"), the panel paragraph replaced by a single hint that only shows while a goal is still open, and the status line reduced to a readout.
-- Em dashes removed from the copy and the comments in this block.
-- Added `signature.explainer` to `w19-l1` so finishing the block unlocks the flip.
-- Commit: Rebuild the Week 19 ten-percent interactive and add its explainer flip
+- Mystery Lab now owns its back control, so the game shell's dark overlay Back pill no longer sits on top of the HUD's "Mystery Lab / EP 01 - Dying Pond" title: added `mystery-lab` to `GAMES_WITH_OWN_BACK` (src/pages/GamePlayPage.jsx).
+- HUD: the exit button moved from the far right (where it was never rendered, since `onExit` was not passed) to the far left of the bar as an icon-only ghost back arrow, and `index.jsx` now passes `onExit` to it (src/games/mystery-lab/shared.jsx, src/games/mystery-lab/index.jsx).
+- The opening and intro screens draw no HUD, so they get their own round back button at top-left; the repeated floating-control style is now one `FLOATING_BTN` const shared by back/mute/theme.
+- Added the SciQuest back arrow (`M19 12H5M11 6l-6 6 6 6`) to the Mystery Lab `Lucide` icon map as `arrowLeft`.
+- Commit: Give Mystery Lab its own back button instead of the overlapping shell pill
+
+## VERSION_76
+- The in-game `Pond` sprite now draws the painted cutscene pond (`/games/mystery-lab/cutscene/pond-healthy.png` / `pond-polluted.png`) instead of the flat `art/pond-*.png` blob. Same 3:2 aspect, and the intro cutscene already loads both files, so the observation screen gets them from cache (src/games/mystery-lab/world.jsx).
+- The painted pond's water sits lower inside its frame than the old blob, so the Pond A/B clue hotspots were nudged back onto open water in `CLUE_POS` — deadFish/healthyFish 60%,70% -> 58%,65%; clearWater 40%,70% -> 44%,65%; murky 56%,49% -> 54%,56%; smell 40%,45% -> 44%,47%. `rx`/`ry` ripple centres updated to match (src/games/mystery-lab/screens-b.jsx).
+- Commit: Use the painted cutscene pond art in the observation screens
+
+## VERSION_77
+- Observation screen pond is much bigger: the wrapper's `translateX(-50%) scale(1.8)` on a `size={260}` Pond is replaced by a flex-centred wrapper at `bottom: -76` with `size={660}`, so the pond spans ~12-88% of the scene card instead of ~28-72%. The negative bottom pushes the art's transparent under-rim padding off the card and keeps the rim clear of the Pond A/B toggle (src/games/mystery-lab/screens-b.jsx).
+- All clue hotspots re-placed for the larger pond and spread out instead of clustering: deadFish 40%,62%; murky 66%,60%; temp 80%,70%; smell 32%,40%; healthyFish 55%,66%; clearWater 36%,58%; tempB 78%,72%. `rx`/`ry` ripple centres updated to match.
+- Commit: Enlarge the observation pond and re-place the clue hotspots
+
+## VERSION_78
+- Both observation thermometers scaled up from `width={48}` to `width={84}` (height follows, 72px -> 126px), so the 34 C / 22 C readings are legible next to the enlarged pond (src/games/mystery-lab/screens-b.jsx).
+- Pond B's thermometer moved from 78% to 84% across, since at the bigger size its bulb hung over the water instead of standing in the bank; `rx` updated to match.
+- Commit: Enlarge the observation thermometers and reseat Pond B's on the bank
+
+## VERSION_79
+- Removed the dark "Pond A / Pond B" switcher pill that floated at the bottom of the observation scene. Switching ponds still works from the "Switch to Pond A/B" button in the screen header, so nothing is lost and the enlarged pond now has the full card (src/games/mystery-lab/screens-b.jsx).
+- Commit: Remove the floating pond switcher pill from the observation scene
+
+## VERSION_80
+- The Ask/Hypothesise screen is now two sequential steps instead of one two-column dump: step 1 shows only "Pick a question" with a Next button (disabled until a question is picked), step 2 shows only "Pick hypotheses" plus the linked-evidence panel, with "Back to map" (disabled until at least one hypothesis) and a ghost "Question" button to step back. Driven by local `step` state, so no new route or app-level state (src/games/mystery-lab/screens-b.jsx).
+- Header shows the live phase ("Phase 2 - Ask" / "Phase 3 - Hypothesise") and a "Step N of 2" chip; Hoot's line and mood now react to the step, including a nudge when the wrong question is picked.
+- Hypothesis sticky notes now lay out `repeat(auto-fit, minmax(210px, 1fr))` so they fill the full-width card instead of a half-width column.
+- Commit: Split the ask/hypothesise screen into two guided steps
+
+## VERSION_81
+- Added docs/asset-prompts/mystery-lab-lab-tent.md: a Codex art brief to revamp the Lab Tent and its five mini-games (21 PNGs). Follows the plant-cell.md shape - a consumer table linking every file to the exact inline SVG it replaces in screens-c.jsx, the game's real hex palette pulled from styles.css and the TESTS/POLLUTION_LEVELS/TEMP_CONTAINERS tables, per-asset export sizes, and identical-frame rules for the three pH strip states, the three pollution vials and the two contaminant states.
+- Commit: Add the Codex asset prompt for the Mystery Lab tent mini-games
+
+## VERSION_82
+- Level icons now use five star tiers cut from `public/level-stars/Five-Tier Rounded Star Icon Set-Photoroom.png` into `star-tier-1..5.png` (256 × 256, centered, uniform padding).
+- `src/lib/level-icons.js` maps level → tier with `ceil(level / 3)` (1–3, 4–6, 7–9, 10–12, 13–15) and loads from `level-stars/`.
+- Removed old `public/level-stars/star-level-01..15.png`; rewrote `public/level-stars/PROMPTS.md` for the tier set.
+- Commit: Switch level icons to five 3-level star tiers cut from new star sheet
+
+## VERSION_83
+- Mystery Lab temperature mini-game: removed the old SVG beaker (outline, brown rim, tick marks) that was drawn over the new `temp-beaker-glass.png`. `ContainerBeaker` in `src/games/mystery-lab/screens-c.jsx` now draws water + dipped thermometer behind the PNG, shows the PNG at full opacity and true aspect ratio, and moves the ✓ badge clear of the lid.
+- Commit: Fix Mystery Lab temperature beakers double-drawn over new glass art
+
+## VERSION_84
+- Mystery Lab Phase 5 storyboard (`src/games/mystery-lab/screens-d.jsx`) now fits on one screen: comic panels use a viewport-scaled height (`clamp(104px, 19vh, 160px)`) instead of a 4:3.4 aspect ratio, with less strip padding; filled panels stack the scene icon above the caption so they don't overlap.
+- Clue cards use an auto-fill grid (`minmax(190px, 1fr)`, 4 across on desktop) with slimmer padding and icons; the "Pick the clue" line folded into the hint row; "Drop on a panel" → "Tap to place" (it's a click).
+- Commit: Compact Mystery Lab storyboard so panels and clues fit without scrolling
+
+## VERSION_85
+- Mystery Lab Phase 6 report (`ConclusionScreen` in `src/games/mystery-lab/screens-d.jsx`) is now a 3-step wizard: one question per step (Cause → Evidence → Explain) with clickable step pills, Back/Next footer, and "Close the Case" on the last step. Next stays disabled until the step's requirement is met.
+- Detective Hoot's sidebar tip changes per step; the old sidebar submit button and requirements line were folded into the form footer.
+- Commit: Turn Mystery Lab final report into a one-question-at-a-time stepper
+
+## VERSION_86
+- Mystery Lab temperature mini-game: °C readings (under each beaker and on the "Which was hottest?" cards) are now coloured on a blue→red scale by temperature (`getTempColor` in `src/games/mystery-lab/screens-c.jsx`, 15 °C = blue, 35 °C = red) instead of all red.
+- Commit: Colour Mystery Lab temperature readings blue-to-red by value
+
+## VERSION_87
+- Mystery Lab victory screen: removed the "Up next · Episode 2 — The Wilting Plant Lab" banner and its Continue button (`src/games/mystery-lab/screens-d.jsx`), plus the now-unused `restart` callback/prop in `src/games/mystery-lab/index.jsx`.
+- Commit: Remove Mystery Lab "Up next" episode banner from victory screen
+
+## VERSION_88
+- Mystery Lab hub thumbnail (`src/assets/mysterylab.png`) replaced with a crop of the "Dying Pond Mystery" opening art (factory, drain pipe, dying pond vs healthy pond, Detective Hoot), 785 × 508. Registry import unchanged.
+- Commit: Replace Mystery Lab hub thumbnail with opening-scene art

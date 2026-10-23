@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SciQuest level icons</title>
+    <style>
+      body { margin: 0; padding: 32px; font-family: system-ui, sans-serif; background: #fdf6e3; color: #1c1410; }
+      h1 { margin-top: 0; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+      figure { margin: 0; padding: 16px; text-align: center; border-radius: 16px; background: #fff; border: 1px solid #f3d9ae; }
+      img { width: 96px; height: 96px; object-fit: contain; }
+      figcaption { font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <h1>Level icon progression</h1>
+    <main class="grid" id="icons"></main>
+    <script>
+      document.querySelector('#icons').innerHTML = Array.from({ length: 15 }, (_, index) => {
+        const level = index + 1;
+        const source = `level-${String(level).padStart(2, '0')}.png`;
+        return `<figure><img src="${source}" alt="Level ${level} icon"><figcaption>Level ${level}</figcaption></figure>`;
+      }).join('');
+    </script>
+  </body>
+</html>
