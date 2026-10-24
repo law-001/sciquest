@@ -29,6 +29,7 @@ import {
   CalendarClock,
   UserCheck,
   CircleDashed,
+  Radio,
 } from "lucide-react";
 import {
   BarList,
@@ -66,6 +67,7 @@ import {
 } from "../lib/sections";
 import { GAMES } from "../lib/games/registry";
 import { QuizAnswersReview } from "../components/QuizAnswersReview";
+import { LiveQuestHost } from "../components/live-quest/LiveQuestHost";
 import { useLessonsData } from "../context/LessonsDataContext";
 import { deleteLesson, restoreStaticLesson } from "../lib/lessons";
 import { deleteQuiz, restoreStaticQuiz } from "../lib/quizzes";
@@ -5660,6 +5662,7 @@ const SIDEBAR_TABS = [
   { id: "quiz-management", label: "Quizzes", Icon: ClipboardCheck },
   { id: "quizzes", label: "Quiz Checking", Icon: ClipboardList },
   { id: "gradebook", label: "Gradebook", Icon: Star },
+  { id: "live-quest", label: "Live Quest", Icon: Radio },
   { id: "settings", label: "Settings", Icon: Settings },
 ];
 
@@ -5914,7 +5917,7 @@ export function TeacherPortalPage({
         onBack();
       }}
     >
-      {activeTab !== "settings" && !loading && !loadError && (
+      {activeTab !== "settings" && activeTab !== "live-quest" && !loading && !loadError && (
         <div className="mb-4 flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.14em] mr-1">
             Scope
@@ -5975,6 +5978,8 @@ export function TeacherPortalPage({
         </div>
       ) : activeTab === "settings" ? (
         <SettingsSlot />
+      ) : activeTab === "live-quest" ? (
+        <LiveQuestHost />
       ) : (
         <ActiveSlot
           data={slotData}

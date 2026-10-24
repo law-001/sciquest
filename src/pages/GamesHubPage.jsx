@@ -10,6 +10,7 @@ import {
   Search,
   X,
   LogIn,
+  Radio,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -367,6 +368,29 @@ export function GamesHubPage({
             </div>
           </Card>
         </div>
+
+        {/* Live Quest entry — students join a teacher's live room by code */}
+        <button
+          type="button"
+          onClick={() => onNavigate("live-quest")}
+          className="mt-8 w-full flex flex-wrap items-center gap-4 rounded-2xl border-2 border-primary-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-5 py-4 text-left hover:border-primary-400 dark:hover:border-primary-500 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        >
+          <span className="w-12 h-12 shrink-0 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+            <Radio className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+          </span>
+          <span className="flex-1 min-w-[200px]">
+            <span className="block text-lg font-black text-stone-900 dark:text-white">
+              Live Quest
+            </span>
+            <span className="block text-sm text-stone-500 dark:text-stone-400">
+              Got a code from your teacher? Join the live class quiz.
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-2 min-h-[44px] rounded-xl bg-primary-600 px-5 text-sm font-bold text-white">
+            <Play className="w-4 h-4" />
+            Join with code
+          </span>
+        </button>
 
         {/* All games grid */}
         {displayedGames.length === 0 && searchQuery && (
