@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { CheckCircle2, Tag, XCircle } from 'lucide-react'
 
 import InteractiveFrame from './InteractiveFrame'
@@ -82,9 +83,10 @@ export default function DragLabelSection({
       instruction={
         drag.selectedId
           ? 'Now tap a labelled box on the image'
-          : `Drag each label onto the image, or tap a label then tap a box — ${filledCount} of ${zones.length} placed`
+          : `Drag each label onto the image, or tap a label then tap a box: ${filledCount} of ${zones.length} placed`
       }
       isComplete={isComplete}
+      explainer={data?.explainer}
       status={
         isComplete
           ? 'All labels placed correctly.'
@@ -167,7 +169,7 @@ export default function DragLabelSection({
         </button>
         {state.checked && !allCorrect && (
           <p className="text-sm font-bold text-red-600 dark:text-red-400">
-            Some labels are in the wrong place — move them and check again.
+            Some labels are in the wrong place. Move them and check again.
           </p>
         )}
         {isComplete && (
@@ -177,14 +179,20 @@ export default function DragLabelSection({
         )}
       </div>
 
-      {drag.ghost && (
-        <div
-          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-primary-400 bg-white px-3 py-2 text-sm font-bold text-stone-700 shadow-lg dark:bg-stone-700 dark:text-white"
-          style={{ left: drag.ghost.x, top: drag.ghost.y }}
-        >
-          {labelText(drag.ghost.id)}
-        </div>
-      )}
+      {/* The chip under the finger is placed in viewport coordinates, and a
+          transformed ancestor, and the explainer flip wraps this block in one,
+          would become its containing block and shift it. The portal keeps it
+          measured against the viewport wherever the block is nested. */}
+      {drag.ghost &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-primary-400 bg-white px-3 py-2 text-sm font-bold text-stone-700 shadow-lg dark:bg-stone-700 dark:text-white"
+            style={{ left: drag.ghost.x, top: drag.ghost.y }}
+          >
+            {labelText(drag.ghost.id)}
+          </div>,
+          document.body,
+        )}
     </InteractiveFrame>
   )
 }

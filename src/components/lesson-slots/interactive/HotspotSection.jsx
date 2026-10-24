@@ -62,6 +62,7 @@ export default function HotspotSection({
       intro={intro}
       instruction={`Tap each marker to learn more — ${opened.size} of ${points.length} explored`}
       isComplete={isComplete}
+      explainer={data?.explainer}
       status={
         isComplete
           ? 'All markers explored.'

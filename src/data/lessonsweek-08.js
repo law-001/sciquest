@@ -40,11 +40,19 @@ export const week08 = {
 
       signature: {
         widgetId: "equipment-bench",
-        heading: "Watch It: Every Instrument Does Its Job",
-        intro:
-          "Pick one up and it works. Open the burner's collar and the lazy yellow flame pulls itself into a roaring blue cone; load the balance and the pan overshoots before it settles; pour a muddy mixture through the paper and clear filtrate climbs the beaker while the mud stays behind.",
-        instruction: "Operate all four instruments",
+        heading: "Watch It: Every Instrument Works",
+        intro: "Open the collar, load the pan, pour the mixture through.",
+        instruction: "Get all four instruments working.",
         xp: 25,
+        explainer: {
+          title: "Why each tool has one job",
+          points: [
+            "Opening the collar mixed air into the gas, so the lazy yellow flame turned blue and hot.",
+            "The balance pan swung past the answer first. Only the settled reading was honest.",
+            "The paper let water through and kept the mud, so the filtrate came out clear.",
+            "One lens height brought the cells into focus. Above and below it, the edges smeared.",
+          ],
+        },
       },
 
       sections: [
@@ -308,11 +316,19 @@ export const week08 = {
 
       signature: {
         widgetId: "hazard-cabinet",
-        heading: "Watch It: The Symbols Keep Their Promise",
-        intro:
-          "Open a bottle and its hazard symbol plays out: the corrosive bores through a steel plate, the flammable vapour finds a spark a metre away, one drop of the toxic reaches every corner of a fish tank. Then step onto the lab floor, where three unsafe things are already happening and getting worse on their own.",
-        instruction: "Demonstrate every symbol, resolve every hazard",
+        heading: "Watch It: Symbols Keep Their Promise",
+        intro: "Open a bottle and its symbol does what it warns.",
+        instruction: "Show every symbol, then fix the lab floor.",
         xp: 25,
+        explainer: {
+          title: "Why the symbols are worth reading",
+          points: [
+            "Every bottle you opened did what its symbol promised: the acid bored through steel, the vapour found a spark.",
+            "One drop of the toxic liquid reached every corner of the tank, so small amounts still count.",
+            "The oxidiser added no fuel of its own. It fed oxygen to the ember and the ember flared.",
+            "On the lab floor nothing fixed itself. Each hazard grew until you stepped in.",
+          ],
+        },
       },
 
       sections: [

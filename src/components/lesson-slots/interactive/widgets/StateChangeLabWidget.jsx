@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import SimLayout, { Stage } from '../SimLayout'
-import { STAGE_MEDIA } from '../stageMedia'
+import { stageFill } from '../stageMedia'
 
-// L5 signature interactive — water in a beaker over a burner.
+// L5 signature interactive: water in a beaker over a burner.
 //
 // The student holds a heat or cool button and the whole thing runs: the
 // thermometer climbs, the particles break their lattice, bubbles rise, vapour
@@ -11,10 +11,12 @@ import { STAGE_MEDIA } from '../stageMedia'
 // happening, so latent heat is something you sit through rather than read about.
 //
 // Sublimation and deposition need a vacuum pump, because that is honestly the
-// only way water does them — and it makes the "skips the liquid" jump literal.
+// only way water does them, and it makes the "skips the liquid" jump literal.
 
 const W = 620
-const H = 360
+// Tall enough for the burner to stand on a bench, and close to the stage's
+// own shape (about 16:10) so the scene fills the frame.
+const H = 400
 
 // Beaker interior, in canvas units.
 const BX = 180
@@ -27,31 +29,31 @@ const R = 7
 
 const PHASES = {
   solid: {
-    label: 'Solid — ice',
+    label: 'Solid: ice',
     colour: '#7FB3EA',
     panel: 'border-[#7FB3EA] bg-[#DDEEFF] dark:bg-[#7FB3EA]/15',
     note: 'Particles are locked in a fixed lattice. They shiver in place, so the ice keeps its own shape.',
   },
   melting: {
-    label: 'Melting — 0 °C and holding',
+    label: 'Melting: 0 °C and holding',
     colour: '#5FBBC8',
     panel: 'border-[#5FBBC8] bg-[#DDEEFF] dark:bg-[#5FBBC8]/15',
     note: 'The thermometer has stopped. Every bit of heat going in is being spent breaking the lattice apart, not raising the temperature.',
   },
   liquid: {
-    label: 'Liquid — water',
+    label: 'Liquid: water',
     colour: '#3BAFA9',
     panel: 'border-[#3BAFA9] bg-[#7BC9CF]/25 dark:bg-[#3BAFA9]/15',
     note: 'Particles slide past each other but still cling together, so water pools in the bottom of the beaker and takes its shape.',
   },
   boiling: {
-    label: 'Boiling — 100 °C and holding',
+    label: 'Boiling: 100 °C and holding',
     colour: '#7FC4C0',
     panel: 'border-[#7FC4C0] bg-[#7BC9CF]/25 dark:bg-[#7FC4C0]/15',
-    note: 'Stalled again. The heat is now tearing particles away from each other — watch the bubbles form at the bottom and rise.',
+    note: 'Stalled again. The heat is now tearing particles away from each other. Watch the bubbles form at the bottom and rise.',
   },
   gas: {
-    label: 'Gas — water vapour',
+    label: 'Gas: water vapour',
     colour: '#9AA7B8',
     panel: 'border-stone-300 bg-stone-100 dark:border-stone-500 dark:bg-stone-700/50',
     note: 'Particles have escaped each other and fill the whole beaker, bouncing off the walls and each other.',
@@ -68,7 +70,7 @@ const CHANGES = [
 ]
 
 // Energy runs 0 to 100. Melting eats 12 units at 0 °C, boiling eats 30 at
-// 100 °C — the ratio is roughly true and it makes the boiling plateau the long,
+// 100 °C. The ratio is roughly true and it makes the boiling plateau the long,
 // memorable one.
 const E_MELT_START = 20
 const E_MELT_END = 32
@@ -92,7 +94,7 @@ function phaseFor(e, vacuum) {
   return 'gas'
 }
 
-// What a phase reduces to when you ask "solid, liquid or gas?" — the plateaus
+// What a phase reduces to when you ask "solid, liquid or gas?". The plateaus
 // are mid-change, so they count as the state they are leaving.
 const BASE = { solid: 'solid', melting: 'solid', liquid: 'liquid', boiling: 'liquid', gas: 'gas' }
 
@@ -252,12 +254,12 @@ export default function StateChangeLabWidget({ onSolved }) {
     <>
       <SimLayout
         stage={
-          <Stage>
+          <Stage bleed>
             <canvas
               ref={canvasRef}
               role="img"
               aria-label={`Beaker of water at ${temp} degrees Celsius. Current state: ${phase.label}.`}
-              style={{ ...STAGE_MEDIA, aspectRatio: `${W} / ${H}` }}
+              style={stageFill(W, H)}
             />
           </Stage>
         }
@@ -265,14 +267,11 @@ export default function StateChangeLabWidget({ onSolved }) {
           <>
             <div className={`rounded-xl border-2 p-3 ${phase.panel}`}>
               <p className="text-sm font-black text-stone-900 dark:text-white">
-                {temp} °C — {phase.label}
-              </p>
-              <p className="mt-1 text-xs font-medium text-stone-700 dark:text-stone-200">
-                {phase.note}
+                {temp} °C: {phase.label}
               </p>
               {latest && (
-                <p className="mt-2 text-xs font-black text-stone-900 dark:text-white">
-                  Just happened → {latest.label}: {latest.note}
+                <p className="mt-1 text-xs font-black text-stone-900 dark:text-white">
+                  Just happened: {latest.label}
                 </p>
               )}
             </div>
@@ -323,13 +322,13 @@ export default function StateChangeLabWidget({ onSolved }) {
               </button>
               <p className="mt-1 text-xs font-medium text-stone-500 dark:text-stone-400">
                 With the pump on there is no air pressure holding the water down, so ice
-                goes straight to vapour and back — no liquid stage at all.
+                goes straight to vapour and back, with no liquid stage at all.
               </p>
             </div>
 
             <div>
               <p className="mb-1.5 text-xs font-black uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Changes watched — {seen.length} of {CHANGES.length}
+                Changes watched: {seen.length} of {CHANGES.length}
               </p>
               <ul className="space-y-1.5">
                 {CHANGES.map((c) => {
@@ -350,9 +349,6 @@ export default function StateChangeLabWidget({ onSolved }) {
                       >
                         {done ? '✓ ' : '○ '}
                         {c.label}
-                      </p>
-                      <p className="text-xs font-medium text-stone-500 dark:text-stone-400">
-                        {c.note}
                       </p>
                     </li>
                   )
@@ -375,6 +371,8 @@ export default function StateChangeLabWidget({ onSolved }) {
 
 function draw(ctx, { pid, base, parts, bubbles, held, vac, t }) {
   ctx.clearRect(0, 0, W, H)
+  drawBench(ctx)
+  drawStand(ctx)
 
   drawThermometer(ctx, t)
 
@@ -399,13 +397,14 @@ function draw(ctx, { pid, base, parts, bubbles, held, vac, t }) {
     ctx.stroke()
   }
 
-  // Water surface line — only a liquid has one.
+  // Water surface line, which only a liquid has.
   if (base === 'liquid') {
     ctx.strokeStyle = 'rgba(59,175,169,0.65)'
     ctx.lineWidth = 3
+    const surface = BY + BH * 0.45 - R
     ctx.beginPath()
-    ctx.moveTo(BX + 2, BY + BH * 0.45 - R)
-    ctx.lineTo(BX + BW - 2, BY + BH * 0.45 - R)
+    ctx.moveTo(BX + 2, surface)
+    ctx.quadraticCurveTo(BX + BW / 2, surface + 7, BX + BW - 2, surface)
     ctx.stroke()
   }
 
@@ -432,7 +431,7 @@ function draw(ctx, { pid, base, parts, bubbles, held, vac, t }) {
     ctx.fill()
   }
 
-  // Bonds between neighbours, drawn only for a solid — this is the lattice the
+  // Bonds between neighbours, drawn only for a solid. This is the lattice the
   // heat has to break, made visible.
   if (base === 'solid') {
     ctx.strokeStyle = 'rgba(127,179,234,0.55)'
@@ -452,8 +451,81 @@ function draw(ctx, { pid, base, parts, bubbles, held, vac, t }) {
   }
 
   drawBurner(ctx, held === 'heat')
+  drawTripod(ctx)
+  if (pid === 'boiling' || pid === 'gas') drawSteam(ctx)
   if (held === 'cool') drawFrost(ctx)
   if (vac) drawPump(ctx)
+}
+
+// The stand the thermometer hangs from. Without it the thermometer floats in
+// mid air, which is the one thing a bench never does.
+function drawStand(ctx) {
+  // Left of the thermometer's scale labels, which are right-aligned at x = 66.
+  const x = 22
+  ctx.fillStyle = 'rgba(120,113,108,0.75)'
+  ctx.beginPath()
+  ctx.roundRect(x - 20, H - 26, 58, 12, 4)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.roundRect(x - 5, BY - 14, 10, H - 26 - BY + 14, 4)
+  ctx.fill()
+  // Clamp arm out to the thermometer tube.
+  ctx.beginPath()
+  ctx.roundRect(x, BY + 52, 64, 9, 4)
+  ctx.fill()
+  ctx.fillStyle = 'rgba(87,83,78,0.9)'
+  ctx.beginPath()
+  ctx.roundRect(x + 56, BY + 44, 12, 26, 4)
+  ctx.fill()
+}
+
+// Tripod and wire gauze. The gauze is what the beaker actually rests on, and
+// it is why the heat arrives spread out instead of as a point.
+function drawTripod(ctx) {
+  const cx = BX + BW / 2
+  const top = BY + BH + 6
+  const foot = H - 16
+  ctx.strokeStyle = 'rgba(87,83,78,0.85)'
+  ctx.lineWidth = 5
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(cx - 74, top)
+  ctx.lineTo(cx - 96, foot)
+  ctx.moveTo(cx + 74, top)
+  ctx.lineTo(cx + 96, foot)
+  ctx.stroke()
+
+  // Gauze: a mesh square, drawn as a plate with its weave showing.
+  ctx.fillStyle = 'rgba(168,162,158,0.95)'
+  ctx.beginPath()
+  ctx.roundRect(cx - 80, top - 5, 160, 10, 4)
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(87,83,78,0.55)'
+  ctx.lineWidth = 1.5
+  for (let i = 1; i < 10; i += 1) {
+    const gx = cx - 80 + i * 16
+    ctx.beginPath()
+    ctx.moveTo(gx, top - 5)
+    ctx.lineTo(gx, top + 5)
+    ctx.stroke()
+  }
+}
+
+// Vapour leaving the open beaker. Only drawn once there is vapour to leave.
+function drawSteam(ctx) {
+  const cx = BX + BW / 2
+  const wob = Date.now() / 700
+  ctx.strokeStyle = 'rgba(200,220,255,0.75)'
+  ctx.lineWidth = 6
+  ctx.lineCap = 'round'
+  for (let i = -1; i <= 1; i += 1) {
+    const x = cx + i * 52
+    const lift = ((wob + i * 0.4) % 1) * 22
+    ctx.beginPath()
+    ctx.moveTo(x, BY - 10 - lift)
+    ctx.quadraticCurveTo(x + 14, BY - 24 - lift, x, BY - 38 - lift)
+    ctx.stroke()
+  }
 }
 
 function drawThermometer(ctx, t) {
@@ -485,6 +557,17 @@ function drawThermometer(ctx, t) {
   ctx.fillText('140', x - 18, top + 12)
   ctx.fillText('100', x - 18, top + h - h * 0.75 + 5)
   ctx.fillText('0', x - 18, top + h - h * 0.125 + 5)
+}
+
+// Lab wall and bench top. A scene that paints its own ground keeps its
+// contrast on cream and on stone-900, and fills the frame edge to edge.
+function drawBench(ctx) {
+  ctx.fillStyle = '#fbf7ef'
+  ctx.fillRect(0, 0, W, H)
+  ctx.fillStyle = '#e7d9c3'
+  ctx.fillRect(0, H - 14, W, 14)
+  ctx.fillStyle = 'rgba(120,113,108,0.18)'
+  ctx.fillRect(0, H - 16, W, 2)
 }
 
 function drawBurner(ctx, lit) {

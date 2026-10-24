@@ -39,10 +39,18 @@ export const week06 = {
       signature: {
         widgetId: "solubility-beaker",
         heading: "Watch It: The Beaker Says No",
-        intro:
-          "Spoon sugar in and watch it dissolve — until it stops and starts piling up on the bottom. Warm it and the pile goes; the stirrer and the crusher speed things up without moving the curve one pixel.",
-        instruction: "Make all three kinds of solution, then change the rate",
+        intro: "Sugar dissolves until the water will take no more.",
+        instruction: "Make all three solutions, then change the speed.",
         xp: 25,
+        explainer: {
+          title: "Why the beaker stopped taking sugar",
+          points: [
+            "Early spoonfuls vanished into the water. The marker sat below the curve: unsaturated.",
+            "Once the marker touched the curve, the water was full. Every extra spoonful piled up on the bottom.",
+            "Warming the water lifted the curve, so the pile dissolved. Cooling it pushed the marker above the curve.",
+            "The stirrer and the crusher only sped things up. The curve never moved, so the limit stayed.",
+          ],
+        },
       },
 
       sections: [

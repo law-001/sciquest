@@ -165,7 +165,7 @@ const PASSWORD_RULES = [
 const isPasswordStrong = (v) => PASSWORD_RULES.every((rule) => rule.test(v));
 
 export function AuthModal({ isOpen, onClose, onLogin }) {
-  const { signIn, signUp, verifyEmailOtp } = useAuth();
+  const { signIn, signUp, verifyEmailOtp, resendEmailOtp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -379,18 +379,11 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     setIsLoading(true);
     setError("");
     try {
-      await signUp({
-        email: form.email,
-        password: form.password,
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        studentNumber: form.studentNumber.trim(),
-        section: form.section.trim(),
-      });
+      await resendEmailOtp(form.email);
       setOtpDigits(["", "", "", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
-    } catch {
-      setError("Could not resend the code. Please try again.");
+    } catch (err) {
+      setError(err.message || "Could not resend the code. Please try again.");
     } finally {
       setIsLoading(false);
     }

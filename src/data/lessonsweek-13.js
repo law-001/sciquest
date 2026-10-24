@@ -39,10 +39,18 @@ export const week13 = {
       signature: {
         widgetId: "cell-morph",
         heading: "Watch It: One Cell, Both Kinds",
-        intro:
-          "One slider drags an animal cell into a plant cell. The shared structures never move at all through the whole morph; the wall, the vacuole and the chloroplasts grow in and label themselves as they appear. Then flood both with pure water — one stops firm against its wall, the other has nothing to stop it.",
-        instruction: "Morph both ways, then flood both cells",
+        intro: "One slider turns an animal cell into a plant cell.",
+        instruction: "Morph both ways, then flood each cell with water.",
         xp: 25,
+        explainer: {
+          title: "Why the wall changes everything",
+          points: [
+            "While you dragged the slider, the nucleus, mitochondria and ribosomes never moved. Both kinds of cell keep them.",
+            "The wall, the big vacuole and the chloroplasts only grew in on the plant side of the drag.",
+            "Pure water pushed into both cells. The plant cell stopped firm against its wall and the pressure climbed instead.",
+            "The animal cell had only a membrane, so nothing stopped it swelling until it burst.",
+          ],
+        },
       },
 
       sections: [
