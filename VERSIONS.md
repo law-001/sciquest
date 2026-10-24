@@ -627,3 +627,15 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_88
 - Mystery Lab hub thumbnail (`src/assets/mysterylab.png`) replaced with a crop of the "Dying Pond Mystery" opening art (factory, drain pipe, dying pond vs healthy pond, Detective Hoot), 785 × 508. Registry import unchanged.
 - Commit: Replace Mystery Lab hub thumbnail with opening-scene art
+
+## VERSION_89
+- Added Live Quest, a teacher-hosted live quiz (our take on a Kahoot-style room). Teacher Portal → new "Live Quest" tab (`src/components/live-quest/LiveQuestHost.jsx`): Create room → 6-character join code, then in the lobby pick lessons (their multiple-choice + true/false quiz questions are played) and set "Time per question" (5–120 s) while students join live; Start → timed questions with answered count, auto-reveal when time is up or everyone answered, answer breakdown + Top 5, Next / Final results. An open room is resumed after a refresh.
+- Students: new "Live Quest" navbar link → `src/pages/LiveQuestPage.jsx` (view `live-quest`): enter code → lobby → tap A/B/C/D tiles (shape + letter + color) → correct/points/rank after each reveal → final placing.
+- New `supabase/migrations/20261024000000_live_quest.sql`: `live_rooms`, `live_room_questions` (host-only, holds answers), `live_room_players`, `live_room_answers`, RLS on all, realtime publication, and RPCs `join_live_room`, `start_live_question`, `reveal_live_question`, `submit_live_answer` (server-side answer check + speed scoring 1000→500). Index in `20261024000100_live_rooms_host_idx.sql`. `schema.sql` snapshot updated. Practice only — no XP, quiz_attempts or gradebook.
+- New `src/lib/liveQuest.js` (all Live Quest DB calls), `src/hooks/useLiveRoom.js` (live room + countdown), `src/components/live-quest/options.js` + `LiveLeaderboard.jsx`.
+- Commit: Add Live Quest: teacher-hosted live quiz rooms with join codes and timed questions
+
+## VERSION_90
+- Moved the student Live Quest entry from the navbar into the Games hub: a "Live Quest — Join with code" banner card above "All Games" (`src/pages/GamesHubPage.jsx`) opens the `live-quest` view. Removed the navbar link (`src/components/layout/Navbar.jsx`).
+- `LiveQuestPage` now has the standard SciQuest back arrow (returns to Games, wired in `src/App.jsx`); the teacher lobby hint now says "Games → Live Quest".
+- Commit: Move Live Quest entry into the Games hub

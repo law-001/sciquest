@@ -13,6 +13,7 @@ import { LessonContentPage } from "./pages/LessonContentPage";
 import { TeacherPortalPage } from "./pages/TeacherPortalPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { GamesHubPage } from "./pages/GamesHubPage";
+import { LiveQuestPage } from "./pages/LiveQuestPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
 import { LessonEditorPage } from "./pages/LessonEditorPage";
@@ -1240,6 +1241,14 @@ function AppContent() {
             onNavigate={handleNavigate}
             totalXp={totalXp}
             isLoggedIn={isLoggedIn}
+            onLoginClick={() => setIsAuthModalOpen(true)}
+          />
+        );
+
+      case "live-quest":
+        return (
+          <LiveQuestPage
+            onBack={() => handleNavigate("games")}
             onLoginClick={() => setIsAuthModalOpen(true)}
           />
         );
