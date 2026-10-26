@@ -639,3 +639,22 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Moved the student Live Quest entry from the navbar into the Games hub: a "Live Quest — Join with code" banner card above "All Games" (`src/pages/GamesHubPage.jsx`) opens the `live-quest` view. Removed the navbar link (`src/components/layout/Navbar.jsx`).
 - `LiveQuestPage` now has the standard SciQuest back arrow (returns to Games, wired in `src/App.jsx`); the teacher lobby hint now says "Games → Live Quest".
 - Commit: Move Live Quest entry into the Games hub
+
+## VERSION_91
+- Live Quest lobby: each lesson now expands (chevron + "picked/total Q" button) to show its playable questions with a type chip, each with its own checkbox. Lesson checkbox shows a partial (indeterminate) state; ticking a partial lesson selects all, ticking a full one clears it. Week badge now counts picked questions (`src/components/live-quest/LiveQuestHost.jsx`).
+- `src/lib/liveQuest.js`: added `toQuestionKey` + `getPlayableQuestions`; `buildQuestionPool` takes an optional excluded-question list; removed `countPlayableQuestions`. Per-question unticks persist per room in host `localStorage` (no schema change).
+- Commit: Let hosts see and pick individual Live Quest questions
+
+## VERSION_92
+- Live Quest lobby lesson picker now shows one week at a time: ‹ / › arrows step weeks, the middle is a week dropdown (each option shows its picked-question count) for jumping straight to any week. Replaces the stack of per-week accordions. Lessons show their questions expanded by default; selected total moved to its own live line (`src/components/live-quest/LiveQuestHost.jsx`).
+- Commit: Live Quest lobby: step through weeks with arrows instead of accordions
+
+## VERSION_93
+- Live Quest question sets (Kahoot-style authoring). Teachers write their own questions in private sets and mix them with lesson questions in a room.
+  - DB: `supabase/migrations/20261025000000_live_quest_sets.sql` adds `live_quest_sets` (owner-only RLS, questions as a JSON array) and `live_rooms.set_ids`; `start_live_question` / `reveal_live_question` / `submit_live_answer` now support multiple correct answers (`correctAnswers`), a per-question timer (`seconds`), and points `standard` / `double` / `none`. Owner index in `20261025000100_live_quest_sets_owner_idx.sql`. Images upload to the existing public `lesson-media` bucket under `live-quest/<teacher id>/`.
+  - `supabase/schema.sql`: synced with the above, and repaired a pre-existing corruption where an ~80-line duplicate of the file's tail had been spliced into the `live_rooms` table definition.
+  - New `src/components/live-quest/QuestionSetLibrary.jsx` (list / new / edit / duplicate / delete) and `QuestionSetEditor.jsx` (question list + editor: type, time limit, points, question text, optional image, 2–4 coloured answers with any number marked correct, reorder / duplicate / delete, unfinished-question warnings, explicit Save).
+  - `LiveQuestHost.jsx`: library on the Live Quest home; lobby has a Lessons / My sets switch, both pickable and mixable; the picker is now a generic `QuestionGroupPicker` showing chips (type, multiple correct, timer, points, image). Host question/reveal screens show the image + points badge and every correct answer.
+  - `LiveQuestPage.jsx` (student): image + points badge, reveal lists all correct answers. Shared `QuestionExtras.jsx`; `getCorrectAnswers` in `options.js`; per-question countdown via `getQuestionSeconds` in `useLiveRoom.js`.
+  - `src/lib/liveQuest.js`: set CRUD, image upload, `getSetQuestionIssues`, `buildSetQuestionPool`; picks keyed by `pickId` (quiz index for lessons, question id for sets).
+- Commit: Add Kahoot-style Live Quest question sets with multi-answer, per-question timer, points and images

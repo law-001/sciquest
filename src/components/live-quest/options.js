@@ -37,6 +37,12 @@ export function getOptionStyle(index) {
   return OPTION_STYLES[index % OPTION_STYLES.length]
 }
 
+// Rooms started before multiple correct answers existed only reveal one.
+export function getCorrectAnswers(currentAnswer) {
+  if (currentAnswer?.correctAnswers) return currentAnswer.correctAnswers
+  return currentAnswer ? [currentAnswer.correctAnswer] : []
+}
+
 export function formatOption(option) {
   if (option === true) return 'True'
   if (option === false) return 'False'

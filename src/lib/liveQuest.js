@@ -27,6 +27,7 @@ function toRoom(row) {
     code: row.code,
     hostId: row.host_id,
     lessonIds: row.lesson_ids ?? [],
+    setIds: row.set_ids ?? [],
     secondsPerQuestion: row.seconds_per_question,
     status: row.status,
     questionCount: row.question_count,
@@ -64,26 +65,169 @@ function isPlayable(q) {
   )
 }
 
-// Flattens the chosen lessons' quizzes into the playable question list.
+export function toQuestionKey(groupId, pickId) {
+  return `${groupId}:${pickId}`
+}
+
+// Playable questions tagged with a `pickId` (their index in the quiz), which
+// per-question picks are keyed on.
+export function getPlayableQuestions(quiz) {
+  return (quiz?.questions ?? []).flatMap((q, index) =>
+    isPlayable(q) ? [{ ...q, pickId: index }] : [],
+  )
+}
+
+// Flattens the chosen lessons' quizzes into the playable question list,
+// minus any questions the host unticked (`excludedKeys`, from toQuestionKey).
 // `getQuiz` is LessonsDataContext's, so teacher quiz edits are included.
-export function buildQuestionPool(lessonIds, getQuiz) {
+export function buildQuestionPool(lessonIds, getQuiz, excludedKeys = []) {
   return lessonIds.flatMap((lessonId) => {
     const quiz = getQuiz(lessonId)
-    return (quiz?.questions ?? [])
-      .filter(isPlayable)
+    return getPlayableQuestions(quiz)
+      .filter((q) => !excludedKeys.includes(toQuestionKey(lessonId, q.pickId)))
       .map((q) => ({
         type: q.type,
         question: q.question,
         options: q.type === 'true-false' ? [true, false] : q.options,
         correctAnswer: q.correctAnswer,
+        correctAnswers: [q.correctAnswer],
         explanation: q.explanation ?? null,
         lessonTitle: quiz.title ?? null,
       }))
   })
 }
 
-export function countPlayableQuestions(quiz) {
-  return (quiz?.questions ?? []).filter(isPlayable).length
+// --- Question sets (teacher-written) ---------------------------------------
+//
+// A set question is stored as written in the editor:
+//   { id, type, question, options, correctIndexes, seconds, points, imageUrl }
+// `options` keeps all four multiple-choice slots (blanks allowed) and
+// `correctIndexes` points into them, so retyping an answer keeps its tick.
+// True/false questions use options [true, false].
+
+export const MAX_OPTIONS = 4
+export const QUESTION_MAX_LENGTH = 200
+export const OPTION_MAX_LENGTH = 80
+export const MAX_IMAGE_BYTES = 2 * 1024 * 1024
+
+export const POINTS_OPTIONS = [
+  { value: 'standard', label: 'Standard points' },
+  { value: 'double', label: 'Double points' },
+  { value: 'none', label: 'No points' },
+]
+
+export function createBlankQuestion(type = 'multiple-choice') {
+  return {
+    id: crypto.randomUUID(),
+    type,
+    question: '',
+    options: type === 'true-false' ? [true, false] : Array(MAX_OPTIONS).fill(''),
+    correctIndexes: [],
+    seconds: null,
+    points: 'standard',
+    imageUrl: null,
+  }
+}
+
+// What still blocks a question from being played, in editor wording.
+export function getSetQuestionIssues(q) {
+  const issues = []
+  if (!q.question?.trim()) issues.push('Write the question')
+  if (q.type === 'true-false') {
+    if (q.correctIndexes.length !== 1) issues.push('Pick True or False as the answer')
+    return issues
+  }
+  const filled = q.options.map((o) => String(o).trim()).filter(Boolean)
+  if (filled.length < 2) issues.push('Add at least 2 answers')
+  if (new Set(filled.map((o) => o.toLowerCase())).size !== filled.length) {
+    issues.push('Answers must all be different')
+  }
+  if (!q.correctIndexes.some((i) => String(q.options[i] ?? '').trim())) {
+    issues.push('Tick at least one correct answer')
+  }
+  return issues
+}
+
+// Keyed by the question's own id, so reordering a set keeps the host's picks.
+export function getPlayableSetQuestions(set) {
+  return (set?.questions ?? []).flatMap((q) =>
+    getSetQuestionIssues(q).length ? [] : [{ ...q, pickId: q.id }],
+  )
+}
+
+function toPoolQuestion(q, setTitle) {
+  const isTrueFalse = q.type === 'true-false'
+  const options = isTrueFalse ? [true, false] : q.options.map((o) => o.trim())
+  const correctAnswers = q.correctIndexes.map((i) => options[i]).filter((o) => o !== '')
+  return {
+    type: q.type,
+    question: q.question.trim(),
+    options: options.filter((o) => o !== ''),
+    correctAnswer: correctAnswers[0],
+    correctAnswers,
+    explanation: null,
+    lessonTitle: setTitle,
+    seconds: q.seconds ?? null,
+    points: q.points ?? 'standard',
+    imageUrl: q.imageUrl ?? null,
+  }
+}
+
+// Same as buildQuestionPool, for the host's own sets.
+export function buildSetQuestionPool(setIds, sets, excludedKeys = []) {
+  return setIds.flatMap((setId) => {
+    const set = sets.find((s) => s.id === setId)
+    return getPlayableSetQuestions(set)
+      .filter((q) => !excludedKeys.includes(toQuestionKey(setId, q.pickId)))
+      .map((q) => toPoolQuestion(q, set.title))
+  })
+}
+
+function toQuestionSet(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    questions: row.questions ?? [],
+    updatedAt: row.updated_at,
+  }
+}
+
+export async function fetchQuestionSets(ownerId) {
+  const { data, error } = await supabase
+    .from('live_quest_sets')
+    .select('id, title, questions, updated_at')
+    .eq('owner_id', ownerId)
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []).map(toQuestionSet)
+}
+
+// Inserts when `id` is missing, otherwise overwrites that set.
+export async function saveQuestionSet(ownerId, { id, title, questions }) {
+  const row = { owner_id: ownerId, title: title.trim() || 'Untitled set', questions }
+  const query = id
+    ? supabase.from('live_quest_sets').update(row).eq('id', id)
+    : supabase.from('live_quest_sets').insert(row)
+  const { data, error } = await query.select('id, title, questions, updated_at').single()
+  if (error) throw error
+  return toQuestionSet(data)
+}
+
+export async function deleteQuestionSet(setId) {
+  const { error } = await supabase.from('live_quest_sets').delete().eq('id', setId)
+  if (error) throw error
+}
+
+// lesson-media is public, so students' devices can load the image by URL.
+export async function uploadLiveQuestImage(file, ownerId) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const path = `live-quest/${ownerId}/${Date.now()}-${safeName}`
+  const { error } = await supabase.storage
+    .from('lesson-media')
+    .upload(path, file, { contentType: file.type, upsert: false })
+  if (error) throw error
+  const { data } = supabase.storage.from('lesson-media').getPublicUrl(path)
+  return data.publicUrl
 }
 
 // --- Host ------------------------------------------------------------------
@@ -120,9 +264,10 @@ export async function fetchOpenHostedRoom(hostId) {
   return data ? toRoom(data) : null
 }
 
-export async function updateRoomSettings(roomId, { lessonIds, secondsPerQuestion }) {
+export async function updateRoomSettings(roomId, { lessonIds, setIds, secondsPerQuestion }) {
   const patch = {}
   if (lessonIds) patch.lesson_ids = lessonIds
+  if (setIds) patch.set_ids = setIds
   if (secondsPerQuestion) patch.seconds_per_question = secondsPerQuestion
   const { error } = await supabase.from('live_rooms').update(patch).eq('id', roomId)
   if (error) throw error

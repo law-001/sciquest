@@ -768,91 +768,10 @@ create policy "admin_all_contact_messages"
 -- TIGHTEN BEFORE PRODUCTION: any staff can host; any student with a code can join.
 create table if not exists public.live_rooms (
   id                    uuid primary key default gen_random_uuid(),
-  code                  text not null unique check (code ~ '^[A-Z0-9]{6}
---    Browse in the Table Editor without joining. `security_invoker = on`
---    keeps RLS on the underlying tables in effect.
--- ============================================================
-create or replace view public.student_progress_view
-  with (security_invoker = on) as
-  select
-    sp.id,
-    s.first_name,
-    s.last_name,
-    s.email,
-    sp.student_id,
-    sp.week_id,
-    sp.lesson_id,
-    sp.completed,
-    sp.completed_at,
-    sp.xp_awarded,
-    sp.created_at
-  from public.student_progress sp
-  join public.students s on s.id = sp.student_id;
-
-create or replace view public.quiz_attempts_view
-  with (security_invoker = on) as
-  select
-    qa.id,
-    s.first_name,
-    s.last_name,
-    s.email,
-    qa.student_id,
-    qa.week_id,
-    qa.lesson_id,
-    qa.score,
-    qa.max_score,
-    qa.xp_awarded,
-    qa.pending_grade_count,
-    qa.submitted_at
-  from public.quiz_attempts qa
-  join public.students s on s.id = qa.student_id;
-
-create or replace view public.student_achievements_view
-  with (security_invoker = on) as
-  select
-    sa.id,
-    s.first_name,
-    s.last_name,
-    s.email,
-    sa.student_id,
-    sa.achievement_key,
-    sa.unlocked_at
-  from public.student_achievements sa
-  join public.students s on s.id = sa.student_id;
-
--- ============================================================
--- 6. SEED ADMIN & TEACHER ACCOUNTS
---
--- Step 1: In Supabase Dashboard → Authentication → Users → Add User
---   Create: admin@gmail.com   password: admin123
---   Create: teacher@gmail.com password: teacher123
---
--- Step 2: The trigger inserts these as students by default (no role
---   in user_metadata). Move them into staff with the right role:
--- ============================================================
-do $$
-declare
-  admin_id uuid;
-  teacher_id uuid;
-begin
-  select id into admin_id   from auth.users where email = 'admin@gmail.com';
-  select id into teacher_id from auth.users where email = 'teacher@gmail.com';
-
-  if admin_id is not null then
-    delete from public.students where id = admin_id;
-    insert into public.staff (id, role, email) values (admin_id, 'admin', 'admin@gmail.com')
-      on conflict (id) do update set role = 'admin';
-  end if;
-
-  if teacher_id is not null then
-    delete from public.students where id = teacher_id;
-    insert into public.staff (id, role, email) values (teacher_id, 'teacher', 'teacher@gmail.com')
-      on conflict (id) do update set role = 'teacher';
-  end if;
-end $$;
-),
+  code                  text not null unique check (code ~ '^[A-Z0-9]{6}$'),
   host_id               uuid not null references public.staff(id) on delete cascade,
   lesson_ids            text[] not null default '{}',
+  set_ids               uuid[] not null default '{}',
   seconds_per_question  int not null default 20 check (seconds_per_question between 5 and 120),
   status                text not null default 'lobby'
                           check (status in ('lobby', 'question', 'reveal', 'ended')),
@@ -1005,24 +924,27 @@ begin
 end;
 $;
 
--- Opens question p_index. The clock starts on the server so scoring never
--- depends on the host's device time; the answer is stripped before it is
--- copied onto the room row students can read.
+-- Opens question p_index. The clock starts on the server, the per-question
+-- timer is resolved here so every screen counts down from the same number,
+-- and every answer key is stripped before it reaches students.
 create or replace function public.start_live_question(p_room_id uuid, p_index int)
 returns void
 language plpgsql
 security definer set search_path = public
-as $
+as $$
 declare
   v_question jsonb;
+  v_seconds  int;
 begin
   if not public.is_live_host(p_room_id) then
     raise exception 'Only the host can run this room' using errcode = '42501';
   end if;
 
-  select question into v_question
-  from public.live_room_questions
-  where room_id = p_room_id and idx = p_index;
+  select q.question, coalesce((q.question ->> 'seconds')::int, r.seconds_per_question)
+  into v_question, v_seconds
+  from public.live_room_questions q
+  join public.live_rooms r on r.id = q.room_id
+  where q.room_id = p_room_id and q.idx = p_index;
   if v_question is null then
     raise exception 'No question at that position' using errcode = 'P0002';
   end if;
@@ -1030,18 +952,19 @@ begin
   update public.live_rooms
   set status = 'question',
       current_index = p_index,
-      current_question = v_question - 'correctAnswer' - 'explanation',
+      current_question = (v_question - 'correctAnswer' - 'correctAnswers' - 'explanation')
+                         || jsonb_build_object('seconds', v_seconds),
       current_answer = null,
       question_started_at = now()
   where id = p_room_id;
 end;
-$;
+$$;
 
 create or replace function public.reveal_live_question(p_room_id uuid)
 returns void
 language plpgsql
 security definer set search_path = public
-as $
+as $$
 begin
   if not public.is_live_host(p_room_id) then
     raise exception 'Only the host can run this room' using errcode = '42501';
@@ -1050,8 +973,12 @@ begin
   update public.live_rooms r
   set status = 'reveal',
       current_answer = jsonb_build_object(
-        'correctAnswer', q.question -> 'correctAnswer',
-        'explanation',   q.question -> 'explanation'
+        'correctAnswer',  q.question -> 'correctAnswer',
+        'correctAnswers', coalesce(
+                            q.question -> 'correctAnswers',
+                            jsonb_build_array(q.question -> 'correctAnswer')
+                          ),
+        'explanation',    q.question -> 'explanation'
       )
   from public.live_room_questions q
   where r.id = p_room_id
@@ -1059,11 +986,10 @@ begin
     and q.room_id = r.id
     and q.idx = r.current_index;
 end;
-$;
+$$;
 
--- Scores like the classic live-quiz formula: an instant correct answer earns
--- 1000, sliding down to 500 at the last second. A 2s
--- grace covers network lag after the timer hits zero on the student's screen.
+-- Scoring: 1000 for an instant correct answer, sliding to 500 at the buzzer), times
+-- the question's points setting: double = x2, none = 0 but still marked right.
 create or replace function public.submit_live_answer(
   p_room_id uuid,
   p_index int,
@@ -1072,13 +998,16 @@ create or replace function public.submit_live_answer(
 returns jsonb
 language plpgsql
 security definer set search_path = public
-as $
+as $$
 declare
-  v_room     public.live_rooms;
-  v_elapsed  numeric;
-  v_correct  jsonb;
-  v_is_right boolean;
-  v_points   int;
+  v_room       public.live_rooms;
+  v_question   jsonb;
+  v_seconds    int;
+  v_elapsed    numeric;
+  v_correct    jsonb;
+  v_multiplier int;
+  v_is_right   boolean;
+  v_points     int;
 begin
   select * into v_room from public.live_rooms where id = p_room_id;
   if v_room.id is null or v_room.status <> 'question' or v_room.current_index <> p_index then
@@ -1088,19 +1017,30 @@ begin
     raise exception 'Join the room first' using errcode = '42501';
   end if;
 
-  v_elapsed := extract(epoch from now() - v_room.question_started_at);
-  if v_elapsed > v_room.seconds_per_question + 2 then
-    raise exception 'Time is up' using errcode = 'P0001';
-  end if;
-
-  select question -> 'correctAnswer' into v_correct
+  select question into v_question
   from public.live_room_questions
   where room_id = p_room_id and idx = p_index;
 
-  v_is_right := v_correct = p_answer;
+  v_seconds := coalesce((v_question ->> 'seconds')::int, v_room.seconds_per_question);
+  v_elapsed := extract(epoch from now() - v_room.question_started_at);
+  if v_elapsed > v_seconds + 2 then
+    raise exception 'Time is up' using errcode = 'P0001';
+  end if;
+
+  v_correct := coalesce(
+    v_question -> 'correctAnswers',
+    jsonb_build_array(v_question -> 'correctAnswer')
+  );
+  v_multiplier := case v_question ->> 'points'
+    when 'double' then 2
+    when 'none' then 0
+    else 1
+  end;
+
+  v_is_right := v_correct @> jsonb_build_array(p_answer);
   v_points := case
     when v_is_right then
-      round(1000 * (1 - least(v_elapsed / v_room.seconds_per_question, 1) / 2))::int
+      round(v_multiplier * 1000 * (1 - least(v_elapsed / v_seconds, 1) / 2))::int
     else 0
   end;
 
@@ -1118,7 +1058,7 @@ begin
 
   return jsonb_build_object('isCorrect', v_is_right, 'points', v_points);
 end;
-$;
+$$;
 
 revoke execute on function public.join_live_room(text) from public, anon;
 revoke execute on function public.start_live_question(uuid, int) from public, anon;
@@ -1128,6 +1068,41 @@ grant execute on function public.join_live_room(text) to authenticated;
 grant execute on function public.start_live_question(uuid, int) to authenticated;
 grant execute on function public.reveal_live_question(uuid) to authenticated;
 grant execute on function public.submit_live_answer(uuid, int, jsonb) to authenticated;
+
+-- Live Quest question sets (migrations/20261025000000_live_quest_sets.sql):
+-- teacher-written questions, private to their author. `questions` is the
+-- whole ordered list as a JSON array.
+create table if not exists public.live_quest_sets (
+  id          uuid primary key default gen_random_uuid(),
+  owner_id    uuid not null references public.staff(id) on delete cascade,
+  title       text not null default 'Untitled set'
+                check (char_length(title) between 1 and 120),
+  questions   jsonb not null default '[]'::jsonb
+                check (jsonb_typeof(questions) = 'array'),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists live_quest_sets_owner_idx
+  on public.live_quest_sets (owner_id, updated_at desc);
+
+-- Same body as 20260906000000_lesson_interactives_and_materials.sql; repeated
+-- so this file runs on its own.
+create or replace function public.bump_updated_at() returns trigger as $$
+begin new.updated_at = now(); return new; end $$ language plpgsql;
+
+drop trigger if exists live_quest_sets_updated_at on public.live_quest_sets;
+create trigger live_quest_sets_updated_at before update on public.live_quest_sets
+  for each row execute function public.bump_updated_at();
+
+alter table public.live_quest_sets enable row level security;
+
+drop policy if exists "live_quest_sets_owner" on public.live_quest_sets;
+create policy "live_quest_sets_owner"
+  on public.live_quest_sets for all
+  to authenticated
+  using (owner_id = auth.uid())
+  with check (owner_id = auth.uid() and public.is_staff());
 
 -- ============================================================
 -- 7. READABLE VIEWS
