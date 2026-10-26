@@ -2,8 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
+  Pencil,
   Play,
+  Plus,
   Radio,
   Timer,
   Trophy,
@@ -19,22 +24,31 @@ import { getSecondsLeft, useLiveRoom, useNow } from "../../hooks/useLiveRoom";
 import {
   SECONDS_OPTIONS,
   buildQuestionPool,
-  countPlayableQuestions,
+  buildSetQuestionPool,
   createLiveRoom,
+  deleteQuestionSet,
   endLiveRoom,
   fetchOpenHostedRoom,
   fetchPlayers,
   fetchQuestionAnswers,
+  fetchQuestionSets,
+  getPlayableQuestions,
+  getPlayableSetQuestions,
   revealQuestion,
+  saveQuestionSet,
   startLiveRoom,
   startQuestion,
   subscribeToAnswers,
   subscribeToPlayers,
+  toQuestionKey,
   updateRoomSettings,
 } from "../../lib/liveQuest";
 import { cn } from "../../lib/utils";
 import { LiveLeaderboard } from "./LiveLeaderboard";
-import { formatOption, getOptionStyle } from "./options";
+import { formatOption, getCorrectAnswers, getOptionStyle } from "./options";
+import { QuestionExtras } from "./QuestionExtras";
+import { QuestionSetEditor } from "./QuestionSetEditor";
+import { QuestionSetLibrary } from "./QuestionSetLibrary";
 
 const CARD =
   "rounded-2xl border border-orange-100 dark:border-stone-700 bg-white dark:bg-stone-800 p-5";
@@ -47,6 +61,65 @@ export function LiveQuestHost() {
   const [isChecking, setIsChecking] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
+  const [sets, setSets] = useState([]);
+  const [isLoadingSets, setIsLoadingSets] = useState(true);
+  const [busySetId, setBusySetId] = useState(null);
+  // null = not editing; { id?, title, questions } = the set open in the editor.
+  const [editingSet, setEditingSet] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    fetchQuestionSets(user.id)
+      .then((next) => {
+        if (!cancelled) setSets(next);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message ?? "Couldn't load your question sets.");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingSets(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  function handleSetSaved(saved) {
+    setSets((prev) => [saved, ...prev.filter((s) => s.id !== saved.id)]);
+  }
+
+  async function handleDuplicateSet(set) {
+    setError(null);
+    setBusySetId(set.id);
+    try {
+      const copy = await saveQuestionSet(user?.id, {
+        title: `${set.title} (copy)`.slice(0, 120),
+        questions: set.questions.map((q) => ({ ...q, id: crypto.randomUUID() })),
+      });
+      handleSetSaved(copy);
+    } catch (err) {
+      setError(err.message ?? "Couldn't duplicate the set.");
+    } finally {
+      setBusySetId(null);
+    }
+  }
+
+  async function handleDeleteSet(set) {
+    if (!window.confirm(`Delete "${set.title}"? This can't be undone.`)) return;
+    setError(null);
+    setBusySetId(set.id);
+    try {
+      await deleteQuestionSet(set.id);
+      setSets((prev) => prev.filter((s) => s.id !== set.id));
+    } catch (err) {
+      setError(err.message ?? "Couldn't delete the set.");
+    } finally {
+      setBusySetId(null);
+    }
+  }
+
+  const newSet = () => setEditingSet({ title: "", questions: [] });
 
   // A refresh or tab switch mid-game picks the open room back up.
   useEffect(() => {
@@ -80,6 +153,18 @@ export function LiveQuestHost() {
     }
   }
 
+  if (editingSet) {
+    return (
+      <QuestionSetEditor
+        key={editingSet.id ?? "new"}
+        ownerId={user?.id}
+        set={editingSet}
+        onSaved={handleSetSaved}
+        onBack={() => setEditingSet(null)}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <TabHead
@@ -94,31 +179,49 @@ export function LiveQuestHost() {
           <Loader2 className="w-8 h-8 text-secondary-500 animate-spin" />
         </div>
       ) : roomId ? (
-        <HostRoom key={roomId} roomId={roomId} onClosed={() => setRoomId(null)} />
+        <HostRoom
+          key={roomId}
+          roomId={roomId}
+          sets={sets}
+          onNewSet={newSet}
+          onEditSet={setEditingSet}
+          onClosed={() => setRoomId(null)}
+        />
       ) : (
-        <div className={cn(CARD, "flex flex-col items-center text-center gap-4 py-12")}>
-          <span className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-            <Radio className="w-7 h-7 text-primary-600 dark:text-primary-400" />
-          </span>
-          <div>
-            <h2 className="font-heading text-lg font-black text-stone-900 dark:text-white">
-              Start a Live Quest
-            </h2>
-            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400 max-w-sm">
-              You&apos;ll get a join code to show your class. Pick lessons and
-              set the timer while students join.
-            </p>
+        <>
+          <div className={cn(CARD, "flex flex-col items-center text-center gap-4 py-12")}>
+            <span className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+              <Radio className="w-7 h-7 text-primary-600 dark:text-primary-400" />
+            </span>
+            <div>
+              <h2 className="font-heading text-lg font-black text-stone-900 dark:text-white">
+                Start a Live Quest
+              </h2>
+              <p className="mt-1 text-sm text-stone-500 dark:text-stone-400 max-w-sm">
+                You&apos;ll get a join code to show your class. Pick lessons or
+                your own question sets while students join.
+              </p>
+            </div>
+            <Button variant="primary" onClick={handleCreate} isLoading={isCreating}>
+              Create room
+            </Button>
           </div>
-          <Button variant="primary" onClick={handleCreate} isLoading={isCreating}>
-            Create room
-          </Button>
-        </div>
+          <QuestionSetLibrary
+            sets={sets}
+            isLoading={isLoadingSets}
+            busySetId={busySetId}
+            onNew={newSet}
+            onEdit={setEditingSet}
+            onDuplicate={handleDuplicateSet}
+            onDelete={handleDeleteSet}
+          />
+        </>
       )}
     </div>
   );
 }
 
-function HostRoom({ roomId, onClosed }) {
+function HostRoom({ roomId, sets, onNewSet, onEditSet, onClosed }) {
   const { room, deadline, loadState, refresh } = useLiveRoom(roomId);
   const [players, setPlayers] = useState([]);
   const [answers, setAnswers] = useState([]);
@@ -219,7 +322,10 @@ function HostRoom({ roomId, onClosed }) {
         <HostLobby
           room={room}
           players={players}
+          sets={sets}
           isBusy={isBusy}
+          onNewSet={onNewSet}
+          onEditSet={onEditSet}
           onStart={(questions) => run(() => startLiveRoom(room.id, questions))}
           onClose={() => run(() => endLiveRoom(room.id)).then(onClosed)}
           onError={setError}
@@ -257,12 +363,26 @@ function HostRoom({ roomId, onClosed }) {
   );
 }
 
-function HostLobby({ room, players, isBusy, onStart, onClose, onError }) {
+function HostLobby({ room, players, sets, isBusy, onNewSet, onEditSet, onStart, onClose, onError }) {
   const { weeksWithHidden: weeks, getQuiz } = useLessonsData();
   const [lessonIds, setLessonIds] = useState(room.lessonIds);
+  const [setIds, setSetIds] = useState(room.setIds);
+  const [excluded, setExcluded] = useState(() => loadExcluded(room.id));
   const [seconds, setSeconds] = useState(room.secondsPerQuestion);
+  const [source, setSource] = useState("lessons");
+  const [weekIndex, setWeekIndex] = useState(0);
 
-  const questions = buildQuestionPool(lessonIds, getQuiz);
+  const lessonQuestions = buildQuestionPool(lessonIds, getQuiz, excluded);
+  const setQuestions = buildSetQuestionPool(setIds, sets, excluded);
+  const questions = [...lessonQuestions, ...setQuestions];
+  // Clamped in case a hidden week drops out of the list mid-lobby.
+  const safeWeekIndex = Math.min(weekIndex, Math.max(weeks.length - 1, 0));
+  const week = weeks[safeWeekIndex];
+
+  function getWeekPickedCount(w) {
+    const pickedIds = w.lessons.filter((l) => lessonIds.includes(l.id)).map((l) => l.id);
+    return buildQuestionPool(pickedIds, getQuiz, excluded).length;
+  }
 
   // Saved as they change so a refresh keeps the teacher's picks.
   function save(patch) {
@@ -271,12 +391,63 @@ function HostLobby({ room, players, isBusy, onStart, onClose, onError }) {
     );
   }
 
-  function toggleLesson(lessonId) {
-    const next = lessonIds.includes(lessonId)
-      ? lessonIds.filter((id) => id !== lessonId)
-      : [...lessonIds, lessonId];
-    setLessonIds(next);
-    save({ lessonIds: next });
+  // `kind` is "lesson" or "set": the two kinds of question group a host picks.
+  function getPickedIds(kind) {
+    return kind === "set" ? setIds : lessonIds;
+  }
+
+  function setPicks(kind, nextIds, nextExcluded) {
+    if (nextIds !== getPickedIds(kind)) {
+      if (kind === "set") {
+        setSetIds(nextIds);
+        save({ setIds: nextIds });
+      } else {
+        setLessonIds(nextIds);
+        save({ lessonIds: nextIds });
+      }
+    }
+    setExcluded(nextExcluded);
+    saveExcluded(room.id, nextExcluded);
+  }
+
+  // A partly picked group ticks fully on; a fully picked one ticks off.
+  function toggleGroup(kind, groupId) {
+    const ids = getPickedIds(kind);
+    const prefix = toQuestionKey(groupId, "");
+    const othersExcluded = excluded.filter((key) => !key.startsWith(prefix));
+    const isPicked = ids.includes(groupId);
+    if (isPicked && othersExcluded.length === excluded.length) {
+      setPicks(kind, ids.filter((id) => id !== groupId), othersExcluded);
+    } else {
+      setPicks(kind, isPicked ? ids : [...ids, groupId], othersExcluded);
+    }
+  }
+
+  function toggleQuestion(kind, groupId, pickId, playable) {
+    const ids = getPickedIds(kind);
+    const prefix = toQuestionKey(groupId, "");
+    const key = toQuestionKey(groupId, pickId);
+    const othersExcluded = excluded.filter((k) => !k.startsWith(prefix));
+
+    // Ticking one question of an unpicked group picks just that question.
+    if (!ids.includes(groupId)) {
+      const rest = playable
+        .filter((q) => q.pickId !== pickId)
+        .map((q) => toQuestionKey(groupId, q.pickId));
+      setPicks(kind, [...ids, groupId], [...othersExcluded, ...rest]);
+      return;
+    }
+    if (excluded.includes(key)) {
+      setPicks(kind, ids, excluded.filter((k) => k !== key));
+      return;
+    }
+    const next = [...excluded, key];
+    const isGroupEmpty = playable.every((q) => next.includes(toQuestionKey(groupId, q.pickId)));
+    if (isGroupEmpty) {
+      setPicks(kind, ids.filter((id) => id !== groupId), othersExcluded);
+    } else {
+      setPicks(kind, ids, next);
+    }
   }
 
   function handleSecondsChange(event) {
@@ -284,6 +455,11 @@ function HostLobby({ room, players, isBusy, onStart, onClose, onError }) {
     setSeconds(next);
     save({ secondsPerQuestion: next });
   }
+
+  const SOURCE_TABS = [
+    { id: "lessons", label: "Lessons", count: lessonQuestions.length },
+    { id: "sets", label: "My sets", count: setQuestions.length },
+  ];
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -307,65 +483,138 @@ function HostLobby({ room, players, isBusy, onStart, onClose, onError }) {
         </div>
 
         <div className={CARD}>
-          <h2 className="font-heading font-black text-stone-900 dark:text-white">Lessons</h2>
-          <p className="mt-0.5 mb-3 text-sm text-stone-500 dark:text-stone-400">
-            Multiple-choice and true/false questions from each picked lesson&apos;s
-            quiz are played. {questions.length} question
-            {questions.length === 1 ? "" : "s"} selected.
-          </p>
-          <div className="flex flex-col gap-2">
-            {weeks.map((week) => {
-              const pickedCount = week.lessons.filter((l) => lessonIds.includes(l.id)).length;
-              return (
-                <details
-                  key={week.id}
-                  className="rounded-xl border border-orange-100 dark:border-stone-700"
-                >
-                  <summary className="cursor-pointer select-none px-4 py-3 min-h-[44px] flex items-center justify-between gap-3 font-bold text-stone-800 dark:text-stone-100">
-                    <span className="truncate">
-                      Week {week.weekNumber}: {week.title}
-                    </span>
-                    {pickedCount > 0 && (
-                      <span className="shrink-0 text-xs font-black rounded-full px-2 py-0.5 bg-secondary-100 text-secondary-800 dark:bg-secondary-900/40 dark:text-secondary-300">
-                        {pickedCount} picked
-                      </span>
-                    )}
-                  </summary>
-                  <ul className="px-2 pb-2">
-                    {week.lessons.map((lesson) => {
-                      const playable = countPlayableQuestions(getQuiz(lesson.id));
-                      return (
-                        <li key={lesson.id}>
-                          <label
-                            className={cn(
-                              "flex items-center gap-3 rounded-lg px-2 py-2 min-h-[44px]",
-                              playable
-                                ? "cursor-pointer hover:bg-orange-50 dark:hover:bg-stone-700/50"
-                                : "opacity-50 cursor-not-allowed",
-                            )}
-                          >
-                            <input
-                              type="checkbox"
-                              className="w-4 h-4 accent-primary-600"
-                              checked={lessonIds.includes(lesson.id)}
-                              disabled={!playable}
-                              onChange={() => toggleLesson(lesson.id)}
-                            />
-                            <span className="flex-1 min-w-0 truncate text-sm font-medium text-stone-700 dark:text-stone-200">
-                              {lesson.title}
-                            </span>
-                            <span className="shrink-0 text-xs font-bold text-stone-500 dark:text-stone-400">
-                              {playable ? `${playable} Q` : "No live questions"}
-                            </span>
-                          </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </details>
-              );
-            })}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <h2 className="font-heading font-black text-stone-900 dark:text-white">Questions</h2>
+            <p className="text-sm font-black text-primary-700 dark:text-primary-400" aria-live="polite">
+              {questions.length} question{questions.length === 1 ? "" : "s"} selected
+            </p>
           </div>
+
+          <div role="group" aria-label="Question source" className="flex gap-1 mb-3 p-1 rounded-xl bg-orange-50 dark:bg-stone-900">
+            {SOURCE_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                aria-pressed={source === tab.id}
+                onClick={() => setSource(tab.id)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 rounded-lg min-h-[44px] text-sm font-black focus-visible:outline-2 focus-visible:outline-primary-500",
+                  source === tab.id
+                    ? "bg-white dark:bg-stone-800 text-stone-900 dark:text-white shadow-sm"
+                    : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white",
+                )}
+              >
+                {tab.label}
+                {tab.count > 0 && (
+                  <span className="text-xs rounded-full px-2 py-0.5 bg-secondary-100 text-secondary-800 dark:bg-secondary-900/40 dark:text-secondary-300">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {source === "lessons" ? (
+            <>
+              <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
+                Use the arrows to switch weeks. Tick a lesson to play all its
+                questions, or tick questions one by one.
+              </p>
+              {week && (
+                <div className="rounded-xl border border-orange-100 dark:border-stone-700">
+                  <div className="flex items-center gap-2 px-2 py-2 border-b border-orange-100 dark:border-stone-700 bg-orange-50 dark:bg-stone-900 rounded-t-xl">
+                    <button
+                      type="button"
+                      aria-label="Previous week"
+                      disabled={safeWeekIndex === 0}
+                      onClick={() => setWeekIndex(safeWeekIndex - 1)}
+                      className="shrink-0 flex items-center justify-center w-11 h-11 rounded-lg text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-primary-500"
+                    >
+                      <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+                    </button>
+                    <label htmlFor="live-quest-week" className="sr-only">
+                      Week
+                    </label>
+                    <select
+                      id="live-quest-week"
+                      value={safeWeekIndex}
+                      onChange={(event) => setWeekIndex(Number(event.target.value))}
+                      className="flex-1 min-w-0 min-h-[44px] rounded-lg bg-transparent px-2 text-center font-heading font-black text-stone-900 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-primary-500"
+                    >
+                      {weeks.map((w, index) => {
+                        const count = getWeekPickedCount(w);
+                        return (
+                          <option key={w.id} value={index}>
+                            Week {w.weekNumber}: {w.title}
+                            {count ? ` (${count} Q)` : ""}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <button
+                      type="button"
+                      aria-label="Next week"
+                      disabled={safeWeekIndex === weeks.length - 1}
+                      onClick={() => setWeekIndex(safeWeekIndex + 1)}
+                      className="shrink-0 flex items-center justify-center w-11 h-11 rounded-lg text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-primary-500"
+                    >
+                      <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <ul className="px-2 py-1">
+                    {week.lessons.map((lesson) => (
+                      <QuestionGroupPicker
+                        key={lesson.id}
+                        group={lesson}
+                        playable={getPlayableQuestions(getQuiz(lesson.id))}
+                        isPicked={lessonIds.includes(lesson.id)}
+                        excluded={excluded}
+                        emptyLabel="No live questions"
+                        onToggleGroup={(id) => toggleGroup("lesson", id)}
+                        onToggleQuestion={(id, pickId, playable) =>
+                          toggleQuestion("lesson", id, pickId, playable)
+                        }
+                      />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Your own questions. Mix them with lesson questions freely.
+                </p>
+                <Button variant="outline" size="sm" leftIcon={<Plus className="w-4 h-4" />} onClick={onNewSet}>
+                  New set
+                </Button>
+              </div>
+              {sets.length ? (
+                <ul className="rounded-xl border border-orange-100 dark:border-stone-700 px-2 py-1">
+                  {sets.map((set) => (
+                    <QuestionGroupPicker
+                      key={set.id}
+                      group={set}
+                      playable={getPlayableSetQuestions(set)}
+                      isPicked={setIds.includes(set.id)}
+                      excluded={excluded}
+                      emptyLabel="No finished questions"
+                      onEdit={() => onEditSet(set)}
+                      onToggleGroup={(id) => toggleGroup("set", id)}
+                      onToggleQuestion={(id, pickId, playable) =>
+                        toggleQuestion("set", id, pickId, playable)
+                      }
+                    />
+                  ))}
+                </ul>
+              ) : (
+                <p className="rounded-xl border-2 border-dashed border-orange-100 dark:border-stone-700 px-4 py-8 text-center text-sm text-stone-500 dark:text-stone-400">
+                  You haven&apos;t written any sets yet. Click <strong>New set</strong> to make one.
+                </p>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -439,6 +688,160 @@ function HostLobby({ room, players, isBusy, onStart, onClose, onError }) {
   );
 }
 
+const TYPE_LABELS = {
+  "multiple-choice": "Multiple choice",
+  "true-false": "True / False",
+};
+
+const CHIP =
+  "inline-block text-[11px] font-bold rounded-full px-2 py-0.5 bg-stone-100 text-stone-600 dark:bg-stone-700 dark:text-stone-300";
+
+// Teacher-written questions carry extra settings worth seeing while picking.
+function getQuestionChips(q) {
+  const chips = [TYPE_LABELS[q.type]];
+  if (q.correctIndexes?.length > 1) chips.push("Multiple correct");
+  if (q.seconds) chips.push(`${q.seconds}s`);
+  if (q.points === "double") chips.push("Double points");
+  if (q.points === "none") chips.push("No points");
+  if (q.imageUrl) chips.push("Image");
+  return chips;
+}
+
+// One lesson or one question set: a checkbox for the whole group plus a list
+// of its questions, each with its own checkbox.
+function QuestionGroupPicker({
+  group,
+  playable,
+  isPicked,
+  excluded,
+  emptyLabel,
+  onEdit,
+  onToggleGroup,
+  onToggleQuestion,
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+  const isQuestionPicked = (q) => isPicked && !excluded.includes(toQuestionKey(group.id, q.pickId));
+  const pickedCount = playable.filter(isQuestionPicked).length;
+  const isPartial = pickedCount > 0 && pickedCount < playable.length;
+  const listId = `live-quest-questions-${group.id}`;
+
+  const editButton = onEdit && (
+    <button
+      type="button"
+      onClick={onEdit}
+      aria-label={`Edit ${group.title}`}
+      title="Edit set"
+      className="shrink-0 flex items-center justify-center w-11 h-11 rounded-lg text-stone-500 dark:text-stone-400 hover:text-primary-700 dark:hover:text-primary-400 focus-visible:outline-2 focus-visible:outline-primary-500"
+    >
+      <Pencil className="w-4 h-4" aria-hidden="true" />
+    </button>
+  );
+
+  if (!playable.length) {
+    return (
+      <li className="flex items-center gap-3 rounded-lg px-2 py-2 min-h-[44px]">
+        <input type="checkbox" className="w-4 h-4 opacity-50" disabled aria-label={group.title} />
+        <span className="flex-1 min-w-0 truncate text-sm font-medium text-stone-500 dark:text-stone-400">
+          {group.title}
+        </span>
+        <span className="shrink-0 text-xs font-bold text-stone-500 dark:text-stone-400">
+          {emptyLabel}
+        </span>
+        {editButton}
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <div className="flex items-center gap-1 rounded-lg hover:bg-orange-50 dark:hover:bg-stone-700/50">
+        <label className="flex flex-1 min-w-0 items-center gap-3 px-2 py-2 min-h-[44px] cursor-pointer">
+          <input
+            type="checkbox"
+            className="w-4 h-4 accent-primary-600"
+            checked={pickedCount === playable.length}
+            ref={(el) => {
+              if (el) el.indeterminate = isPartial;
+            }}
+            onChange={() => onToggleGroup(group.id)}
+          />
+          <span className="flex-1 min-w-0 truncate text-sm font-medium text-stone-700 dark:text-stone-200">
+            {group.title}
+          </span>
+        </label>
+        {editButton}
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          aria-controls={listId}
+          onClick={() => setIsOpen((open) => !open)}
+          className="shrink-0 flex items-center gap-1 rounded-lg px-2 min-h-[44px] text-xs font-bold text-stone-600 dark:text-stone-300 hover:text-primary-700 dark:hover:text-primary-400 focus-visible:outline-2 focus-visible:outline-primary-500"
+        >
+          {pickedCount}/{playable.length} Q
+          <span className="sr-only">{isOpen ? "Hide questions" : "Show questions"}</span>
+          <ChevronDown
+            className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+
+      {isOpen && (
+        <ol id={listId} className="ml-7 mb-2 flex flex-col gap-1 border-l-2 border-orange-100 dark:border-stone-700 pl-3">
+          {playable.map((q, position) => (
+            <li key={q.pickId}>
+              <label className="flex items-start gap-3 rounded-lg px-2 py-2 min-h-[44px] cursor-pointer hover:bg-orange-50 dark:hover:bg-stone-700/50">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 w-4 h-4 shrink-0 accent-primary-600"
+                  checked={isQuestionPicked(q)}
+                  onChange={() => onToggleQuestion(group.id, q.pickId, playable)}
+                />
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm text-stone-800 dark:text-stone-100">
+                    <span className="font-black text-stone-500 dark:text-stone-400">{position + 1}.</span>{" "}
+                    {q.question}
+                  </span>
+                  <span className="mt-1 flex flex-wrap gap-1">
+                    {getQuestionChips(q).map((chip) => (
+                      <span key={chip} className={CHIP}>
+                        {chip}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              </label>
+            </li>
+          ))}
+        </ol>
+      )}
+    </li>
+  );
+}
+
+// Per-question unticks live only on the host's device: the room row stores
+// lesson ids, and the full question list is written once at start.
+function getExcludedStorageKey(roomId) {
+  return `liveQuest:excluded:${roomId}`;
+}
+
+function loadExcluded(roomId) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(getExcludedStorageKey(roomId)));
+    return Array.isArray(stored) ? stored : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveExcluded(roomId, keys) {
+  try {
+    localStorage.setItem(getExcludedStorageKey(roomId), JSON.stringify(keys));
+  } catch {
+    // Storage blocked: picks still work, they just won't survive a refresh.
+  }
+}
+
 function QuestionHeader({ room, children }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -472,6 +875,7 @@ function HostQuestion({ room, secondsLeft, answeredCount, playerCount, isBusy, o
       <h2 className="font-heading text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
         {question?.question}
       </h2>
+      <QuestionExtras question={question} />
 
       <div className="grid gap-3 sm:grid-cols-2">
         {(question?.options ?? []).map((option, index) => {
@@ -503,7 +907,7 @@ function HostQuestion({ room, secondsLeft, answeredCount, playerCount, isBusy, o
 
 function HostReveal({ room, answers, players, isLast, isBusy, onNext, onFinish }) {
   const question = room.currentQuestion;
-  const correctAnswer = room.currentAnswer?.correctAnswer;
+  const correctAnswers = getCorrectAnswers(room.currentAnswer);
   const explanation = room.currentAnswer?.explanation;
   const options = question?.options ?? [];
   const maxCount = Math.max(1, ...options.map((o) => answers.filter((a) => a.answer === o).length));
@@ -520,7 +924,7 @@ function HostReveal({ room, answers, players, isLast, isBusy, onNext, onFinish }
           {options.map((option, index) => {
             const style = getOptionStyle(index);
             const count = answers.filter((a) => a.answer === option).length;
-            const isCorrect = option === correctAnswer;
+            const isCorrect = correctAnswers.includes(option);
             return (
               <li
                 key={String(option)}

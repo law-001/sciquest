@@ -12,7 +12,8 @@ import {
 
 import Button from "../components/Button";
 import { LiveLeaderboard } from "../components/live-quest/LiveLeaderboard";
-import { formatOption, getOptionStyle } from "../components/live-quest/options";
+import { QuestionExtras } from "../components/live-quest/QuestionExtras";
+import { formatOption, getCorrectAnswers, getOptionStyle } from "../components/live-quest/options";
 import { useAuth } from "../context/AuthContext";
 import { getSecondsLeft, useLiveRoom, useNow } from "../hooks/useLiveRoom";
 import {
@@ -293,6 +294,7 @@ function PlayerRoom({ roomId, studentId, onLeave }) {
         <h2 className="font-heading text-xl sm:text-2xl font-black text-stone-900 dark:text-white">
           {question?.question}
         </h2>
+        <QuestionExtras question={question} />
         {submitError?.index === currentIndex && (
           <p role="alert" className="flex items-center gap-2 text-sm font-bold text-red-700 dark:text-red-400">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -341,8 +343,8 @@ function PlayerRoom({ roomId, studentId, onLeave }) {
   }
 
   if (status === "reveal") {
-    const correctAnswer = room.currentAnswer?.correctAnswer;
-    const isCorrect = myAnswer?.result?.isCorrect ?? myAnswer?.answer === correctAnswer;
+    const correctAnswers = getCorrectAnswers(room.currentAnswer);
+    const isCorrect = myAnswer?.result?.isCorrect ?? correctAnswers.includes(myAnswer?.answer);
     return (
       <div className="flex flex-col gap-4">
         <div
@@ -372,7 +374,8 @@ function PlayerRoom({ roomId, studentId, onLeave }) {
             </p>
           )}
           <p className="text-stone-600 dark:text-stone-300">
-            Answer: <strong>{formatOption(correctAnswer)}</strong>
+            {correctAnswers.length > 1 ? "Answers" : "Answer"}:{" "}
+            <strong>{correctAnswers.map(formatOption).join(" or ")}</strong>
           </p>
           {room.currentAnswer?.explanation && (
             <p className="text-sm text-stone-500 dark:text-stone-400 max-w-md">

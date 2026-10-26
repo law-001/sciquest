@@ -12,10 +12,11 @@ function withDeadline(prev, next, now) {
     prev.room?.status === 'question' && prev.room.currentIndex === next.currentIndex
   if (isSameQuestion && prev.deadline) return { room: next, deadline: prev.deadline }
 
-  const localDeadline = now + next.secondsPerQuestion * 1000
+  const seconds = getQuestionSeconds(next)
+  const localDeadline = now + seconds * 1000
   if (prev.room) return { room: next, deadline: localDeadline }
   const serverDeadline =
-    Date.parse(next.questionStartedAt) + next.secondsPerQuestion * 1000
+    Date.parse(next.questionStartedAt) + seconds * 1000
   const deadline =
     serverDeadline > now && serverDeadline <= localDeadline ? serverDeadline : localDeadline
   return { room: next, deadline }
@@ -76,5 +77,10 @@ export function useNow(isActive, intervalMs = 250) {
 export function getSecondsLeft(room, deadline, now) {
   if (room?.status !== 'question' || !deadline) return 0
   const seconds = Math.ceil((deadline - now) / 1000)
-  return Math.max(0, Math.min(room.secondsPerQuestion, seconds))
+  return Math.max(0, Math.min(getQuestionSeconds(room), seconds))
+}
+
+// A question can carry its own timer (set by start_live_question).
+export function getQuestionSeconds(room) {
+  return room?.currentQuestion?.seconds ?? room?.secondsPerQuestion ?? 0
 }
