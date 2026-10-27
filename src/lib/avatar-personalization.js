@@ -60,7 +60,7 @@ export function constrainSticker(sticker) {
 }
 
 export function normalizeAvatarStyle(value) {
-  const background = AVATAR_BACKGROUNDS.some((b) => b.id === value?.background) ? value.background : 'original';
+  const background = AVATAR_BACKGROUNDS.some((b) => b.id === value?.background) ? value.background : 'meadow';
   const ids = new Set();
   const stickers = (Array.isArray(value?.stickers) ? value.stickers : [])
     .filter((s) => s && typeof s.id === 'string' && s.id.length > 0 && s.id.length <= 64 && AVATAR_STICKERS.some((item) => item.id === s.stickerId))

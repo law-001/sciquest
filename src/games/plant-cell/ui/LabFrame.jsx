@@ -8,7 +8,8 @@ import { QuestModal } from './QuestModal';
 // Every level's shell, laid out like the matter-state sandbox: top bar, quest
 // sidebar, stage, bottom control bar. It borrows the sandbox's global sq-*
 // classes as they are (never edits them) so both games feel like one platform.
-// The level supplies the sidebar readings, both views, a caption and controls.
+// The level supplies the sidebar readings, both views, a caption, controls
+// (optional), an overlay drawn above the whole shell and one pinned to the stage.
 
 export function LabFrame({
   level,
@@ -26,6 +27,8 @@ export function LabFrame({
   cell,
   caption,
   controls,
+  overlay,
+  stageOverlay,
 }) {
   const { isDark, toggle: toggleDark } = useTheme();
 
@@ -127,12 +130,15 @@ export function LabFrame({
                 </div>
                 {caption}
               </div>
+              {stageOverlay}
             </div>
           </div>
         </div>
 
-        <div className="sq-sandbox-bottom pc-lab-bottom">{controls}</div>
+        {controls && <div className="sq-sandbox-bottom pc-lab-bottom">{controls}</div>}
       </div>
+
+      {overlay}
 
       {paused && (
         <div className="pc-results" onClick={onTogglePause}>

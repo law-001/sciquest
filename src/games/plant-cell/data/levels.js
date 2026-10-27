@@ -117,7 +117,7 @@ export const LEVELS = [
     // is one round, so there is no isMet: the level screen completes a round
     // when the player's chosen answer is the one marked `correct`.
     // `change` is applied over sim.baseControls when the player presses
-    // "Let's see it happen". The educationalNote explains the result.
+    // "Let's see what happens". The educationalNote explains the result.
     quests: [
       {
         id: 'l2-no-light',
@@ -130,6 +130,12 @@ export const LEVELS = [
           { label: 'Nothing changes — it still has water and carbon dioxide' },
           { label: 'The chloroplasts stop making glucose', correct: true },
           { label: 'The plant makes glucose from water instead' },
+        ],
+        // Fades in line by line on the stage while the change plays out.
+        story: [
+          'The sun is blocked — no light reaches the leaves.',
+          'No light means the chloroplasts can’t do photosynthesis.',
+          'So no glucose or oxygen is made. The plant has to live off its glucose store.',
         ],
         educationalNote: 'Chloroplasts use light energy to make glucose. With no sunlight they stopped, so the cell had to use up its glucose store instead.',
       },
@@ -145,6 +151,12 @@ export const LEVELS = [
           { label: 'Sunlight is enough to keep making glucose' },
           { label: 'The plant makes more oxygen' },
         ],
+        // Fades in line by line on the stage while the change plays out.
+        story: [
+          'The soil dries out — no water climbs the stem.',
+          'Water is an ingredient, so even in bright sun photosynthesis stops.',
+          'No glucose or oxygen is made, and the plant starts using up its store.',
+        ],
         educationalNote: 'Water is one of the raw materials of photosynthesis. Even in bright sunlight, chloroplasts cannot make glucose without it.',
       },
       {
@@ -158,6 +170,12 @@ export const LEVELS = [
           { label: 'Only oxygen stops — glucose keeps being made' },
           { label: 'The plant makes its own carbon dioxide and carries on' },
           { label: 'No glucose or oxygen is made', correct: true },
+        ],
+        // Fades in line by line on the stage while the change plays out.
+        story: [
+          'The stomata close — carbon dioxide can’t get into the leaf.',
+          'Without carbon dioxide the chloroplasts have nothing to build glucose from.',
+          'Photosynthesis stops: no glucose and no oxygen come out.',
         ],
         educationalNote: 'Stomata are tiny holes in a leaf that let carbon dioxide in. With them closed, the chloroplasts had no carbon dioxide, so no glucose or oxygen was made.',
       },
@@ -173,6 +191,12 @@ export const LEVELS = [
           { label: 'Glucose is still made, but more slowly', correct: true },
           { label: 'Glucose is made faster than before' },
         ],
+        // Fades in line by line on the stage while the change plays out.
+        story: [
+          'The light drops to a dim 20%.',
+          'The chloroplasts still work, but with less light they work slowly.',
+          'Only a little glucose and oxygen trickle out, so the glucose store shrinks.',
+        ],
         educationalNote: 'Photosynthesis did not stop — it slowed down. With less light the chloroplasts make glucose more slowly, so the glucose store starts to shrink.',
       },
       {
@@ -186,6 +210,12 @@ export const LEVELS = [
           { label: 'Nothing changes' },
           { label: 'The plant makes too much glucose and gets sick' },
           { label: 'Glucose is made fastest and the most oxygen is released', correct: true },
+        ],
+        // Fades in line by line on the stage while the change plays out.
+        story: [
+          'Sunlight, water and carbon dioxide all go up to full.',
+          'The chloroplasts have plenty of everything, so they run at top speed.',
+          'Glucose is made fastest and the most oxygen streams out of the leaves.',
         ],
         educationalNote: 'With plenty of sunlight, water and carbon dioxide, the chloroplasts worked at full speed — making glucose fastest and releasing the most oxygen.',
       },
@@ -218,8 +248,9 @@ export const LEVELS = [
     sim: {
       // What the plant has before each round's change, in %.
       baseControls: { light: 70, water: 70, co2: 70 },
-      // How long the change plays out before the prediction is marked.
-      watchSeconds: 5,
+      // How long the change plays out before the prediction is marked — long
+      // enough for every story line to fade in and be read.
+      watchSeconds: 12,
       glucoseStart: 60,
       healthStart: 90,
       productionPerSec: 15,
@@ -235,93 +266,131 @@ export const LEVELS = [
   {
     id: 'l3',
     number: 3,
-    name: 'Cell Emergency',
+    name: 'Plant Doctor',
     focus: 'diagnosis',
-    icon: '🚨',
+    icon: '🩺',
     accent: '#d1544f',
     unlocksAfter: 'l2',
-    goal: 'One organelle has failed. Run tests, read the evidence, name the culprit and repair it.',
-    objective: 'Complete every diagnosis quest',
-    // isMet(caseState, fault)
+    goal: 'Each plant has stopped making glucose. Spot the clue in the room, name what it is missing and fix it.',
+    objective: 'Fix every sick plant',
+    // Each quest is one sick plant. `missing` is what the room is starving it
+    // of (the right answer), `scene` draws the clue into the room, and `hint`
+    // is shown after a wrong guess. There is no isMet: the level screen
+    // completes a round once the fix has played out.
     quests: [
       {
-        id: 'l3-test',
-        title: 'Run a test',
-        description: 'Pick any test in the bottom bar and read its result.',
+        id: 'l3-curtain',
+        title: 'The dark corner',
+        description: 'This plant is wilting. Find out what it is missing.',
+        question: 'This plant has stopped making glucose. What is it missing?',
         holdSeconds: 0,
-        isMet: (state) => state.revealed.length > 0,
-        educationalNote: 'The monitors only say that something is wrong. Each test reports how one part of the cell is behaving, which narrows down where the fault is.',
+        missing: ['light'],
+        scene: { curtain: true },
+        hint: 'Look at the window.',
+        story: [
+          'You open the curtains — sunlight reaches the leaves again.',
+          'The chloroplasts can make glucose again, and oxygen streams out.',
+        ],
+        educationalNote: 'The closed curtains blocked the sunlight. Without light energy, chloroplasts cannot make glucose.',
       },
       {
-        id: 'l3-rule-out',
-        title: 'Rule something out',
-        description: 'Find a test that comes back Normal.',
+        id: 'l3-dry',
+        title: 'The forgotten plant',
+        description: 'This plant is wilting. Find out what it is missing.',
+        question: 'This plant has stopped making glucose. What is it missing?',
         holdSeconds: 0,
-        isMet: (state, fault) => state.revealed.some((id) => fault.results[id].tone === 'normal'),
-        educationalNote: 'A normal reading clears the organelle it tests. What is still working matters as much as what is not.',
+        missing: ['water'],
+        scene: { weather: 'drought' },
+        hint: 'Look at the soil in the pot.',
+        story: [
+          'You water the soil — water climbs up the stem to the leaves.',
+          'With water back, the chloroplasts make glucose again.',
+        ],
+        educationalNote: 'The cracked, dry soil meant no water reached the leaves. Water is one of the raw materials of photosynthesis.',
       },
       {
-        id: 'l3-diagnose',
-        title: 'Name the fault',
-        description: 'Choose the organelle the evidence points to and make the call.',
+        id: 'l3-bag',
+        title: 'The wrapped plant',
+        description: 'This plant is wilting. Find out what it is missing.',
+        question: 'This plant has stopped making glucose. What is it missing?',
         holdSeconds: 0,
-        isMet: (state) => state.phase !== 'investigate',
-        educationalNote: 'A good diagnosis fits every result — the abnormal readings and the normal ones.',
+        missing: ['co2'],
+        scene: { bag: true },
+        hint: 'Look at what is covering the plant.',
+        story: [
+          'You take the bag off — air reaches the leaves again.',
+          'Carbon dioxide gets in through the stomata, so glucose is made again.',
+        ],
+        educationalNote: 'The sealed bag kept fresh air away, so no carbon dioxide could get in through the stomata.',
       },
       {
-        id: 'l3-repair',
-        title: 'Repair the organelle',
-        description: 'Hold the repair button until the organelle is rebuilt.',
+        id: 'l3-two',
+        title: 'Double trouble',
+        description: 'Two things are wrong with this plant. Find both.',
+        question: 'Two things are wrong this time. What is the plant missing?',
         holdSeconds: 0,
-        isMet: (state) => state.phase === 'recovering' || state.phase === 'done',
-        educationalNote: 'Once the broken organelle works again, everything that depends on it can start back up.',
+        missing: ['light', 'water'],
+        scene: { curtain: true, weather: 'drought' },
+        hint: 'Check the window and the soil.',
+        story: [
+          'You open the curtains and water the soil.',
+          'With light and water back, the chloroplasts start working again.',
+        ],
+        educationalNote: 'Photosynthesis needs all three ingredients. Fixing only one would not have been enough.',
       },
       {
-        id: 'l3-recover',
-        title: 'Nurse the cell back',
-        description: 'Watch the cell recover to full health.',
+        id: 'l3-night',
+        title: 'The night shift',
+        description: 'Nothing is covering this plant. So why has it stopped?',
+        question: 'Nothing is blocking the window. Why has the plant stopped making glucose?',
         holdSeconds: 0,
-        isMet: (state) => state.phase === 'done',
-        educationalNote: 'Organelles work together, so one fault shows up all over the cell — and fixing it lets the whole cell recover.',
+        missing: ['light'],
+        scene: { night: true },
+        hint: 'Look outside the window. What time is it?',
+        story: [
+          'Morning comes — the sun rises and light pours in.',
+          'Plants only make glucose when there is light, so they pause every night.',
+        ],
+        educationalNote: 'At night there is no sunlight, so photosynthesis stops. The plant lives off the glucose it stored during the day.',
       },
-    ],
-    // Shown in the sidebar, worded like the Week 12 and 13 key terms.
-    keyTerms: [
-      { term: 'Chloroplast', meaning: 'Makes glucose by photosynthesis.' },
-      { term: 'Mitochondria', meaning: 'The powerhouse of the cell — gets energy from glucose (cellular respiration).' },
-      { term: 'Vacuole', meaning: 'Stores water, nutrients and waste.' },
-      { term: 'Cell membrane', meaning: 'Controls what moves into and out of the cell.' },
-      { term: 'Nucleus', meaning: 'The control centre of the cell. It contains the DNA.' },
-      { term: 'Cell wall', meaning: 'A rigid outer layer that gives a plant cell shape and support.' },
     ],
     briefing: {
-      title: 'Something in this cell has stopped working.',
-      lead: 'The monitors already show symptoms. Your job is to work out which organelle is behind them.',
+      title: 'These plants are sick.',
+      lead: 'In Levels 1 and 2 you learned that photosynthesis needs sunlight, water and carbon dioxide. Now each plant has stopped making glucose — your job is to work out why.',
       points: [
-        'Run tests on the cell — each one reports how a part of the cell is behaving.',
-        'A normal reading rules an organelle out. What is normal matters as much as what is not.',
-        'Name the organelle only once the evidence fits. A wrong call costs the cell.',
+        'Look around the room for a clue: the window, the soil, the plant itself.',
+        'Pick what the plant is missing, then fix it.',
+        'A wrong guess costs a star — but you get a hint and can try again.',
       ],
-      cta: 'Open the case',
+      cta: 'Start the check-up',
     },
     debrief: {
-      title: 'The cell is working again.',
-      body: 'Organelles do not work alone. A fault in one of them shows up as symptoms all over the cell, so the readings that stay normal are as useful as the ones that do not — together they point at the part that actually failed.',
+      title: 'You can spot what a plant is missing.',
+      body: 'A plant that has stopped making glucose is missing at least one ingredient. Clues in its surroundings tell you which: darkness means no sunlight, dry soil means no water, and anything sealing the leaves means no carbon dioxide.',
       points: [
-        'Chloroplast → photosynthesis. Mitochondria → releasing usable energy from glucose.',
-        'Vacuole → storage, especially water. Membrane → controlling what moves in and out.',
-        'A problem in one organelle affects the whole cell.',
+        'Dark room or night → no sunlight.',
+        'Dry, cracked soil → no water.',
+        'Leaves sealed off → no carbon dioxide.',
       ],
     },
+    // Shown in the sidebar, worded like the lessons' key terms.
+    keyTerms: [
+      { term: 'Photosynthesis', meaning: 'Chloroplasts use light energy to turn carbon dioxide and water into glucose and oxygen.' },
+      { term: 'Chloroplast', meaning: 'The organelle where photosynthesis happens.' },
+      { term: 'Stomata', meaning: 'Tiny holes in a leaf that let carbon dioxide in.' },
+    ],
     sim: {
-      healthStart: 58,
-      healthFloor: 20,
-      declinePerSec: 0.55,
-      testSeconds: 2.2,
-      wrongGuessHealth: 8,
-      recoverPerSec: 22,
-      // Read as: 3 stars with no wrong diagnosis, 2 with one, 1 with two or more.
-      starsByWrongGuesses: [3, 2, 1],
+      // What a healthy plant has, in %. A sick plant has its `missing` inputs at 0.
+      baseControls: { light: 70, water: 70, co2: 70 },
+      // Plant health while sick (low enough to look wilted) and how fast it
+      // recovers once fixed, in % per second.
+      sickHealth: 25,
+      recoverPerSec: 14,
+      // How long the fix plays out before the round completes — long enough
+      // for both story lines to rise in and be read.
+      fixSeconds: 12,
+      // Read as: 3 stars with no wrong guesses, 2 with one or two, 1 with more.
+      starsByMisses: [3, 2, 2, 1],
     },
   },
 ];

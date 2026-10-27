@@ -252,3 +252,13 @@ no artwork. Level 2's weather decorations — rain streaks in the window, cracks
 in dry soil, salt grains on wet soil — are also plain code shapes; if they are
 ever redrawn, they need a `rain-streak.png`, a `soil-cracks.png` overlay and a
 `salt-grains.png` overlay sized to the same pot opening as `soil-dry.png`.
+
+Level 3 (Plant Doctor) draws its clues as plain code shapes in `PlantView.jsx`
+too. If they are redrawn, each is one transparent PNG in the same painted
+flat-vector style, placed at the coordinates the code already uses:
+
+| File | Replaces | Size |
+|---|---|---|
+| `curtains-closed.png` | the two rust `#B5523B` / `#A8472F` panels + rod drawn over `window.png` (`curtain` prop) — must cover the window's glass and frame exactly | 520 × 610, same canvas as `window.png` |
+| `night-sky.png` | the `#1F2A44` sky, `#F3ECD2` crescent moon and stars inside the glass (`night` prop) — opaque inside the glass area only | 360 × 470 |
+| `plastic-bag.png` | the pale `#DCEBF5` see-through bag tied over the plant (`bag` prop) — **real alpha**, the plant must show through; tie cinched at the pot rim | 512 × 768, same canvas as `plant-healthy.png` |

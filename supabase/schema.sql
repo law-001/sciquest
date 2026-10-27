@@ -64,7 +64,7 @@ create table if not exists public.students (
   student_number  text unique,
   section         text,
   avatar          text,
-  avatar_style    jsonb not null default '{"background":"original","stickers":[]}'::jsonb,
+  avatar_style    jsonb not null default '{"background":"meadow","stickers":[]}'::jsonb,
   -- True = keep me off the leaderboard (migrations/20260912020000_leaderboard_opt_out.sql).
   leaderboard_opt_out boolean not null default false,
   constraint students_avatar_style_valid check (public.valid_avatar_style(avatar_style)),

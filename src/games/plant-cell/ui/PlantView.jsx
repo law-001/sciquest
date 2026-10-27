@@ -40,11 +40,18 @@ const RAIN = [[44, 32], [68, 38], [90, 32], [52, 64], [76, 70], [98, 64], [60, 9
 // Salt left on the soil surface when the ground turns salty.
 const SALT = [[184, 155], [195, 153], [206, 156], [216, 153], [226, 155], [190, 157], [220, 157]];
 
+// Stars in the night sky behind the moon, inside the glass.
+const NIGHT_STARS = [[70, 42], [88, 58], [62, 74], [94, 96], [44, 104], [78, 112]];
+
 const LANES = {
   // Straight up the stem, which plant-*.png draws at x 205 from the soil to y 68.
   sap: ['M 205 154 L 205 70'],
   // Carbon dioxide arriving at the two right-hand leaf tips.
   co2: ['M 330 74 L 236 90', 'M 330 142 L 236 128'],
+  // Oxygen leaving the leaves into the room.
+  oxygen: ['M 192 72 L 150 8', 'M 222 62 L 262 4'],
+  // Glucose carried from the leaves down the stem to the roots.
+  glucose: ['M 194 96 L 203 116 L 203 160'],
 };
 
 function Flow({ id, lanes, count, color, duration, radius, animate, sprite = null }) {
@@ -91,8 +98,16 @@ export function PlantView({
   soil = 60,
   health = 100,
   turgor = 70,
+  // 0–1 photosynthesis rate. Null hides the glucose and oxygen outputs, which
+  // only level 2 asks for.
+  rate = null,
   // 'drought' | 'salty' | null — level 2's surroundings, drawn on the scene.
   weather = null,
+  // Level 3's clues, each drawn into the room: curtains closed over the
+  // window, night outside it, or a plastic bag tied over the plant.
+  curtain = false,
+  night = false,
+  bag = false,
   reducedMotion = false,
   particleBudget = 2,
   title = 'The whole plant by the window',
@@ -105,7 +120,7 @@ export function PlantView({
   const vigour = clamp01(Math.min(turgor / 70, health / 70));
   const droop = 1 - vigour;
 
-  const sky = mix('#8ea8bd', '#bfe3f7', lightF);
+  const sky = night ? '#1f2a44' : mix('#8ea8bd', '#bfe3f7', lightF);
   const sunR = 8 + lightF * 6;
 
   const animate = !reducedMotion;
@@ -126,8 +141,10 @@ export function PlantView({
   const weatherWord = weather === 'rain' ? ' It is raining.'
     : weather === 'drought' ? ' The soil is cracked and dry.'
       : weather === 'salty' ? ' There is salt on the soil.' : '';
+  const clueWords = `${curtain ? ' The curtains are closed.' : ''}${night ? ' It is night outside.' : ''}`
+    + `${bag ? ' A plastic bag is tied over the plant.' : ''}`;
 
-  const label = `${title}.${weatherWord} Sunlight ${Math.round(light)} percent, water ${Math.round(water)} percent, `
+  const label = `${title}.${weatherWord}${clueWords} Sunlight ${Math.round(light)} percent, water ${Math.round(water)} percent, `
     + `carbon dioxide ${Math.round(co2)} percent. The plant looks ${droop > 0.55 ? 'wilted' : droop > 0.25 ? 'slightly limp' : 'firm and upright'}.`;
 
   return (
@@ -136,7 +153,8 @@ export function PlantView({
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       role="img"
       aria-label={label}
-      preserveAspectRatio="xMidYMid meet"
+      // Bottom-anchored like the room art behind it, so the pot stays on the floor.
+      preserveAspectRatio="xMidYMax meet"
     >
       <title>{label}</title>
 
@@ -154,12 +172,21 @@ export function PlantView({
       {/* Window — the light source the sunlight slider controls. */}
       <g>
         <rect x={GLASS.x} y={GLASS.y} width={GLASS.w} height={GLASS.h} fill={sky} />
-        <image
-          href="/games/plant-cell/art/sun.png"
-          x={SUN_X - sunR * 1.1} y={SUN_Y - sunR * 1.1}
-          width={sunR * 2.2} height={sunR * 2.2}
-          opacity={0.25 + lightF * 0.75}
-        />
+        {night ? (
+          <g aria-hidden="true">
+            {/* A crescent: the moon with a sky-coloured disc bitten out of it. */}
+            <circle cx={SUN_X} cy={SUN_Y} r="9" fill="#f3ecd2" />
+            <circle cx={SUN_X + 4} cy={SUN_Y - 3} r="8" fill={sky} />
+            {NIGHT_STARS.map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.9" fill="#f3ecd2" />)}
+          </g>
+        ) : (
+          <image
+            href="/games/plant-cell/art/sun.png"
+            x={SUN_X - sunR * 1.1} y={SUN_Y - sunR * 1.1}
+            width={sunR * 2.2} height={sunR * 2.2}
+            opacity={0.25 + lightF * 0.75}
+          />
+        )}
         {weather === 'rain' && (
           <g clipPath="url(#pc-plant-glass)" aria-hidden="true">
             <g>
@@ -184,6 +211,17 @@ export function PlantView({
           x="16" y="16" width="104" height="122"
           preserveAspectRatio="none"
         />
+        {curtain && (
+          <g aria-hidden="true">
+            <rect x="18" y="18" width="100" height="3" rx="1.5" fill="#6b4a2b" />
+            <path d="M 22 20 L 68 20 L 68 134 C 56 136 34 136 22 134 Z" fill="#b5523b" />
+            <path d="M 68 20 L 114 20 L 114 134 C 102 136 80 136 68 134 Z" fill="#a8472f" />
+            <g stroke="#8a3524" strokeWidth="1" opacity="0.6">
+              <path d="M 34 22 L 33 133 M 46 22 L 46 134 M 58 22 L 59 133" />
+              <path d="M 80 22 L 79 133 M 92 22 L 92 134 M 104 22 L 105 133" />
+            </g>
+          </g>
+        )}
       </g>
 
       {/* The beam itself — brightness is the sunlight reading. sunbeam.png is a
@@ -282,6 +320,22 @@ export function PlantView({
 
       </g>
 
+      {bag && (
+        <g aria-hidden="true">
+          <path
+            d="M 166 150 C 146 104 152 24 205 18 C 258 24 264 104 244 150 Z"
+            fill="#dcebf5"
+            fillOpacity="0.3"
+            stroke="#8ca0af"
+            strokeWidth="1.4"
+          />
+          <path d="M 176 120 C 168 92 172 52 190 36" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          {/* The tie, cinched round the pot rim. */}
+          <path d="M 166 150 C 186 156 224 156 244 150" fill="none" stroke="#8ca0af" strokeWidth="2.4" />
+          <path d="M 205 154 l -5 7 M 205 154 l 5 7" stroke="#8ca0af" strokeWidth="1.6" strokeLinecap="round" />
+        </g>
+      )}
+
       <Flow
         id="sap"
         lanes={LANES.sap}
@@ -297,6 +351,21 @@ export function PlantView({
         duration={2.6} radius={9} animate={animate}
         sprite="/games/plant-cell/art/particle-co2.png"
       />
+      {/* Even a slow rate keeps one particle moving, so "slower" never looks like "stopped". */}
+      {rate !== null && (
+        <>
+          <Flow
+            id="oxygen" lanes={LANES.oxygen} count={rate > 0 ? Math.max(1, count(rate)) : 0} color="#1d8580"
+            duration={2.8} radius={8} animate={animate}
+            sprite="/games/plant-cell/art/particle-oxygen.png"
+          />
+          <Flow
+            id="glucose" lanes={LANES.glucose} count={rate > 0 ? Math.max(1, count(rate)) : 0} color="#d76d2e"
+            duration={2.6} radius={8} animate={animate}
+            sprite="/games/plant-cell/art/particle-glucose.png"
+          />
+        </>
+      )}
     </svg>
   );
 }
