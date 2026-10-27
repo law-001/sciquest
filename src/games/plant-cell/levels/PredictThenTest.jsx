@@ -6,7 +6,10 @@ import { useSimLoop } from '../engine/useSimLoop';
 import { CellView } from '../ui/CellView';
 import { Meter, StatusLine } from '../ui/CellStats';
 import { LabFrame } from '../ui/LabFrame';
+import { PhotosynthesisEquation } from '../ui/PhotosynthesisEquation';
 import { PlantView } from '../ui/PlantView';
+import { Subtitles } from '../ui/Subtitles';
+import { storyLinesAt } from '../ui/story';
 import { toneForValue } from '../ui/tone';
 
 const INPUTS = [
@@ -20,8 +23,8 @@ function createRound(quest, sim) {
 }
 
 // Level 2 — each quest is one "what happens if…?" round. The plant runs
-// normally while the player picks a prediction; "Let's see it happen" makes
-// the change and plays it out for a few seconds, then marks the prediction.
+// normally behind the question overlay; "Let's see what happens" makes the
+// change and plays it out on the plant for a few seconds, then marks the prediction.
 // A right one completes the quest; a wrong one costs a star and lets the
 // player try again.
 export function PredictThenTest({
@@ -112,78 +115,80 @@ export function PredictThenTest({
     </>
   );
 
-  const controlBar = (
-    <>
-      <div className="sq-ctrl">
-        <div className="sq-ctrl__head">
-          <span className="sq-ctrl__label">What happens if…?</span>
-        </div>
-        <div className="sq-ctrl__hint">
-          <strong>{quest.question}</strong>
+  // No bottom bar on this level: the question, and later the verdict, sit over
+  // the stage so the plant itself is what the player watches.
+  let overlay = null;
+  if (quests.celebration) {
+    // The quest modal is already up.
+  } else if (round.phase === 'predict') {
+    // The question takes over the whole screen so the prediction is made
+    // before the player can read the answer off the meters.
+    overlay = (
+      <div className="pc-ask" role="dialog" aria-modal="true" aria-labelledby="pc-ask-title">
+        <div className="pc-ask__card">
+          <span className="pc-ask__eyebrow">What happens if…?</span>
+          <h2 className="pc-ask__title" id="pc-ask-title">{quest.question}</h2>
           {changes.map(({ key, label, icon }) => (
-            <span key={key}>
-              <br />
+            <p key={key} className="pc-ask__change">
               <span aria-hidden="true">{icon}</span> {label}: {sim.baseControls[key]}% → {quest.change[key]}%
-            </span>
+            </p>
           ))}
-        </div>
-      </div>
-
-      <div className="sq-ctrl">
-        <div className="sq-ctrl__head">
-          <span className="sq-ctrl__label" id="pc-predict-label">Your prediction</span>
-        </div>
-        <div className="pc-suspects" role="group" aria-labelledby="pc-predict-label">
-          {quest.choices.map((c, index) => {
-            const isChosen = index === round.choice;
-            const isWrong = isChosen && round.phase === 'result' && !c.correct;
-            // Once marked, the right answer is highlighted even if it was not picked.
-            const isHighlighted = round.phase === 'result' ? c.correct : isChosen;
-            return (
+          <div className="pc-ask__choices" role="group" aria-label="Your prediction">
+            {quest.choices.map((c, index) => (
               <button
                 key={c.label}
                 type="button"
-                className={`pc-suspect${isHighlighted ? ' is-selected' : ''}${isWrong ? ' is-ruled-out' : ''}`}
-                aria-pressed={isChosen}
-                disabled={round.phase !== 'predict'}
+                className={`pc-ask__choice${index === round.choice ? ' is-selected' : ''}`}
+                aria-pressed={index === round.choice}
                 onClick={() => setRound({ ...round, choice: index })}
               >
                 {c.label}
-                {isWrong && <span className="pc-suspect__x" aria-hidden="true"> ✕</span>}
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="sq-ctrl">
-        {round.phase === 'predict' && (
+            ))}
+          </div>
           <button
             type="button"
             className="pc-btn pc-btn--primary pc-btn--wide"
             disabled={round.choice === null}
             onClick={() => setRound({ ...round, phase: 'watch' })}
           >
-            {round.choice === null ? 'Pick a prediction first' : 'Let’s see it happen'}
+            {round.choice === null ? 'Pick a prediction first' : 'Let’s see what happens'}
           </button>
-        )}
-        {round.phase === 'watch' && (
-          <button type="button" className="pc-btn pc-btn--primary pc-btn--wide" disabled>
-            Watching… {Math.max(1, Math.ceil(sim.watchSeconds - round.watched))}s
-          </button>
-        )}
+        </div>
+      </div>
+    );
+  }
+
+  // While the change plays out the story rises in as subtitles; once the
+  // round is marked the verdict arrives as the last line, with the next
+  // button under it.
+  let narration = null;
+  if (round.phase !== 'predict' && !quests.celebration) {
+    const answer = quest.choices.find((c) => c.correct);
+    const lines = (round.phase === 'result' ? quest.story : storyLinesAt(quest.story, round.watched))
+      .map((text) => ({ key: text, text }));
+    if (round.phase === 'result') {
+      lines.push({
+        key: 'verdict',
+        tag: isRight ? '✓ You predicted it' : '✕ Not quite',
+        tone: isRight ? 'is-right' : 'is-wrong',
+        text: answer.label,
+      });
+    }
+    narration = (
+      <Subtitles lines={lines}>
         {round.phase === 'result' && (
           <button
             type="button"
-            className="pc-btn pc-btn--primary pc-btn--wide"
+            className="pc-btn pc-btn--primary pc-subs__btn"
             onClick={() => setRound(createRound(quest, sim))}
           >
             {isRight ? 'Watch it again' : 'Try again'}
           </button>
         )}
-      </div>
-    </>
-  );
+      </Subtitles>
+    );
+  }
 
   return (
     <LabFrame
@@ -202,6 +207,9 @@ export function PredictThenTest({
           <span>round <b>{level.quests.indexOf(quest) + 1} of {level.quests.length}</b></span>
           <span>glucose made <b>{ratePct}%</b></span>
           <span>wrong predictions <b>{missedIds.length}</b></span>
+          {round.phase === 'watch' && (
+            <span>watching <b>{Math.max(1, Math.ceil(sim.watchSeconds - round.watched))}s</b></span>
+          )}
         </>
       )}
       plant={(
@@ -212,6 +220,7 @@ export function PredictThenTest({
           soil={controls.water}
           health={round.cell.health}
           turgor={100}
+          rate={round.cell.rate}
           reducedMotion={reducedMotion}
           particleBudget={particleBudget}
           title="The plant by the window"
@@ -227,19 +236,10 @@ export function PredictThenTest({
         />
       )}
       caption={(
-        <div className="pc-equation" aria-label="The photosynthesis equation">
-          <span className="pc-equation__side">
-            <b style={{ color: '#d9a824' }}>sunlight</b> + <b style={{ color: '#3f7fb5' }}>water</b> + <b style={{ color: '#6f6553' }}>carbon dioxide</b>
-          </span>
-          <span className="pc-equation__arrow" aria-hidden="true">→</span>
-          <span className="pc-equation__mid">chloroplast</span>
-          <span className="pc-equation__arrow" aria-hidden="true">→</span>
-          <span className="pc-equation__side">
-            <b style={{ color: '#d76d2e' }}>glucose</b> + <b style={{ color: '#1d8580' }}>oxygen</b>
-          </span>
-        </div>
+        <PhotosynthesisEquation {...controls} isStopped={round.cell.rate === 0} />
       )}
-      controls={controlBar}
+      overlay={overlay}
+      stageOverlay={narration}
     />
   );
 }

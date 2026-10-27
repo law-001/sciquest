@@ -658,3 +658,66 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
   - `LiveQuestPage.jsx` (student): image + points badge, reveal lists all correct answers. Shared `QuestionExtras.jsx`; `getCorrectAnswers` in `options.js`; per-question countdown via `getQuestionSeconds` in `useLiveRoom.js`.
   - `src/lib/liveQuest.js`: set CRUD, image upload, `getSetQuestionIssues`, `buildSetQuestionPool`; picks keyed by `pickId` (quiz index for lessons, question id for sets).
 - Commit: Add Kahoot-style Live Quest question sets with multi-answer, per-question timer, points and images
+
+## VERSION_94
+- New students now start with the Forest avatar background instead of Science Lab.
+  - `supabase/migrations/20261027000000_avatar_default_forest.sql`: `students.avatar_style` column default background `original` → `meadow` (the Forest id). Existing rows untouched. `supabase/schema.sql` synced.
+  - `src/lib/avatar-personalization.js`: `normalizeAvatarStyle` fallback background is now `meadow`.
+- Commit: Default new student avatar background to Forest
+
+## VERSION_95
+- Plant Cell Level 2 ("What Happens If?"): each round now opens with a full-screen blurred overlay asking the question, listing the choices, and a "Let's see what happens" button. Picking + confirming closes it and plays the change.
+  - `src/games/plant-cell/levels/PredictThenTest.jsx`: new `.pc-ask` dialog during the `predict` phase; button label "Let's see it happen" → "Let's see what happens".
+  - `src/games/plant-cell/styles.css`: new `.pc-ask*` styles (fixed backdrop, `blur(14px)`, dark-mode tint, reduced-motion off-switch).
+- Commit: Plant cell L2: full-screen blurred prediction overlay
+
+## VERSION_96
+- Plant Cell Level 2: removed the bottom control bar; the round now plays out visually on the plant.
+  - `ui/LabFrame.jsx`: `controls` is optional (no empty bar), new `overlay` prop drawn above the shell.
+  - `levels/PredictThenTest.jsx`: question overlay moved to `overlay`; after watching, an unblurred verdict card (right/wrong, the real answer, the note, Try again / Watch it again) sits low over the stage. Watch countdown moved to the stage readout. Equation strikes out an ingredient at 0% and glucose + oxygen when photosynthesis stops.
+  - `ui/PlantView.jsx`: optional `rate` prop draws glucose (leaves → roots) and oxygen (leaves → room) particles; they stop when the rate hits 0 and thin out when it drops. Other levels don't pass it, so they're unchanged.
+  - `styles.css`: `.pc-verdict*`, `.pc-equation__off`.
+- Commit: Plant cell L2: drop bottom bar, show glucose/oxygen output on the plant
+
+## VERSION_97
+- Plant Cell Level 2: each round now explains itself on screen. While the change plays out, 3 cause → effect lines fade in one at a time in a panel at the stage's top-right (e.g. "The sun is blocked…" → "No light means the chloroplasts can't do photosynthesis." → "So no glucose or oxygen is made…"). When the round is marked, the verdict (✓/✕, right answer, what you picked) and Try again / Watch it again join the end of the same panel.
+  - `data/levels.js`: new `story[]` on each L2 quest; `watchSeconds` 5 → 9 so every line can be read.
+  - `levels/PredictThenTest.jsx`: narration panel replaces the bottom verdict card; `STORY_FIRST_AT` / `STORY_STEP` set the line timing.
+  - `ui/LabFrame.jsx`: new `stageOverlay` prop drawn inside the stage.
+  - `styles.css`: `.pc-story*` + `pc-story-in` fade; `.pc-verdict*` removed.
+- Commit: Plant cell L2: fade-in cause-and-effect narration while each change plays
+
+## VERSION_98
+- Plant Cell room: fixed the pot, cabinet and workbench floating off the floor line when the stage changes shape (worst on Level 2 since its bottom bar was removed).
+  - `ui/PlantView.jsx`: plant SVG `preserveAspectRatio` `xMidYMid` → `xMidYMax`, so it sits on the stage's bottom edge.
+  - `styles.css` (`.pc-lab-viewport--plant`): wall art anchored `center bottom` instead of `center`; furniture lifted to `bottom 5%` so the feet stand inside the floor band.
+- Commit: Plant cell: pin room art and plant to the floor so nothing floats
+
+## VERSION_99
+- Plant Cell Level 2: the story panel is now subtitles. Each line rises out of the floor at the bottom of the stage; when the next one arrives, the older lines glide up, tilt back, shrink and fade, like text receding into the distance. The verdict (✓/✕ + right answer) arrives as the last line, with Watch it again / Try again under it.
+  - `levels/PredictThenTest.jsx`: `.pc-subs` replaces `.pc-story`; each line gets a `data-age` (0 newest … `MAX_SUB_AGE` 3).
+  - `styles.css`: `.pc-subs*` + `pc-sub-rise`; `.pc-story*` removed.
+- Plant Cell room: cabinet (with its corkboard) moved left `14%` → `6%` so the corkboard no longer touches the window.
+- Commit: Plant cell L2: receding subtitle narration, move cabinet off the window
+
+## VERSION_100
+- Plant Cell Level 2 subtitles: only 2 visible at once (the newest + one receding); the oldest fades out instead of stacking up. Slower pacing: lines rise over 2.2s (was 1.2s), recede over 1.6s (was 0.9s), arrive 3.6s apart (was 2.6s); `watchSeconds` 9 → 12 to fit.
+  - `levels/PredictThenTest.jsx`: `MAX_SUB_AGE` 3 → 2, renders only the last 3 lines; `STORY_STEP` 2.6 → 3.6.
+  - `styles.css`: age 2 now `opacity: 0`, age 3 rule removed, `.pc-subs__lines` height 150 → 110px.
+- Commit: Plant cell L2: cap subtitles at two, slow them down
+
+## VERSION_101
+- Plant Cell: replaced Level 3 "Cell Emergency" (organelle diagnosis with lab tests) with **"Plant Doctor"** — five sick plants, each with a clue drawn in the room. The player picks what the plant is missing (sunlight / water / carbon dioxide), and a right answer fixes the room while the plant recovers and the story rises in as subtitles. A wrong guess costs a star and shows a hint. Rounds: closed curtains (light), dry cracked soil (water), plastic bag over the plant (CO₂), curtains + dry soil (two at once), night outside (light).
+  - New `levels/PlantDoctor.jsx`; `index.jsx` routes `l3` to it. Level id stays `l3`, so unlocks, saved stars and the "Cell Medic" achievement still line up.
+  - `data/levels.js`: new `l3` config (`missing`, `scene`, `hint`, `story` per quest; `sickHealth`, `recoverPerSec`, `fixSeconds`, `starsByMisses`).
+  - `ui/PlantView.jsx`: new `curtain`, `night`, `bag` clue props drawn as plain shapes, and named in the plant's aria-label.
+  - Shared with Level 2 now: `ui/Subtitles.jsx` (receding subtitles), `ui/story.js` (line timing), `ui/PhotosynthesisEquation.jsx` (struck-out equation). `PredictThenTest.jsx` uses them; no behaviour change.
+  - Removed `levels/CellEmergency.jsx`, `data/faults.js`, and their dead CSS (`.pc-test*`, `.pc-evidence*`, `.pc-note`, `.pc-chips`, `.pc-suspect__x`, `.is-ruled-out`).
+  - `docs/asset-prompts/plant-cell.md`: art brief for the three new clue images.
+- Commit: Plant cell: replace Level 3 with Plant Doctor (spot what the plant is missing)
+
+## VERSION_102
+- Plant Cell Level 3: removed the bottom control bar. The answer pills (☀️ Sunlight / 💧 Water / 🌬️ Carbon dioxide) and Fix it now rise in as one row under the subtitles on the stage, unblurred, so the clue in the room stays visible. "See this plant again" appears there after a round; the recovery countdown moved to the stage readout.
+  - `levels/PlantDoctor.jsx`: `controlBar` → `actions`, passed as `Subtitles` children.
+  - `styles.css`: `.pc-subs__choices`, `.pc-subs__choice`, `.pc-subs__fix`.
+- Commit: Plant cell L3: move answer pills onto the stage, drop bottom bar

@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { GAME_XP } from '../config/xp';
 import { useGameProgress } from '../_shared/progress/useGameProgress';
 import { getLevel } from './data/levels';
-import { CellEmergency } from './levels/CellEmergency';
+import { PlantDoctor } from './levels/PlantDoctor';
 import { PowerTheCell } from './levels/PowerTheCell';
 import { PredictThenTest } from './levels/PredictThenTest';
 import { EducationalModal } from './ui/EducationalModal';
@@ -31,8 +31,7 @@ export default function PlantCellGame({
   const [level, setLevel] = useState(() => getLevel(initialChallengeId));
   const [stage, setStage] = useState(() => (getLevel(initialChallengeId) ? 'brief' : 'select'));
   const [result, setResult] = useState(null);
-  // Bumped on every run so the level screen remounts with fresh state — and so
-  // Level 3 hands out a different case each time.
+  // Bumped on every run so the level screen remounts with fresh state.
   const [attempt, setAttempt] = useState(0);
 
   const particleBudget = PARTICLE_BUDGET[deviceTier] ?? 2;
@@ -131,7 +130,7 @@ export default function PlantCellGame({
   } else if (level.id === 'l2') {
     body = <PredictThenTest key={attempt} {...levelProps} />;
   } else {
-    body = <CellEmergency key={attempt} {...levelProps} attempt={attempt} />;
+    body = <PlantDoctor key={attempt} {...levelProps} />;
   }
 
   // The level component stays mounted behind the debrief — its sim loop already
