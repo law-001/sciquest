@@ -54,6 +54,8 @@
   const EAT_DRY = { base: [150, 132, 78], tip: [206, 192, 112] };
 
   // ---- primitives ----
+  // Colours arrive as ready-made strings — they are fixed per blade, so the
+  // generators work them out once instead of every frame.
   function blade(ctx, rx, ry, len, width, tipDX, cBase, cTip, vein) {
     const tipX = rx + tipDX, tipY = ry - len;
     const curl = -tipDX * 0.16;
@@ -65,12 +67,12 @@
     ctx.quadraticCurveTo(cmx + hw * 0.45, cmy, rx + hw, ry);
     ctx.closePath();
     const g = ctx.createLinearGradient(rx, ry, tipX, tipY);
-    g.addColorStop(0, rgb(cBase)); g.addColorStop(1, rgb(cTip));
+    g.addColorStop(0, cBase); g.addColorStop(1, cTip);
     ctx.fillStyle = g; ctx.fill();
     if (vein) {
       ctx.beginPath();
       ctx.moveTo(rx, ry); ctx.quadraticCurveTo(cmx, cmy, tipX, tipY);
-      ctx.strokeStyle = 'rgba(' + mix(cTip, [255, 255, 255], 0.35).join(',') + ',0.5)';
+      ctx.strokeStyle = vein;
       ctx.lineWidth = Math.max(1, width * 0.16); ctx.lineCap = 'round'; ctx.stroke();
     }
   }
@@ -83,9 +85,20 @@
     ctx.quadraticCurveTo(rx + hw + tipDX * 0.5, ry - len * 0.5, rx + hw, ry);
     ctx.closePath();
     const g = ctx.createLinearGradient(rx, ry, tipX, tipY);
-    g.addColorStop(0, rgb(cBase)); g.addColorStop(1, rgb(cTip));
+    g.addColorStop(0, cBase); g.addColorStop(1, cTip);
     ctx.fillStyle = g; ctx.fill();
   }
+  const veinOf = (cTip) => 'rgba(' + mix(cTip, [255, 255, 255], 0.35).join(',') + ',0.5)';
+
+  // Edible-patch colours never change, so they are built once here.
+  const EAT_BLADE_BASE = rgb(mix(EAT_FRESH.base, [70, 120, 50], 0.15));
+  const EAT_TIP_BACK = mix(EAT_FRESH.base, EAT_FRESH.tip, 0.4);
+  const EAT_TIP_FRONT = EAT_FRESH.tip;
+  const EAT_BLADE_TIP = { back: rgb(EAT_TIP_BACK), front: rgb(EAT_TIP_FRONT) };
+  const EAT_VEIN = { back: veinOf(EAT_TIP_BACK), front: veinOf(EAT_TIP_FRONT) };
+  const STUB_BASE = rgb(mix(EAT_DRY.base, EAT_FRESH.base, 0.3));
+  const STUB_TIP = rgb(mix(EAT_DRY.tip, [225, 215, 150], 0.4));
+  const CLOVER = rgb([138, 195, 86]);
 
   // ---- generators (cache on the prop) ----
   function makeTallClump(seed) {
@@ -99,7 +112,15 @@
       const width = 4.5 + r() * 4.5 + depth * 1.5;
       const restDX = rootX * 0.28 + (r() * 2 - 1) * 5;
       const windScale = (0.55 + depth * 0.85) * (0.7 + r() * 0.5);
-      blades.push({ depth, rootX, len, width, restDX, windScale, phase: r() * TAU, hue: r() });
+      const hue = r();
+      const pal = depth < 0.34 ? TALL_PAL.back : depth < 0.68 ? TALL_PAL.mid : TALL_PAL.front;
+      const tip = mix(pal.tip, [210, 240, 150], hue * 0.16);
+      blades.push({
+        depth, rootX, len, width, restDX, windScale, phase: r() * TAU,
+        cBase: rgb(mix(pal.base, [20, 45, 24], (1 - hue) * 0.18)),
+        cTip: rgb(tip),
+        vein: depth > 0.66 ? veinOf(tip) : null,
+      });
     }
     blades.sort((a, b) => a.depth - b.depth);
     return { seed, blades };
@@ -127,12 +148,9 @@
   function drawTall(ctx, clump, cx, baseY, t, scale) {
     const w = windAt(t, clump.seed, 1) * 13;
     for (const b of clump.blades) {
-      const pal = b.depth < 0.34 ? TALL_PAL.back : b.depth < 0.68 ? TALL_PAL.mid : TALL_PAL.front;
-      const cBase = mix(pal.base, [20, 45, 24], (1 - b.hue) * 0.18);
-      const cTip = mix(pal.tip, [210, 240, 150], b.hue * 0.16);
       const idle = Math.sin(t * 0.6 + b.phase) * 1.1;
       const tipDX = (b.restDX + w * b.windScale + idle) * scale;
-      blade(ctx, cx + b.rootX * scale, baseY, b.len * scale, b.width * scale, tipDX, cBase, cTip, b.depth > 0.66);
+      blade(ctx, cx + b.rootX * scale, baseY, b.len * scale, b.width * scale, tipDX, b.cBase, b.cTip, b.vein);
     }
   }
   function drawEdible(ctx, patch, cx, baseY, t, scale) {
@@ -146,18 +164,18 @@
     ctx.fillStyle = dg;
     ctx.save(); ctx.translate(cx, baseY); ctx.scale(1, 0.42); ctx.beginPath(); ctx.arc(0, 0, 30 * scale, 0, TAU); ctx.fill(); ctx.restore();
     ctx.restore();
-    for (const s of patch.stub) stubble(ctx, cx + s.rootX * scale, baseY, s.len * scale, s.width * scale, (s.restDX + w * 0.3) * scale, mix(EAT_DRY.base, EAT_FRESH.base, 0.3), mix(EAT_DRY.tip, [225, 215, 150], 0.4));
+    for (const s of patch.stub) stubble(ctx, cx + s.rootX * scale, baseY, s.len * scale, s.width * scale, (s.restDX + w * 0.3) * scale, STUB_BASE, STUB_TIP);
     for (const c of patch.clover) {
       ctx.save(); ctx.translate(cx + c.x * scale, baseY + c.y * scale); ctx.rotate(c.rot + w * 0.02);
-      ctx.fillStyle = rgb([138, 195, 86]);
+      ctx.fillStyle = CLOVER;
       for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate((k / 3) * TAU); ctx.beginPath(); ctx.ellipse(0, -c.s * 0.7 * scale, c.s * 0.5 * scale, c.s * scale, 0, 0, TAU); ctx.fill(); ctx.restore(); }
       ctx.restore();
     }
     for (const b of patch.blades) {
-      const tcol = b.depth < 0.5 ? mix(EAT_FRESH.base, EAT_FRESH.tip, 0.4) : EAT_FRESH.tip;
+      const layer = b.depth < 0.5 ? 'back' : 'front';
       const idle = Math.sin(t * 0.7 + b.phase) * 0.7;
       const tipDX = (b.restDX + w * b.windScale + idle) * scale;
-      blade(ctx, cx + b.rootX * scale, baseY, b.len * scale, b.width * scale, tipDX, mix(EAT_FRESH.base, [70, 120, 50], 0.15), tcol, b.depth > 0.6);
+      blade(ctx, cx + b.rootX * scale, baseY, b.len * scale, b.width * scale, tipDX, EAT_BLADE_BASE, EAT_BLADE_TIP[layer], b.depth > 0.6 ? EAT_VEIN[layer] : null);
     }
   }
 

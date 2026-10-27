@@ -426,7 +426,7 @@
       }
       if (f.sniffT > 0) f.sniffT -= dt;
 
-      const a = Math.atan2(ty - f.y, tx - f.x);
+      const a = this.avoidHeading(f, f.x, f.y, tx, ty, 20);
       const turn = (f.state === 'chase' ? 7 : 3.2) * dt;
       f.faceSmooth = f.faceSmooth == null ? a : f.faceSmooth + clamp(angleDiff(f.faceSmooth, a), -turn, turn);
       f.face = f.faceSmooth;

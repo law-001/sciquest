@@ -5,8 +5,15 @@
    =========================================================================== */
 (function (global) {
   'use strict';
+  // Off-screen culling margins (px) for renderScene: widest prop sideways, how
+  // far a prop reaches below its base (pond rims), how tall one rises above it.
+  const CULL_X = 160, CULL_BELOW = 90, CULL_ABOVE = 200;
+  // Obstacle avoidance for animals (avoidHeading): how far ahead they look,
+  // and the gap they keep from an obstacle's edge — blockers' collision radii
+  // are smaller than the art, so the gap stops them brushing the drawn edge.
+  const AVOID_LOOK = 130, AVOID_PAD = 16;
   const G = global.Game;
-  const { clamp, dist, TAU } = G;
+  const { clamp, dist, TAU, angleDiff, segCircle } = G;
 
   /* ----- level metadata (drives cards + edu modals + HUD) ----- */
   const LEVELS = [
@@ -95,6 +102,30 @@
       x = clamp(x, m, this.world.w - m); y = clamp(y, m, this.world.h - m);
       return { x, y };
     }
+    // Heading for an animal at (x,y) of radius r walking toward (tx,ty) that
+    // curves around obstacles instead of walking into them. It looks ahead
+    // along the straight line; if that crosses a blocker (grown by r + a gap),
+    // it aims at the tangent past the nearest one. The side is remembered on
+    // `agent` until the way is clear, so it doesn't flip-flop around the
+    // middle of an obstacle. A blocker the target itself is inside (a burrow
+    // the rabbit is running into) is never avoided.
+    avoidHeading(agent, x, y, tx, ty, r) {
+      const direct = Math.atan2(ty - y, tx - x);
+      const look = Math.min(AVOID_LOOK, dist(x, y, tx, ty));
+      const ex = x + Math.cos(direct) * look, ey = y + Math.sin(direct) * look;
+      let hit = null, hitD = Infinity, hitR = 0;
+      for (const b of this.world.blockers) {
+        const R = b.r + r + AVOID_PAD, d = dist(x, y, b.x, b.y);
+        if (d > look + R || dist(tx, ty, b.x, b.y) < R) continue;
+        if (d < hitD && segCircle(x, y, ex, ey, b.x, b.y, R)) { hit = b; hitD = d; hitR = R; }
+      }
+      if (!hit) { agent.avoidSide = 0; return direct; }
+      const toCentre = Math.atan2(hit.y - y, hit.x - x);
+      if (!agent.avoidSide) agent.avoidSide = angleDiff(toCentre, direct) >= 0 ? 1 : -1;
+      // Already inside the gap: walk along the edge rather than into it.
+      const off = hitD > hitR ? Math.asin(hitR / hitD) : Math.PI / 2;
+      return toCentre + agent.avoidSide * (off + 0.1);
+    }
     // is point inside any hiding prop?
     //  Tall grass and bushes are anchored at their base and rise UPWARD, and the
     //  scene is depth-sorted by that base y. So a prop only draws OVER (conceals)
@@ -124,9 +155,20 @@
       return false;
     }
     // depth-sorted scene draw: pushes {y, fn}
+    //  Props wholly off screen are skipped — the maps are several screens big
+    //  and redrawing every grass clump each frame was most of the frame cost.
+    //  Props are drawn up from their base y, so the margin is larger above the
+    //  view's bottom edge than below its top. The world tree is too big to
+    //  bound cheaply and there is only one, so it always draws.
     renderScene(extra) {
-      const list = [];
-      for (const p of this.world.props) list.push({ y: p.y, fn: () => this.world.drawProp(this.ctx, this.cam, p) });
+      const list = [], cam = this.cam;
+      for (const p of this.world.props) {
+        if (p.type !== 'worldtree') {
+          const sx = p.x - cam.x, sy = p.y - cam.y;
+          if (sx < -CULL_X || sx > cam.vw + CULL_X || sy < -CULL_BELOW || sy > cam.vh + CULL_ABOVE) continue;
+        }
+        list.push({ y: p.y, fn: () => this.world.drawProp(this.ctx, cam, p) });
+      }
       if (extra) for (const e of extra) list.push(e);
       list.sort((a, b) => a.y - b.y);
       for (const it of list) it.fn();

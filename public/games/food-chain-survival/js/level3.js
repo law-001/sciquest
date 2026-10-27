@@ -408,7 +408,7 @@
         if (!f.wp || dist(f.x, f.y, f.wp.x, f.wp.y) < 28) f.wp = this._critterWander(f.x, f.y);
         tx = f.wp.x; ty = f.wp.y; speed = 92; anim = 'walk'; fps = 9;
       }
-      const a = Math.atan2(ty - f.y, tx - f.x);
+      const a = this.avoidHeading(f, f.x, f.y, tx, ty, 18);
       let moved = false;
       for (const off of [0, 0.5, -0.5, 1.0, -1.0, 1.7]) { const ma = a + off; const c = this.collide(f.x + Math.cos(ma) * speed * dt, f.y + Math.sin(ma) * speed * dt, 18); if (dist(c.x, c.y, f.x, f.y) > speed * dt * 0.5) { f.x = c.x; f.y = c.y; moved = true; break; } }
       if (!moved) { f.wp = this._critterWander(f.x, f.y); f.target = null; f.cd = 0.6; }
@@ -419,7 +419,10 @@
       b.t += dt; const d = dist(b.x, b.y, this.fox.x, this.fox.y);
       let speed = 0, anim = 'idle', fps = 7;
       if (d < 200) {                       // flee straight away from the fox, with a little juke
-        const a = Math.atan2(b.y - this.fox.y, b.x - this.fox.x) + Math.sin(this.time * 8 + b.jit) * 0.22;
+        // Aim at a point well away from the fox, so the way out bends round obstacles.
+        const away = Math.atan2(b.y - this.fox.y, b.x - this.fox.x);
+        const a = this.avoidHeading(b, b.x, b.y, b.x + Math.cos(away) * 400, b.y + Math.sin(away) * 400, 12)
+          + Math.sin(this.time * 8 + b.jit) * 0.22;
         speed = 206; anim = 'sprint'; fps = 16; b.face = a; b.state = 'flee';
         const c = this.collide(b.x + Math.cos(a) * speed * dt, b.y + Math.sin(a) * speed * dt, 12); b.x = c.x; b.y = c.y;
       } else if (b.state === 'flee') { b.state = 'graze'; b.t = 0; this._bunnyWander(b); }
@@ -427,7 +430,7 @@
         anim = (Math.floor(b.t * 1.2) % 4 === 0) ? 'eat' : 'idle'; fps = 7; speed = 0;
         if (b.t > rand(1.6, 3.4)) { b.state = 'wander'; b.t = 0; this._bunnyWander(b); }
       } else {                             // wander
-        const a = Math.atan2(b.wp.y - b.y, b.wp.x - b.x); speed = 76; anim = 'hop'; fps = 11; b.face = a;
+        const a = this.avoidHeading(b, b.x, b.y, b.wp.x, b.wp.y, 12); speed = 76; anim = 'hop'; fps = 11; b.face = a;
         const c = this.collide(b.x + Math.cos(a) * speed * dt, b.y + Math.sin(a) * speed * dt, 12); b.x = c.x; b.y = c.y;
         if (dist(b.x, b.y, b.wp.x, b.wp.y) < 24 || b.t > 4) { b.state = 'graze'; b.t = 0; }
       }

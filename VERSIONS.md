@@ -721,3 +721,19 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
   - `levels/PlantDoctor.jsx`: `controlBar` → `actions`, passed as `Subtitles` children.
   - `styles.css`: `.pc-subs__choices`, `.pc-subs__choice`, `.pc-subs__fix`.
 - Commit: Plant cell L3: move answer pills onto the stage, drop bottom bar
+
+## VERSION_103
+- Plant Cell thumbnail: replaced `src/assets/plantcell.png` with the plant-by-the-window room scene, cropped to 16:9 (612 × 344) around the window and plant so the game card's `object-cover` doesn't cut it unpredictably.
+- Commit: Plant cell: new room-scene thumbnail
+
+## VERSION_104
+- Food Chain Survival performance: fixed low FPS / lag.
+  - `js/levels.js` `renderScene`: props wholly off screen are no longer drawn (margins `CULL_X` / `CULL_BELOW` / `CULL_ABOVE`; the world tree always draws). Before, every bush, grass clump, flower and pond on the whole map was redrawn every frame.
+  - `js/grass.js`: blade colours (base, tip, vein) are worked out once per blade when a clump is generated instead of re-mixing arrays and building colour strings for every blade every frame. Looks identical.
+- Commit: Food chain survival: cull off-screen props, cache grass colours
+
+## VERSION_105
+- Food Chain Survival: smarter animal movement — foxes and rabbits now steer around bushes, ponds, rocks and other blockers instead of walking straight into them and sliding along the edge.
+  - `js/levels.js`: new shared `avoidHeading(agent, x, y, tx, ty, r)` — looks `AVOID_LOOK` (130px) ahead; if the straight path crosses a blocker (grown by the animal's radius + `AVOID_PAD` 16px so they clear the drawn edge), it aims at the tangent past it, remembering which side until the path is clear. Never avoids a blocker the target is inside (burrows).
+  - `js/level1.js` (hunting foxes), `js/level2.js` (rival foxes, fleeing + wandering rabbits), `js/level3.js` (fox, fleeing + wandering bunnies) use it. The old push-out collision and stuck fallback stay as a safety net.
+- Commit: Food chain survival: foxes and rabbits steer around obstacles
