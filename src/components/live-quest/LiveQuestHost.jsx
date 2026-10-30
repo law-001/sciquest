@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Info,
   Loader2,
   Pencil,
   Play,
@@ -17,7 +18,7 @@ import {
 } from "lucide-react";
 
 import Button from "../Button";
-import { TabHead } from "../portal";
+import { SELECT, TabHead } from "../portal";
 import { useAuth } from "../../context/AuthContext";
 import { useLessonsData } from "../../context/LessonsDataContext";
 import { getSecondsLeft, useLiveRoom, useNow } from "../../hooks/useLiveRoom";
@@ -55,7 +56,7 @@ const CARD =
 
 // Teacher portal "Live Quest" tab: create a room, pick lessons + timer in the
 // lobby while students join, then run the questions live.
-export function LiveQuestHost() {
+export function LiveQuestHost({ onEditQuiz }) {
   const { user } = useAuth();
   const [roomId, setRoomId] = useState(null);
   const [isChecking, setIsChecking] = useState(true);
@@ -185,6 +186,7 @@ export function LiveQuestHost() {
           sets={sets}
           onNewSet={newSet}
           onEditSet={setEditingSet}
+          onEditQuiz={onEditQuiz}
           onClosed={() => setRoomId(null)}
         />
       ) : (
@@ -221,7 +223,7 @@ export function LiveQuestHost() {
   );
 }
 
-function HostRoom({ roomId, sets, onNewSet, onEditSet, onClosed }) {
+function HostRoom({ roomId, sets, onNewSet, onEditSet, onEditQuiz, onClosed }) {
   const { room, deadline, loadState, refresh } = useLiveRoom(roomId);
   const [players, setPlayers] = useState([]);
   const [answers, setAnswers] = useState([]);
@@ -326,6 +328,7 @@ function HostRoom({ roomId, sets, onNewSet, onEditSet, onClosed }) {
           isBusy={isBusy}
           onNewSet={onNewSet}
           onEditSet={onEditSet}
+          onEditQuiz={onEditQuiz}
           onStart={(questions) => run(() => startLiveRoom(room.id, questions))}
           onClose={() => run(() => endLiveRoom(room.id)).then(onClosed)}
           onError={setError}
@@ -363,7 +366,18 @@ function HostRoom({ roomId, sets, onNewSet, onEditSet, onClosed }) {
   );
 }
 
-function HostLobby({ room, players, sets, isBusy, onNewSet, onEditSet, onStart, onClose, onError }) {
+function HostLobby({
+  room,
+  players,
+  sets,
+  isBusy,
+  onNewSet,
+  onEditSet,
+  onEditQuiz,
+  onStart,
+  onClose,
+  onError,
+}) {
   const { weeksWithHidden: weeks, getQuiz } = useLessonsData();
   const [lessonIds, setLessonIds] = useState(room.lessonIds);
   const [setIds, setSetIds] = useState(room.setIds);
@@ -516,6 +530,16 @@ function HostLobby({ room, players, sets, isBusy, onNewSet, onEditSet, onStart, 
 
           {source === "lessons" ? (
             <>
+              <p className="mb-3 flex items-start gap-2 rounded-xl border border-secondary-200 dark:border-secondary-800/50 bg-secondary-50 dark:bg-secondary-900/20 px-3 py-2.5 text-sm text-stone-700 dark:text-stone-200">
+                <Info className="w-4 h-4 shrink-0 mt-0.5 text-secondary-700 dark:text-secondary-400" aria-hidden="true" />
+                <span>
+                  These are the <strong>exact questions from each lesson&apos;s
+                  quiz</strong> — nothing is rewritten for Live Quest, so playing
+                  them doubles as a review of the real quiz. Only multiple-choice
+                  and true/false questions can be played live. To change a
+                  question&apos;s wording or answers, use the pencil beside it.
+                </span>
+              </p>
               <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
                 Use the arrows to switch weeks. Tick a lesson to play all its
                 questions, or tick questions one by one.
@@ -539,7 +563,7 @@ function HostLobby({ room, players, sets, isBusy, onNewSet, onEditSet, onStart, 
                       id="live-quest-week"
                       value={safeWeekIndex}
                       onChange={(event) => setWeekIndex(Number(event.target.value))}
-                      className="flex-1 min-w-0 min-h-[44px] rounded-lg bg-transparent px-2 text-center font-heading font-black text-stone-900 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-primary-500"
+                      className={cn(SELECT, "flex-1 min-w-0 text-center")}
                     >
                       {weeks.map((w, index) => {
                         const count = getWeekPickedCount(w);
@@ -570,6 +594,9 @@ function HostLobby({ room, players, sets, isBusy, onNewSet, onEditSet, onStart, 
                         isPicked={lessonIds.includes(lesson.id)}
                         excluded={excluded}
                         emptyLabel="No live questions"
+                        onEditQuestion={
+                          onEditQuiz && (() => onEditQuiz(lesson.id, week.id, "live-quest"))
+                        }
                         onToggleGroup={(id) => toggleGroup("lesson", id)}
                         onToggleQuestion={(id, pickId, playable) =>
                           toggleQuestion("lesson", id, pickId, playable)
@@ -634,7 +661,7 @@ function HostLobby({ room, players, sets, isBusy, onNewSet, onEditSet, onStart, 
             id="live-quest-seconds"
             value={seconds}
             onChange={handleSecondsChange}
-            className="mt-2 w-full min-h-[44px] rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 text-sm font-bold text-stone-800 dark:text-stone-100"
+            className={cn(SELECT, "mt-2 w-full")}
           >
             {SECONDS_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -716,10 +743,13 @@ function QuestionGroupPicker({
   excluded,
   emptyLabel,
   onEdit,
+  onEditQuestion,
   onToggleGroup,
   onToggleQuestion,
 }) {
-  const [isOpen, setIsOpen] = useState(true);
+  // Collapsed on arrival — a week of lessons is a long list, and the host
+  // only needs to open the group they are actually picking from.
+  const [isOpen, setIsOpen] = useState(false);
   const isQuestionPicked = (q) => isPicked && !excluded.includes(toQuestionKey(group.id, q.pickId));
   const pickedCount = playable.filter(isQuestionPicked).length;
   const isPartial = pickedCount > 0 && pickedCount < playable.length;
@@ -789,8 +819,8 @@ function QuestionGroupPicker({
       {isOpen && (
         <ol id={listId} className="ml-7 mb-2 flex flex-col gap-1 border-l-2 border-orange-100 dark:border-stone-700 pl-3">
           {playable.map((q, position) => (
-            <li key={q.pickId}>
-              <label className="flex items-start gap-3 rounded-lg px-2 py-2 min-h-[44px] cursor-pointer hover:bg-orange-50 dark:hover:bg-stone-700/50">
+            <li key={q.pickId} className="flex items-start gap-1">
+              <label className="flex flex-1 min-w-0 items-start gap-3 rounded-lg px-2 py-2 min-h-[44px] cursor-pointer hover:bg-orange-50 dark:hover:bg-stone-700/50">
                 <input
                   type="checkbox"
                   className="mt-0.5 w-4 h-4 shrink-0 accent-primary-600"
@@ -811,6 +841,17 @@ function QuestionGroupPicker({
                   </span>
                 </span>
               </label>
+              {onEditQuestion && (
+                <button
+                  type="button"
+                  onClick={onEditQuestion}
+                  aria-label={`Edit question ${position + 1} in the ${group.title} quiz`}
+                  title="Edit in the lesson quiz editor"
+                  className="shrink-0 flex items-center justify-center w-11 h-11 rounded-lg text-stone-500 dark:text-stone-400 hover:text-primary-700 dark:hover:text-primary-400 focus-visible:outline-2 focus-visible:outline-primary-500"
+                >
+                  <Pencil className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
             </li>
           ))}
         </ol>
