@@ -68,6 +68,15 @@ export function Navbar({
 
   const hero = transparent && !isScrolled;
 
+  // One shape for both mobile bar buttons, so they read as a pair.
+  const iconButton = `flex items-center justify-center w-11 h-11 rounded-xl transition-colors duration-500 ${
+    hero
+      ? isDark
+        ? "text-white/80 hover:bg-white/10"
+        : "text-stone-700 hover:bg-stone-100"
+      : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
+  }`;
+
   return (
     <nav className={`${transparent ? "fixed" : "sticky"} top-0 left-0 right-0 z-50`}>
 
@@ -204,52 +213,42 @@ export function Navbar({
             )}
           </div>
 
-          {/* Mobile: leaderboard + theme + hamburger */}
-          <div className="md:hidden flex items-center gap-1 justify-self-end">
-            <button
-              onClick={() => setIsLeaderboardOpen(true)}
-              aria-label="Open the section leaderboard"
-              className={`p-2 rounded-xl transition-colors duration-500 ${
-                hero
-                  ? isDark
-                    ? "text-white/80 hover:bg-white/10"
-                    : "text-stone-700 hover:bg-stone-100"
-                  : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
-              }`}
-            >
-              <Trophy className="w-5 h-5" />
-            </button>
-
+          {/* Mobile: theme toggle then hamburger, hamburger last so it sits on
+              the right edge. Both are plain 44px squares — Button's size padding
+              would hold the icon in from the edge. The leaderboard lives in the
+              menu below, so the bar stays readable next to the logo.
+              col-start-3: the centre links column is display:none on mobile, so
+              without it this group would auto-place into the middle column. */}
+          <div className="md:hidden col-start-3 flex items-center gap-2 justify-self-end">
             <button
               onClick={toggle}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              className={`p-2 rounded-xl transition-colors duration-500 ${
-                hero
-                  ? isDark
-                    ? "text-white/80 hover:bg-white/10"
-                    : "text-stone-700 hover:bg-stone-100"
-                  : "text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
-              }`}
+              className={iconButton}
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-            <Button
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2"
-              variant="ghost"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+              className={iconButton}
             >
-              {isMenuOpen ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                  stroke={hero ? (isDark ? "white" : "#1c1917") : isDark ? "#d6d3d1" : "#57534E"}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6h12v12" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                  stroke={hero ? (isDark ? "white" : "#1c1917") : isDark ? "#d6d3d1" : "#57534E"}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </Button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={isMenuOpen ? "M6 6l12 12M6 18L18 6" : "M4 6h16M4 12h16M4 18h16"}
+                />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -278,6 +277,22 @@ export function Navbar({
                   {item.label}
                 </button>
               ))}
+
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsLeaderboardOpen(true);
+                }}
+                className={`text-left flex items-center min-h-[44px] transition-colors duration-500 ${
+                  hero
+                    ? isDark
+                      ? "text-white/80 hover:text-white"
+                      : "text-stone-900 hover:text-stone-700"
+                    : "text-zinc-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white"
+                }`}
+              >
+                Leaderboard
+              </button>
 
               {isLoggedIn && !hero && (
                 <button

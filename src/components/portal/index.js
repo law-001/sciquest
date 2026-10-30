@@ -8,3 +8,4 @@ export { RosterList, RosterRow } from "./RosterList";
 export { RosterGroup } from "./RosterGroup";
 export { groupByQuarter, QUARTERS } from "./quarters";
 export { BarList } from "./BarList";
+export { SELECT } from "./fields";

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import { SELECT } from '../portal';
 
 const INPUT = 'w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors resize-none'
 const LABEL = 'block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1'
@@ -128,7 +129,7 @@ export default function MatchingForm({ initialData, onSubmit, onCancel }) {
             <div key={i} className="flex items-center gap-3">
               <span className="text-xs font-bold text-stone-500 dark:text-stone-400 min-w-0 flex-1 truncate">{left || `A${i + 1}`}</span>
               <span className="text-stone-300 shrink-0">→</span>
-              <select className="flex-1 px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400"
+              <select className={`${SELECT} flex-1`}
                 value={pairings[i] ?? ''}
                 onChange={e => { const next = [...pairings]; next[i] = e.target.value; setPairings(next) }}>
                 <option value="">Select match…</option>

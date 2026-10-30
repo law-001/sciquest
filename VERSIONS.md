@@ -721,3 +721,72 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
   - `levels/PlantDoctor.jsx`: `controlBar` → `actions`, passed as `Subtitles` children.
   - `styles.css`: `.pc-subs__choices`, `.pc-subs__choice`, `.pc-subs__fix`.
 - Commit: Plant cell L3: move answer pills onto the stage, drop bottom bar
+
+## VERSION_103
+- Mobile navbar: moved the leaderboard trophy out of the top bar and into the burger menu as a "Leaderboard" row under the nav links; the dark-mode toggle now sits alone on the right next to the burger, so the bar no longer crowds the SciQuest logo on a narrow screen.
+  - `layout/Navbar.jsx`: dropped the trophy button from the `md:hidden` bar, sized the theme toggle to a 44px tap target, added the leaderboard entry to the mobile menu. Desktop bar unchanged.
+- Commit: Mobile navbar: leaderboard into the burger menu, theme toggle to the right
+
+## VERSION_104
+- Live Quest lobby: lesson-quiz questions are now inspectable and editable, not just a line of text.
+  - `lib/liveQuest.js`: added `getPickerOptions` — normalises a question's answers for the picker, handling both the lesson shape (`correctAnswer`) and the set shape (`correctIndexes` into blank-padded `options`).
+  - `live-quest/LiveQuestHost.jsx`: new `QuestionOptions` renders each question's answers under it with the correct one(s) ticked (lettered A–D, green + check icon, never colour alone); lesson questions gained a per-question pencil that opens that lesson's quiz editor. `onEditQuiz` threaded `LiveQuestHost` → `HostRoom` → `HostLobby` → `QuestionGroupPicker`.
+  - `pages/TeacherPortalPage.jsx`: passes `onEditQuiz` into `LiveQuestHost`.
+  - `App.jsx`: `onEditQuiz` takes an optional `returnTab` (default `quiz-management`) so a host editing mid-lobby returns to the Live Quest tab and `fetchOpenHostedRoom` picks the room back up.
+- Commit: Live Quest: preview lesson question answers in the lobby and open the quiz editor from it
+
+## VERSION_105
+- Week 1 Lesson 1 quiz ("Uses of Scientific Models"): added a multiple-choice question asking which model type a globe is, with the four types as options and an explanation drawn from the lesson's Breakdown section. Appended after the existing essay so the essay keeps `q1` and existing attempts aren't disturbed.
+  - `data/quizzesweek-01.js`: new `q2`, 5 points.
+- Commit: Week 1 Lesson 1 quiz: add a multiple-choice question on model types
+
+## VERSION_106
+- Live Quest lobby: removed the inline answer list from the question picker. A host's screen is often mirrored to the class projector while students join, so listing the options and flagging the correct one gave the answer away before the question started. The picker now shows only the question text and its type/settings chips; answers are seen in the quiz editor via the per-question pencil (added in VERSION_104), which is unchanged.
+  - `live-quest/LiveQuestHost.jsx`: dropped the `QuestionOptions` component and its call site.
+  - `lib/liveQuest.js`: removed the now-unused `getPickerOptions`.
+- Commit: Live Quest: stop revealing answers in the lobby picker, keep them in the editor
+
+## VERSION_107
+- Live Quest lobby: question groups now start collapsed. Landing on the tab showed every lesson's full question list expanded at once, which buried the week picker and the lessons below it; the host now opens just the group they're picking from.
+  - `live-quest/LiveQuestHost.jsx`: `QuestionGroupPicker`'s `isOpen` defaults to `false`.
+- Commit: Live Quest: start question groups collapsed in the lobby
+
+## VERSION_108
+- Live Quest lobby: added a disclaimer above the lesson list stating the pre-built questions are the exact questions from each lesson's quiz, so playing them doubles as review. Also notes that only multiple-choice and true/false can go live, and points at the pencil for edits.
+  - `live-quest/LiveQuestHost.jsx`: teal callout with an `Info` icon in the Lessons source tab.
+- Unified every dropdown a teacher sees. There were four different looks in play (`rounded-lg` vs `rounded-xl`, three focus rings, `stone-800` vs `stone-900` dark backgrounds, four text sizes, and two with no focus ring at all).
+  - `components/portal/fields.js` (new): one `SELECT` class string — `rounded-xl`, orange-200/stone-600 border, white/stone-800 background, stone-900/white text, orange focus ring, 44px min height, disabled states. Width is left to the call site. Exported from `components/portal/index.js`.
+  - Applied to all 18 teacher-side dropdowns: `TeacherPortalPage.jsx` (4), `QuizEditorPage.jsx` (1), `live-quest/LiveQuestHost.jsx` (2), `live-quest/QuestionSetEditor.jsx` (3), and the slot forms Applications, ImageCards, SortBuckets, DragLabel, MultipleChoice, CaseStudy (2), PictureBased, Matching.
+  - The Live Quest week picker and the two `focus:outline-none`-only dropdowns gained a visible focus ring they previously lacked.
+  - Left alone: `AdminDashboardPage.jsx` (admin, not teacher) and `quiz-slots/MatchingQuestion.jsx` (student-facing).
+- Commit: Live Quest disclaimer on lesson questions; unify every teacher-side dropdown on one SELECT token
+
+## VERSION_109
+- Quiz Checking: the "All caught up" group is now collapsed by default, so the screen opens on what still needs grading. "Needs grading" stays expanded. Reuses the `<details>`/`<summary>` pattern already used for "Not attempted" in the same file, so no new state.
+  - `pages/TeacherPortalPage.jsx`: `QuizCheckingSlot`'s group list gained an `isCollapsed` flag; the done group renders as `<details>` with a rotating chevron.
+- Dropdown picker panels: rounded the open list, as far as the platform allows. A native `<select>`'s popup is drawn by the browser rather than the page, so `border-radius` on the control only rounds the closed box. Chrome/Edge 135+ allow the page to take the picker over with `appearance: base-select`; Firefox and Safari treat the value as invalid and keep their native popup, so this is progressive enhancement and nothing depends on it.
+  - `index.css`: new `@supports (appearance: base-select)` block — 14px panel radius, 10px per-option radius, cream/stone-800 panel with light and dark borders, shadows and hover/selected colours for both themes, and Chrome's duplicate checkmark hidden.
+  - `components/portal/fields.js`: `SELECT` now carries the `sq-select` hook class.
+- Commit: Collapse "All caught up" by default; round the dropdown picker panel where the browser allows it
+
+## VERSION_110
+- Reverted the `appearance: base-select` picker styling from VERSION_109. Opting in hands Chrome the closed control as well as the popup, and the auto-generated button is not vertically centred inside the 44px box — every dropdown rendered its label and arrow top-aligned, and the arrow became a text glyph instead of the native chevron. Native dropdowns centre their own label, so removing the block restores correct rendering in every browser.
+  - `index.css`: `@supports (appearance: base-select)` block removed, replaced by a note recording why the popup cannot be rounded from CSS and what rounding it would actually cost.
+  - `components/portal/fields.js`: dropped the now-unused `sq-select` hook class.
+  - The unified `SELECT` token from VERSION_108 is untouched — closed controls keep their rounded corners, shared border, background, text and focus ring.
+- Commit: Revert base-select picker styling, it top-aligned every dropdown label
+
+## VERSION_111
+- Mobile navbar: the hamburger now sits flush against the right edge with the dark-mode toggle beside it. It was held ~24px in from the edge because `Button` concatenates class strings without tailwind-merge, so the hamburger kept `px-6` from its default `md` size on top of the `p-2` it was given. Both bar buttons are now plain 44px squares sharing one `iconButton` class.
+- Fixed the close icon: the path was `M6 18L18 6M6 6h12v12`, whose second subpath draws a top edge plus a right edge rather than the second diagonal, so the open-menu icon rendered as an arrow-and-corner instead of an X. Now `M6 6l12 12M6 18L18 6`. The two icons also collapsed into one `<svg>` with a conditional `d`, and the stroke follows `currentColor` instead of four hardcoded hex values.
+- The hamburger gained `aria-label` and `aria-expanded`, which it never had.
+- Removed the trophy icon from the "Leaderboard" row in the burger menu so it matches the plain text nav links above it.
+  - `layout/Navbar.jsx`.
+- Commit: Mobile navbar: flush-right hamburger, fix malformed close icon, plain leaderboard row
+
+## VERSION_112
+- Mobile navbar: the theme toggle + hamburger now sit together on the far right with a clear gap from the SciQuest logo. The group was auto-placing into the hidden centre grid column; pinned it with `col-start-3`, and the gap between the two buttons is now `gap-2`.
+  - `layout/Navbar.jsx`.
+- Landing hero on tall portrait phones (e.g. iPhone 16 Pro Max): the mountain/cloud SVGs had no height, so they shrank to their 1440×600 aspect and left empty bands across the bottom of the scene. They now fill their layers (`height: "100%"`), and the scene container is capped at `min(62vh, 90vw)` so the ranges don't stretch into spikes. Also fixed the last Earth cloud layer height `"38"` (38px) → `"38%"`.
+  - `pages/LandingPage.jsx`.
+- Commit: Fix mobile navbar button placement and hero scene distortion on portrait phones

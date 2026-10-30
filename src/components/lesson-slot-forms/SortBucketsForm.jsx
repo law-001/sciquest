@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 
 import ThemeColorPicker from './_ThemeColorPicker'
+import { SELECT } from '../portal';
 
 const INPUT =
   'w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors'
@@ -132,7 +133,7 @@ export default function SortBucketsForm({ initialHeading, initialData, onSubmit,
                 required
               />
               <select
-                className={INPUT + ' w-40'}
+                className={`${SELECT} w-40`}
                 value={it.bucketId}
                 onChange={(e) => updateItem(it.id, 'bucketId', e.target.value)}
                 aria-label={`Correct category for item ${i + 1}`}

@@ -43,6 +43,7 @@ import {
   StatStrip,
   TabHead,
   groupByQuarter,
+  SELECT,
 } from "../components/portal";
 import { TICK } from "../components/portal/tones";
 import Button from "../components/Button";
@@ -2444,7 +2445,7 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
             id="qc-section"
             value={sectionId ?? ""}
             onChange={(e) => onViewSection?.(e.target.value || null)}
-            className="h-9 px-2.5 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-[13px] font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+            className={SELECT}
           >
             {sectionOptions.map((opt) => (
               <option key={opt.id || "all"} value={opt.id}>
@@ -2472,22 +2473,44 @@ function QuizCheckingSlot({ data, sectionId, onGrade, onViewSection }) {
         ) : (
           [
             { id: "needs", label: "Needs grading", items: needsGrading },
-            { id: "done", label: "All caught up", items: caughtUp },
+            // Collapsed: this screen is about what still needs grading, and
+            // the done list is usually the long one.
+            {
+              id: "done",
+              label: "All caught up",
+              items: caughtUp,
+              isCollapsed: true,
+            },
           ]
             .filter((group) => group.items.length > 0)
-            .map((group) => (
-              <section
-                key={group.id}
-                className="border-b border-orange-100 dark:border-stone-700 last:border-b-0"
-              >
-                <h3 className="px-5 pt-4 pb-2 text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
-                  {group.label} · {group.items.length}
-                </h3>
-                <RosterList className="border-t border-orange-100 dark:border-stone-700">
-                  {group.items.map(renderLessonRow)}
-                </RosterList>
-              </section>
-            ))
+            .map((group) =>
+              group.isCollapsed ? (
+                <details
+                  key={group.id}
+                  className="group border-b border-orange-100 dark:border-stone-700 last:border-b-0"
+                >
+                  <summary className="flex items-center justify-between gap-3 px-5 min-h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500 hover:bg-orange-50/50 dark:hover:bg-stone-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary-400 transition-colors">
+                    {group.label} · {group.items.length}
+                    <ChevronDown className="w-4 h-4 transition-transform motion-reduce:transition-none group-open:rotate-180" />
+                  </summary>
+                  <RosterList className="border-t border-orange-100 dark:border-stone-700">
+                    {group.items.map(renderLessonRow)}
+                  </RosterList>
+                </details>
+              ) : (
+                <section
+                  key={group.id}
+                  className="border-b border-orange-100 dark:border-stone-700 last:border-b-0"
+                >
+                  <h3 className="px-5 pt-4 pb-2 text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
+                    {group.label} · {group.items.length}
+                  </h3>
+                  <RosterList className="border-t border-orange-100 dark:border-stone-700">
+                    {group.items.map(renderLessonRow)}
+                  </RosterList>
+                </section>
+              ),
+            )
         )}
       </PortalPanel>
     </div>
@@ -3942,7 +3965,7 @@ function QuizTimerControl({ lessonId, currentSeconds }) {
           value={selection}
           onChange={handlePresetChange}
           disabled={saving}
-          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+          className={cn(SELECT, "flex-1 min-w-0")}
         >
           <option value="0">No timer</option>
           {TIMER_PRESETS_MIN.filter((m) => m > 0).map((m) => (
@@ -4036,7 +4059,7 @@ function QuizAttemptsControl({ lessonId, currentAttempts }) {
           value={selection}
           onChange={handleChange}
           disabled={saving}
-          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+          className={cn(SELECT, "flex-1 min-w-0")}
         >
           {ATTEMPTS_PRESETS.map((n) => (
             <option key={n} value={String(n)}>
@@ -4904,7 +4927,7 @@ function QuizStudentAccessModal({
             setDuration(e.target.value);
             setError(null);
           }}
-          className="w-full mb-3 px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-bold text-stone-700 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-secondary-400"
+          className={cn(SELECT, "w-full mb-3")}
         >
           {ACCESS_DURATIONS.map((d) => (
             <option key={d.value} value={d.value}>
@@ -5979,7 +6002,7 @@ export function TeacherPortalPage({
       ) : activeTab === "settings" ? (
         <SettingsSlot />
       ) : activeTab === "live-quest" ? (
-        <LiveQuestHost />
+        <LiveQuestHost onEditQuiz={onEditQuiz} />
       ) : (
         <ActiveSlot
           data={slotData}

@@ -37,6 +37,22 @@ export const QUIZZES_WEEK_01 = {
         minWords: 50,
         points: 25,
       },
+      {
+        id: "q2",
+        type: "multiple-choice",
+        question:
+          "A globe used to represent Earth is an example of which type of scientific model?",
+        options: [
+          "Physical model",
+          "Conceptual model",
+          "Mathematical model",
+          "Simulation model",
+        ],
+        correctAnswer: "Physical model",
+        points: 5,
+        explanation:
+          "A globe is a smaller, simpler, three-dimensional copy of the actual object being studied, which is what makes it a physical model. Conceptual models combine ideas (like the Bohr model of the atom), mathematical models use equations, and simulation models imitate a process over time.",
+      },
     ],
   },
 

@@ -25,6 +25,7 @@ import {
   saveQuestionSet,
   uploadLiveQuestImage,
 } from "../../lib/liveQuest";
+import { SELECT } from "../portal";
 import { cn } from "../../lib/utils";
 import { formatOption, getOptionStyle } from "./options";
 
@@ -255,7 +256,7 @@ export function QuestionSetEditor({ ownerId, set, onSaved, onBack }) {
                 <label htmlFor="lq-type" className="block mb-1 text-xs font-black uppercase tracking-wide text-stone-500 dark:text-stone-400">
                   Type
                 </label>
-                <select id="lq-type" value={question.type} onChange={(e) => changeType(e.target.value)} className={FIELD}>
+                <select id="lq-type" value={question.type} onChange={(e) => changeType(e.target.value)} className={cn(SELECT, "w-full")}>
                   <option value="multiple-choice">Multiple choice</option>
                   <option value="true-false">True / False</option>
                 </select>
@@ -268,7 +269,7 @@ export function QuestionSetEditor({ ownerId, set, onSaved, onBack }) {
                   id="lq-seconds"
                   value={question.seconds ?? ""}
                   onChange={(e) => updateQuestion({ seconds: e.target.value ? Number(e.target.value) : null })}
-                  className={FIELD}
+                  className={cn(SELECT, "w-full")}
                 >
                   <option value="">Room default</option>
                   {SECONDS_OPTIONS.map((value) => (
@@ -286,7 +287,7 @@ export function QuestionSetEditor({ ownerId, set, onSaved, onBack }) {
                   id="lq-points"
                   value={question.points}
                   onChange={(e) => updateQuestion({ points: e.target.value })}
-                  className={FIELD}
+                  className={cn(SELECT, "w-full")}
                 >
                   {POINTS_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
