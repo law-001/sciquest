@@ -1,6 +1,6 @@
 // Week 14: Cell Reproduction and the Cell Cycle — Grade 7 Science
 //
-// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 14.
+// Curriculum source: Grade 7 Science (MATATAG), 2nd Quarter Week 4 (site Week 14).
 //   Lesson 1 — Cell Reproduction
 //   Lesson 2 — The Cell Cycle
 
@@ -13,7 +13,7 @@ export const week14 = {
   title: "Cell Reproduction and the Cell Cycle",
   category: "Life Science",
   description:
-    "Discover why cells divide at all, what chromosomes carry, and the ordered cycle every cell passes through between one division and the next.",
+    "Find out how parents pass genetic information to their offspring, how many parents sexual and asexual reproduction need, and what a cell does in each stage of the cell cycle.",
   icon: "Copy",
   color: "secondary",
   isLocked: false,
@@ -28,24 +28,24 @@ export const week14 = {
       title: "Cell Reproduction",
       badge: "Lesson 1",
       subtitle:
-        "Every cell alive today came from another cell. Find out why cells divide, what gets copied when they do, and why getting it exactly right matters so much.",
+        "Learn why cells reproduce, how genetic information passes from parents to offspring during fertilization, and how many parents sexual and asexual reproduction need.",
       readTime: "~16 min read",
       xp: 50,
       heroImage: celldivision,
-      heroImageAlt: "Illustration of a cell dividing into two daughter cells",
+      heroImageAlt: "Illustration of one cell dividing into two daughter cells",
 
       signature: {
         widgetId: "surface-volume",
         heading: "Watch It: The Middle Starves First",
         intro: "Nutrients only reach 20 µm in. Grow the cell and watch.",
-        instruction: "Grow it until the centre starves, then divide",
+        instruction: "Grow it until the center starves, then divide",
         xp: 25,
         explainer: {
           title: "Why size forces a cell to divide",
           points: [
             "The teal dots always stopped at the same depth, so the fed shell stayed 20 µm thick however big you made the cell.",
             "On the growth race the volume curve pulled away from the surface curve, because volume cubes the radius and surface only squares it.",
-            "So the starved core grew while the fed shell did not, and the mitochondria in the middle greyed out.",
+            "So the starved core grew while the fed shell did not, and the mitochondria in the middle grayed out.",
             "Dividing halved the volume, and each daughter came out with a smaller core than its parent had.",
           ],
         },
@@ -53,22 +53,33 @@ export const week14 = {
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Why Cells Divide",
-        "What Gets Copied: DNA and Chromosomes",
-        "Two Kinds of Cell Division",
-        "When Division Goes Wrong",
-        "Applications",
+        "Why Cells Reproduce",
+        "From Parents to Offspring",
+        "One Parent or Two?",
+        "Think About It",
+        "Cell Reproduction Helps People",
       ],
 
       references: [
         {
-          label: "Khan Academy — Cell Division",
-          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology",
+          label: "Britannica — Cell division",
+          url: "https://www.britannica.com/science/cell-division",
         },
         {
-          label: "Britannica — Cell Division",
-          url: "https://www.britannica.com/science/cell-division",
+          label: "Britannica — Reproduction (biology)",
+          url: "https://www.britannica.com/science/reproduction-biology",
+        },
+        {
+          label: "Khan Academy — Chromosomes, chromatids and sister chromatids",
+          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology/mitosis/a/chromosomes-chromatids-and-sister-chromatids",
+        },
+        {
+          label: "CK-12 — Asexual vs. Sexual Reproduction",
+          url: "https://www.ck12.org/c/biology/asexual-vs.-sexual-reproduction/",
+        },
+        {
+          label: "Philippine Red Cross — Blood Services",
+          url: "https://redcross.org.ph/",
         },
       ],
 
@@ -78,106 +89,70 @@ export const week14 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "In Week 12 you learned Virchow's principle: <strong class='text-primary-700'>all cells come from pre-existing cells</strong>. <strong class='text-primary-700'>Cell reproduction</strong> — also called cell division — is how that happens. One cell becomes two, and each new cell receives a complete, accurate copy of the parent's genetic instructions.",
-              "You began as a single fertilised cell. Every one of the roughly 37 trillion cells in your body today is a descendant of that one cell, produced by division after division after division. Cell reproduction is how you grew, how you heal, and how worn-out cells get replaced.",
-              "There are two kinds. <strong class='text-primary-700'>Mitosis</strong> produces two identical cells for growth and repair. <strong class='text-primary-700'>Meiosis</strong> produces four genetically unique sex cells for reproduction. You will study both in detail next week.",
+              "In Week 12 you learned that <strong class='text-primary-700'>all cells come from existing cells</strong>. The way one cell makes new cells is called <strong class='text-primary-700'>cell reproduction</strong>, or cell division.",
+              "You started life as just one cell. That cell divided again and again until you had about 30 trillion cells. Cell division is how you grew, how a scraped knee heals, and how your body replaces worn-out cells every day.",
+              "Cell reproduction is also how living things pass their traits to their offspring. A mango seedling grows into a mango tree, never a narra, because its cells carry the instructions it received from its parents.",
+              "Understanding cell division is a way to <strong class='text-primary-700'>serve</strong> others. Doctors use it to treat cancer, heal wounds and save lives with blood and bone marrow donations.",
             ],
             didYouKnow:
-              "Your body replaces about 330 billion cells every single day — roughly 1% of you. Most of them are blood cells and cells lining the gut, which wear out fastest.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Cell Reproduction",
-                desc: "The process by which one cell divides to produce new cells, each receiving a copy of the genetic material. Also called cell division.",
-              },
-              {
-                term: "DNA",
-                desc: "Deoxyribonucleic acid — the molecule that carries the genetic instructions for building and running a living organism.",
-              },
-              {
-                term: "Chromosome",
-                desc: "A structure made of tightly coiled DNA and protein, found in the nucleus. Humans have 46 chromosomes in 23 pairs.",
-              },
-              {
-                term: "Chromatin",
-                desc: "The loose, uncoiled form DNA takes when a cell is not dividing. It condenses into visible chromosomes only for division.",
-              },
-              {
-                term: "Sister Chromatids",
-                desc: "The two identical copies of a chromosome produced by replication, joined together at the centromere until they are pulled apart.",
-              },
-              {
-                term: "Centromere",
-                desc: "The narrow point where two sister chromatids are joined, and where spindle fibres attach during division.",
-              },
-              {
-                term: "Daughter Cells",
-                desc: "The new cells produced when a parent cell divides.",
-              },
-              {
-                term: "Mitosis",
-                desc: "Cell division producing two genetically identical daughter cells, used for growth, repair, and asexual reproduction.",
-              },
-              {
-                term: "Meiosis",
-                desc: "Cell division producing four genetically unique haploid cells (gametes), used for sexual reproduction.",
-              },
-            ],
+              "Your bone marrow makes more than 2 million new red blood cells every second. That is why a healthy person who donates blood to the Philippine Red Cross can donate again after about three months.",
           },
         },
 
         {
           type: "reasonCards",
-          heading: "Why Cells Divide",
+          heading: "Why Cells Reproduce",
           data: {
             intro:
-              "Cells do not divide at random. Division is triggered for specific reasons, and in a healthy body each one is tightly controlled.",
+              "Cells do not divide at random. They divide for a reason, and in a healthy body division is carefully controlled.",
             reasons: [
               {
                 num: 1,
                 title: "Growth",
                 color: "primary",
-                desc: "Organisms get bigger by making more cells, not bigger cells",
+                desc: "More cells, not bigger cells",
                 content:
-                  "A human grows from one fertilised egg to trillions of cells. Notice that growth means MORE cells, not larger ones — a cell that grows too big cannot move materials through itself efficiently.",
+                  "A baby grows into an adult because its cells keep dividing. Living things grow by making more cells, not by making each cell bigger.",
               },
               {
                 num: 2,
                 title: "Repair",
                 color: "secondary",
-                desc: "Damaged tissue is rebuilt by dividing the cells around it",
+                desc: "Healing wounds and broken bones",
                 content:
-                  "When you cut your skin or break a bone, healthy cells at the edges divide to produce new cells that fill the gap. Without cell division even a small cut would never heal.",
+                  "When you get a cut, healthy cells at the edge of the wound divide to fill the gap. Without cell division, even a small cut would never heal.",
               },
               {
                 num: 3,
                 title: "Replacement",
                 color: "accent",
-                desc: "Worn-out cells are continuously replaced throughout life",
+                desc: "Worn-out cells are replaced",
                 content:
-                  "Red blood cells last about 120 days, skin cells 2–3 weeks, and gut lining cells only 3–5 days. Division produces replacements at exactly the rate they die.",
+                  "Red blood cells last about 120 days, and the outer skin is replaced every few weeks. Cell division makes new cells to take their place.",
               },
               {
                 num: 4,
                 title: "Reproduction",
                 color: "primary",
-                desc: "New organisms are produced through cell division",
+                desc: "Making new living things",
                 content:
-                  "Bacteria, yeast, and hydra reproduce by dividing directly. Plants and animals produce sex cells by meiosis, which combine to start a new organism.",
+                  "Bacteria and yeast reproduce just by dividing. Plants and animals make special sex cells that join to start a new organism.",
               },
               {
                 num: 5,
-                title: "Surface Area to Volume",
+                title: "Size Limit",
                 color: "secondary",
-                desc: "There is a physical size limit that forces a cell to divide",
+                desc: "A cell cannot grow forever",
                 content:
-                  "As a cell grows, its volume increases faster than its surface area, so the membrane can no longer bring in enough nutrients or remove enough waste. Dividing restores a workable ratio.",
+                  "As a cell grows, its inside grows faster than its outer surface. A cell that is too big cannot take in enough food or remove enough wastes through its membrane, so it divides.",
+              },
+              {
+                num: 6,
+                title: "When Division Goes Wrong",
+                color: "accent",
+                desc: "Why control matters",
+                content:
+                  "Healthy cells stop dividing when they touch their neighbors. This is called contact inhibition, and it is why a wound closes and then stops growing. Cancer happens when a cell loses this control and keeps dividing, forming a lump called a tumor.",
               },
             ],
           },
@@ -185,50 +160,50 @@ export const week14 = {
 
         {
           type: "timeline",
-          heading: "What Gets Copied: DNA and Chromosomes",
+          heading: "From Parents to Offspring",
           data: {
             intro:
-              "Before a cell can divide, the instructions inside it must be copied perfectly. Follow what happens to the DNA.",
+              "How does a baby get traits from both its mother and its father? Follow the genetic information step by step.",
             steps: [
               {
                 num: 1,
-                title: "DNA Stores the Instructions",
+                title: "Instructions Are Stored in DNA",
                 color: "primary",
                 description:
-                  "DNA is a long molecule carrying the complete instructions for building and running the organism. Every cell in your body holds the same full set.",
-                tip: "Stretched end to end, the DNA in one human cell would be about two metres long.",
+                  "Every cell has DNA, the set of instructions for building and running the body. A section of DNA that controls one trait, such as eye color or blood type, is called a gene.",
+                tip: "DNA is packed into structures called chromosomes inside the nucleus.",
               },
               {
                 num: 2,
-                title: "DNA Is Packed into Chromosomes",
+                title: "Body Cells Have 46 Chromosomes",
                 color: "secondary",
                 description:
-                  "To fit two metres of DNA into a microscopic nucleus, it wraps around proteins and coils tightly into structures called chromosomes. Humans have 46, arranged in 23 pairs.",
-                tip: "One chromosome of each pair came from your mother and one from your father.",
+                  "A human body cell has 46 chromosomes arranged in 23 pairs. In each pair, one chromosome came from the mother and one came from the father.",
+                tip: "Other living things have different numbers. Rice has 24 chromosomes in each body cell.",
               },
               {
                 num: 3,
-                title: "Chromatin Condenses for Division",
+                title: "Sex Cells Get Only Half",
                 color: "accent",
                 description:
-                  "Most of the time DNA sits loose and uncoiled as chromatin, so the cell can read it. Only when the cell prepares to divide does it condense into the thick, visible chromosomes you see in a textbook.",
-                tip: "This is why you cannot see chromosomes in a normal cell under a microscope — only in a dividing one.",
+                  "Parents make sex cells, also called gametes: sperm cells in males and egg cells in females. Each gamete gets only one chromosome from each pair, so it has 23 chromosomes.",
+                tip: "Gametes are made by a special division called meiosis. You will study it next week.",
               },
               {
                 num: 4,
-                title: "Each Chromosome Is Replicated",
+                title: "Fertilization Joins Them",
                 color: "primary",
                 description:
-                  "Before division, every chromosome is copied. The original and its copy stay joined at the centromere as identical sister chromatids, forming the familiar X shape.",
-                tip: "After replication the cell holds twice the normal DNA — but still the same number of chromosomes, because the copies are still attached.",
+                  "During fertilization, a sperm cell joins with an egg cell. Their nuclei combine: 23 chromosomes from the father plus 23 from the mother makes 46 again. The new cell is called a zygote.",
+                tip: "This is how the offspring gets half of its genetic information from each parent.",
               },
               {
                 num: 5,
-                title: "The Copies Are Separated",
+                title: "The Zygote Divides and Grows",
                 color: "secondary",
                 description:
-                  "During division, spindle fibres attach at the centromere and pull the sister chromatids apart, sending one to each end of the cell. Each daughter cell ends up with a complete set.",
-                tip: "This separation is the single most important moment. An error here gives one cell too many chromosomes and the other too few.",
+                  "The zygote divides by mitosis again and again. Each new cell gets an exact copy of the same 46 chromosomes, so every cell of the new organism carries the genes from both parents.",
+                tip: "That is why a child can have the father's curly hair and the mother's eye shape.",
               },
             ],
           },
@@ -236,82 +211,115 @@ export const week14 = {
 
         {
           type: "comparison",
-          heading: "Two Kinds of Cell Division",
+          heading: "One Parent or Two?",
           data: {
             intro:
-              "Both start from one cell and both copy the DNA first, but they serve completely different purposes and produce different results. Next week covers each in detail.",
+              "Living things reproduce in two main ways. The biggest difference is the number of parents.",
             left: {
-              label: "Mitosis",
+              label: "Sexual Reproduction",
               color: "primary",
               items: [
-                "Produces 2 daughter cells",
-                "Daughter cells are genetically IDENTICAL to the parent",
-                "Daughter cells are diploid (2n) — the full chromosome number",
-                "ONE round of division",
-                "Purpose: growth, repair, replacement, asexual reproduction",
+                "Needs TWO parents, a male and a female",
+                "Each parent gives one gamete (sperm or egg)",
+                "Fertilization joins the two gametes",
+                "Offspring get half of their genes from each parent",
+                "Offspring are similar to, but different from, the parents",
+                "Examples: humans, chickens, bangus, mango trees",
               ],
             },
             right: {
-              label: "Meiosis",
+              label: "Asexual Reproduction",
               color: "secondary",
               items: [
-                "Produces 4 daughter cells",
-                "Daughter cells are genetically UNIQUE — all different",
-                "Daughter cells are haploid (n) — half the chromosome number",
-                "TWO rounds of division",
-                "Purpose: producing gametes for sexual reproduction",
+                "Needs only ONE parent",
+                "No gametes and no fertilization",
+                "The parent's cells divide by mitosis",
+                "Offspring get all of their genes from the one parent",
+                "Offspring are identical copies of the parent",
+                "Examples: bacteria, yeast, katakataka, kamote cuttings",
               ],
             },
           },
         },
 
         {
-          type: "conceptList",
-          heading: "When Division Goes Wrong",
+          type: "scenario",
+          heading: "Think About It",
           data: {
-            concepts: [
-              "Cell division is normally controlled by chemical signals telling a cell when to divide and when to stop.",
-              "Healthy cells stop dividing when they touch neighbouring cells — a control called contact inhibition. It is why a wound heals over and then stops.",
-              "Cancer happens when mutations disable those controls and a cell divides continuously, ignoring every signal to stop.",
-              "A mass of these uncontrolled cells forms a tumour, which takes nutrients and space from healthy tissue.",
-              "If cancer cells also lose the ability to stay in place, they spread to other organs — a process called metastasis.",
-              "Errors in separating chromosomes can leave a cell with too many or too few, which usually stops it working properly.",
-              "Most chemotherapy works by attacking rapidly dividing cells — which is why it also affects hair and gut lining cells and causes side effects.",
+            intro:
+              "Use what you learned about chromosomes, fertilization and the number of parents.",
+            scenarios: [
+              {
+                title: "Counting Chromosomes",
+                situation:
+                  "A rice plant has 24 chromosomes in each body cell.",
+                question:
+                  "How many chromosomes are in each rice gamete? How many will the zygote have after fertilization?",
+                skill:
+                  "Each gamete has half, so 12 chromosomes. After fertilization, 12 + 12 = 24 chromosomes in the zygote, the same as the parents' body cells.",
+              },
+              {
+                title: "Like Mother, Like Father",
+                situation:
+                  "Ana has her mother's dimples and her father's curly hair.",
+                question:
+                  "Explain how she got traits from both parents.",
+                skill:
+                  "Ana's first cell (zygote) formed when her father's sperm, with 23 chromosomes, joined her mother's egg, with 23 chromosomes. She got half of her genes from each parent, including genes for dimples and curly hair.",
+              },
+              {
+                title: "Kamote Cuttings",
+                situation:
+                  "A farmer plants stem cuttings from one kamote plant. All the new plants have the same leaf shape and the same purple roots.",
+                question:
+                  "How many parents do the new plants have, and why are they all alike?",
+                skill:
+                  "One parent. This is asexual reproduction: the new plants grow from the parent's cells by mitosis, with no fertilization, so they have exactly the same genes as the parent.",
+              },
+              {
+                title: "A Wound That Heals",
+                situation:
+                  "Miguel scrapes his elbow playing basketball. A week later, new skin has covered the wound and stopped growing.",
+                question:
+                  "Why is cell reproduction important here, and why did the skin stop growing?",
+                skill:
+                  "Skin cells at the edge of the wound divided to make new cells and repair the damage. They stopped dividing once they touched each other and the gap was filled, because healthy cells divide only when needed.",
+              },
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Cell Reproduction Helps People",
           data: {
             apps: [
               {
-                title: "Wound Healing",
+                title: "Blood Donation",
                 description:
-                  "Understanding how injury triggers cell division helps doctors treat chronic wounds, such as diabetic ulcers, that fail to heal on their own.",
-                icon: "🩹",
+                  "Donated blood can save someone in an accident or surgery. The donor's bone marrow divides to replace the lost blood cells within weeks.",
+                icon: "🩸",
                 color: "border-l-primary-500",
               },
               {
                 title: "Cancer Treatment",
                 description:
-                  "Chemotherapy and radiation both work by disrupting cell division in fast-dividing cancer cells.",
-                icon: "🔬",
+                  "Doctors treat cancer with medicines and radiation that stop fast-dividing cells. Knowing how cells divide helps them choose the right treatment.",
+                icon: "🏥",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Growing Replacement Tissue",
+                title: "Growing More Plants",
                 description:
-                  "Scientists grow skin, cartilage, and even heart tissue in laboratories by giving cells the right conditions to divide in a controlled way.",
-                icon: "🫀",
+                  "Farmers grow kamote, cassava and sugarcane from cuttings. Plant nurseries use the same idea to grow many copies of a good plant.",
+                icon: "🌱",
                 color: "border-l-accent-500",
               },
               {
-                title: "Plant Cloning",
+                title: "Healing and Recovery",
                 description:
-                  "Farmers take cuttings and stimulate cell division to grow whole new plants that are genetically identical to a chosen parent.",
-                icon: "🌿",
+                  "Eating enough protein, vitamins and minerals gives your cells what they need to divide and repair your body after an injury.",
+                icon: "🩹",
                 color: "border-l-primary-500",
               },
             ],
@@ -330,12 +338,12 @@ export const week14 = {
       title: "The Cell Cycle",
       badge: "Lesson 2",
       subtitle:
-        "Understand the ordered phases of a cell's life — the long preparation of interphase, the division itself, and the checkpoints that police the whole thing.",
-      readTime: "~16 min read",
+        "Define the cell cycle, describe its two main stages, interphase and the mitotic phase, and find out what a cell does during interphase.",
+      readTime: "~15 min read",
       xp: 50,
       heroImage: flowchart,
       heroImageAlt:
-        "Circular diagram of the cell cycle showing interphase and the mitotic phase",
+        "Circular diagram of the cell cycle showing G1, S and G2 of interphase and the short mitotic phase",
 
       signature: {
         widgetId: "cycle-dial",
@@ -356,21 +364,25 @@ export const week14 = {
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Phases of the Cell Cycle",
+        "The Stages of the Cell Cycle",
+        "What Happens During Interphase",
         "Interphase vs. Mitotic Phase",
-        "Checkpoints",
-        "Applications",
+        "Think About It",
+        "Why the Cell Cycle Matters",
       ],
 
       references: [
         {
-          label: "Khan Academy — The Cell Cycle",
-          url: "https://www.khanacademy.org/science/biology/cell-division",
+          label: "Britannica — Cell cycle",
+          url: "https://www.britannica.com/science/cell-cycle",
         },
         {
-          label: "Britannica — Cell Cycle",
-          url: "https://www.britannica.com/science/cell-cycle",
+          label: "Khan Academy — Phases of the cell cycle",
+          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology/mitosis/a/cell-cycle-phases",
+        },
+        {
+          label: "CK-12 — Cell Cycle",
+          url: "https://www.ck12.org/c/biology/cell-cycle/",
         },
       ],
 
@@ -380,106 +392,112 @@ export const week14 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "The <strong class='text-primary-700'>cell cycle</strong> is the ordered sequence of events a cell goes through from the moment it forms until it divides into two daughter cells. It has two main stages: <strong class='text-primary-700'>interphase</strong>, where the cell grows and prepares, and the <strong class='text-primary-700'>mitotic phase</strong>, where it actually divides.",
-              "The striking thing is the proportion. A cell spends roughly 90% of its life in interphase and only about 10% actually dividing. Interphase is not a rest — it is when the cell does its normal job, grows, and copies every one of its chromosomes.",
-              "A system of <strong class='text-primary-700'>checkpoints</strong> checks the cell's work before letting it continue. These checkpoints are what stand between a healthy body and uncontrolled division.",
+              "The <strong class='text-primary-700'>cell cycle</strong> is the series of stages a cell goes through from the time it is formed until it divides into two new cells. Then each new cell starts the cycle again.",
+              "The cell cycle has two main stages. In <strong class='text-primary-700'>interphase</strong>, the cell grows, does its normal job and copies its DNA. In the <strong class='text-primary-700'>mitotic phase</strong>, the cell divides into two.",
+              "Think of it like preparing for a school field trip. Most of the time goes into getting ready: saving money, packing food and checking the list. The trip itself is short. In the same way, a cell spends about 90% of its time in interphase and only about 10% dividing.",
             ],
             didYouKnow:
-              "Cancer is essentially a disease of the cell cycle. Cancer cells carry mutations that disable the checkpoint system, letting them divide without ever confirming that conditions are right.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Cell Cycle",
-                desc: "The ordered series of events in a cell's life, from its formation through growth and DNA replication to division into two daughter cells.",
-              },
-              {
-                term: "Interphase",
-                desc: "The longest stage of the cycle, made up of G1, S, and G2, during which the cell grows, works normally, and copies its DNA.",
-              },
-              {
-                term: "G1 Phase",
-                desc: "The first growth phase. The cell grows in size, carries out its normal functions, and makes the proteins needed for DNA replication.",
-              },
-              {
-                term: "S Phase",
-                desc: "The synthesis phase, when the cell replicates all of its DNA so each daughter cell will get a complete genome.",
-              },
-              {
-                term: "G2 Phase",
-                desc: "The second growth phase. The cell keeps growing and produces the proteins and organelles needed for division.",
-              },
-              {
-                term: "Mitotic Phase",
-                desc: "The stage where division actually happens — mitosis (the nucleus divides) followed by cytokinesis (the cytoplasm divides).",
-              },
-              {
-                term: "Cytokinesis",
-                desc: "The final step, in which the cytoplasm splits and two physically separate daughter cells are formed.",
-              },
-              {
-                term: "Checkpoint",
-                desc: "A control point where the cell verifies it has correctly completed the previous phase before being allowed to proceed.",
-              },
-              {
-                term: "G0 Phase",
-                desc: "A resting state outside the cycle. Cells that are not going to divide — such as most nerve cells — stay here permanently.",
-              },
-            ],
+              "Not all cells keep cycling. Most nerve cells in your brain stop dividing and stay in a resting stage called G0 for the rest of your life.",
           },
         },
 
         {
           type: "timeline",
-          heading: "Phases of the Cell Cycle",
+          heading: "The Stages of the Cell Cycle",
           data: {
             intro:
-              "The cycle runs in a fixed order. The first three phases make up interphase; the last two are the mitotic phase.",
+              "The cell cycle always goes in the same order. The first three stages make up interphase; the last two make up the mitotic phase.",
             steps: [
               {
                 num: 1,
-                title: "G1 Phase — First Growth",
+                title: "G1 — First Growth (Interphase)",
                 color: "primary",
                 description:
-                  "The cell grows in size and carries out its normal functions. It builds proteins, organelles, and everything needed for the DNA copying to come. A checkpoint at the end of G1 confirms the cell is big enough and conditions are favourable.",
-                tip: "Cells that will never divide exit here into G0. Most of the neurons in your brain are permanently in G0.",
+                  "The new cell grows bigger, makes more organelles and does its normal job. A liver cell cleans the blood; a leaf cell makes food.",
+                tip: "G stands for “gap,” the time between one division and the next.",
               },
               {
                 num: 2,
-                title: "S Phase — DNA Synthesis",
+                title: "S — DNA Copying (Interphase)",
                 color: "secondary",
                 description:
-                  "The cell replicates all of its DNA, producing two identical copies of every chromosome. Afterwards the cell holds twice the normal amount of DNA, with each chromosome now made of two sister chromatids joined at the centromere.",
-                tip: "S stands for synthesis — the synthesis of new DNA strands.",
+                  "The cell copies all of its DNA. After this stage, each chromosome is made of two identical copies, called sister chromatids, joined at the center.",
+                tip: "S stands for “synthesis,” which means making something new. Here, the cell makes new DNA.",
               },
               {
                 num: 3,
-                title: "G2 Phase — Second Growth",
+                title: "G2 — Second Growth (Interphase)",
                 color: "accent",
                 description:
-                  "The cell continues growing and produces the proteins needed for division, including the components of the spindle apparatus. A checkpoint verifies that DNA replication finished correctly and without errors.",
-                tip: "If DNA errors are found here, the cycle pauses for repair. Unrepaired errors become permanent mutations.",
+                  "The cell keeps growing and gets ready to divide. It makes the proteins and structures it will need, and checks that the DNA was copied correctly.",
+                tip: "If the cell finds mistakes in its DNA, it stops to fix them first.",
               },
               {
                 num: 4,
-                title: "Mitosis — The Nucleus Divides",
+                title: "Mitosis (Mitotic Phase)",
                 color: "primary",
                 description:
-                  "The nucleus divides through four stages — prophase, metaphase, anaphase, telophase — separating the duplicated chromosomes into two identical nuclei. Spindle fibres attach to the chromosomes and pull them apart.",
-                tip: "Remember the order with PMAT: Prophase, Metaphase, Anaphase, Telophase. Next week covers each stage.",
+                  "The nucleus divides. The copied chromosomes are pulled apart so that each new nucleus gets one complete set. Mitosis has four steps: prophase, metaphase, anaphase and telophase.",
+                tip: "Remember the steps with PMAT. You will study each one next week.",
               },
               {
                 num: 5,
-                title: "Cytokinesis — The Cell Divides",
+                title: "Cytokinesis (Mitotic Phase)",
                 color: "secondary",
                 description:
-                  "The cytoplasm splits, completing two genetically identical daughter cells. In animal cells the membrane pinches inward to form a cleavage furrow; in plant cells a new cell plate forms down the middle.",
-                tip: "Cytokinesis overlaps the end of mitosis. The result is two complete cells, each with a nucleus and a full set of organelles.",
+                  "The cytoplasm splits and two separate daughter cells are formed. Each daughter cell has its own nucleus and starts the cycle again at G1.",
+                tip: "An animal cell pinches in the middle. A plant cell builds a new wall, called a cell plate, down the middle.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "reasonCards",
+          heading: "What Happens During Interphase",
+          data: {
+            intro:
+              "Interphase is sometimes called the “resting stage,” but the cell is not resting at all. It is busy with four important jobs.",
+            reasons: [
+              {
+                num: 1,
+                title: "The Cell Does Its Job",
+                color: "primary",
+                desc: "Normal work, all day long",
+                content:
+                  "During interphase, a muscle cell contracts, a nerve cell sends signals and a leaf cell makes food. This is what most cells are doing most of the time.",
+              },
+              {
+                num: 2,
+                title: "The Cell Grows",
+                color: "secondary",
+                desc: "G1 and G2",
+                content:
+                  "The cell gets bigger and makes more organelles, such as mitochondria and ribosomes, so that each daughter cell will have enough.",
+              },
+              {
+                num: 3,
+                title: "The DNA Is Copied",
+                color: "accent",
+                desc: "S phase",
+                content:
+                  "Every chromosome is copied exactly, so that each daughter cell will receive a complete set of instructions. In humans, that means two full copies of all 46 chromosomes.",
+              },
+              {
+                num: 4,
+                title: "The Cell Gets Ready to Divide",
+                color: "primary",
+                desc: "End of G2",
+                content:
+                  "The cell makes the proteins that will pull the chromosomes apart and checks that everything is ready. Only then does it move on to mitosis.",
+              },
+              {
+                num: 5,
+                title: "Checkpoints Check the Work",
+                color: "secondary",
+                desc: "The cell's quality control",
+                content:
+                  "At checkpoints, the cell asks: Am I big enough? Is my DNA undamaged? Was it copied correctly? If a problem cannot be fixed, a healthy cell destroys itself instead of passing on damaged DNA. Cancer cells have broken checkpoints.",
               },
             ],
           },
@@ -490,78 +508,108 @@ export const week14 = {
           heading: "Interphase vs. Mitotic Phase",
           data: {
             intro:
-              "Students often assume a cell spends most of its time dividing. The opposite is true, and the proportions matter.",
+              "Many students think a cell spends most of its life dividing. The opposite is true.",
             left: {
-              label: "Interphase (about 90% of the cycle)",
+              label: "Interphase (about 90% of the time)",
               color: "primary",
               items: [
-                "Made up of three sub-phases: G1, S, and G2",
-                "The cell performs its everyday job — a liver cell filters, a muscle cell contracts",
-                "The cell grows larger and builds organelles",
-                "DNA is copied during S phase",
-                "DNA is loose chromatin — chromosomes are not visible",
+                "Made of three parts: G1, S and G2",
+                "The cell does its normal job",
+                "The cell grows and makes more organelles",
+                "The DNA is copied (during S)",
+                "The DNA is loose, so chromosomes cannot be seen",
+                "The nucleus is whole and easy to see",
               ],
             },
             right: {
-              label: "Mitotic Phase (about 10% of the cycle)",
+              label: "Mitotic Phase (about 10% of the time)",
               color: "secondary",
               items: [
-                "Made up of mitosis and cytokinesis",
-                "Normal cell functions largely pause",
-                "No growth — the cell is busy dividing",
-                "The already-copied DNA is separated, not copied again",
-                "DNA is condensed into visible chromosomes",
+                "Made of two parts: mitosis and cytokinesis",
+                "The cell's normal work mostly pauses",
+                "The cell does not grow",
+                "The DNA is not copied again, only separated",
+                "The DNA is tightly packed into visible chromosomes",
+                "The nuclear membrane breaks down for a while",
               ],
             },
           },
         },
 
         {
-          type: "conceptList",
-          heading: "Checkpoints",
+          type: "scenario",
+          heading: "Think About It",
           data: {
-            concepts: [
-              "Checkpoints are quality-control stations where the cell verifies its work before moving on.",
-              "The G1 checkpoint asks: is the cell big enough, are nutrients available, and is the DNA undamaged? If not, the cell pauses or exits to G0.",
-              "The G2 checkpoint asks: was all the DNA copied, and was it copied correctly? Damaged DNA triggers a pause for repair.",
-              "The M checkpoint, during mitosis, asks: is every chromosome properly attached to the spindle before they are pulled apart?",
-              "If damage cannot be repaired, a healthy cell triggers its own controlled death — apoptosis — rather than passing on faulty DNA.",
-              "Cancer cells carry mutations that disable one or more checkpoints, so they divide regardless of damage or crowding.",
-              "This is why understanding the cell cycle is central to cancer research: the disease is a failure of these controls.",
+            intro:
+              "Use what you know about the stages of the cell cycle to answer each one.",
+            scenarios: [
+              {
+                title: "Counting Cells",
+                situation:
+                  "Onion root tips have many dividing cells. A class looks at 100 cells in an onion root tip slide. They find 90 cells with a smooth, round nucleus (interphase) and 10 cells with visible chromosomes (dividing).",
+                question:
+                  "What does this tell you about how long each stage lasts?",
+                skill:
+                  "Interphase is much longer than the mitotic phase. Since about 90 out of 100 cells were in interphase, cells spend about 90% of the cell cycle in interphase and only about 10% dividing.",
+              },
+              {
+                title: "The Missing Copy",
+                situation:
+                  "Suppose a cell skipped the S phase and went straight to mitosis.",
+                question: "What problem would the daughter cells have?",
+                skill:
+                  "The DNA would not have been copied, so there would not be a complete set of chromosomes for each daughter cell. Each one would get only part of the instructions and would not work properly. That is why the G2 checkpoint makes sure the DNA was copied first.",
+              },
+              {
+                title: "Resting or Working?",
+                situation:
+                  "A classmate says, “Interphase is the resting stage, so the cell is doing nothing.”",
+                question: "Is this correct? Explain.",
+                skill:
+                  "No. During interphase the cell does its normal job, grows, makes organelles and copies its DNA. It is only “resting” from dividing.",
+              },
+              {
+                title: "Order of Stages",
+                situation:
+                  "The stages of the cell cycle are written on cards in the wrong order: S, cytokinesis, G2, G1, mitosis.",
+                question: "Put them in the correct order.",
+                skill:
+                  "G1 → S → G2 → mitosis → cytokinesis. Then each daughter cell starts again at G1.",
+              },
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Why the Cell Cycle Matters",
           data: {
             apps: [
               {
-                title: "Cancer Treatment",
+                title: "Fighting Cancer",
                 description:
-                  "Chemotherapy drugs target specific points in the cycle — some block DNA replication in S phase, others prevent spindle formation during mitosis.",
+                  "Some cancer medicines stop cells from copying their DNA in S phase; others stop chromosomes from being pulled apart in mitosis. Both slow down cancer cells.",
                 icon: "💊",
                 color: "border-l-primary-500",
               },
               {
-                title: "Wound Healing",
+                title: "Healing Wounds",
                 description:
-                  "Cells at a wound edge re-enter the cycle from G0 and begin dividing. Understanding that trigger helps doctors speed up healing.",
+                  "When you get hurt, resting cells near the wound go back into the cell cycle and start dividing to repair the damage.",
                 icon: "🩹",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Understanding Aging",
+                title: "Growing Crops",
                 description:
-                  "As cells age their DNA accumulates damage and checkpoints become less reliable. Cell cycle research is central to the study of ageing.",
-                icon: "⏳",
+                  "Plants grow at their root and shoot tips, where cells cycle quickly. Healthy soil and water help these cells keep dividing so rice and corn grow well.",
+                icon: "🌾",
                 color: "border-l-accent-500",
               },
               {
-                title: "Stem Cell Therapy",
+                title: "Serving Patients",
                 description:
-                  "Stem cells are guided through their cycle to divide and then specialise into the tissue a patient needs — nerve, heart, or blood.",
+                  "Medical technologists study blood and tissue samples to check for cells that divide abnormally. Their work helps doctors find diseases early.",
                 icon: "🔬",
                 color: "border-l-primary-500",
               },

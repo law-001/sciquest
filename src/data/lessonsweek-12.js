@@ -1,6 +1,6 @@
 // Week 12: The Cell — Grade 7 Science
 //
-// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 12.
+// Curriculum source: Grade 7 Science (MATATAG), 2nd Quarter Week 2 (site Week 12).
 //   Lesson 1 — The Cell Theory and Its Diversity
 //   Lesson 2 — Parts and Function of the Cell
 
@@ -15,7 +15,7 @@ export const week12 = {
   title: "The Cell",
   category: "Life Science",
   description:
-    "Trace the development of cell theory, compare the huge diversity of cell types, and learn what every organelle inside a cell actually does.",
+    "Learn the cell theory, sort living things into unicellular and multicellular, tell prokaryotic from eukaryotic cells, and find out what each major part of a cell does.",
   icon: "BookOpen",
   color: "primary",
   isLocked: false,
@@ -30,12 +30,12 @@ export const week12 = {
       title: "The Cell Theory and Its Diversity",
       badge: "Lesson 1",
       subtitle:
-        "Follow the discoveries that built cell theory, then meet the enormous variety of cells that theory covers — from bacteria to nerve cells a metre long.",
-      readTime: "~18 min read",
+        "Learn the three ideas of the cell theory, classify organisms as unicellular or multicellular, and tell prokaryotic cells from eukaryotic cells.",
+      readTime: "~15 min read",
       xp: 50,
       heroImage: microscope,
       heroImageAlt:
-        "Microscope view representing the development of cell theory",
+        "Microscope view of many different kinds of cells, such as bacteria, a paramecium and plant cells",
 
       signature: {
         widgetId: "scope-field",
@@ -46,32 +46,39 @@ export const week12 = {
         explainer: {
           title: "Why cells come in two kinds",
           points: [
-            "Four of the cells you zoomed into held their DNA inside a nucleus. Those are eukaryotes.",
-            "The bacterium and the cyanobacterium had no nucleus at all, just a loose loop of DNA in the cytoplasm.",
-            "Shape followed the job every time: the nerve cell stretched out, the sperm cell carried a tail.",
-            "One word, cell, covered all six, and that is the range cell theory has to account for.",
+            "Four of the cells you zoomed into kept their DNA inside a nucleus. Those are eukaryotic cells.",
+            "The bacterium and the cyanobacterium had no nucleus at all, just a loose loop of DNA in the cytoplasm. Those are prokaryotic cells.",
+            "Each cell's shape matched its job: the nerve cell was long and stretched out, and the sperm cell had a tail for swimming.",
+            "All six are cells, and the cell theory has to explain every one of them.",
           ],
         },
       },
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Scientists and Their Contributions",
-        "Prokaryotes and Eukaryotes",
-        "Specialized Cell Types",
-        "Key Distinctions",
-        "Applications",
+        "The Three Ideas of the Cell Theory",
+        "Unicellular or Multicellular?",
+        "Prokaryotic vs. Eukaryotic Cells",
+        "Classify It!",
+        "Why Cell Diversity Matters",
       ],
 
       references: [
         {
-          label: "Khan Academy — Cell Theory",
-          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell",
+          label: "Britannica — Cell theory",
+          url: "https://www.britannica.com/science/cell-theory",
         },
         {
-          label: "Britannica — Cell Theory",
-          url: "https://www.britannica.com/science/cell-theory",
+          label: "Khan Academy — Prokaryotic and eukaryotic cells",
+          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell/prokaryotic-and-eukaryotic-cells/a/prokaryotic-and-eukaryotic-cells",
+        },
+        {
+          label: "CK-12 — Prokaryotic and Eukaryotic Cells",
+          url: "https://www.ck12.org/c/biology/prokaryotic-and-eukaryotic-cells/",
+        },
+        {
+          label: "BFAR — Red tide / shellfish bulletins",
+          url: "https://www.bfar.da.gov.ph/",
         },
       ],
 
@@ -81,102 +88,144 @@ export const week12 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "The <strong class='text-primary-700'>cell theory</strong> is one of the most fundamental principles in all of biology. It did not appear overnight — it was assembled over two centuries by scientists whose microscopes kept getting better.",
-              "Modern cell theory has three principles: (1) all living organisms are composed of one or more <strong class='text-primary-700'>cells</strong>, (2) the cell is the basic unit of structure and function in living things, and (3) all cells arise from <strong class='text-primary-700'>pre-existing cells</strong> through cell division.",
-              "Yet 'cell' covers an astonishing range. A bacterium and a human nerve cell are both cells, but one is a millionth of a metre across with no nucleus, and the other can stretch a full metre from your spine to your toe. This lesson covers both the theory and the diversity it has to account for.",
+              "A carabao, a mango tree, a mushroom and the bacteria in a bottle of Yakult look nothing alike. Yet they all have one thing in common: they are made of <strong class='text-primary-700'>cells</strong>. The cell is the basic unit of life.",
+              "Some living things are made of only one cell. They are <strong class='text-primary-700'>unicellular</strong>. Others, like you, are made of trillions of cells working together. They are <strong class='text-primary-700'>multicellular</strong>.",
+              "Cells also differ on the inside. <strong class='text-primary-700'>Prokaryotic</strong> cells have no nucleus, while <strong class='text-primary-700'>eukaryotic</strong> cells keep their DNA inside a nucleus. Learning these differences helps us <strong class='text-primary-700'>respect</strong> the amazing variety of life, from the tiniest bacterium to the biggest tree.",
             ],
             didYouKnow:
-              "Rudolf Virchow's Latin phrase 'Omnis cellula e cellula' — every cell from a cell — remains one of the most important statements ever made in biology. It ruled out the idea that living things could arise spontaneously from non-living matter.",
+              "The red tide that sometimes closes shellfish harvesting in Philippine bays is caused by a tiny one-celled organism called Pyrodinium bahamense. When millions of them bloom, the water can turn reddish brown, and shellfish that eat them become poisonous to people.",
           },
         },
 
         {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Cell Theory",
-                desc: "The principle that all living things are made of cells, the cell is the basic unit of life, and all cells come from pre-existing cells.",
-              },
-              {
-                term: "Cell",
-                desc: "The smallest structural and functional unit of all living organisms — the basic building block of life.",
-              },
-              {
-                term: "Unicellular",
-                desc: "An organism made of only one cell that performs every life function by itself — bacteria, amoeba, paramecium.",
-              },
-              {
-                term: "Multicellular",
-                desc: "An organism made of many specialised cells working together — plants, animals, and fungi.",
-              },
-              {
-                term: "Prokaryote",
-                desc: "An organism whose cells have no membrane-bound nucleus; the DNA floats freely in the cytoplasm. Bacteria and archaea.",
-              },
-              {
-                term: "Eukaryote",
-                desc: "An organism whose cells have a true membrane-bound nucleus containing the DNA. Plants, animals, fungi, and protists.",
-              },
-              {
-                term: "Specialized Cell",
-                desc: "A cell whose structure has adapted to perform one specific job — a nerve cell transmitting signals, a muscle cell contracting.",
-              },
-              {
-                term: "Tissue",
-                desc: "A group of similar cells working together to perform a shared function.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "timeline",
-          heading: "Scientists and Their Contributions",
+          type: "reasonCards",
+          heading: "The Three Ideas of the Cell Theory",
           data: {
             intro:
-              "Five scientists over two hundred years each added a piece. Notice how often a better instrument came first and the discovery followed.",
-            steps: [
+              "Last week you saw how microscopes revealed cells. By the 1850s, scientists had put what they saw into three big ideas, known together as the cell theory.",
+            reasons: [
               {
                 num: 1,
-                title: "Robert Hooke — 1665",
+                title: "All Living Things Are Made of Cells",
                 color: "primary",
-                description:
-                  "Hooke examined thin slices of cork under a compound microscope and saw tiny box-like structures, which he named 'cells' from the Latin for small room. He published his drawings in Micrographia.",
-                tip: "Hooke saw only dead cell walls — he did not observe living cells or know what they did.",
+                desc: "Matthias Schleiden (1838) and Theodor Schwann (1839)",
+                content:
+                  "Schleiden studied plants and Schwann studied animals. Both found cells in every living thing they looked at, so they concluded that all organisms are made of one or more cells.",
               },
               {
                 num: 2,
-                title: "Antonie van Leeuwenhoek — 1670s",
+                title: "The Cell Is the Basic Unit of Life",
                 color: "secondary",
-                description:
-                  "Using lenses he ground himself, van Leeuwenhoek observed pond water and dental scrapings, becoming the first person to see living microorganisms — bacteria, protozoa, and red blood cells.",
-                tip: "His lenses magnified over 200×, far beyond anything else available at the time.",
+                desc: "Structure and function",
+                content:
+                  "The cell is the smallest part that is alive. It takes in food, uses energy, gets rid of wastes, grows and reproduces. Anything smaller, like a single organelle, cannot live on its own.",
               },
               {
                 num: 3,
-                title: "Matthias Schleiden — 1838",
+                title: "All Cells Come from Existing Cells",
                 color: "accent",
-                description:
-                  "German botanist Schleiden studied plant tissue and concluded that all plants are composed of cells, proposing the cell as the basic building unit of all plant life.",
-                tip: "Schleiden worked closely with Theodor Schwann — their combined conclusion became the first principle of cell theory.",
+                desc: "Rudolf Virchow (1855)",
+                content:
+                  "Virchow said “Omnis cellula e cellula,” Latin for “every cell from a cell.” New cells form only when an existing cell divides. Living things do not appear from non-living matter.",
               },
+            ],
+          },
+        },
+
+        {
+          type: "imageCards",
+          heading: "Unicellular or Multicellular?",
+          data: {
+            cards: [
               {
-                num: 4,
-                title: "Theodor Schwann — 1839",
+                title: "Bacteria",
+                label: "Unicellular",
+                variant: "primary",
                 color: "primary",
-                description:
-                  "German zoologist Schwann extended Schleiden's conclusion to animals, showing animal tissues are also made of cells. Together they established that ALL living things are made of cells.",
-                tip: "Schwann also introduced the phrase 'cell theory' into scientific writing.",
+                desc: "Each bacterium is one complete living cell. Most are harmless, and many are helpful.",
+                image: simulation,
+                imageAlt:
+                  "Microscope view of rod-shaped bacteria, each one a single cell",
+                examples: [
+                  "Lactobacillus, the bacteria in Yakult and yogurt",
+                  "The bacteria that turn coconut water into nata de coco",
+                  "Cyanobacteria (blue-green algae) in ponds",
+                ],
               },
               {
-                num: 5,
-                title: "Rudolf Virchow — 1855",
+                title: "Protists",
+                label: "Unicellular",
+                variant: "secondary",
                 color: "secondary",
-                description:
-                  "German physician Virchow added the third and most powerful principle: all cells come from pre-existing cells. This ruled out spontaneous generation and established cell division as the basis of all growth and repair.",
-                tip: "Virchow's principle is the foundation of cancer research — cancer is cell division that has stopped obeying the rules.",
+                desc: "Many protists are single cells that swim, crawl or float in water.",
+                image: globe,
+                imageAlt:
+                  "Microscope view of a slipper-shaped paramecium covered in tiny hairs (cilia)",
+                examples: [
+                  "Paramecium and amoeba from pond or rice-paddy water",
+                  "Chlorella, a green alga sold as a health supplement",
+                  "Pyrodinium, the cause of red tide",
+                ],
+              },
+              {
+                title: "Yeast",
+                label: "Unicellular",
+                variant: "accent",
+                color: "accent",
+                desc: "Yeast is a fungus made of only one cell. It releases gas that makes dough rise.",
+                image: lab,
+                imageAlt:
+                  "Microscope view of oval yeast cells, some with small buds growing on them",
+                examples: [
+                  "Baker's yeast in pandesal and ensaymada",
+                  "Yeast used to ferment rice into tapuy (rice wine)",
+                  "Each yeast cell can bud to form a new cell",
+                ],
+              },
+              {
+                title: "Plants",
+                label: "Multicellular",
+                variant: "primary",
+                color: "primary",
+                desc: "Plants are made of many cells. Some cells make food, some carry water and some form the bark or skin.",
+                image: microscope,
+                imageAlt:
+                  "A green kangkong plant growing in water, an example of a multicellular plant",
+                examples: [
+                  "Kangkong, malunggay and rice",
+                  "Narra and mango trees",
+                  "Even moss has many cells",
+                ],
+              },
+              {
+                title: "Animals",
+                label: "Multicellular",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Animals are made of many kinds of cells, such as muscle, nerve, skin and blood cells.",
+                image: globe,
+                imageAlt:
+                  "A carabao standing in a rice field, an example of a multicellular animal",
+                examples: [
+                  "Carabao, tarsier and bangus (milkfish)",
+                  "Humans have about 30 trillion cells",
+                  "Even a tiny ant has millions of cells",
+                ],
+              },
+              {
+                title: "Mushrooms",
+                label: "Multicellular",
+                variant: "accent",
+                color: "accent",
+                desc: "Unlike yeast, mushrooms are fungi made of many cells joined into long threads.",
+                image: simulation,
+                imageAlt:
+                  "Oyster mushrooms (kabuteng pamaypay) growing in a cluster",
+                examples: [
+                  "Oyster mushrooms grown by local farmers",
+                  "Molds on old bread",
+                  "Shows that one group (fungi) can have both kinds",
+                ],
               },
             ],
           },
@@ -184,29 +233,29 @@ export const week12 = {
 
         {
           type: "comparison",
-          heading: "Prokaryotes and Eukaryotes",
+          heading: "Prokaryotic vs. Eukaryotic Cells",
           data: {
             intro:
-              "Every cell on Earth belongs to one of two categories. The dividing line is a single feature: whether the DNA is enclosed in a membrane-bound nucleus.",
+              "Every cell on Earth is either prokaryotic (“before the nucleus”) or eukaryotic (“true nucleus”). The main clue is the nucleus: does the cell keep its DNA inside one? All prokaryotes are unicellular, but not every unicellular organism is a prokaryote: yeast and paramecium are single cells with a nucleus. All multicellular organisms are made of eukaryotic cells.",
             left: {
               label: "Prokaryotic Cell",
               color: "primary",
               items: [
-                "No membrane-bound nucleus — DNA sits in the nucleoid region",
-                "Smaller: 0.1–5 micrometres across",
-                "No membrane-bound organelles",
-                "DNA is a single circular loop, not chromosomes",
-                "Always unicellular. Examples: bacteria and archaea",
+                "No nucleus: DNA sits in the cytoplasm in an area called the nucleoid",
+                "No organelles wrapped in membranes (no mitochondria or chloroplasts)",
+                "Very small: about 1 to 5 micrometers long",
+                "Has a cell membrane, cytoplasm, ribosomes and usually a cell wall",
+                "Always unicellular. Examples: bacteria, cyanobacteria",
               ],
             },
             right: {
               label: "Eukaryotic Cell",
               color: "secondary",
               items: [
-                "Has a true membrane-bound nucleus enclosing the DNA",
-                "Larger: 10–100 micrometres across",
-                "Many membrane-bound organelles, each with a job",
-                "DNA is linear and organised into chromosomes",
+                "Has a true nucleus that holds the DNA",
+                "Has organelles wrapped in membranes, such as mitochondria",
+                "Larger: about 10 to 100 micrometers across",
+                "Has a cell membrane, cytoplasm and ribosomes too",
                 "Unicellular or multicellular. Examples: plants, animals, fungi, protists",
               ],
             },
@@ -214,111 +263,81 @@ export const week12 = {
         },
 
         {
-          type: "reasonCards",
-          heading: "Specialized Cell Types",
+          type: "scenario",
+          heading: "Classify It!",
           data: {
             intro:
-              "In a multicellular organism, cells specialise — their shape changes to suit one job. In every case the structure explains the function.",
-            reasons: [
+              "Use what you know about the number of cells and the nucleus to answer each one.",
+            scenarios: [
               {
-                num: 1,
-                title: "Nerve Cell (Neuron)",
-                color: "primary",
-                desc: "Long branching extensions for fast signal transmission",
-                content:
-                  "Neurons have axons that can stretch over a metre, carrying electrical impulses from the brain to distant muscles in a fraction of a second.",
+                title: "The Yakult Bacteria",
+                situation:
+                  "Under a microscope, a Lactobacillus cell has a cell membrane, cytoplasm and ribosomes, but its DNA is not inside a nucleus.",
+                question:
+                  "Is it unicellular or multicellular? Prokaryotic or eukaryotic?",
+                skill:
+                  "Unicellular, because each bacterium is one cell, and prokaryotic, because it has no nucleus.",
               },
               {
-                num: 2,
-                title: "Muscle Cell (Myocyte)",
-                color: "secondary",
-                desc: "Packed with contractile protein fibres",
-                content:
-                  "Overlapping actin and myosin filaments slide past each other to shorten the cell, and millions doing it together produce movement.",
+                title: "Pond Water Sample",
+                situation:
+                  "Ana finds a slipper-shaped organism in pond water. It is a single cell, and with stain she can see a nucleus inside it.",
+                question: "How should Ana classify it?",
+                skill:
+                  "It is unicellular (one cell) and eukaryotic (it has a nucleus). It is likely a paramecium, a protist.",
               },
               {
-                num: 3,
-                title: "Red Blood Cell (Erythrocyte)",
-                color: "accent",
-                desc: "Biconcave and without a nucleus, maximising oxygen capacity",
-                content:
-                  "The dished disc shape increases surface area for gas exchange, and losing the nucleus frees interior space for more haemoglobin.",
+                title: "Yeast vs. Mushroom",
+                situation:
+                  "Both yeast and oyster mushrooms are fungi.",
+                question:
+                  "How are they different in terms of cell number, and what do they have in common?",
+                skill:
+                  "Yeast is unicellular, while a mushroom is multicellular. Both are made of eukaryotic cells, since all fungi have cells with a nucleus.",
               },
               {
-                num: 4,
-                title: "White Blood Cell (Leukocyte)",
-                color: "primary",
-                desc: "Flexible shape that can engulf and destroy invaders",
-                content:
-                  "White blood cells change shape to squeeze through capillary walls and swallow bacteria whole in a process called phagocytosis.",
+                title: "Spot the Mistake",
+                situation:
+                  "A classmate says, “All unicellular organisms are prokaryotic, because they are so small.”",
+                question: "Is your classmate correct? Explain.",
+                skill:
+                  "No. Bacteria are unicellular and prokaryotic, but some unicellular organisms, like yeast, amoeba and paramecium, have a nucleus, so they are eukaryotic. Size alone does not decide; the nucleus does.",
               },
-              {
-                num: 5,
-                title: "Leaf Cell (Mesophyll Cell)",
-                color: "secondary",
-                desc: "Crowded with chloroplasts to capture sunlight",
-                content:
-                  "Mesophyll cells hold dozens of chloroplasts arranged to catch as much light as possible for photosynthesis.",
-              },
-              {
-                num: 6,
-                title: "Root Hair Cell",
-                color: "accent",
-                desc: "A long thin extension that maximises absorbing surface",
-                content:
-                  "The hair-like projection reaches out between soil particles, hugely increasing the surface area available for absorbing water and minerals.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "conceptList",
-          heading: "Key Distinctions",
-          data: {
-            concepts: [
-              "The defining feature of a eukaryotic cell is a true, membrane-bound nucleus protecting and organising the DNA.",
-              "Prokaryotic cells are always unicellular — each cell is a complete, independent organism.",
-              "Eukaryotic cells may be unicellular (amoeba, yeast) or part of a multicellular organism (plant, animal).",
-              "All cells — prokaryotic and eukaryotic alike — share four features: a cell membrane, cytoplasm, DNA, and ribosomes.",
-              "Prokaryotes reproduce by binary fission; eukaryotes use mitosis or meiosis.",
-              "Specialisation is why a complex organism works: no single cell could think, move, digest, and fight infection all at once.",
-              "In multicellular organisms, specialised cells form tissues, tissues form organs, and organs form organ systems.",
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Why Cell Diversity Matters",
           data: {
             apps: [
               {
-                title: "Cancer Research",
+                title: "Food Made by Tiny Cells",
                 description:
-                  "Cancer is cells dividing without the normal controls. Virchow's principle that every cell comes from another cell is the foundation for understanding and treating it.",
-                icon: "🔬",
+                  "Bacteria make nata de coco and sukang Iloko (sugarcane vinegar), and yeast makes pandesal rise. Filipino food would not be the same without unicellular organisms.",
+                icon: "🥥",
                 color: "border-l-primary-500",
               },
               {
-                title: "Antibiotic Development",
+                title: "Medicine That Targets Bacteria",
                 description:
-                  "Antibiotics work by targeting features prokaryotic bacteria have and human eukaryotic cells do not — killing the infection without harming the patient.",
+                  "Antibiotics attack parts that only prokaryotic bacteria have, such as their kind of cell wall. That is how they can kill germs without harming your eukaryotic cells.",
                 icon: "💊",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Stem Cell Therapy",
+                title: "Keeping Seafood Safe",
                 description:
-                  "Stem cells are unspecialised cells that can develop into many types. Scientists direct them to replace damaged specialised cells in the heart, spine, or brain.",
-                icon: "🧬",
+                  "BFAR monitors red tide organisms in coastal waters and posts shellfish bulletins, so families know when tahong and talaba from an area are unsafe to eat.",
+                icon: "🦪",
                 color: "border-l-accent-500",
               },
               {
-                title: "Agricultural Biotechnology",
+                title: "Respecting All Life",
                 description:
-                  "Understanding how plant cells specialise lets scientists engineer crops that resist pests, tolerate drought, or carry more nutrients.",
-                icon: "🌾",
+                  "From bacteria in the soil to the trees in a forest, every organism has a role. Understanding cells helps us care for living things big and small, instead of only the ones we can see.",
+                icon: "🌱",
                 color: "border-l-primary-500",
               },
             ],
@@ -337,11 +356,12 @@ export const week12 = {
       title: "Parts and Function of the Cell",
       badge: "Lesson 2",
       subtitle:
-        "Tour the inside of a cell — the membrane that guards it, the nucleus that runs it, and every organelle that keeps it alive.",
-      readTime: "~18 min read",
+        "Identify the cell membrane, nucleus, cytoplasm, mitochondria, chloroplasts and ribosomes, describe what each does, and learn how to observe cells carefully under a microscope.",
+      readTime: "~16 min read",
       xp: 50,
       heroImage: simulation,
-      heroImageAlt: "Diagram of a cell showing its internal organelles",
+      heroImageAlt:
+        "Labeled diagram of a cell showing the cell membrane, nucleus, cytoplasm, mitochondria and ribosomes",
 
       signature: {
         widgetId: "cell-cutaway",
@@ -352,33 +372,39 @@ export const week12 = {
         explainer: {
           title: "Why one failure stops the line",
           points: [
-            "Switching the nucleus off cut the instruction, so the ribosomes had nothing left to build from.",
-            "Switching the Golgi off left the chains unwrapped, so no vesicle ever reached the membrane.",
-            "The mitochondria were different: with no ATP, every station stopped at once instead of one by one.",
-            "Stations upstream of the broken one kept working, which is how you could tell what depends on what.",
+            "Switching the nucleus off cut the instructions, so the ribosomes had nothing left to build from.",
+            "Switching the Golgi off left the proteins unpacked, so nothing reached the membrane.",
+            "The mitochondria were different: with no energy, every station stopped at once instead of one by one.",
+            "Stations before the broken one kept working, which is how you could tell what depends on what.",
           ],
         },
       },
 
       sections: [
         "Overview",
-        "Key Terms",
-        "The Cell Membrane and Cell Wall",
-        "Organelle Gallery",
-        "What Each Organelle Does",
-        "Cytoplasm and Cytoskeleton",
+        "Six Major Cell Parts",
+        "Observing Cells Under the Microscope",
+        "Good Habits When Observing",
         "Practical Scenarios",
         "Applications",
       ],
 
       references: [
         {
-          label: "Khan Academy — Cell Parts and Functions",
-          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell",
+          label: "Britannica — Cell (biology): organelles",
+          url: "https://www.britannica.com/science/cell-biology",
         },
         {
-          label: "Britannica — Cell Organelle",
-          url: "https://www.britannica.com/science/organelle",
+          label: "Khan Academy — Tour of a eukaryotic cell",
+          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell/tour-of-organelles/a/nucleus-and-ribosomes",
+        },
+        {
+          label: "CK-12 — Cell Structures (Life Science)",
+          url: "https://www.ck12.org/c/life-science/cell-structures/",
+        },
+        {
+          label: "DepEd LR Portal — Grade 7 Science learning resources",
+          url: "https://lrmds.deped.gov.ph/",
         },
       ],
 
@@ -388,162 +414,109 @@ export const week12 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "Inside every eukaryotic cell is a collection of specialised structures called <strong class='text-primary-700'>organelles</strong>, each with a specific job. Together they work like departments in a factory — and the factory dies if any critical department shuts down.",
-              "The <strong class='text-primary-700'>cell membrane</strong> forms the boundary, controlling what enters and leaves. The <strong class='text-primary-700'>nucleus</strong> is the control centre, holding the DNA that directs everything. Around them, other organelles handle energy production, protein building, packaging, transport, waste disposal, and storage.",
+              "Think of a cell as a small <strong class='text-primary-700'>panaderya</strong> (bakery). It has a door that controls who comes in, a recipe book, bakers, a work area, and a generator for power. Each part inside a cell, called an <strong class='text-primary-700'>organelle</strong>, also has its own job.",
+              "In this lesson you will learn six major parts: the <strong class='text-primary-700'>cell membrane</strong>, <strong class='text-primary-700'>nucleus</strong>, <strong class='text-primary-700'>cytoplasm</strong>, <strong class='text-primary-700'>mitochondria</strong>, <strong class='text-primary-700'>chloroplasts</strong> and <strong class='text-primary-700'>ribosomes</strong>. You will also learn which ones you can actually see with your school microscope.",
+              "Other helper organelles work alongside them. The endoplasmic reticulum carries proteins around the cell, and the Golgi apparatus packs them and sends them where they are needed. You will meet the vacuole and the cell wall next week.",
+              "Good scientists aim for <strong class='text-primary-700'>excellence</strong>: careful technique, patient focusing and neat, accurate drawings of what they really see.",
             ],
             didYouKnow:
-              "Mitochondria have their own DNA, separate from the nucleus. Scientists believe they were once free-living bacteria engulfed by an ancestral cell billions of years ago — and simply stayed.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Cell Membrane",
-                desc: "A flexible, selectively permeable barrier found in every cell that controls what moves in and out.",
-              },
-              {
-                term: "Selective Permeability",
-                desc: "The property of letting some substances through while restricting or blocking others.",
-              },
-              {
-                term: "Cell Wall",
-                desc: "A rigid outer layer outside the membrane in plant, fungal, and bacterial cells, giving shape and support. Made of cellulose in plants.",
-              },
-              {
-                term: "Nucleus",
-                desc: "The control centre of the cell, containing the DNA and directing all cell activities.",
-              },
-              {
-                term: "Mitochondria",
-                desc: "The organelle that produces ATP energy through cellular respiration — the 'powerhouse of the cell'.",
-              },
-              {
-                term: "Ribosome",
-                desc: "The site of protein synthesis, translating instructions from the nucleus into protein chains. Found in all cells.",
-              },
-              {
-                term: "Endoplasmic Reticulum",
-                desc: "A network of membranes that processes proteins (rough ER, studded with ribosomes) and makes lipids and detoxifies (smooth ER).",
-              },
-              {
-                term: "Golgi Apparatus",
-                desc: "The organelle that sorts, modifies, and packages proteins into vesicles for transport or export.",
-              },
-              {
-                term: "Lysosome",
-                desc: "A sac of digestive enzymes that breaks down waste, worn-out organelles, and engulfed bacteria.",
-              },
-              {
-                term: "Vacuole",
-                desc: "A storage compartment for water, nutrients, and waste. Plant cells have one very large central vacuole.",
-              },
-              {
-                term: "Cytoplasm",
-                desc: "The gel-like fluid filling the cell, holding organelles in place and hosting most chemical reactions.",
-              },
-              {
-                term: "Cytoskeleton",
-                desc: "A network of protein filaments giving the cell its shape, moving organelles, and pulling chromosomes apart during division.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "comparison",
-          heading: "The Cell Membrane and Cell Wall",
-          data: {
-            intro:
-              "Both are outer layers, but they are made of different materials and do different jobs. Only one of them is found in every living cell.",
-            left: {
-              label: "Cell Membrane",
-              color: "primary",
-              items: [
-                "Made of a phospholipid bilayer with proteins embedded in it",
-                "Found in ALL cells — plant, animal, fungus, bacterium",
-                "Controls what enters and exits (selective permeability)",
-                "Flexible and fluid — the cell can change shape",
-                "Highly selective: it decides molecule by molecule",
-              ],
-            },
-            right: {
-              label: "Cell Wall",
-              color: "secondary",
-              items: [
-                "Made of cellulose (plants), chitin (fungi), or peptidoglycan (bacteria)",
-                "Found in plant, fungal, and bacterial cells — NOT animal cells",
-                "Provides structural support and protection",
-                "Rigid and stiff — holds a fixed cell shape",
-                "Non-selective: most molecules pass straight through",
-              ],
-            },
+              "Mitochondria have their own small set of DNA, separate from the DNA in the nucleus. Scientists think they were once free-living bacteria that were taken in by a larger cell long ago and stayed.",
           },
         },
 
         {
           type: "imageCards",
-          heading: "Organelle Gallery",
+          heading: "Six Major Cell Parts",
           data: {
             cards: [
               {
-                title: "Nucleus",
-                label: "Control Centre",
+                title: "Cell Membrane",
+                label: "The Gatekeeper",
                 variant: "primary",
                 color: "primary",
-                desc: "Holds the cell's DNA and directs every activity — growth, metabolism, and reproduction.",
+                desc: "A thin, flexible layer around the cell. It lets water, food and oxygen in and lets wastes out, but keeps other substances out. This is called being selectively permeable.",
+                image: simulation,
+                imageAlt:
+                  "Microscope view of cheek cells, with the thin outer edge of each cell (the cell membrane) clearly visible",
+                examples: [
+                  "Found in all cells",
+                  "Like the bakery door that only lets in deliveries and customers",
+                  "Under the microscope, you see it as the cell's outline",
+                ],
+              },
+              {
+                title: "Nucleus",
+                label: "The Control Center",
+                variant: "secondary",
+                color: "secondary",
+                desc: "A round structure that holds the DNA. It controls growth, the making of proteins and cell division.",
                 image: microscope,
                 imageAlt:
-                  "Nucleus of a cell showing nuclear membrane and nucleolus",
+                  "Stained onion skin cells under a microscope, each brick-shaped cell with a dark round nucleus",
                 examples: [
-                  "Contains DNA — the genetic instructions",
-                  "The nucleolus inside it builds ribosomes",
-                  "The nuclear membrane protects the DNA",
+                  "Found in eukaryotic cells (not in bacteria)",
+                  "Like the bakery owner's recipe book",
+                  "Shows up as a dark dot when stained with iodine or methylene blue",
                 ],
               },
               {
-                title: "Energy Organelles",
-                label: "Powerhouse",
-                variant: "secondary",
-                color: "secondary",
-                desc: "Mitochondria convert glucose and oxygen into ATP through cellular respiration.",
-                image: simulation,
-                imageAlt: "Diagram of mitochondria showing inner membrane folds",
+                title: "Cytoplasm",
+                label: "The Work Area",
+                variant: "accent",
+                color: "accent",
+                desc: "The jelly-like fluid that fills the cell. Organelles float in it, and many of the cell's chemical reactions happen here.",
+                image: lab,
+                imageAlt:
+                  "Microscope view of a cell showing the clear jelly-like cytoplasm around the nucleus",
                 examples: [
-                  "Mitochondria produce ATP, the cell's energy currency",
-                  "Folded inner membranes increase the working surface",
-                  "They carry their own separate DNA",
+                  "Found in all cells",
+                  "Like the bakery's work floor where everything happens",
+                  "Looks clear or slightly grainy under the microscope",
                 ],
               },
               {
-                title: "Protein Factory",
-                label: "Build and Ship",
+                title: "Mitochondria",
+                label: "The Powerhouse",
                 variant: "primary",
                 color: "primary",
-                desc: "Ribosomes, the endoplasmic reticulum, and the Golgi apparatus build, process, and dispatch proteins.",
+                desc: "Bean-shaped organelles that break down food (glucose) using oxygen to release energy the cell can use.",
                 image: globe,
-                imageAlt: "Diagram of rough ER, ribosomes, and Golgi apparatus",
+                imageAlt:
+                  "Diagram of a bean-shaped mitochondrion with folded inner membranes",
                 examples: [
-                  "Ribosomes assemble amino acids into proteins",
-                  "Rough ER folds and processes those proteins",
-                  "Golgi packages and ships them where they are needed",
+                  "Found in plant and animal cells",
+                  "Like the bakery's generator that powers the ovens",
+                  "Muscle cells have many, because they need lots of energy",
                 ],
               },
               {
-                title: "Cleanup and Storage",
-                label: "Waste Management",
+                title: "Chloroplasts",
+                label: "The Food Makers",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Lysosomes break down waste while vacuoles store water, nutrients, and by-products.",
-                image: lab,
-                imageAlt: "Diagram of lysosomes digesting cellular waste",
+                desc: "Green organelles that use sunlight, water and carbon dioxide to make sugar (food) for the plant. Their green color comes from chlorophyll.",
+                image: simulation,
+                imageAlt:
+                  "Hydrilla leaf cells under a microscope, packed with small green oval chloroplasts",
                 examples: [
-                  "Lysosomes digest waste and worn-out organelles",
-                  "Vacuoles store water and materials",
-                  "Smooth ER detoxifies harmful chemicals",
+                  "Found in plant cells and algae, not in animal cells",
+                  "Like solar panels that make the bakery's own flour",
+                  "Easy to see as green dots in a hydrilla or kangkong leaf",
+                ],
+              },
+              {
+                title: "Ribosomes",
+                label: "The Builders",
+                variant: "accent",
+                color: "accent",
+                desc: "Very tiny structures that build proteins by following the instructions sent from the nucleus.",
+                image: lab,
+                imageAlt:
+                  "Electron microscope image or diagram showing tiny ribosome dots along a membrane inside a cell",
+                examples: [
+                  "Found in all cells, even bacteria",
+                  "Like the bakers who follow the recipe",
+                  "Too small for a school microscope; seen only with an electron microscope",
                 ],
               },
             ],
@@ -551,68 +524,110 @@ export const week12 = {
         },
 
         {
-          type: "conceptList",
-          heading: "What Each Organelle Does",
+          type: "timeline",
+          heading: "Observing Cells Under the Microscope",
           data: {
-            concepts: [
-              "The nucleus is the control centre — it holds the DNA and directs all cell activity through gene expression.",
-              "Mitochondria produce ATP, the cell's energy currency, through cellular respiration using glucose and oxygen.",
-              "Ribosomes are the site of protein synthesis, translating genetic instructions into chains of amino acids.",
-              "The rough endoplasmic reticulum processes and folds newly made proteins; the smooth ER makes lipids and breaks down toxins.",
-              "The Golgi apparatus sorts, modifies, and packages proteins into vesicles for delivery inside or outside the cell.",
-              "Lysosomes contain digestive enzymes that break down old organelles, bacteria, and waste — the cell's recycling system.",
-              "Vacuoles store water, nutrients, and waste. In plant cells the large central vacuole also maintains turgor pressure.",
-              "The cell membrane controls every substance entering or leaving, using selective permeability.",
+            intro:
+              "Use the microscope skills from last week. Onion skin shows the nucleus, cheek cells show an animal cell, and a hydrilla leaf shows chloroplasts.",
+            steps: [
+              {
+                num: 1,
+                title: "Prepare the Slide",
+                color: "primary",
+                description:
+                  "Make a wet mount of a thin onion skin. For cheek cells, gently rub the inside of your cheek with a clean, flat toothpick and spread it on a drop of water on the slide.",
+                tip: "Use each toothpick only once and throw it in the trash bin your teacher sets out. Never share toothpicks.",
+              },
+              {
+                num: 2,
+                title: "Add the Right Stain",
+                color: "secondary",
+                description:
+                  "Add one drop of iodine solution for onion cells, or methylene blue for cheek cells, at the edge of the cover slip. A hydrilla leaf needs no stain because its chloroplasts are already green.",
+                tip: "Stains can stain skin and clothes. Wipe spills right away.",
+              },
+              {
+                num: 3,
+                title: "Find the Cells at Low Power",
+                color: "accent",
+                description:
+                  "Start with the 4× objective, focus with the coarse knob, then move the slide to center a clear group of cells. Switch to 10×.",
+                tip: "Pick an area where cells are flat and not folded over each other.",
+              },
+              {
+                num: 4,
+                title: "Look Closer at High Power",
+                color: "primary",
+                description:
+                  "Switch to 40× and use only the fine knob. Slowly turn it back and forth to bring different parts into focus. Adjust the diaphragm until the outline and nucleus are clear.",
+                tip: "At 400× you can see the cell outline, nucleus, cytoplasm and chloroplasts, but not mitochondria or ribosomes. Be patient; a clear view can take a few minutes.",
+              },
+              {
+                num: 5,
+                title: "Draw What You See",
+                color: "secondary",
+                description:
+                  "Use a sharp pencil to draw two or three cells inside a circle that stands for the field of view. Draw only what you actually see, not what the textbook shows.",
+                tip: "Draw neat, solid lines and do not shade. Use a ruler for label lines.",
+              },
+              {
+                num: 6,
+                title: "Label and Record",
+                color: "accent",
+                description:
+                  "Label the parts you saw (cell membrane, nucleus, cytoplasm, chloroplasts) and write the specimen name, the stain used and the total magnification, for example “Onion skin, iodine, 400×.”",
+                tip: "Labels go on the right side, in straight lines that do not cross.",
+              },
             ],
           },
         },
 
         {
           type: "reasonCards",
-          heading: "Cytoplasm and Cytoskeleton",
+          heading: "Good Habits When Observing",
           data: {
             intro:
-              "Organelles do not float randomly. The cytoplasm is the medium they sit in, and the cytoskeleton is the scaffolding that holds everything in place and moves it around.",
+              "Observing cells takes more than a microscope. These habits help you and your group do excellent work.",
             reasons: [
               {
                 num: 1,
-                title: "Maintain Cell Shape",
+                title: "Curiosity",
                 color: "primary",
-                desc: "An internal framework that stops the cell collapsing",
+                desc: "Ask questions about what you see",
                 content:
-                  "Without the cytoskeleton, a cell full of watery cytoplasm would sag into a shapeless blob. Protein filaments resist both squeezing and stretching.",
+                  "Why is the hydrilla cell green but the onion cell is not? Why are cheek cells round and onion cells shaped like bricks? Questions like these lead to discoveries.",
               },
               {
                 num: 2,
-                title: "Anchor Organelles",
+                title: "Patience",
                 color: "secondary",
-                desc: "Holds each organelle in the right place",
+                desc: "Take your time focusing",
                 content:
-                  "Filaments tether the nucleus and mitochondria where they belong, so each organelle works in the right part of the cell.",
+                  "Rushing makes you turn the knobs too fast and lose the image. Go slowly, and try again if the first slide is not clear.",
               },
               {
                 num: 3,
-                title: "Power Cilia and Flagella",
+                title: "Responsibility",
                 color: "accent",
-                desc: "Drives the beating and whipping that moves cells",
+                desc: "Care for the tools and clean up",
                 content:
-                  "Cilia lining the windpipe sweep mucus upward, and a sperm cell's flagellum propels it forward. Both are built from bundled microtubules.",
+                  "Handle slides and the microscope carefully, dispose of toothpicks properly, wash your hands and return everything clean and in place.",
               },
               {
                 num: 4,
-                title: "Separate Chromosomes",
+                title: "Respect for Groupmates",
                 color: "primary",
-                desc: "Forms the spindle that pulls DNA apart in division",
+                desc: "Take turns and listen",
                 content:
-                  "During cell division, microtubules assemble into the spindle apparatus, attach to chromosomes, and pull them to opposite ends of the cell.",
+                  "Give everyone a chance to look and focus. Listen to what others notice, because a groupmate may spot something you missed.",
               },
               {
                 num: 5,
-                title: "Transport Cargo",
+                title: "Excellence",
                 color: "secondary",
-                desc: "Acts as rails for motor proteins carrying vesicles",
+                desc: "Be accurate and neat",
                 content:
-                  "Motor proteins walk along microtubule tracks carrying vesicles from the ER to the Golgi and out to the membrane — a rail network inside the cell.",
+                  "Draw carefully, label correctly and record the magnification. An accurate drawing is more valuable than a pretty one copied from a book.",
               },
             ],
           },
@@ -623,42 +638,39 @@ export const week12 = {
           heading: "Practical Scenarios",
           data: {
             intro:
-              "Each of these situations is explained by one organelle doing — or failing to do — its job.",
+              "Each situation is explained by what a cell part does or by good microscope technique.",
             scenarios: [
               {
-                title: "The Cell That Cannot Make Protein",
+                title: "No Green in the Onion",
                 situation:
-                  "A researcher blocks the ribosomes in a cell. Within hours the cell stops producing enzymes, its repairs stall, and it begins to die.",
-                question:
-                  "Which organelle was disabled, and why does blocking it shut down so many different processes?",
+                  "Carlo sees green chloroplasts in hydrilla leaf cells, but none in the onion skin cells, even though both are plant cells.",
+                question: "Why are there no chloroplasts in the onion skin?",
                 skill:
-                  "Ribosomes build every protein the cell needs. Since enzymes, membrane channels, and structural fibres are all proteins, disabling ribosomes stops nearly every other process downstream.",
+                  "Onion skin comes from the bulb, which grows underground and does not get sunlight, so it does not make food by photosynthesis. Its cells have no chloroplasts. Leaf cells that receive light, like hydrilla, have many.",
               },
               {
-                title: "Muscle Cells and Mitochondria",
+                title: "Where Is the Nucleus?",
                 situation:
-                  "A biologist counts organelles and finds heart muscle cells contain far more mitochondria than skin cells do.",
-                question:
-                  "Why would a heart muscle cell need so many more mitochondria than a skin cell?",
+                  "Rina's unstained cheek cells look almost clear, and she cannot find the nucleus.",
+                question: "What should she do?",
                 skill:
-                  "Mitochondria produce ATP. Heart muscle contracts continuously for a lifetime and needs an enormous, constant energy supply, so it packs in far more mitochondria than a cell with lower energy demands.",
+                  "Add a drop of methylene blue stain. The stain makes the nucleus darker so it stands out from the cytoplasm. She can also close the diaphragm a little to improve contrast.",
               },
               {
-                title: "Why Cells Don't Collapse",
+                title: "Muscle Cells Need Energy",
                 situation:
-                  "A cell is filled mostly with water-based cytoplasm. Water holds no shape on its own, yet cells keep their form even when squeezed or jostled.",
-                question: "What stops a cell collapsing into a formless blob?",
+                  "Heart muscle cells have many more mitochondria than skin cells.",
+                question: "Why do heart muscle cells need so many mitochondria?",
                 skill:
-                  "The cytoskeleton — a network of microtubules and microfilaments running through the cytoplasm that resists compression and tension, exactly like the steel frame of a building.",
+                  "Mitochondria release energy from food. The heart beats all day and night and needs a lot of energy, so its cells have many mitochondria.",
               },
               {
-                title: "The Salty Water Experiment",
+                title: "The Copied Drawing",
                 situation:
-                  "A student places plant cells in very salty water and watches under the microscope. Water leaves the cells and the contents shrink away from the cell wall.",
-                question:
-                  "Which structure allowed the water to leave, and what does this show about it?",
+                  "Leo could not see mitochondria in his onion cells, so he copied them from the textbook diagram into his drawing.",
+                question: "Is this good scientific practice? Explain.",
                 skill:
-                  "The cell membrane, through osmosis. Water passed through it from high to low water concentration, demonstrating selective permeability — the membrane let water through while holding other substances back.",
+                  "No. A scientific drawing must show only what was actually observed. Mitochondria are too small to see clearly at 400× without special stains, so Leo should draw and label only the parts he really saw.",
               },
             ],
           },
@@ -670,31 +682,31 @@ export const week12 = {
           data: {
             apps: [
               {
-                title: "Drug Delivery",
+                title: "Blood Tests",
                 description:
-                  "Medicines must cross the cell membrane to reach targets inside. Understanding selective permeability lets chemists design molecules that can get through.",
-                icon: "💊",
+                  "When you get a CBC (complete blood count) at a clinic, medical technologists count and check your blood cells, often with a microscope, to find infections or anemia.",
+                icon: "🩸",
                 color: "border-l-primary-500",
               },
               {
-                title: "Dialysis Machines",
+                title: "Food from Chloroplasts",
                 description:
-                  "Kidney dialysis uses an artificial selectively permeable membrane — copying the cell membrane — to filter waste from a patient's blood.",
-                icon: "🏥",
+                  "The rice, vegetables and fruits we eat, and the food fish and animals eat, start with chloroplasts in plant cells turning sunlight into sugar.",
+                icon: "🌾",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Antibiotics and Ribosomes",
+                title: "Medicines That Target Germs",
                 description:
-                  "Bacterial ribosomes differ from human ones. Antibiotics such as erythromycin target bacterial ribosomes specifically, killing the microbe without harming you.",
-                icon: "🦠",
+                  "Some antibiotics stop the ribosomes of bacteria from making proteins. Bacterial ribosomes are different from ours, so the medicine harms the germ but not you.",
+                icon: "💊",
                 color: "border-l-accent-500",
               },
               {
-                title: "Dietary Fibre",
+                title: "Fitness and Health",
                 description:
-                  "The cellulose in plant cell walls is the fibre in your diet. Humans cannot digest it, which is exactly why it keeps the digestive system working properly.",
-                icon: "🥦",
+                  "Regular exercise helps muscle cells build more mitochondria, so the body can make energy more easily. That is one reason active people tire less quickly.",
+                icon: "🏃",
                 color: "border-l-primary-500",
               },
             ],

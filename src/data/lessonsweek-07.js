@@ -15,7 +15,7 @@ export const week07 = {
   title: "Concentration, Acids, Bases and Salts",
   category: "Chemistry",
   description:
-    "Calculate and compare the concentration of solutions, then explore acids, bases, the pH scale, and the salts formed when they react.",
+    "Tell solutions apart by how much solute they hold and compute their concentration. Then test household items with litmus to sort acids, bases and salts, and learn to handle them safely.",
   icon: "TestTube",
   color: "primary",
   isLocked: false,
@@ -30,23 +30,23 @@ export const week07 = {
       title: "Concentration of Solutions",
       badge: "Lesson 1",
       subtitle:
-        "Learn what concentration means, how to calculate it, and how diluting a solution changes it without removing a single particle of solute.",
-      readTime: "~18 min read",
+        "Name a solution by how much solute it holds, compute its concentration in percent, and see how temperature and other factors change how much can dissolve.",
+      readTime: "~20 min read",
       xp: 50,
       heroImage: lab,
       heroImageAlt:
-        "Two beakers side by side showing concentrated and dilute solutions",
+        "Two glasses of juice side by side, one dark and strong and one pale and watery",
 
       signature: {
         widgetId: "dilution-jar",
         heading: "Watch It: Dilute Without Removing Anything",
-        intro: "Water goes in, particles stay. The colour fades anyway.",
+        intro: "Water goes in, particles stay. The color fades anyway.",
         instruction: "Find both routes to dilute, then hit the target.",
         xp: 25,
         explainer: {
-          title: "Why the colour faded",
+          title: "Why the color faded",
           points: [
-            "Adding water never removed a particle. The same count spread through more liquid, so the colour thinned out.",
+            "Adding water never removed a particle. The same count spread through more liquid, so the color thinned out.",
             "The % m/m reading fell because the total mass underneath the fraction grew while the solute stayed put.",
             "Pouring half away did remove particles. Topping back up gave the same volume with half the solute in it.",
           ],
@@ -55,23 +55,29 @@ export const week07 = {
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Ways to Express Concentration",
-        "Concentrated vs. Dilute",
-        "Preparing a Diluted Solution",
-        "Key Concepts",
-        "Real-Life Scenarios",
-        "Applications",
+        "Types of Solutions",
+        "Dilute vs. Concentrated",
+        "Computing Concentration",
+        "Practice Problems",
+        "Factors That Affect Solubility",
       ],
 
       references: [
         {
-          label: "Khan Academy — Molarity and Solution Concentration",
-          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces",
+          label: "Britannica — Solution (Chemistry)",
+          url: "https://www.britannica.com/science/solution-chemistry",
+        },
+        {
+          label: "Britannica — Solubility (Chemistry)",
+          url: "https://www.britannica.com/science/solubility-chemistry",
         },
         {
           label: "Britannica — Concentration (Chemistry)",
           url: "https://www.britannica.com/science/concentration-chemistry",
+        },
+        {
+          label: "CK-12 — Saturated and Unsaturated Solutions",
+          url: "https://www.ck12.org/c/chemistry/saturated-and-unsaturated-solutions/",
         },
       ],
 
@@ -81,105 +87,64 @@ export const week07 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Concentration</strong> describes how much solute is dissolved in a given amount of solution. A concentrated solution has a lot of solute relative to the solvent; a dilute solution has only a little. Think of the difference between a strong cup of coffee and a weak one.",
-              "Scientists express concentration in different ways depending on the situation: <strong class='text-primary-700'>percent by mass</strong> (grams of solute per 100 grams of solution), <strong class='text-primary-700'>percent by volume</strong> (millilitres per 100 mL), and <strong class='text-primary-700'>parts per million (ppm)</strong> for extremely dilute solutions such as pollutants in water.",
-              "<strong class='text-primary-700'>Dilution</strong> is the process of lowering concentration by adding more solvent. The amount of solute never changes — only the total volume grows, which spreads the same particles more thinly.",
+              "Your Lola makes calamansi juice for the family. She squeezes ten calamansi into one glass of water and adds two spoonfuls of sugar. Your little brother makes his with one calamansi and a whole pitcher of water. Both are calamansi juice, but one is sour and strong, and the other tastes almost like plain water. The difference is <strong class='text-primary-700'>concentration</strong>.",
+              "<strong class='text-primary-700'>Concentration</strong> tells how much solute is dissolved in a certain amount of solution. A solution with a lot of solute is <strong class='text-primary-700'>concentrated</strong>. A solution with only a little solute is <strong class='text-primary-700'>dilute</strong>.",
+              "We can also name a solution by how close it is to its limit. An <strong class='text-primary-700'>unsaturated</strong> solution can still dissolve more solute. A <strong class='text-primary-700'>saturated</strong> solution has dissolved all it can. A <strong class='text-primary-700'>supersaturated</strong> solution holds even more than it normally can, but only for a while.",
+              "Scientists do not stop at words like \"strong\" or \"weak.\" They use numbers such as <strong class='text-primary-700'>percent by mass</strong> and <strong class='text-primary-700'>percent by volume</strong>. Reading these numbers on labels is part of being <strong class='text-primary-700'>responsible</strong>: a cleaning product that is too concentrated can hurt you, and one that is too dilute will not work.",
             ],
             didYouKnow:
-              "The safe limit for lead in drinking water is just 10 parts per billion — 0.00000001 grams per gram of water. Instruments sensitive enough to detect that are among the most precise ever built.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Concentration",
-                desc: "The amount of solute dissolved in a given quantity of solution. It tells you how strong or weak a solution is.",
-              },
-              {
-                term: "Concentrated",
-                desc: "Describing a solution with a relatively large amount of solute dissolved in the solvent.",
-              },
-              {
-                term: "Dilute",
-                desc: "Describing a solution with a relatively small amount of solute dissolved in the solvent.",
-              },
-              {
-                term: "Percent by Mass",
-                desc: "Concentration expressed as (mass of solute ÷ mass of solution) × 100.",
-              },
-              {
-                term: "Percent by Volume",
-                desc: "Concentration expressed as (volume of solute ÷ volume of solution) × 100. Used when both are liquids.",
-              },
-              {
-                term: "Parts per Million (ppm)",
-                desc: "A unit for very dilute solutions — one part solute per one million parts of solution. 1 ppm = 1 mg per kg.",
-              },
-              {
-                term: "Dilution",
-                desc: "Reducing the concentration of a solution by adding more solvent while keeping the amount of solute the same.",
-              },
-              {
-                term: "Supersaturated",
-                desc: "A solution holding more dissolved solute than is normally possible at that temperature — an unstable state.",
-              },
-              {
-                term: "Crystallization",
-                desc: "The process by which dissolved solute comes out of solution as solid crystals, often triggered in a supersaturated solution.",
-              },
-            ],
+              "About 200 g of table sugar can dissolve in 100 mL of water at room temperature, but only about 36 g of table salt can. In hot water, sugar's limit more than doubles, while salt's limit barely changes.",
           },
         },
 
         {
           type: "imageCards",
-          heading: "Ways to Express Concentration",
+          heading: "Types of Solutions",
           data: {
             cards: [
               {
-                title: "Percent by Mass",
-                label: "Most Common",
+                title: "Unsaturated",
+                label: "Room for More",
                 variant: "primary",
                 color: "primary",
-                desc: "Calculated as (mass of solute ÷ mass of solution) × 100. Used for solid-in-liquid solutions such as saltwater or sugar solutions.",
+                desc: "The solvent can still dissolve more solute. Add another spoonful and it disappears when you stir.",
                 image: equation,
-                imageAlt: "Percent by mass formula on paper",
+                imageAlt:
+                  "A spoonful of sugar dissolving completely in a clear glass of water, with no sugar left at the bottom",
                 examples: [
-                  "10 g salt in 200 g solution = 5% by mass",
-                  "Saline drip: 0.9% sodium chloride",
-                  "Seawater: about 3.5% salt by mass",
+                  "One spoon of sugar in a glass of water",
+                  "Lightly salted water for washing vegetables",
+                  "Iced tea that can still take more sugar",
                 ],
               },
               {
-                title: "Percent by Volume",
-                label: "Liquid in Liquid",
+                title: "Saturated",
+                label: "Full",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Calculated as (volume of solute ÷ volume of solution) × 100. Used when both substances are liquids, such as alcohol in water.",
+                desc: "The solvent has dissolved all the solute it can at that temperature. Any extra solute settles at the bottom no matter how long you stir.",
                 image: simulation,
-                imageAlt: "Graduated cylinder measuring liquid volumes",
+                imageAlt:
+                  "A glass of water with undissolved salt crystals resting on the bottom",
                 examples: [
-                  "Rubbing alcohol: 70% isopropanol by volume",
-                  "Vinegar: about 5% acetic acid by volume",
-                  "Mouthwash: 21.6% alcohol by volume",
+                  "Salt piling up at the bottom of a glass of brine",
+                  "Sugar that won't dissolve in cold juice",
+                  "Seawater left to evaporate in a salt bed",
                 ],
               },
               {
-                title: "Parts per Million",
-                label: "Trace Amounts",
-                variant: "primary",
-                color: "primary",
-                desc: "Used for extremely dilute solutions where the concentration is far too small to express usefully as a percentage.",
+                title: "Supersaturated",
+                label: "Over the Limit",
+                variant: "accent",
+                color: "accent",
+                desc: "Very hot water dissolves a lot of sugar. If the syrup cools slowly without being disturbed, it can keep more sugar dissolved than cold water normally holds. One small crystal or a shake makes the extra sugar come out as crystals.",
                 image: lab,
-                imageAlt: "Water quality testing equipment",
+                imageAlt:
+                  "Sugar crystals (rock candy) growing on a string hanging in a jar of thick syrup",
                 examples: [
-                  "Chlorine in swimming pools: 1–3 ppm",
-                  "Fluoride in drinking water: 0.7 ppm",
-                  "Mercury in fish: regulated below 1 ppm",
+                  "Rock candy grown from cooled sugar syrup",
+                  "Thick syrup that turns grainy after standing",
+                  "Reusable heat packs that harden when clicked",
                 ],
               },
             ],
@@ -188,30 +153,30 @@ export const week07 = {
 
         {
           type: "comparison",
-          heading: "Concentrated vs. Dilute",
+          heading: "Dilute vs. Concentrated",
           data: {
             intro:
-              "Concentrated and dilute solutions behave differently and are handled differently. Reading a product label correctly is a genuine safety skill.",
+              "Dilute and concentrated describe how much solute a solution has compared with others. They are comparing words, so always ask: \"compared with what?\"",
             left: {
-              label: "Concentrated Solution",
-              color: "primary",
+              label: "Dilute",
+              color: "secondary",
               items: [
-                "Large amount of solute per volume of solution",
-                "Often darker or more intensely coloured",
-                "Stronger effect — taste, smell, or reactivity is pronounced",
-                "Frequently must be diluted before it is safe to use",
-                "Example: full-strength bleach (5–10% sodium hypochlorite)",
+                "Little solute for the amount of solvent",
+                "Usually lighter in color and milder in taste or smell",
+                "Made by adding more water to a solution",
+                "Example: calamansi juice made with one fruit in a pitcher",
+                "Example: bleach mixed with water before cleaning",
               ],
             },
             right: {
-              label: "Dilute Solution",
-              color: "secondary",
+              label: "Concentrated",
+              color: "primary",
               items: [
-                "Small amount of solute per volume of solution",
-                "Usually lighter in colour or nearly colourless",
-                "Weaker effect — milder taste, smell, or reactivity",
-                "Usually the working strength for everyday use",
-                "Example: diluted bleach for surface cleaning (0.5%)",
+                "A lot of solute for the amount of solvent",
+                "Usually darker in color and stronger in taste or smell",
+                "Made by adding more solute or letting some water evaporate",
+                "Example: arnibal, the thick brown-sugar syrup in taho",
+                "Example: bleach straight from the bottle",
               ],
             },
           },
@@ -219,145 +184,152 @@ export const week07 = {
 
         {
           type: "timeline",
-          heading: "Preparing a Diluted Solution",
+          heading: "Computing Concentration",
           data: {
             intro:
-              "Chemists use the relationship C₁V₁ = C₂V₂, where C is concentration and V is volume, to work out how much to dilute a stock solution. Here is the safe procedure.",
+              "Percent concentration tells how many parts of solute are in every 100 parts of solution. Follow these steps every time.",
             steps: [
               {
                 num: 1,
-                title: "Measure the Concentrate",
+                title: "Identify the Solute and Solvent",
                 color: "primary",
                 description:
-                  "Use a graduated cylinder or pipette to measure the required volume of concentrated solution. Record the starting concentration (C₁) and volume (V₁) accurately.",
-                tip: "Read the bottom of the meniscus at eye level, exactly as you learned in Week 5.",
+                  "Decide what is being dissolved (solute) and what does the dissolving (solvent). In salt water, salt is the solute and water is the solvent.",
+                tip: "Solid solute? Use percent by mass. Liquid solute? Use percent by volume.",
               },
               {
                 num: 2,
-                title: "Add Concentrate to the Container",
+                title: "Find the Amount of Solution",
                 color: "secondary",
                 description:
-                  "Pour the measured concentrate into a clean flask or beaker large enough for the final volume. When working with acid, always add the acid to the water — never water to concentrated acid.",
-                tip: "Adding water to concentrated acid can boil and spit violently. Acid into water, always.",
+                  "Add the solute and solvent together. If 15 g of salt is dissolved in 135 g of water, the solution has a mass of 15 g + 135 g = 150 g.",
+                tip: "The most common mistake is dividing by the solvent alone. Divide by the whole solution.",
               },
               {
                 num: 3,
-                title: "Add Solvent Gradually",
+                title: "Percent by Mass",
                 color: "accent",
                 description:
-                  "Slowly add distilled water while gently swirling, until the volume reaches the target final level (V₂).",
-                tip: "Add the last few millilitres drop by drop so you do not overshoot.",
+                  "Percent by mass = (mass of solute ÷ mass of solution) × 100%. For the salt water: (15 g ÷ 150 g) × 100% = 10%. Every 100 g of this solution contains 10 g of salt.",
+                tip: "Use a balance and record masses in grams.",
               },
               {
                 num: 4,
-                title: "Mix Thoroughly",
+                title: "Percent by Volume",
                 color: "primary",
                 description:
-                  "Seal and invert the flask several times, or stir with a glass rod, until the solution is completely and evenly mixed.",
-                tip: "An unmixed dilution has different concentrations at the top and bottom — it is not one solution yet.",
+                  "Percent by volume = (volume of solute ÷ volume of solution) × 100%. Rubbing alcohol labeled 70% has 70 mL of alcohol in every 100 mL of solution.",
+                tip: "Measure liquids in milliliters with a graduated cylinder, reading the bottom of the meniscus.",
               },
               {
                 num: 5,
-                title: "Label the Solution",
+                title: "Work Backward from a Label",
                 color: "secondary",
                 description:
-                  "Immediately label the container with the solute name, the new concentration (C₂), the volume, the date, and your name.",
-                tip: "An unlabelled solution is a safety hazard. Label it before you put it down.",
+                  "A 1,000 mL bottle of vinegar labeled 5% acidity has 5 ÷ 100 × 1,000 mL = 50 mL of acetic acid. The rest is water.",
+                tip: "Always write the unit with the answer: g, mL or %.",
               },
-            ],
-          },
-        },
-
-        {
-          type: "conceptList",
-          heading: "Key Concepts",
-          data: {
-            concepts: [
-              "Concentration is not the same as solubility — solubility is the maximum that can dissolve, concentration is how much actually is dissolved.",
-              "A solution can be dilute even when the solute is highly soluble; it just means less was added.",
-              "Percent by mass = (mass of solute ÷ mass of solution) × 100. The mass of solution includes the solute.",
-              "Parts per million is used for trace amounts, such as pollutants or minerals in drinking water.",
-              "Doubling the amount of solute in the same volume of solvent doubles the concentration.",
-              "In dilution the amount of solute stays constant while total volume increases — which is why concentration falls.",
-              "C₁V₁ = C₂V₂ lets you calculate exactly how much concentrate and how much water to combine.",
             ],
           },
         },
 
         {
           type: "scenario",
-          heading: "Real-Life Scenarios",
+          heading: "Practice Problems",
           data: {
             intro:
-              "Apply the concentration formula to real situations. Work out the number before reading the answer.",
+              "Work out each answer on paper first, then check the model answer.",
             scenarios: [
               {
-                title: "The Sports Drink",
+                title: "Sweet Gulaman Drink",
                 situation:
-                  "A student mixes 15 g of electrolyte powder into 285 g of water. The total mass of the solution is 300 g.",
-                question:
-                  "What is the percent by mass concentration of the electrolyte powder?",
+                  "Mia dissolves 25 g of sugar in 225 g of water to make the syrup for her sago't gulaman.",
+                question: "What is the percent by mass of sugar in the syrup?",
                 skill:
-                  "Percent by mass = (15 ÷ 300) × 100 = 5%. Note the denominator is the mass of the whole solution, not the water alone.",
+                  "Mass of solution = 25 g + 225 g = 250 g. Percent by mass = (25 g ÷ 250 g) × 100% = 10% sugar.",
               },
               {
-                title: "Reading the Bleach Label",
+                title: "Calamansi Juice",
                 situation:
-                  "A bottle of household bleach is labelled '5% sodium hypochlorite'. The safety instructions say to dilute it to 0.5% for surface disinfection.",
+                  "Paolo mixes 20 mL of pure calamansi juice with enough water to make 250 mL of drink.",
                 question:
-                  "Is the bleach in the bottle concentrated or dilute relative to the working solution? By what factor must it be diluted?",
+                  "What is the percent by volume of calamansi juice in the drink?",
                 skill:
-                  "The bottle is concentrated. It must be diluted tenfold — one part bleach to nine parts water — to reach the 0.5% working concentration.",
+                  "Percent by volume = (20 mL ÷ 250 mL) × 100% = 8% calamansi juice.",
               },
               {
-                title: "Adjusting Fertilizer",
+                title: "Which Is Sweeter?",
                 situation:
-                  "A farmer has a liquid fertilizer concentrate labelled '20% nitrogen by mass'. The recommended application concentration is 4% nitrogen.",
+                  "Ana dissolves 10 g of sugar to make 100 g of solution. Ben dissolves 15 g of sugar to make 200 g of solution.",
                 question:
-                  "Is the concentrate stronger or weaker than needed? How should the farmer adjust it?",
+                  "Ben used more sugar. Is his drink more concentrated?",
                 skill:
-                  "Five times more concentrated than needed. The farmer must dilute it with water before applying, or the excess nitrogen will burn the crop roots.",
+                  "No. Ana's is (10 ÷ 100) × 100% = 10%, while Ben's is (15 ÷ 200) × 100% = 7.5%. Ana's drink is more concentrated, because concentration depends on the amount of solute compared with the whole solution, not on the solute alone.",
+              },
+              {
+                title: "Is It Saturated?",
+                situation:
+                  "Jun keeps adding salt to a glass of water and stirring. After the fifth spoonful, salt stays at the bottom no matter how long he stirs.",
+                question:
+                  "What type of solution does Jun have now, and how could he dissolve the leftover salt?",
+                skill:
+                  "It is a saturated solution, since it can't dissolve any more salt at that temperature. Adding more water would dissolve the leftover salt. Heating helps only a little, because salt's solubility barely changes with temperature.",
               },
             ],
           },
         },
 
         {
-          type: "applications",
-          heading: "Applications",
+          type: "reasonCards",
+          heading: "Factors That Affect Solubility",
           data: {
-            apps: [
+            intro:
+              "Solubility is the most solute that can dissolve in a given amount of solvent. These factors change that limit. Each one comes with a simple demonstration you can try with your teacher.",
+            reasons: [
               {
-                title: "IV Drips in Hospitals",
-                description:
-                  "Medical staff control the concentration of saline and glucose solutions precisely so they match the body's own fluid balance.",
-                icon: "🏥",
-                color: "border-l-primary-500",
+                num: 1,
+                title: "Temperature (Solids)",
+                color: "primary",
+                desc: "Most solids dissolve more in hot water",
+                content:
+                  "Stir sugar into 100 mL of cold water until no more dissolves, then do the same with 100 mL of hot water and count the spoonfuls. The hot water takes far more. Hot water particles move faster and pull sugar particles apart more easily. Salt is an exception: its limit barely changes.",
               },
               {
-                title: "Making Drinks from Concentrate",
-                description:
-                  "Juice concentrates are diluted with water at home or in factories to reach the right flavour strength.",
-                icon: "🥤",
-                color: "border-l-secondary-500",
+                num: 2,
+                title: "Temperature (Gases)",
+                color: "secondary",
+                desc: "Gases dissolve less in warm liquids",
+                content:
+                  "Open one cold and one warm bottle of soft drink over a basin. The warm one fizzes more, because warm liquid can hold less carbon dioxide. This is also why fish in warm, still water, like fish cages in hot summer months, can run short of dissolved oxygen.",
               },
               {
-                title: "Water Quality Standards",
-                description:
-                  "Environmental agencies measure pollutants in rivers and tap water in parts per million or billion to enforce safety limits.",
-                icon: "🚰",
-                color: "border-l-accent-500",
+                num: 3,
+                title: "Nature of Solute and Solvent",
+                color: "accent",
+                desc: "\"Like dissolves like\"",
+                content:
+                  "Stir cooking oil into water and it floats in a layer, while salt in the same water disappears. Water dissolves substances similar to it, like salt and sugar, but not oils. Oil stains come out with soap or a solvent similar to oil.",
               },
               {
-                title: "Preparing Medicines",
-                description:
-                  "Pharmacists dilute stock drug solutions to precise concentrations so patients receive the correct dose in a safe volume.",
-                icon: "💊",
-                color: "border-l-primary-500",
+                num: 4,
+                title: "Pressure (Gases)",
+                color: "primary",
+                desc: "More pressure, more dissolved gas",
+                content:
+                  "Soft drinks are bottled under high pressure to force extra carbon dioxide into the liquid. When you open the cap, the pressure drops and bubbles rush out. Pressure has almost no effect on solids dissolving in liquids.",
+              },
+              {
+                num: 5,
+                title: "Stirring and Particle Size",
+                color: "secondary",
+                desc: "Faster, but not more",
+                content:
+                  "Stirring, or crushing a sugar cube into fine grains, makes the solute dissolve faster. It does not raise the limit. A saturated solution stays saturated however long you stir it.",
               },
             ],
           },
         },
+
       ],
     },
 
@@ -371,12 +343,12 @@ export const week07 = {
       title: "Acids, Bases and Salts",
       badge: "Lesson 2",
       subtitle:
-        "Identify acids and bases by their properties, place them on the pH scale, and see how they cancel each other out to form salts and water.",
-      readTime: "~18 min read",
+        "Sort household and school solutions into acids, bases and salts using litmus paper, and learn to use, store and throw away these products safely.",
+      readTime: "~20 min read",
       xp: 50,
       heroImage: flowchart,
       heroImageAlt:
-        "Litmus paper tests showing color changes in acid and base solutions",
+        "Strips of red and blue litmus paper dipped in vinegar and soapy water, showing their color changes",
 
       signature: {
         widgetId: "titration-drip",
@@ -397,23 +369,33 @@ export const week07 = {
 
       sections: [
         "Overview",
-        "Key Terms",
         "Acids vs. Bases",
-        "The pH Scale",
-        "pH Categories",
-        "Neutralization and Salts",
-        "Everyday Neutralization",
-        "Applications",
+        "Testing with Litmus Paper",
+        "Acid, Base or Salt? Items at Home and School",
+        "Classify It",
+        "Safe Use, Storage and Disposal",
       ],
 
       references: [
         {
-          label: "Khan Academy — Acids, Bases, and pH",
-          url: "https://www.khanacademy.org/science/biology/water-acids-and-bases",
+          label: "Britannica — Acid",
+          url: "https://www.britannica.com/science/acid",
         },
         {
-          label: "Britannica — Acid-Base Reaction",
-          url: "https://www.britannica.com/science/acid-base-reaction",
+          label: "Britannica — Base (Chemistry)",
+          url: "https://www.britannica.com/science/base-chemistry",
+        },
+        {
+          label: "Britannica — Litmus",
+          url: "https://www.britannica.com/science/litmus",
+        },
+        {
+          label: "Britannica — pH",
+          url: "https://www.britannica.com/science/pH",
+        },
+        {
+          label: "Khan Academy — Acids, Bases, and pH",
+          url: "https://www.khanacademy.org/science/biology/water-acids-and-bases",
         },
       ],
 
@@ -423,61 +405,13 @@ export const week07 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Acids</strong> and <strong class='text-primary-700'>bases</strong> are two families of chemical compounds found everywhere in nature and daily life. Acids taste sour, turn blue litmus paper red, and react with metals to release hydrogen gas. Vinegar, lemon juice, and stomach acid are all acids.",
-              "Bases taste bitter and feel slippery. They turn red litmus paper blue and react with fats and oils to form soap. Baking soda, ammonia, and lye are bases. Both acids and bases conduct electricity in water because both form <strong class='text-primary-700'>ions</strong> in solution.",
-              "When an acid and a base are mixed they cancel each other out in a reaction called <strong class='text-primary-700'>neutralization</strong>, producing a <strong class='text-primary-700'>salt</strong> and water. That single reaction explains antacid tablets, agricultural lime, and why baking soda cleans an acidic stain.",
+              "Look around your kitchen. Sukang Iloko, calamansi and tomatoes taste sour. Bar soap like Safeguard feels slippery and tastes bitter if it gets in your mouth. These everyday things belong to two big groups of substances: <strong class='text-primary-700'>acids</strong> and <strong class='text-primary-700'>bases</strong>.",
+              "You can't safely tell them apart by tasting or touching. Instead, scientists use an <strong class='text-primary-700'>indicator</strong>, a substance that changes color in an acid or a base. The most common one in school is <strong class='text-primary-700'>litmus paper</strong>, which comes in blue and red strips.",
+              "When an acid and a base react, they cancel each other out and form a <strong class='text-primary-700'>salt</strong> and water. Many salt solutions, like table salt dissolved in water, are neutral: they are neither acidic nor basic.",
+              "Many household cleaners are strong acids or bases. Muriatic acid for cleaning toilets and drain cleaner (sosa) can burn skin. Being <strong class='text-primary-700'>responsible</strong> means reading labels, wearing gloves, storing them properly and never mixing them.",
             ],
             didYouKnow:
-              "Your stomach produces hydrochloric acid with a pH of about 1.5 — strong enough to digest food and kill most bacteria. The stomach lining protects itself with a thick layer of mucus that it constantly replaces.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Acid",
-                desc: "A substance that releases hydrogen ions (H⁺) when dissolved in water. Acids taste sour, turn blue litmus red, and have a pH below 7.",
-              },
-              {
-                term: "Base",
-                desc: "A substance that releases hydroxide ions (OH⁻) in water. Bases taste bitter, feel slippery, turn red litmus blue, and have a pH above 7.",
-              },
-              {
-                term: "Indicator",
-                desc: "A substance that changes colour in the presence of an acid or base, used to identify the nature of a solution.",
-              },
-              {
-                term: "Litmus",
-                desc: "A natural dye used as an acid-base indicator — red in acids, blue in bases.",
-              },
-              {
-                term: "pH Scale",
-                desc: "A numerical scale from 0 to 14 that measures how acidic or basic a solution is. 7 is neutral.",
-              },
-              {
-                term: "Neutralization",
-                desc: "A reaction between an acid and a base that produces a salt and water, reducing both the acidity and the basicity.",
-              },
-              {
-                term: "Salt",
-                desc: "An ionic compound formed from the positive ion of a base and the negative ion of an acid during neutralization.",
-              },
-              {
-                term: "Antacid",
-                desc: "A basic substance taken to neutralize excess stomach acid and relieve heartburn or indigestion.",
-              },
-              {
-                term: "Corrosive",
-                desc: "Able to destroy or damage materials on contact. Strong acids and strong bases are both corrosive.",
-              },
-              {
-                term: "Electrolyte",
-                desc: "A substance that conducts electricity when dissolved in water because it forms ions. Both acids and bases are electrolytes.",
-              },
-            ],
+              "Litmus is a natural dye that comes from lichens, small living things made of a fungus and an alga growing together. People have used it to test for acids for hundreds of years.",
           },
         },
 
@@ -486,145 +420,150 @@ export const week07 = {
           heading: "Acids vs. Bases",
           data: {
             intro:
-              "Acids and bases have opposite properties that can be told apart with simple tests. Knowing these differences is essential for handling chemicals safely.",
+              "Acids and bases have opposite properties. On the pH scale (0 to 14), acids are below 7, neutral is 7 and bases are above 7. When an acid and a base react, they neutralize each other and form a salt and water. Never taste or touch lab samples. The tastes listed here are only what you may already know from food and soap.",
             left: {
               label: "Acids",
               color: "primary",
               items: [
-                "Taste sour (like lemon juice or vinegar)",
+                "Taste sour, like calamansi, vinegar and green mango",
                 "Turn blue litmus paper red",
-                "pH range: 0 to below 7",
-                "React with reactive metals to release hydrogen gas",
-                "Examples: HCl, H₂SO₄, vinegar, citric acid",
+                "pH below 7",
+                "React with some metals, like zinc, and give off hydrogen gas",
+                "Home examples: vinegar, calamansi juice, soft drinks, tomato juice, muriatic acid",
               ],
             },
             right: {
               label: "Bases",
               color: "secondary",
               items: [
-                "Taste bitter (like baking soda or soap)",
+                "Taste bitter, like soap",
+                "Feel slippery or soapy",
                 "Turn red litmus paper blue",
-                "pH range: above 7 to 14",
-                "Feel slippery or soapy — they react with skin oils",
-                "Examples: NaOH, NH₃, baking soda, bleach",
+                "pH above 7",
+                "Home examples: baking soda solution, bar soap, bleach (Zonrox), drain cleaner (sosa), antacids",
               ],
             },
           },
         },
 
         {
-          type: "conceptList",
-          heading: "The pH Scale",
+          type: "imageCards",
+          heading: "Testing with Litmus Paper",
           data: {
-            concepts: [
-              "The pH scale runs from 0 (most acidic) to 14 (most basic), with exactly 7 being neutral.",
-              "Pure water is neutral, with a pH of exactly 7.0 at 25 °C.",
-              "Each step on the scale represents a tenfold change in acidity — pH 2 is ten times more acidic than pH 3, and a hundred times more acidic than pH 4.",
-              "Litmus, universal indicator, and phenolphthalein are the common school-laboratory indicators.",
-              "Universal indicator runs through a spectrum of colours — red, orange, yellow, green, blue, purple — as pH rises from 0 to 14.",
-              "Digital pH meters give a precise numerical reading, while indicators only give a range.",
-              "Maintaining the right pH is critical in living things: human blood must stay between 7.35 and 7.45 or life-threatening conditions follow.",
+            cards: [
+              {
+                title: "In an Acid",
+                label: "Blue → Red",
+                variant: "primary",
+                color: "primary",
+                desc: "Dip a blue litmus strip in an acid and it turns red. A red strip stays red. One color change is enough to tell you it is an acid.",
+                image: equation,
+                imageAlt:
+                  "A blue litmus strip turning red after being dipped in a cup of vinegar",
+                examples: [
+                  "Vinegar: blue litmus turns red",
+                  "Calamansi juice: blue litmus turns red",
+                  "Soft drink: blue litmus turns red",
+                ],
+              },
+              {
+                title: "In a Base",
+                label: "Red → Blue",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Dip a red litmus strip in a base and it turns blue. A blue strip stays blue.",
+                image: simulation,
+                imageAlt:
+                  "A red litmus strip turning blue after being dipped in soapy water",
+                examples: [
+                  "Soap solution: red litmus turns blue",
+                  "Baking soda solution: red litmus turns blue",
+                  "Antacid dissolved in water: red litmus turns blue",
+                ],
+              },
+              {
+                title: "In a Neutral Solution",
+                label: "No Change",
+                variant: "accent",
+                color: "accent",
+                desc: "In a neutral solution, neither strip changes. Blue stays blue and red stays red. Many salt solutions behave this way.",
+                image: lab,
+                imageAlt:
+                  "Red and blue litmus strips beside a glass of salt water, both keeping their original colors",
+                examples: [
+                  "Table salt dissolved in water",
+                  "Sugar dissolved in water",
+                  "Distilled water",
+                ],
+              },
             ],
           },
         },
 
         {
           type: "imageCards",
-          heading: "pH Categories",
+          heading: "Acid, Base or Salt? Items at Home and School",
           data: {
             cards: [
               {
-                title: "Strong Acids",
-                label: "pH 0–3",
+                title: "Kitchen Acids",
+                label: "Acidic",
                 variant: "primary",
                 color: "primary",
-                desc: "Strong acids have a very low pH and are highly corrosive. They release large numbers of hydrogen ions in solution.",
-                image: equation,
-                imageAlt: "Red litmus paper indicating strong acid",
+                desc: "Sour foods and drinks are acidic. They turn blue litmus red.",
+                image: flowchart,
+                imageAlt:
+                  "Calamansi, a bottle of cane vinegar, tomatoes and a soft drink on a kitchen table",
                 examples: [
-                  "Battery acid (H₂SO₄): pH ≈ 0–1",
-                  "Stomach acid (HCl): pH ≈ 1.5–2",
-                  "Lemon juice (citric acid): pH ≈ 2–3",
+                  "Vinegar (sukang Iloko, sukang maasim)",
+                  "Calamansi and lemon juice",
+                  "Tomatoes, green mangoes, soft drinks",
                 ],
               },
               {
-                title: "Neutral Substances",
-                label: "pH 6–8",
+                title: "Cleaning Bases",
+                label: "Basic",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Neutral or near-neutral substances sit close to pH 7 and are generally safe to handle. Pure water is the reference point.",
+                desc: "Soaps and many cleaners are basic. They turn red litmus blue. The strongest ones are corrosive.",
                 image: lab,
-                imageAlt: "Clear water in a beaker representing neutral pH",
+                imageAlt:
+                  "A bar of soap, a box of baking soda and a bottle of bleach on a laundry shelf",
                 examples: [
-                  "Pure water: pH = 7.0",
-                  "Blood: pH ≈ 7.35–7.45",
-                  "Human saliva: pH ≈ 6.5–7.5",
+                  "Bar soap and laundry soap",
+                  "Baking soda dissolved in water",
+                  "Bleach (Zonrox) and drain cleaner (sosa), which are strong",
                 ],
               },
               {
-                title: "Strong Bases",
-                label: "pH 11–14",
+                title: "Neutral Salts and Liquids",
+                label: "Neutral",
+                variant: "accent",
+                color: "accent",
+                desc: "These do not change either litmus paper.",
+                image: equation,
+                imageAlt:
+                  "A glass of clear water and a small bowl of rock salt",
+                examples: [
+                  "Table salt (rock salt) dissolved in water",
+                  "Distilled water",
+                  "Sugar water",
+                ],
+              },
+              {
+                title: "At School",
+                label: "Mixed",
                 variant: "primary",
                 color: "primary",
-                desc: "Strong bases have a very high pH and are also corrosive. They release large numbers of hydroxide ions in solution.",
+                desc: "School has acids and bases too. Some are safe; others are for adults only.",
                 image: simulation,
-                imageAlt: "Blue litmus paper indicating strong base",
+                imageAlt:
+                  "A school janitor's cart holding labeled bottles of muriatic acid and liquid hand soap",
                 examples: [
-                  "Ammonia solution: pH ≈ 11–12",
-                  "Bleach (sodium hypochlorite): pH ≈ 12–13",
-                  "Drain cleaner (NaOH): pH ≈ 13–14",
+                  "Hand soap at the sink (basic)",
+                  "Muriatic acid for cleaning toilets (strong acid, adults only)",
+                  "Lab bottles of dilute acids and bases (teacher only)",
                 ],
-              },
-            ],
-          },
-        },
-
-        {
-          type: "timeline",
-          heading: "Neutralization and Salts",
-          data: {
-            intro:
-              "The general equation is Acid + Base → Salt + Water. Here is what actually happens at the particle level when hydrochloric acid reacts with sodium hydroxide.",
-            steps: [
-              {
-                num: 1,
-                title: "Mix the Acid and Base",
-                color: "primary",
-                description:
-                  "Measured volumes of hydrochloric acid (HCl) and sodium hydroxide (NaOH) are combined in a beaker. The mixture now contains H⁺, Cl⁻, Na⁺, and OH⁻ ions all moving freely in the water.",
-                tip: "Add slowly — neutralization releases heat, and a fast mix can become hot enough to matter.",
-              },
-              {
-                num: 2,
-                title: "Ions Combine",
-                color: "secondary",
-                description:
-                  "The positively charged hydrogen ions (H⁺) from the acid are attracted to the negatively charged hydroxide ions (OH⁻) from the base. The Na⁺ and Cl⁻ ions take no part in this step.",
-                tip: "H⁺ meeting OH⁻ is the whole reaction. Everything else is a spectator.",
-              },
-              {
-                num: 3,
-                title: "Water Forms",
-                color: "accent",
-                description:
-                  "Each pair of H⁺ and OH⁻ ions joins to form a molecule of water (H₂O). As they are used up, the solution becomes less acidic and less basic, moving toward pH 7.",
-                tip: "Forming water is what drives the reaction forward.",
-              },
-              {
-                num: 4,
-                title: "Salt Remains in Solution",
-                color: "primary",
-                description:
-                  "The Na⁺ and Cl⁻ ions, untouched by the reaction, remain dissolved. Together they are sodium chloride (NaCl) — ordinary table salt — dissolved in the water that was just formed.",
-                tip: "Evaporate the water afterwards and solid salt crystals are left behind.",
-              },
-              {
-                num: 5,
-                title: "Test with an Indicator",
-                color: "secondary",
-                description:
-                  "Add a few drops of universal indicator to confirm neutralization is complete. Green (universal indicator) or no colour change (litmus) means the solution is neutral.",
-                tip: "If the indicator still shows acid or base, add small amounts of the opposite substance until it turns green.",
               },
             ],
           },
@@ -632,78 +571,106 @@ export const week07 = {
 
         {
           type: "scenario",
-          heading: "Everyday Neutralization",
+          heading: "Classify It",
           data: {
             intro:
-              "Neutralization reactions happen all around you. For each scenario, name the reaction and identify the products.",
+              "Use the litmus results to decide whether each solution is an acid, a base, or neutral.",
             scenarios: [
               {
-                title: "Antacid for Heartburn",
+                title: "Mystery Cup A",
                 situation:
-                  "A person has heartburn after eating spicy food — their stomach has produced too much HCl. They chew an antacid tablet containing calcium carbonate (CaCO₃).",
-                question:
-                  "What type of reaction occurs, and what are the products?",
+                  "Blue litmus paper dipped in Cup A turns red. Red litmus stays red.",
+                question: "Is Cup A an acid, a base, or neutral?",
                 skill:
-                  "Neutralization — the basic calcium carbonate reacts with the excess HCl to form calcium chloride (a salt), water, and carbon dioxide gas, relieving the acidity.",
+                  "Cup A is an acid, because acids turn blue litmus red. It could be vinegar or calamansi juice.",
               },
               {
-                title: "Treating Soil Acidity",
+                title: "Mystery Cup B",
                 situation:
-                  "A farmer tests the soil and finds a pH of 4.5 — too acidic for vegetables. The farmer spreads powdered agricultural lime (calcium oxide, CaO) over the field.",
-                question:
-                  "How does adding lime change the soil, and what type of reaction is it?",
+                  "Red litmus paper dipped in Cup B turns blue. Blue litmus stays blue.",
+                question: "Is Cup B an acid, a base, or neutral?",
                 skill:
-                  "Lime is a base that neutralizes the excess acid in the soil, raising the pH into the range crops need — neutralization applied to agriculture.",
+                  "Cup B is a base, because bases turn red litmus blue. It could be soap solution or baking soda solution.",
               },
               {
-                title: "Cleaning with Baking Soda",
+                title: "Mystery Cup C",
                 situation:
-                  "To remove a stain caused by fruit juice (a mild acid), a student sprinkles baking soda (NaHCO₃) on it and adds a few drops of water before scrubbing.",
-                question:
-                  "Why does baking soda help remove an acidic stain? What is formed?",
+                  "Neither the red nor the blue litmus paper changes color in Cup C.",
+                question: "What can you conclude about Cup C?",
                 skill:
-                  "Baking soda is a mild base that neutralizes the acid in the stain, breaking it into salt, water, and CO₂ gas — which is the fizzing you see — making it easy to wash away.",
+                  "Cup C is neutral. It could be water, sugar water, or a neutral salt solution like table salt dissolved in water.",
+              },
+              {
+                title: "Only One Strip",
+                situation:
+                  "A student has only red litmus paper. It stays red when dipped in a sample.",
+                question: "Can the student say for sure that the sample is an acid?",
+                skill:
+                  "No. Red litmus stays red in both acids and neutral solutions. The student needs blue litmus too: if blue turns red, it is an acid; if blue stays blue, it is neutral.",
               },
             ],
           },
         },
 
         {
-          type: "applications",
-          heading: "Applications",
+          type: "reasonCards",
+          heading: "Safe Use, Storage and Disposal",
           data: {
-            apps: [
+            intro:
+              "Strong acids and bases at home, like muriatic acid, bleach and drain cleaner, can burn skin, damage eyes and give off harmful fumes. Follow these rules every time.",
+            reasons: [
               {
-                title: "Digestive System",
-                description:
-                  "Stomach acid breaks down food and kills pathogens. The small intestine then releases a basic solution to neutralize it before nutrients are absorbed.",
-                icon: "🫁",
-                color: "border-l-primary-500",
+                num: 1,
+                title: "Read the Label First",
+                color: "primary",
+                desc: "Know what it is and how to use it",
+                content:
+                  "Look for warning words and symbols, and follow the directions on how much to use and how much water to mix in. Use the product only for what the label says.",
               },
               {
-                title: "Soil pH for Farming",
-                description:
-                  "Most crops grow best in slightly acidic soil (pH 6–7). Farmers add lime to raise pH or sulfur to lower it, tuning the soil to the crop.",
-                icon: "🌾",
-                color: "border-l-secondary-500",
+                num: 2,
+                title: "Protect Yourself",
+                color: "secondary",
+                desc: "Gloves, open windows, no splashing",
+                content:
+                  "Wear rubber gloves and, if possible, eye protection. Open windows or use a fan so fumes don't build up. Pour slowly and keep your face away from the opening.",
               },
               {
-                title: "Swimming Pool Management",
-                description:
-                  "Pool water is held at pH 7.2–7.6. Below 7 it stings swimmers' eyes; above 7.8 the chlorine stops working properly.",
-                icon: "🏊",
-                color: "border-l-accent-500",
+                num: 3,
+                title: "Never Mix Cleaners",
+                color: "accent",
+                desc: "Some mixtures make poisonous gas",
+                content:
+                  "Mixing bleach (Zonrox) with an acid such as muriatic acid or vinegar gives off chlorine gas. Mixing bleach with ammonia cleaners also makes toxic fumes. Use one product, rinse, then use another.",
               },
               {
-                title: "Food Preservation",
-                description:
-                  "Pickling uses acidic vinegar to drop the pH of food to a level where bacteria cannot grow, preserving it for months.",
-                icon: "🥒",
-                color: "border-l-primary-500",
+                num: 4,
+                title: "Store Them Safely",
+                color: "primary",
+                desc: "Original bottle, tightly closed, out of reach",
+                content:
+                  "Keep products in their original labeled containers, never in soft-drink or water bottles, where someone could drink them by mistake. Store them high up or locked away from children, and away from food.",
+              },
+              {
+                num: 5,
+                title: "Dispose of Them Properly",
+                color: "secondary",
+                desc: "Follow the label; never dump them outside",
+                content:
+                  "Small amounts of diluted household cleaners can usually go down the toilet or sink with plenty of running water, if the label allows it. Never pour them into canals, rivers or the ground, and never pour two different products into the drain at the same time.",
+              },
+              {
+                num: 6,
+                title: "Know What to Do in an Accident",
+                color: "accent",
+                desc: "Rinse with water and get help",
+                content:
+                  "If an acid or base touches your skin or eyes, rinse with plenty of clean running water for at least 15 minutes and tell an adult right away. If someone swallows one, call for help immediately (dial 911) and bring the container so the doctor knows what it was.",
               },
             ],
           },
         },
+
       ],
     },
   ],

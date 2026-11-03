@@ -8,6 +8,7 @@ import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 import mysterylab from "../assets/mysterylab.png";
+import classroom from "../assets/classroom.webp";
 
 export const week06 = {
   id: "week-6",
@@ -15,7 +16,7 @@ export const week06 = {
   title: "Solubility of Matter",
   category: "Chemistry",
   description:
-    "Learn how solutes dissolve in solvents, what controls solubility and the rate of dissolving, then investigate everyday solutions in Performance Task 2.",
+    "Identify the solute and solvent in a solution, express how much solute is dissolved, and see how heat and other factors change solubility. Then investigate everyday solutions in Performance Task 2.",
   icon: "Droplets",
   color: "accent",
   isLocked: false,
@@ -30,11 +31,11 @@ export const week06 = {
       title: "Solubility of Matter: Solute and Solvent",
       badge: "Lesson 1",
       subtitle:
-        "Understand what dissolves in what, how much can dissolve, and how fast — the three separate questions at the heart of solubility.",
-      readTime: "~18 min read",
+        "Tell the solute from the solvent, describe the amount of solute in numbers, and find out why heat lets more sugar dissolve in your tea.",
+      readTime: "~20 min read",
       xp: 50,
       heroImage: lab,
-      heroImageAlt: "Laboratory glassware with colorful solutions",
+      heroImageAlt: "Sugar being stirred into a glass of water with a spoon",
 
       signature: {
         widgetId: "solubility-beaker",
@@ -45,23 +46,21 @@ export const week06 = {
         explainer: {
           title: "Why the beaker stopped taking sugar",
           points: [
-            "Early spoonfuls vanished into the water. The marker sat below the curve: unsaturated.",
+            "Early spoonfuls disappeared into the water. The marker sat below the curve: unsaturated.",
             "Once the marker touched the curve, the water was full. Every extra spoonful piled up on the bottom.",
             "Warming the water lifted the curve, so the pile dissolved. Cooling it pushed the marker above the curve.",
-            "The stirrer and the crusher only sped things up. The curve never moved, so the limit stayed.",
+            "The stirrer and the crusher only sped things up. The curve never moved, so the limit stayed the same.",
           ],
         },
       },
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Types of Mixtures",
+        "Solute and Solvent Around You",
+        "How Much Solute Is in a Solution?",
         "Factors Affecting Solubility",
         "Saturated vs. Unsaturated",
         "Factors Affecting the Rate of Dissolving",
-        "Key Concepts",
-        "Applications",
       ],
 
       references: [
@@ -70,8 +69,12 @@ export const week06 = {
           url: "https://www.britannica.com/science/solution-chemistry",
         },
         {
-          label: "Khan Academy — Solutions and Solubility",
-          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces",
+          label: "Britannica — Solubility (Chemistry)",
+          url: "https://www.britannica.com/science/solubility-chemistry",
+        },
+        {
+          label: "Khan Academy — Solubility",
+          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces/mixtures-and-solutions/a/solubility",
         },
       ],
 
@@ -81,110 +84,119 @@ export const week06 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "Matter can be classified as either a <strong class='text-primary-700'>pure substance</strong> or a <strong class='text-primary-700'>mixture</strong>. A pure substance has a fixed composition throughout — pure water, pure gold. A mixture is two or more substances combined but not chemically joined.",
-              "When one substance dissolves completely into another, the result is a <strong class='text-primary-700'>solution</strong>. The <strong class='text-primary-700'>solute</strong> is the substance that dissolves; the <strong class='text-primary-700'>solvent</strong> is the substance doing the dissolving. In saltwater, salt is the solute and water is the solvent.",
-              "Three separate questions follow from that. <em>Will</em> it dissolve? That is the 'like dissolves like' rule. <em>How much</em> can dissolve? That is <strong class='text-primary-700'>solubility</strong>. <em>How fast</em> does it dissolve? That is the <strong class='text-primary-700'>rate of dissolving</strong> — and it is not the same thing as solubility.",
+              "Lia makes a pitcher of iced tea. She pours cold water over the tea, adds ice, then dumps in four spoonfuls of sugar. She stirs and stirs, but a layer of sugar stays at the bottom, and the tea is not sweet enough. Her Kuya makes his by dissolving the sugar in hot tea first, then adding ice. His is sweet with no sugar left at the bottom. Why? This is the <strong class='text-primary-700'>Iced Tea Dilemma</strong>.",
+              "Sweet tea is a <strong class='text-primary-700'>solution</strong>, a mixture in which one substance is spread evenly through another. The substance that gets dissolved is the <strong class='text-primary-700'>solute</strong> (the sugar). The substance that does the dissolving is the <strong class='text-primary-700'>solvent</strong> (the water in the tea). The solvent is usually the part present in the larger amount.",
+              "<strong class='text-primary-700'>Solubility</strong> is the most solute that can dissolve in a certain amount of solvent at a certain temperature. Hot water can hold much more sugar than cold water. That is why Kuya's method works.",
+              "Working with solutions also means being <strong class='text-primary-700'>responsible</strong>. Label every container, never taste anything in the lab, and handle cleaning solutions like Zonrox only with adult supervision.",
             ],
             didYouKnow:
-              "Air is a mixture of gases — mostly nitrogen (78%) and oxygen (21%) — which makes it a homogeneous mixture, or a solution, of gases.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Pure Substance",
-                desc: "A material with a fixed and uniform composition throughout, such as distilled water, gold, or oxygen gas.",
-              },
-              {
-                term: "Mixture",
-                desc: "A combination of two or more substances that are not chemically combined and can be separated by physical means.",
-              },
-              {
-                term: "Solution",
-                desc: "A homogeneous mixture in which one substance is completely and evenly dissolved in another.",
-              },
-              {
-                term: "Solute",
-                desc: "The substance that is dissolved in a solution, usually present in the smaller amount — salt in saltwater.",
-              },
-              {
-                term: "Solvent",
-                desc: "The substance that does the dissolving, usually present in the larger amount — water in saltwater.",
-              },
-              {
-                term: "Solubility",
-                desc: "The maximum amount of solute that can dissolve in a given amount of solvent at a specific temperature.",
-              },
-              {
-                term: "Rate of Dissolving",
-                desc: "How quickly a solute dissolves. Different from solubility, which is about how much can dissolve in total.",
-              },
-              {
-                term: "Homogeneous",
-                desc: "Having a uniform composition throughout — the same at every point. All solutions are homogeneous.",
-              },
-              {
-                term: "Heterogeneous",
-                desc: "Having a non-uniform composition, where the components can be visibly told apart — like sand in water.",
-              },
-              {
-                term: "Surface Area",
-                desc: "The total area of solute exposed to the solvent. Smaller pieces have more surface area, so they dissolve faster.",
-              },
-            ],
+              "Water is called the \"universal solvent\" because it dissolves more kinds of substances than any other common liquid. Even the air you breathe is a solution: a gas (oxygen) dissolved in another gas (nitrogen).",
           },
         },
 
         {
           type: "imageCards",
-          heading: "Types of Mixtures",
+          heading: "Solute and Solvent Around You",
           data: {
             cards: [
               {
-                title: "Solutions",
-                label: "Homogeneous",
+                title: "Sweet Iced Tea",
+                label: "Solid in liquid",
                 variant: "primary",
                 color: "primary",
-                desc: "The solute dissolves completely and evenly in the solvent. The particles are far too small to see and never settle out.",
+                desc: "Sugar is a solid that dissolves in the water of the tea. The sugar is the solute and the water is the solvent.",
                 image: lab,
-                imageAlt: "Clear saltwater solution in a beaker",
+                imageAlt: "Glasses of iced tea with ice cubes",
                 examples: [
-                  "Saltwater (salt dissolved in water)",
-                  "Air (a mixture of gases)",
-                  "Alloys such as brass (copper and zinc)",
+                  "Solute: sugar",
+                  "Solvent: water",
+                  "Also: salt in seawater, powdered juice drink",
                 ],
               },
               {
-                title: "Suspensions",
-                label: "Heterogeneous",
+                title: "Rubbing Alcohol",
+                label: "Liquid in liquid",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Larger particles are mixed into a liquid but do not dissolve. Left undisturbed, they settle to the bottom.",
+                desc: "A bottle labeled \"70% alcohol\" is 70 parts alcohol and 30 parts water. Here alcohol is the larger part, so alcohol is the solvent and water is the solute.",
                 image: simulation,
-                imageAlt: "Muddy water suspension",
+                imageAlt: "A bottle of rubbing alcohol",
                 examples: [
-                  "Muddy water (soil particles in water)",
-                  "Blood (cells suspended in plasma)",
-                  "Salad dressing (oil, vinegar, and spices)",
+                  "Solute: water (30%)",
+                  "Solvent: alcohol (70%)",
+                  "Also: vinegar (acetic acid in water)",
                 ],
               },
               {
-                title: "Colloids",
-                label: "Intermediate",
+                title: "Soft Drinks",
+                label: "Gas in liquid",
+                variant: "accent",
+                color: "accent",
+                desc: "The fizz is carbon dioxide gas dissolved in water under pressure. When you open the bottle, the pressure drops and bubbles of the gas escape.",
+                image: equation,
+                imageAlt: "Bubbles rising in a glass of soda",
+                examples: [
+                  "Solutes: carbon dioxide gas, sugar, flavoring",
+                  "Solvent: water",
+                  "Also: oxygen dissolved in river water, which fish breathe",
+                ],
+              },
+              {
+                title: "Brass",
+                label: "Solid in solid",
                 variant: "primary",
                 color: "primary",
-                desc: "Medium-sized particles dispersed throughout that do not settle. They scatter a beam of light — the Tyndall effect.",
+                desc: "Brass is an alloy, a solution of two metals. Zinc is mixed evenly into melted copper, and the mixture hardens into a shiny solid.",
                 image: equation,
-                imageAlt: "Milk as a colloid example",
+                imageAlt: "Shiny brass objects such as a brass instrument or fittings",
                 examples: [
-                  "Milk (fat droplets in water)",
-                  "Fog (water droplets in air)",
-                  "Gelatin (protein particles in water)",
+                  "Solute: zinc",
+                  "Solvent: copper",
+                  "Used in: trumpets, door knobs, keys",
                 ],
+              },
+            ],
+          },
+        },
+
+        {
+          type: "timeline",
+          heading: "How Much Solute Is in a Solution?",
+          data: {
+            intro:
+              "Saying a drink is \"a little sweet\" or \"very salty\" is not exact. Scientists use numbers to show how much solute is in a given amount of solvent or solution.",
+            steps: [
+              {
+                num: 1,
+                title: "Grams of Solute per Volume of Solvent",
+                color: "primary",
+                description:
+                  "The simplest way is to state the mass of solute and the volume of solvent. Example: \"10 g of sugar dissolved in 250 mL of water.\" Solubility is often written this way: about 36 g of table salt can dissolve in 100 mL of water at room temperature.",
+                tip: "Always give both numbers and both units. \"10 g of sugar\" alone does not tell how strong the solution is.",
+              },
+              {
+                num: 2,
+                title: "Percent by Mass",
+                color: "secondary",
+                description:
+                  "Percent by mass = (mass of solute ÷ mass of solution) × 100%. The mass of the solution is solute + solvent. Example: 5 g of salt + 95 g of water = 100 g of solution, so it is (5 ÷ 100) × 100% = 5% salt by mass.",
+                tip: "Since 1 mL of water has a mass of about 1 g, 95 mL of water is about 95 g.",
+              },
+              {
+                num: 3,
+                title: "Percent by Volume",
+                color: "accent",
+                description:
+                  "When both solute and solvent are liquids, use volume. Percent by volume = (volume of solute ÷ volume of solution) × 100%. A 100 mL bottle of 70% alcohol contains 70 mL of alcohol.",
+                tip: "Vinegar labels often say about 4–5% acidity. That means about 4 to 5 mL of acetic acid in every 100 mL of vinegar.",
+              },
+              {
+                num: 4,
+                title: "Compare Using the Same Amount",
+                color: "primary",
+                description:
+                  "To compare two solutions, use the same amount of solvent. A glass with 20 g of sugar in 200 mL of water and a glass with 10 g in 100 mL are equally sweet: both have 10 g of sugar for every 100 mL of water.",
+                tip: "More solute in the same amount of solvent = a more concentrated solution. You will study concentration more in Week 7.",
               },
             ],
           },
@@ -195,44 +207,47 @@ export const week06 = {
           heading: "Factors Affecting Solubility",
           data: {
             intro:
-              "Solubility answers the question 'how much can dissolve in total?' Several factors change that maximum.",
+              "Solubility answers \"How much can dissolve?\" These factors change that limit.",
             reasons: [
               {
                 num: 1,
-                title: "Temperature (Solids)",
+                title: "Temperature (Heat) for Solids",
                 color: "primary",
-                desc: "Higher temperature increases the solubility of most solids",
-                content: "e.g. More sugar dissolves in hot tea than in iced tea",
+                desc: "Heating the solvent lets most solids dissolve more",
+                content:
+                  "About 200 g of sugar dissolves in 100 mL of water at 20 °C, but nearly 490 g at 100 °C. That solves the Iced Tea Dilemma.",
               },
               {
                 num: 2,
-                title: "Temperature (Gases)",
+                title: "Temperature for Gases",
                 color: "secondary",
-                desc: "Higher temperature decreases the solubility of gases",
+                desc: "Heating the solvent makes gases dissolve less",
                 content:
-                  "e.g. Warm soda goes flat faster because CO₂ escapes more easily",
+                  "A warm soft drink goes flat faster than a cold one because the carbon dioxide escapes more easily.",
               },
               {
                 num: 3,
-                title: "Pressure (Gases)",
+                title: "Not Every Solid Changes Much",
                 color: "accent",
-                desc: "Higher pressure increases the solubility of gases in liquids",
+                desc: "Some solutes barely change with temperature",
                 content:
-                  "e.g. Carbonated drinks are sealed under pressure to keep CO₂ dissolved",
+                  "Salt's solubility only rises from about 36 g to 39 g per 100 mL of water between room temperature and boiling.",
               },
               {
                 num: 4,
-                title: "Nature of the Solute",
+                title: "Pressure for Gases",
                 color: "primary",
-                desc: "Polar solutes dissolve in polar solvents — 'like dissolves like'",
-                content: "e.g. Salt dissolves in water; candle wax does not",
+                desc: "Higher pressure lets more gas dissolve in a liquid",
+                content:
+                  "Soft drinks are sealed under pressure to keep the carbon dioxide dissolved until you open them.",
               },
               {
                 num: 5,
-                title: "Nature of the Solvent",
+                title: "Nature of Solute and Solvent",
                 color: "secondary",
-                desc: "The solvent decides what can dissolve in it at all",
-                content: "e.g. Grease dissolves in acetone but not in water",
+                desc: "\"Like dissolves like\"",
+                content:
+                  "Salt and sugar dissolve in water, but cooking oil does not. Oil stains need soap, which can mix with both oil and water.",
               },
             ],
           },
@@ -243,27 +258,25 @@ export const week06 = {
           heading: "Saturated vs. Unsaturated",
           data: {
             intro:
-              "Whether a solution has reached its limit matters in chemistry, cooking, and industry alike.",
+              "Whether a solution has reached its limit tells you if it can still take more solute.",
             left: {
               label: "Saturated Solution",
               color: "primary",
               items: [
-                "Contains the maximum amount of dissolved solute",
-                "No more solute can dissolve at that temperature",
-                "Excess solute sits undissolved at the bottom",
-                "Heating it can turn it back into an unsaturated solution",
-                "Example: saltwater at its dissolving limit",
+                "Holds the most solute it can at that temperature",
+                "Extra solute stays at the bottom, undissolved",
+                "Heating it lets more dissolve, so it becomes unsaturated again",
+                "Example: Lia's cold iced tea with sugar left at the bottom",
               ],
             },
             right: {
               label: "Unsaturated Solution",
               color: "secondary",
               items: [
-                "Contains less solute than the maximum possible",
-                "More solute can still be added and dissolved",
-                "Appears clear with no undissolved residue",
-                "Becomes saturated by adding more solute",
-                "Example: lightly salted water",
+                "Holds less solute than it can",
+                "More solute can still dissolve",
+                "Looks clear with nothing left at the bottom",
+                "Example: one spoonful of sugar in a glass of warm water",
               ],
             },
           },
@@ -274,96 +287,44 @@ export const week06 = {
           heading: "Factors Affecting the Rate of Dissolving",
           data: {
             intro:
-              "The rate of dissolving answers a different question: 'how fast?' Three factors control it, and you can test each one with a fair experiment.",
+              "The rate of dissolving answers a different question: \"How fast?\" You can test each factor with a fair test, changing only one thing at a time.",
             steps: [
               {
                 num: 1,
-                title: "Prepare a Fair Test",
+                title: "Set Up a Fair Test",
                 color: "primary",
                 description:
-                  "Gather four beakers with equal volumes of water. Label them A, B, C, and D. Use the same mass of sugar in each so that only the factor you are testing differs.",
-                tip: "Same mass of sugar and same volume of water in every beaker — otherwise it is not a fair test.",
+                  "Use cups with the same volume of water (for example, 100 mL each) and the same mass of sugar (5 g each). Time each cup with a stopwatch and record the results in a table.",
+                tip: "Same amounts in every cup. Only the factor you are testing should change.",
               },
               {
                 num: 2,
-                title: "Temperature — Hotter Dissolves Faster",
+                title: "Temperature: Hotter Is Faster",
                 color: "secondary",
                 description:
-                  "Use cold water in beaker A and hot water in beaker B. Add one sugar cube to each and do not stir. Higher temperature gives water molecules more kinetic energy, so they collide with the sugar more often and more forcefully.",
-                tip: "Time both with a stopwatch so you have real data rather than an impression.",
+                  "Put sugar in cold water and in warm water, without stirring. In warm water, the water particles move faster and hit the sugar more often, so it dissolves faster.",
+                tip: "Use warm tap water, not boiling water, to avoid burns.",
               },
               {
                 num: 3,
-                title: "Particle Size — Smaller Dissolves Faster",
+                title: "Particle Size: Smaller Is Faster",
                 color: "accent",
                 description:
-                  "Add a sugar cube to beaker C and the same mass of powdered sugar to beaker D, both at room temperature, without stirring. The powder has far more surface area exposed to the water, so more sugar is in contact with the solvent at once.",
-                tip: "Same mass, different surface area — this is why crushing a tablet makes it dissolve faster.",
+                  "Compare a sugar cube with the same mass of fine sugar. Fine sugar has more surface touching the water, so more of it dissolves at once.",
+                tip: "This is why powdered juice mixes dissolve so fast.",
               },
               {
                 num: 4,
-                title: "Stirring — Agitation Dissolves Faster",
+                title: "Stirring: Mixing Is Faster",
                 color: "primary",
                 description:
-                  "Add powdered sugar to two beakers of room-temperature water. Stir one continuously and leave the other still. Stirring sweeps away the sugar-rich water next to the solute and brings fresh solvent into contact with it.",
-                tip: "Stir at a steady pace so the comparison stays fair.",
+                  "Stir one cup and leave the other still. Stirring moves fresh water next to the sugar, so it dissolves faster.",
+                tip: "Stirring, heating, and crushing all speed up dissolving, but only heating changes how much can dissolve.",
               },
             ],
           },
         },
 
-        {
-          type: "conceptList",
-          heading: "Key Concepts",
-          data: {
-            concepts: [
-              "Solubility is always stated at a specific temperature, because temperature changes the maximum that can dissolve.",
-              "Solubility and rate of dissolving are different: solubility is how much, rate is how fast.",
-              "Stirring, heating, and crushing all speed up dissolving — but only heating changes how much can dissolve in total.",
-              "A saturated solution holds the maximum dissolved solute; an unsaturated one holds less.",
-              "A supersaturated solution holds more than should be possible at that temperature — it is unstable and can crystallise suddenly.",
-              "'Like dissolves like': polar solvents dissolve polar solutes, non-polar solvents dissolve non-polar solutes. This is why oil and water do not mix.",
-              "A solubility curve is a graph showing how a substance's solubility changes with temperature.",
-            ],
-          },
-        },
-
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Drinking Water Treatment",
-                description:
-                  "Treatment plants use filtration and chemical solutions to remove impurities and produce safe drinking water.",
-                icon: "💧",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Effervescent Medicine Tablets",
-                description:
-                  "Tablets meant to dissolve in water are pressed from fine particles to maximise surface area, so the drug is absorbed quickly.",
-                icon: "💊",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Food and Drink Manufacturing",
-                description:
-                  "Manufacturers control temperature and mixing speed to dissolve sugars and flavourings at exactly the right rate.",
-                icon: "🏭",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Cleaning Products",
-                description:
-                  "Powdered detergent is ground finely so it dissolves fast, and is formulated so that grease — normally insoluble in water — can be carried away.",
-                icon: "🫧",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
       ],
     },
 
@@ -378,26 +339,30 @@ export const week06 = {
         "Creation of Performance Task 2: Solution Detectives — Exploring Solutes and Solvents in Everyday Life",
       badge: "Performance Task 2",
       subtitle:
-        "Become a solution detective: hunt down real solutions in your own home, identify the solute and solvent in each, and report your findings like a scientist.",
-      readTime: "~12 min read",
+        "Work in a group of five to make at least three everyday solutions, measure them in standard units, and explain their solutes and solvents in a 1–3 minute \"Solution Showcase\" video.",
+      readTime: "~14 min read",
       xp: 100,
       heroImage: mysterylab,
       heroImageAlt:
-        "Investigation-style laboratory scene with unknown samples to identify",
+        "Students recording a science demonstration with a phone camera",
 
       sections: [
         "The Task",
         "What You Will Need",
-        "Carrying Out the Investigation",
+        "Solutions to Showcase",
+        "Making Your Solution Showcase",
         "How You Will Be Graded",
-        "Tips for a Strong Report",
-        "Why This Task Matters",
+        "Tips for a Strong Video",
       ],
 
       references: [
         {
           label: "Britannica — Solution (Chemistry)",
           url: "https://www.britannica.com/science/solution-chemistry",
+        },
+        {
+          label: "NIST — The International System of Units (SI)",
+          url: "https://www.nist.gov/pml/owm/metric-si/si-units",
         },
       ],
 
@@ -407,11 +372,13 @@ export const week06 = {
           heading: "The Task",
           data: {
             paragraphs: [
-              "Your kitchen, bathroom, and garage are full of solutions — you just have not labelled them yet. In this performance task you become a <strong class='text-primary-700'>solution detective</strong>: find at least eight real products in your home, work out which is the solute and which is the solvent in each, and classify every one as a solution, a suspension, or a colloid.",
-              "You will present your findings as an <strong class='text-primary-700'>investigation report</strong> with a data table, a short written analysis, and evidence — photographs or drawings of the products you examined. You are being assessed on whether you can apply the solute–solvent idea to things nobody labelled for you.",
+              "<strong class='text-primary-700'>Goal:</strong> Find out how everyday solutions are made by identifying their solutes and solvents. <strong class='text-primary-700'>Role:</strong> You are a student scientist, a \"solution detective.\" <strong class='text-primary-700'>Audience:</strong> your classmates, your teachers, and younger students.",
+              "<strong class='text-primary-700'>Situation:</strong> Your class is holding a \"Science Gallery Walk.\" Each group of five will play its video for visitors who want to learn how solutions work.",
+              "<strong class='text-primary-700'>Product:</strong> A 1–3 minute <strong class='text-primary-700'>\"Solution Showcase\" video</strong>. Show at least three solutions being made (for example, saltwater, coffee, and vinegar in water). For each one, name the solute and the solvent, show your measurements, and explain why it is a solution. Use clear labels, and keep it neat and accurate.",
+              "Throughout the task, be <strong class='text-primary-700'>responsible</strong>: handle every material safely, follow the procedure, and clean up when you are done.",
             ],
             didYouKnow:
-              "Reading ingredient labels is real chemistry. Ingredients are listed in order of quantity, so the first item on the list is almost always the solvent.",
+              "Food labels list ingredients from the largest amount to the smallest. In most drinks, water is listed first, a clue that water is the solvent.",
           },
         },
 
@@ -421,28 +388,93 @@ export const week06 = {
           data: {
             terms: [
               {
-                term: "Eight household products",
-                desc: "Safe, everyday items — vinegar, soft drink, brewed coffee, salt water, rubbing alcohol, shampoo, milk, muddy water, seawater, syrup. Never taste or mix anything.",
+                term: "Three or more solutes",
+                desc: "Safe kitchen items such as salt, sugar, instant coffee, powdered juice, vinegar, or calamansi. No cleaning products.",
               },
               {
-                term: "A data table",
-                desc: "Columns for the product, the solute, the solvent, the mixture type (solution, suspension, or colloid), and the evidence for your classification.",
+                term: "Clean water (the solvent)",
+                desc: "Use drinking water at room temperature, plus warm water if you want to show the effect of heat.",
               },
               {
-                term: "A clear glass or jar",
-                desc: "For observing whether a sample is transparent, cloudy, or settles into layers over time.",
+                term: "Measuring tools",
+                desc: "A graduated cylinder or measuring cup marked in mL, and a kitchen scale or measuring spoons. Write every amount with its unit.",
               },
               {
-                term: "A torch or phone light",
-                desc: "For the Tyndall test — shine a beam through the sample. A visible shaft of light means a colloid.",
+                term: "Clear glasses or jars",
+                desc: "So viewers can see that a solution looks the same all through and nothing settles.",
               },
               {
-                term: "Camera or drawing materials",
-                desc: "Photograph or sketch each product as evidence to attach to your report.",
+                term: "Labels and a data table",
+                desc: "Label each glass. Record the solute, the solvent, the amounts, and what you observed.",
               },
               {
-                term: "Adult supervision",
-                desc: "Have an adult present when handling any cleaning product, and never open or mix chemicals.",
+                term: "Phone or camera",
+                desc: "To record the video. Hold it steady and film in good light.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "imageCards",
+          heading: "Solutions to Showcase",
+          data: {
+            cards: [
+              {
+                title: "Saltwater",
+                label: "Solid in liquid",
+                variant: "primary",
+                color: "primary",
+                desc: "Stir table salt into water until it disappears. The water looks clear, but if a few drops dry on a dark plate, white salt is left behind. The salt was there all along, spread evenly.",
+                image: lab,
+                imageAlt: "Table salt and a glass of water",
+                examples: [
+                  "Solute: salt",
+                  "Solvent: water",
+                  "Try: 5 g of salt in 100 mL of water",
+                ],
+              },
+              {
+                title: "Coffee",
+                label: "Solid in liquid",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Instant coffee granules dissolve in hot water and give it an even brown color all through.",
+                image: classroom,
+                imageAlt: "A cup of black coffee",
+                examples: [
+                  "Solute: coffee granules (and sugar, if added)",
+                  "Solvent: water",
+                  "Show: hot water dissolves the granules faster",
+                ],
+              },
+              {
+                title: "Vinegar in Water",
+                label: "Liquid in liquid",
+                variant: "accent",
+                color: "accent",
+                desc: "Vinegar is already a solution of acetic acid in water. Adding it to more water makes a weaker solution that still looks clear and even.",
+                image: simulation,
+                imageAlt: "A bottle of vinegar",
+                examples: [
+                  "Solute: vinegar (acetic acid)",
+                  "Solvent: water",
+                  "Try: 10 mL of vinegar in 90 mL of water",
+                ],
+              },
+              {
+                title: "Calamansi Juice",
+                label: "Solid and liquid in liquid",
+                variant: "primary",
+                color: "primary",
+                desc: "Calamansi juice and sugar mixed into water make a drink. Strain out the seeds and pulp first. Anything that settles at the bottom is not part of the solution.",
+                image: mysterylab,
+                imageAlt: "Calamansi fruits, some cut in half",
+                examples: [
+                  "Solutes: calamansi juice, sugar",
+                  "Solvent: water",
+                  "Tip: pulp that settles is not dissolved",
+                ],
               },
             ],
           },
@@ -450,58 +482,58 @@ export const week06 = {
 
         {
           type: "timeline",
-          heading: "Carrying Out the Investigation",
+          heading: "Making Your Solution Showcase",
           data: {
             intro:
-              "Work through these steps in order. Steps two and three are where the marks are — take your time on them.",
+              "Plan first, then measure, then film. Your group of five can divide the roles: measurer, mixer, recorder, camera person, and narrator.",
             steps: [
               {
                 num: 1,
-                title: "Collect Your Samples",
+                title: "Plan Your Three Solutions",
                 color: "primary",
                 description:
-                  "Find at least eight household products that are mixtures of some kind. Aim for variety: at least one you think is a solution, one a suspension, and one a colloid. Write each one down before you start analysing.",
-                tip: "Ask permission before taking anything from the kitchen, and never use an unlabelled container.",
+                  "Choose at least three solutions. For each, write down the solute, the solvent, and how much of each you will use. Get your teacher's approval for your list.",
+                tip: "Choose solutions that are different from each other, like a solid in a liquid and a liquid in a liquid.",
               },
               {
                 num: 2,
-                title: "Identify the Solute and Solvent",
+                title: "Measure in Standard Units",
                 color: "secondary",
                 description:
-                  "For each product, read the label and decide which substance is dissolved (the solute) and which is doing the dissolving (the solvent). Remember the solvent is normally the ingredient present in the greatest amount.",
-                tip: "For most household products the solvent is water — but rubbing alcohol and nail polish remover are exceptions worth noting.",
+                  "Measure the water with a graduated cylinder or measuring cup (for example, 100 mL). Measure the solute with a scale or measuring spoon (for example, 5 g of salt). Read volumes at eye level.",
+                tip: "Show the measuring step on camera, with the number and unit clearly visible.",
               },
               {
                 num: 3,
-                title: "Classify the Mixture",
+                title: "Make Each Solution",
                 color: "accent",
                 description:
-                  "Decide whether each sample is a solution, a suspension, or a colloid. Use two tests: leave the sample standing for thirty minutes and see whether anything settles, then shine a torch through it and look for a visible beam.",
-                tip: "Clear and no beam = solution. Cloudy with a visible beam and no settling = colloid. Settles out = suspension.",
+                  "Add the solute to the solvent and stir until it dissolves. Observe: Did it disappear? Is the color the same all through? Did anything settle after a few minutes?",
+                tip: "If something settles at the bottom, it is not fully dissolved. Explain that in your video.",
               },
               {
                 num: 4,
                 title: "Record Your Data",
                 color: "primary",
                 description:
-                  "Fill in your data table completely — product, solute, solvent, mixture type, and the observation that justifies your classification. Every row needs evidence, not just a label.",
-                tip: "Write the evidence as an observation, e.g. 'beam clearly visible, nothing settled after 30 min'.",
+                  "Fill in a table with columns for Solution, Solute (amount), Solvent (amount), Observations, and \"Why it is a solution.\" Show the finished table in your video.",
+                tip: "Record the real results, even if something did not dissolve as expected.",
               },
               {
                 num: 5,
-                title: "Write Your Analysis",
+                title: "Film and Explain",
                 color: "secondary",
                 description:
-                  "In one or two paragraphs, describe the patterns you noticed. Which solvent appeared most often? Were any products difficult to classify, and why? Did anything surprise you?",
-                tip: "Mentioning a sample you found genuinely hard to classify shows deeper understanding, not weakness.",
+                  "For each solution, say: \"The solute is ___. The solvent is ___. It is a solution because ___.\" Add labels on screen or on the glasses. Keep the video between 1 and 3 minutes.",
+                tip: "Practice once before filming so your explanation is clear and confident.",
               },
               {
                 num: 6,
-                title: "Assemble and Submit",
+                title: "Clean Up and Submit",
                 color: "accent",
                 description:
-                  "Put together your report: title page, data table, photographs or drawings, analysis, and a short conclusion. Write your name and section, then submit on the due date.",
-                tip: "Check every scientific term is spelled correctly before submitting.",
+                  "Wash the glasses and tools, wipe the table, and throw away used solutions properly. Submit your video on time for the Science Gallery Walk.",
+                tip: "Leaving the workspace clean is part of being responsible.",
               },
             ],
           },
@@ -512,25 +544,22 @@ export const week06 = {
           heading: "How You Will Be Graded",
           data: {
             intro:
-              "Your report is marked out of 100 points across two areas. Read this before you start collecting samples.",
+              "Your video is scored out of 100 points using five criteria. Read them before you start.",
             left: {
-              label: "Science Content — 60 points",
+              label: "Science Work — 70 points",
               color: "primary",
               items: [
-                "Solute and solvent correctly identified for each product (20 pts)",
-                "Mixture types correctly classified with evidence given (20 pts)",
-                "At least eight products, covering all three mixture types (10 pts)",
-                "Analysis correctly uses scientific vocabulary (10 pts)",
+                "Experiment Design (25 pts): three or more solutions, clear plan, safe materials",
+                "Data Collection (25 pts): accurate measurements with units, organized in a table",
+                "Analysis & Conclusion (20 pts): solute and solvent correctly identified and explained",
               ],
             },
             right: {
-              label: "Report Quality — 40 points",
+              label: "Communication — 30 points",
               color: "secondary",
               items: [
-                "Data table is complete, organised, and easy to read (15 pts)",
-                "Photographs or drawings included as evidence (10 pts)",
-                "Analysis and conclusion are clearly written (10 pts)",
-                "Report is neat, complete, and submitted on time (5 pts)",
+                "Presentation (20 pts): clear labels, clear explanation, 1–3 minutes long",
+                "Creativity & Engagement (10 pts): interesting for classmates and younger students",
               ],
             },
           },
@@ -538,55 +567,19 @@ export const week06 = {
 
         {
           type: "conceptList",
-          heading: "Tips for a Strong Report",
+          heading: "Tips for a Strong Video",
           data: {
             concepts: [
-              "Do the Tyndall test in a dark room — a visible beam is much easier to see, and it is the clearest way to separate a colloid from a solution.",
-              "Give the settling test a full thirty minutes. Some suspensions take a while, and calling one a colloid too early is the most common mistake.",
-              "Milk looks like a solution but is a colloid. Including it and explaining the evidence earns more credit than avoiding it.",
-              "Not every solvent is water. Finding at least one alcohol-based product shows you understand what a solvent actually is.",
-              "Write the evidence, not just the answer. 'Suspension — mud settled to the bottom in 10 minutes' is worth more than 'suspension'.",
-              "Safety first: never taste a sample, never mix two cleaning products, and keep an adult nearby.",
+              "Say the words solute and solvent out loud for every solution. That is what the task is about.",
+              "Show the measuring tools and read the numbers with units: \"100 milliliters of water, 5 grams of salt.\"",
+              "Explain why it is a solution: the solute disappeared, it looks the same all through, and nothing settled.",
+              "Show one thing that is NOT a solution (like sand in water) to make your explanation stronger.",
+              "Show heat as a factor: dissolve the same solute in cold and warm water and compare.",
+              "Never taste anything during the task, and never use bleach or other cleaning products.",
             ],
           },
         },
 
-        {
-          type: "applications",
-          heading: "Why This Task Matters",
-          data: {
-            apps: [
-              {
-                title: "Reading What You Buy",
-                description:
-                  "Once you can read an ingredient list as a solute-and-solvent problem, you can work out what is actually in food, medicine, and cleaning products.",
-                icon: "🏷️",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "How Scientists Actually Work",
-                description:
-                  "Collecting samples, classifying them against criteria, and reporting the evidence is exactly the workflow of an analytical chemist.",
-                icon: "🔬",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Water Quality Testing",
-                description:
-                  "Environmental technicians classify water samples using the same settling and light-scattering tests you are using here.",
-                icon: "💧",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Preparing for Week 7",
-                description:
-                  "Next week you move from what dissolves to how much is dissolved — concentration. This task gives you the real examples to reason about.",
-                icon: "🧪",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
       ],
     },
   ],

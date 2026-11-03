@@ -2,10 +2,12 @@
 //
 // Curriculum source: Grade 7 Science (MATATAG), 1st term Week 9.
 //   Lesson 1 — Creation of Performance Task 3:
-//              Identifying Acids and Bases in Everyday Products
+//              Identifying Acids and Bases in Everyday Products ("Color Clues")
 //   (SECOND SUMMATIVE TEST)
 
 import mysterylab from "../assets/mysterylab.png";
+import lab from "../assets/lab.jpg";
+import classroom from "../assets/classroom.webp";
 
 export const week09 = {
   id: "week-9",
@@ -13,7 +15,7 @@ export const week09 = {
   title: "Performance Task 3: Acids and Bases at Home",
   category: "Chemistry",
   description:
-    "Test everyday products with a home-made indicator and classify each one as acid, base, or neutral. Covered by the Second Summative Test.",
+    "Test household products with a natural indicator, classify each one as acidic, basic or neutral, and report your results to help the community use them safely. Covered by the Second Summative Test.",
   icon: "FlaskRound",
   color: "accent",
   isLocked: false,
@@ -29,31 +31,38 @@ export const week09 = {
         "Creation of Performance Task 3: Identifying Acids and Bases in Everyday Products",
       badge: "Performance Task 3",
       subtitle:
-        "Make your own indicator from red cabbage, test ten products from your home, and build a pH chart backed by your own evidence.",
-      readTime: "~14 min read",
+        "Color Clues: make a natural indicator, test six household products, measure and record your data, and present what the colors tell you.",
+      readTime: "~16 min read",
       xp: 100,
       heroImage: mysterylab,
       heroImageAlt:
-        "Laboratory bench with unknown samples waiting to be identified",
+        "A row of clear cups holding red cabbage indicator mixed with household products, showing pink, purple and green colors",
 
       sections: [
         "The Task",
-        "What You Will Need",
         "Making Your Indicator",
-        "Carrying Out the Tests",
-        "How You Will Be Graded",
+        "Testing the Products",
+        "Reading the Colors",
         "Safety Rules for This Task",
-        "Why This Task Matters",
+        "Lab Report, Presentation and Grading",
       ],
 
       references: [
         {
-          label: "Khan Academy — Acids, Bases, and pH",
-          url: "https://www.khanacademy.org/science/biology/water-acids-and-bases",
+          label: "Britannica — Acid–Base Indicator",
+          url: "https://www.britannica.com/science/acid-base-indicator",
         },
         {
-          label: "American Chemical Society — Red Cabbage Indicator",
+          label: "Britannica — pH",
+          url: "https://www.britannica.com/science/pH",
+        },
+        {
+          label: "American Chemical Society — Adventures in Chemistry",
           url: "https://www.acs.org/education/whatischemistry/adventures-in-chemistry.html",
+        },
+        {
+          label: "Khan Academy — Acids, Bases, and pH",
+          url: "https://www.khanacademy.org/science/biology/water-acids-and-bases",
         },
       ],
 
@@ -63,48 +72,14 @@ export const week09 = {
           heading: "The Task",
           data: {
             paragraphs: [
-              "You have learned that acids turn blue litmus red, bases turn red litmus blue, and the pH scale runs from 0 to 14. Now you are going to prove it yourself — using an indicator you make from <strong class='text-primary-700'>red cabbage</strong>, which changes through a full spectrum of colours across the pH range.",
-              "Your task is to test at least <strong class='text-primary-700'>ten everyday products</strong> from your home, record the colour each one turns your indicator, estimate its pH, and classify it as acidic, basic, or neutral. You will present your findings as a <strong class='text-primary-700'>pH chart</strong> with your data table, photographs, and a written analysis.",
+              "Many families use vinegar, calamansi, shampoo, liquid soap and bleach every day without knowing which are acids and which are bases. That matters: mixing the wrong two can make a poisonous gas, and using a strong product the wrong way can burn skin.",
+              "In this performance task, called <strong class='text-primary-700'>Color Clues</strong>, your group works as scientists who test household products. You will make a natural <strong class='text-primary-700'>indicator</strong> from red cabbage or eggplant skin (or use pH paper), test six products, and classify each one as <strong class='text-primary-700'>acidic</strong>, <strong class='text-primary-700'>basic</strong> or <strong class='text-primary-700'>neutral</strong>.",
+              "You must measure every amount in standard units, record your data in a table, follow every safety rule, and present your findings in a <strong class='text-primary-700'>lab report</strong> and a short <strong class='text-primary-700'>group presentation</strong> that shows the color changes.",
+              "<strong class='text-primary-700'>GRASPS:</strong> Your <strong class='text-primary-700'>goal</strong> is to classify household products using an indicator and explain why it matters. Your <strong class='text-primary-700'>role</strong> is a team of scientists who test household products. Your <strong class='text-primary-700'>audience</strong> is your classmates, teachers and community. The <strong class='text-primary-700'>situation</strong>: people often store, mix or use these products without knowing what they are. Your <strong class='text-primary-700'>product</strong> is a lab report plus a group presentation, scored with the 100-point rubric at the end of this lesson.",
+              "Your results can help your community use these products properly and safely. Doing that work carefully and honestly is what it means to be a <strong class='text-primary-700'>responsible</strong> young scientist.",
             ],
             didYouKnow:
-              "Red cabbage contains a pigment called anthocyanin, the same class of molecule that makes blueberries blue and autumn leaves red. It turns pink in acid, purple at neutral, and green-yellow in base — a complete home-made universal indicator.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "What You Will Need",
-          data: {
-            terms: [
-              {
-                term: "Half a red cabbage",
-                desc: "Chopped finely. This is your indicator source. Purple cabbage works equally well — the names are used interchangeably.",
-              },
-              {
-                term: "Hot water and a strainer",
-                desc: "For extracting the pigment. An adult must handle the hot water.",
-              },
-              {
-                term: "Ten clear cups or jars",
-                desc: "One per test substance, so you can see the colour clearly. Clear glass or plastic only.",
-              },
-              {
-                term: "Ten test substances",
-                desc: "Vinegar, lemon juice, baking soda solution, soap solution, milk, soft drink, tap water, shampoo, calamansi juice, antacid solution. Never use drain cleaner or bleach.",
-              },
-              {
-                term: "A dropper or spoon",
-                desc: "For adding the same amount of indicator to every cup — a fair test needs equal amounts.",
-              },
-              {
-                term: "A colour reference chart",
-                desc: "Pink/red ≈ pH 2, purple ≈ pH 7, blue-green ≈ pH 10, yellow-green ≈ pH 12. Use this to estimate pH from your colours.",
-              },
-              {
-                term: "Camera and data table",
-                desc: "To photograph each result and record substance, colour, estimated pH, and classification.",
-              },
-            ],
+              "Red cabbage and the purple skin of eggplant (talong) both contain anthocyanins, the same pigments that color ube and duhat. Anthocyanins change color with pH, so they work as a natural indicator.",
           },
         },
 
@@ -113,39 +88,39 @@ export const week09 = {
           heading: "Making Your Indicator",
           data: {
             intro:
-              "Do this part with an adult present. The extraction takes about twenty minutes and makes enough indicator for all ten tests.",
+              "Do this part with your teacher or an adult present. It takes about 20 minutes. You will need: 2 cups of chopped red cabbage or the skins of 2 eggplants (or pH paper), about 500 mL of hot water (handled by an adult), a strainer and clean jar, the six test products, plain water as the control, seven clear labeled cups, a graduated cylinder or measuring cup and spoons, gloves, goggles and a data table.",
             steps: [
               {
                 num: 1,
-                title: "Chop the Cabbage",
+                title: "Chop the Cabbage or Peel the Eggplant",
                 color: "primary",
                 description:
-                  "Chop about half a red cabbage into small pieces and place them in a heatproof bowl. Smaller pieces release more pigment — this is the surface-area idea from Week 6 in action.",
-                tip: "The finer the chop, the darker and more useful your indicator will be.",
+                  "Chop about 2 cups of red cabbage into small pieces, or peel the purple skin from 2 eggplants. Put them in a heatproof bowl.",
+                tip: "Smaller pieces release more color, the same surface-area idea you saw with dissolving sugar.",
               },
               {
                 num: 2,
-                title: "Add Hot Water",
+                title: "Soak in Hot Water",
                 color: "secondary",
                 description:
-                  "Have an adult pour hot water over the cabbage until it is just covered. Leave it to stand for 10–15 minutes. The water will turn deep purple as the anthocyanin dissolves out.",
-                tip: "Do not boil it on the stove yourself — let an adult handle the hot water.",
+                  "An adult pours about 500 mL of hot water over the pieces. Let it stand for 10 to 15 minutes until the water turns deep purple.",
+                tip: "Never handle the hot water yourself.",
               },
               {
                 num: 3,
-                title: "Strain the Liquid",
+                title: "Strain and Cool",
                 color: "accent",
                 description:
-                  "Pour the mixture through a strainer into a clean jar, keeping the purple liquid and discarding the cabbage. This purple liquid is your indicator.",
-                tip: "Let it cool fully before testing — hot liquid can crack a glass cup.",
+                  "Pour the mixture through a strainer into a clean jar. The purple liquid is your indicator. Let it cool completely before testing.",
+                tip: "Label the jar \"Indicator\" with the date and your group name.",
               },
               {
                 num: 4,
-                title: "Test Your Control",
+                title: "Test the Control",
                 color: "primary",
                 description:
-                  "Add indicator to a cup of plain distilled or tap water first. It should stay purple, confirming neutral. This is your control — the baseline every other result is compared against.",
-                tip: "If your control is not purple, your indicator is too dilute. Make a stronger batch.",
+                  "Add 5 mL of indicator to 20 mL of plain water. It should stay purple. Every other cup will be compared with this one.",
+                tip: "Write down the exact color of the control before testing anything else.",
               },
             ],
           },
@@ -153,89 +128,114 @@ export const week09 = {
 
         {
           type: "timeline",
-          heading: "Carrying Out the Tests",
+          heading: "Testing the Products",
           data: {
             intro:
-              "Now test all ten substances. Keep the procedure identical each time so the comparison is fair.",
+              "Keep the procedure the same for every product so the test is fair. Measure in mL and record everything right away.",
             steps: [
               {
                 num: 1,
-                title: "Set Up and Label",
+                title: "Write Your Hypothesis",
                 color: "primary",
                 description:
-                  "Line up ten clear cups and label each with the substance it will hold. Add the same small amount of each test substance — about two tablespoons.",
-                tip: "Same volume in every cup, or the colours will not be comparable.",
+                  "Before testing, predict whether each product is acidic, basic or neutral, and write down why. Example: \"Calamansi juice is acidic because it tastes sour.\"",
+                tip: "A hypothesis can turn out wrong. Your data decides.",
               },
               {
                 num: 2,
-                title: "Add the Indicator",
+                title: "Label and Measure",
                 color: "secondary",
                 description:
-                  "Add the same number of drops of cabbage indicator to every cup — five drops is enough. Swirl gently and watch the colour develop.",
-                tip: "Count the drops out loud. Adding more to one cup makes that result useless.",
+                  "Label seven cups. Use a graduated cylinder or measuring cup to pour exactly 20 mL of each product into its cup, and 20 mL of plain water into the control cup.",
+                tip: "Rinse and dry the measuring tool between products so they don't mix.",
               },
               {
                 num: 3,
-                title: "Record the Colour and Estimate pH",
+                title: "Add the Indicator",
                 color: "accent",
                 description:
-                  "Write down the exact colour you see, then use your reference chart to estimate the pH. Pink and red mean acid, purple means neutral, blue-green and yellow mean base.",
-                tip: "Describe colours precisely — 'bright pink' and 'pale pink' suggest different pH values.",
+                  "Add exactly 5 mL of indicator to every cup. Swirl gently. If you use pH paper, dip one strip in each cup instead.",
+                tip: "Same amount in every cup, or the colors can't be compared fairly.",
               },
               {
                 num: 4,
-                title: "Classify Each Substance",
+                title: "Observe and Record",
                 color: "primary",
                 description:
-                  "For each cup, write whether the substance is acidic (pH below 7), basic (pH above 7), or neutral (pH about 7). Add a note on what evidence led you to that classification.",
-                tip: "Your classification must follow from the colour, not from what you expected.",
+                  "Compare each cup with the control. Record the product, the amount used, the color you see, the estimated pH and the classification in your data table.",
+                tip: "Describe colors exactly, like \"bright pink\" or \"blue-green,\" not just \"changed.\"",
               },
               {
                 num: 5,
-                title: "Photograph Your Results",
+                title: "Photograph the Results",
                 color: "secondary",
                 description:
-                  "Photograph all ten cups together in good light, arranged from most acidic to most basic. This single photograph is your strongest piece of evidence.",
-                tip: "Arranging them in pH order makes the whole spectrum visible in one image.",
+                  "Arrange the cups from most acidic to most basic and take a clear photo in good light. You will use it in your report and presentation.",
+                tip: "Put a label in front of each cup so the photo can be read on its own.",
               },
               {
                 num: 6,
-                title: "Build Your pH Chart and Analysis",
+                title: "Analyze and Conclude",
                 color: "accent",
                 description:
-                  "Draw a pH scale from 0 to 14 and place each tested substance at its estimated position. Then write one or two paragraphs on the patterns you found and anything that surprised you.",
-                tip: "Compare your results to the published pH values — explaining a difference earns more credit than hiding it.",
+                  "Compare your results with your hypothesis. Which products were acids? Which were bases? Did any result surprise you? Write a conclusion based only on your data.",
+                tip: "If a result didn't match what you expected, report it honestly and explain why it might have happened.",
               },
             ],
           },
         },
 
         {
-          type: "comparison",
-          heading: "How You Will Be Graded",
+          type: "imageCards",
+          heading: "Reading the Colors",
           data: {
-            intro:
-              "This task is marked out of 100 points. Read the criteria before you begin so you know where the marks are.",
-            left: {
-              label: "Science Content — 60 points",
-              color: "primary",
-              items: [
-                "All ten substances correctly classified as acid, base, or neutral (20 pts)",
-                "pH estimates are reasonable and justified by the observed colour (15 pts)",
-                "pH chart correctly places every substance on the 0–14 scale (15 pts)",
-                "Analysis uses correct vocabulary: acid, base, neutral, indicator, pH (10 pts)",
-              ],
-            },
-            right: {
-              label: "Investigation and Report — 40 points",
-              color: "secondary",
-              items: [
-                "Fair test: equal amounts of substance and indicator throughout (10 pts)",
-                "A control (plain water) was tested and reported (5 pts)",
-                "Data table complete, with photographs as evidence (15 pts)",
-                "Report is neat, safe procedures followed, submitted on time (10 pts)",
-              ],
-            },
+            cards: [
+              {
+                title: "Acidic",
+                label: "Red to Pink",
+                variant: "primary",
+                color: "primary",
+                desc: "Cabbage indicator turns red or pink in acids. The redder the color, the stronger the acid. pH paper shows red to orange.",
+                image: lab,
+                imageAlt:
+                  "Cups of vinegar and calamansi juice with red cabbage indicator turned bright pink and red",
+                examples: [
+                  "Expected: vinegar",
+                  "Expected: calamansi juice",
+                  "Estimated pH: about 2 to 4",
+                ],
+              },
+              {
+                title: "Neutral",
+                label: "Purple",
+                variant: "secondary",
+                color: "secondary",
+                desc: "In a neutral solution, the indicator stays purple, the same as the plain-water control.",
+                image: mysterylab,
+                imageAlt:
+                  "Cups of plain water and salt solution with red cabbage indicator staying purple",
+                examples: [
+                  "Expected: plain water (control)",
+                  "Expected: salt solution",
+                  "Estimated pH: about 7",
+                ],
+              },
+              {
+                title: "Basic",
+                label: "Blue to Green to Yellow",
+                variant: "accent",
+                color: "accent",
+                desc: "Cabbage indicator turns blue, then green, then yellow as the base gets stronger. Shampoo may be close to neutral, so check your own result.",
+                image: classroom,
+                imageAlt:
+                  "Cups of liquid soap and diluted bleach with red cabbage indicator turned blue-green and yellow-green",
+                examples: [
+                  "Expected: liquid soap",
+                  "Expected: diluted Zonrox, which may turn yellow and then fade, because bleach also breaks down the pigment",
+                  "Estimated pH: about 8 to 12",
+                ],
+              },
+            ],
           },
         },
 
@@ -244,53 +244,51 @@ export const week09 = {
           heading: "Safety Rules for This Task",
           data: {
             concepts: [
-              "An adult must be present for the hot-water extraction step. Do not handle boiling water yourself.",
-              "NEVER test bleach, drain cleaner, ammonia, or oven cleaner. These are strongly corrosive and can release dangerous gases.",
-              "NEVER mix two test substances together. Mixing an acid and a bleach-based cleaner produces toxic chlorine gas.",
-              "Never taste any sample, even the food ones, once indicator has been added.",
-              "Wear old clothes — cabbage indicator stains fabric permanently.",
-              "Wash your hands thoroughly when you have finished, and pour the used samples down the sink with plenty of running water.",
-              "If any sample splashes into your eye, rinse with clean running water for 15 minutes and tell an adult immediately.",
+              "Wear goggles and gloves the whole time, especially when handling the diluted Zonrox and the soaps.",
+              "Only your teacher or an adult handles the hot water and prepares the diluted Zonrox.",
+              "NEVER mix the Zonrox cup with the vinegar or calamansi cup. Bleach mixed with an acid gives off poisonous chlorine gas.",
+              "Never taste or sniff any sample directly, even the food ones. Waft if you need to check a smell.",
+              "Work in a well-ventilated room, with windows open or a fan running.",
+              "Dispose of each cup separately, pouring it into the sink with plenty of running water, and the Zonrox cup last. Never pour cups together into one container.",
+              "If a sample splashes onto your skin or into your eyes, rinse with clean running water for at least 15 minutes and tell your teacher.",
+              "Wash your hands and clean your station when you finish. Cabbage indicator stains clothes, so wear an apron or old clothes.",
             ],
           },
         },
 
         {
-          type: "applications",
-          heading: "Why This Task Matters",
+          type: "comparison",
+          heading: "Lab Report, Presentation and Grading",
           data: {
-            apps: [
-              {
-                title: "Chemistry You Can Do at Home",
-                description:
-                  "Making your own indicator proves that real chemistry does not require expensive equipment — just a good procedure and careful observation.",
-                icon: "🥬",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Reading Product Labels",
-                description:
-                  "Knowing which household products are acidic or basic tells you which ones must never be mixed, and which will neutralise a spill.",
-                icon: "🏷️",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "How Water Is Tested",
-                description:
-                  "Environmental technicians use indicator strips and pH meters exactly as you are doing here to monitor rivers, pools, and drinking water.",
-                icon: "💧",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Preparing for the Summative Test",
-                description:
-                  "The Second Summative Test covers solubility, concentration, acids, bases, salts, and laboratory safety — everything from Weeks 6 to 8.",
-                icon: "📝",
-                color: "border-l-primary-500",
-              },
-            ],
+            intro:
+              "Your group submits one lab report and gives one short presentation. Here is what to include and how it will be scored out of 100 points.",
+            left: {
+              label: "What to Submit",
+              color: "primary",
+              items: [
+                "Hypothesis: your predictions and reasons",
+                "Materials: everything used, with amounts in mL",
+                "Procedure: numbered steps another group could repeat",
+                "Data: a table with product, amount, color, estimated pH and classification, plus your photo",
+                "Results and Analysis: what the colors show and any surprises",
+                "Conclusion: which products are acidic, basic or neutral, and how to use them safely",
+                "Presentation: a short group talk showing the color changes",
+              ],
+            },
+            right: {
+              label: "Rubric — 100 points",
+              color: "secondary",
+              items: [
+                "Scientific Accuracy (25): correct classifications and pH estimates supported by your data",
+                "Clarity and Organization (25): complete, neat report and clear presentation",
+                "Demonstration of Safety Rules (20): goggles, gloves, no mixing, proper disposal",
+                "Real-World Application (20): explains how the community can use these products safely",
+                "Punctuality (10): submitted and presented on time",
+              ],
+            },
           },
         },
+
       ],
     },
   ],

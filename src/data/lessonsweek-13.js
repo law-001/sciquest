@@ -1,12 +1,13 @@
 // Week 13: Plant and Animal Cell — Grade 7 Science
 //
-// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 13.
+// Curriculum source: Grade 7 Science (MATATAG), 2nd Quarter Week 3 (site Week 13).
 //   Lesson 1 — Plant and Animal Cell
 
 import plantcell from "../assets/plantcell.png";
 import microscope from "../assets/week1/Microscopic.jpg";
 import globe from "../assets/week1/globe.jpg";
 import simulation from "../assets/week1/simulation.jpg";
+import lab from "../assets/lab.jpg";
 
 export const week13 = {
   id: "week-13",
@@ -14,7 +15,7 @@ export const week13 = {
   title: "Plant and Animal Cell",
   category: "Life Science",
   description:
-    "Compare plant and animal cells side by side — what they share, what belongs only to plants, and what belongs only to animals.",
+    "Label the major organelles of plant and animal cells, describe what each one does, compare the two kinds of cells, and observe both under a microscope.",
   icon: "Leaf",
   color: "accent",
   isLocked: false,
@@ -29,12 +30,12 @@ export const week13 = {
       title: "Plant and Animal Cell",
       badge: "Lesson 1",
       subtitle:
-        "Both are eukaryotic and share most of their organelles — but three structures belong only to plants and two only to animals, and each difference explains how the organism lives.",
-      readTime: "~18 min read",
+        "Identify and label the cell membrane, nucleus, cytoplasm, mitochondria, chloroplasts, cell wall and vacuole, describe what each does, and compare plant and animal cells under the microscope.",
+      readTime: "~16 min read",
       xp: 100,
       heroImage: plantcell,
       heroImageAlt:
-        "Labelled diagram of a plant cell showing its internal structures",
+        "Labeled diagram of a plant cell showing the cell wall, cell membrane, nucleus, chloroplasts, mitochondria and large central vacuole",
 
       signature: {
         widgetId: "cell-morph",
@@ -55,23 +56,33 @@ export const week13 = {
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Plant vs. Animal Cells",
-        "Structure Gallery",
-        "Unique to Plant Cells",
-        "Unique to Animal Cells",
-        "Real-Life Cell Scenarios",
-        "Applications",
+        "The Major Organelles",
+        "Plant Cell vs. Animal Cell",
+        "Observing Plant and Animal Cells",
+        "Think Like a Cell Biologist",
+        "Why the Differences Matter",
       ],
 
       references: [
         {
-          label: "Khan Academy — Plant and Animal Cells",
-          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell",
+          label: "Britannica — Plant cell",
+          url: "https://www.britannica.com/science/plant-cell",
         },
         {
-          label: "Britannica — Plant Cell",
-          url: "https://www.britannica.com/science/plant-cell",
+          label: "Britannica — Animal cell",
+          url: "https://www.britannica.com/science/animal-cell",
+        },
+        {
+          label: "Khan Academy — Tour of a eukaryotic cell",
+          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell/tour-of-organelles/a/nucleus-and-ribosomes",
+        },
+        {
+          label: "CK-12 — Plant Cells and Animal Cells",
+          url: "https://www.ck12.org/c/biology/plant-cell-structures/",
+        },
+        {
+          label: "DepEd LRMDS — Learning Resources Portal",
+          url: "https://lrmds.deped.gov.ph/",
         },
       ],
 
@@ -81,59 +92,125 @@ export const week13 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "Plant and animal cells are both <strong class='text-primary-700'>eukaryotic</strong> — each has a membrane-bound nucleus and a full set of organelles. They share the cell membrane, cytoplasm, nucleus, mitochondria, ribosomes, endoplasmic reticulum, Golgi apparatus, and vacuoles.",
-              "But plant cells have three structures animal cells do not: a rigid <strong class='text-primary-700'>cell wall</strong>, <strong class='text-primary-700'>chloroplasts</strong> for photosynthesis, and a large <strong class='text-primary-700'>central vacuole</strong>. Animal cells in turn have <strong class='text-primary-700'>centrioles</strong> and rely far more heavily on lysosomes.",
-              "None of these differences is arbitrary. Plants are rooted in place and must make their own food, hold themselves upright without a skeleton, and manage water. Animals move, hunt, and must digest what they eat. Every structural difference follows from those two ways of living.",
+              "Last week you met the main parts of a cell. This week you will look closely at two kinds of cells: the cells of plants, like kangkong, malunggay and onion, and the cells of animals, like the cells lining your own cheek.",
+              "Plant and animal cells are both <strong class='text-primary-700'>eukaryotic</strong>. That means both keep their DNA inside a nucleus, and both have many of the same <strong class='text-primary-700'>organelles</strong>, the tiny parts that each do a job for the cell.",
+              "But plant cells have three parts that animal cells do not: a <strong class='text-primary-700'>cell wall</strong>, <strong class='text-primary-700'>chloroplasts</strong> and one <strong class='text-primary-700'>large central vacuole</strong>. These parts fit the way a plant lives. It stays in one place, stands up without bones, and makes its own food from sunlight.",
+              "Good scientists aim for <strong class='text-primary-700'>excellence</strong>: they label carefully, observe patiently and describe only what they really see. You will practice all three when you look at cells under the microscope.",
             ],
             didYouKnow:
-              "A plant cell can be 10 to 100 times larger than a typical animal cell — largely because of the giant central vacuole, which can fill up to 90% of the cell's interior when full of water.",
+              "If you look at a hydrilla leaf (the water plant often sold for aquariums) under a microscope, you may see its green chloroplasts slowly sliding around the edge of each cell. This movement is called cytoplasmic streaming.",
           },
         },
 
         {
-          type: "keyTerms",
-          heading: "Key Terms",
+          type: "imageCards",
+          heading: "The Major Organelles",
           data: {
-            terms: [
+            cards: [
               {
-                term: "Cell Wall",
-                desc: "A rigid outer layer of cellulose surrounding plant cells, providing structural support, protection, and a fixed shape.",
+                title: "Cell Membrane",
+                label: "Plant and animal cells",
+                variant: "primary",
+                color: "primary",
+                desc: "A thin, flexible layer around the cell. It controls what goes in and out, like a guard at a gate.",
+                image: simulation,
+                imageAlt:
+                  "Close-up diagram of the thin cell membrane forming the outer edge of an animal cell",
+                examples: [
+                  "Lets in water, food and oxygen",
+                  "Lets out wastes",
+                  "In plant cells it sits just inside the cell wall",
+                ],
               },
               {
-                term: "Chloroplast",
-                desc: "The plant organelle containing chlorophyll where photosynthesis happens — converting sunlight, water, and carbon dioxide into glucose and oxygen.",
+                title: "Nucleus",
+                label: "Plant and animal cells",
+                variant: "secondary",
+                color: "secondary",
+                desc: "The control center of the cell. It holds the DNA, the instructions for everything the cell does.",
+                image: microscope,
+                imageAlt:
+                  "Stained cheek cells under a microscope, each with a dark round nucleus in the middle",
+                examples: [
+                  "Directs growth and cell division",
+                  "Usually in the center of an animal cell",
+                  "Often pushed to the side by the vacuole in a plant cell",
+                ],
               },
               {
-                term: "Chlorophyll",
-                desc: "The green pigment inside chloroplasts that absorbs red and blue light and reflects green, which is why plants look green.",
+                title: "Cytoplasm",
+                label: "Plant and animal cells",
+                variant: "accent",
+                color: "accent",
+                desc: "The jelly-like fluid that fills the cell. The organelles float in it, and many of the cell's chemical reactions happen here.",
+                image: globe,
+                imageAlt:
+                  "Diagram of a cell with the jelly-like cytoplasm shaded between the membrane and the nucleus",
+                examples: [
+                  "Mostly water",
+                  "Holds the organelles in place",
+                  "Moves materials around the cell",
+                ],
               },
               {
-                term: "Central Vacuole",
-                desc: "A large membrane-bound sac in plant cells storing water, nutrients, and waste, and maintaining turgor pressure.",
+                title: "Mitochondria",
+                label: "Plant and animal cells",
+                variant: "primary",
+                color: "primary",
+                desc: "The powerhouse of the cell. Mitochondria break down food (glucose) to release the energy the cell needs.",
+                image: lab,
+                imageAlt:
+                  "Diagram of a bean-shaped mitochondrion with folded inner membranes",
+                examples: [
+                  "Plants have them too, not just animals",
+                  "Muscle cells have many mitochondria",
+                  "Use oxygen to release energy from food",
+                ],
               },
               {
-                term: "Turgor Pressure",
-                desc: "The pressure of water in the central vacuole pushing outward against the cell wall — what keeps non-woody plants standing upright.",
+                title: "Chloroplasts",
+                label: "Plant cells only",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Green organelles that make food through photosynthesis. They hold chlorophyll, the pigment that traps sunlight.",
+                image: plantcell,
+                imageAlt:
+                  "Leaf cells under a microscope packed with small green oval chloroplasts",
+                examples: [
+                  "Make glucose from water, carbon dioxide and sunlight",
+                  "Give leaves like kangkong and malunggay their green color",
+                  "Not found in onion bulb cells, which grow underground",
+                ],
               },
               {
-                term: "Photosynthesis",
-                desc: "The process by which chloroplasts use light energy to convert carbon dioxide and water into glucose and oxygen.",
+                title: "Cell Wall",
+                label: "Plant cells only",
+                variant: "accent",
+                color: "accent",
+                desc: "A stiff outer layer made of cellulose, outside the cell membrane. It gives the plant cell support and a fixed, boxy shape.",
+                image: simulation,
+                imageAlt:
+                  "Onion skin cells under a microscope showing rectangular cells outlined by thick cell walls",
+                examples: [
+                  "Helps a plant stand upright without bones",
+                  "Keeps the cell from bursting when it takes in water",
+                  "Cotton and paper are made of cell-wall material",
+                ],
               },
               {
-                term: "Plastid",
-                desc: "A family of plant organelles including chloroplasts (photosynthesis), leucoplasts (starch storage), and chromoplasts (colour pigments).",
-              },
-              {
-                term: "Centriole",
-                desc: "Paired cylindrical structures in animal cells that organise the spindle fibres needed to separate chromosomes during cell division.",
-              },
-              {
-                term: "Lysosome",
-                desc: "A membrane-bound organelle full of digestive enzymes that break down waste, worn-out organelles, and engulfed bacteria.",
-              },
-              {
-                term: "Cilia and Flagella",
-                desc: "Hair-like and whip-like extensions built from microtubules that move substances across a cell surface or propel the cell itself.",
+                title: "Vacuole",
+                label: "Large in plants, small in animals",
+                variant: "primary",
+                color: "primary",
+                desc: "A sac that stores water, food and wastes. A plant cell has one large central vacuole; an animal cell has a few small ones, or none.",
+                image: microscope,
+                imageAlt:
+                  "Diagram comparing one large central vacuole in a plant cell with several small vacuoles in an animal cell",
+                examples: [
+                  "A full vacuole pushes against the wall and keeps the plant firm",
+                  "Can fill up to about 90% of a plant cell",
+                  "When it loses water, the plant wilts",
+                ],
               },
             ],
           },
@@ -141,163 +218,136 @@ export const week13 = {
 
         {
           type: "comparison",
-          heading: "Plant vs. Animal Cells",
+          heading: "Plant Cell vs. Animal Cell",
           data: {
             intro:
-              "Five differences matter most. Learn these as a pair-by-pair contrast rather than two separate lists.",
+              "First, how they are alike: both are eukaryotic, and both have a cell membrane, cytoplasm, a nucleus, mitochondria and ribosomes. Plant cells need mitochondria too, to release energy from the food their chloroplasts make. Here are the main differences you should be able to see and explain. (Animal cells have centrioles, which most plant cells lack.)",
             left: {
               label: "Plant Cell",
               color: "primary",
               items: [
-                "Has a cell wall of cellulose for rigid structure and protection",
-                "One large central vacuole storing water and maintaining turgor",
-                "Rectangular, fixed shape because of the rigid wall",
-                "Makes its own food by photosynthesis using chloroplasts",
-                "No centrioles — organises division by other means",
+                "Has a cell wall outside the cell membrane",
+                "Has chloroplasts, so it can make its own food",
+                "Has one large central vacuole",
+                "Has a fixed, boxy or rectangular shape",
+                "Nucleus is often pushed to one side by the vacuole",
+                "Stores extra food as starch",
               ],
             },
             right: {
               label: "Animal Cell",
               color: "secondary",
               items: [
-                "No cell wall — only the flexible cell membrane",
-                "Many small vacuoles for temporary storage",
-                "Rounded, irregular shape that can change",
-                "Gets energy from food through cellular respiration",
-                "Has centrioles that organise spindle fibres during division",
+                "Has only a cell membrane, no cell wall",
+                "Has no chloroplasts, so it gets food by eating",
+                "Has a few small vacuoles, or none",
+                "Has a round or irregular shape that can change",
+                "Nucleus is usually near the center",
+                "Has centrioles, which help during cell division",
               ],
             },
           },
         },
 
         {
-          type: "imageCards",
-          heading: "Structure Gallery",
+          type: "timeline",
+          heading: "Observing Plant and Animal Cells",
           data: {
-            cards: [
+            intro:
+              "You can see the differences yourself with a compound microscope, an onion and a clean cotton swab. Handle the microscope with two hands and follow each step carefully.",
+            steps: [
               {
-                title: "Shared Structures",
-                label: "Both Cell Types",
-                variant: "primary",
+                num: 1,
+                title: "Prepare an Onion Skin Slide (Plant Cell)",
                 color: "primary",
-                desc: "These organelles appear in both plant and animal cells and handle the basic business of staying alive.",
-                image: microscope,
-                imageAlt:
-                  "Diagram showing organelles common to both plant and animal cells",
-                examples: [
-                  "Nucleus — DNA and control centre",
-                  "Mitochondria — ATP energy production",
-                  "Ribosomes, ER, and Golgi — protein production and shipping",
-                ],
+                description:
+                  "Peel the thin, clear skin from the inside of one onion layer. Lay it flat in a drop of water on a clean slide, add one drop of iodine stain, and lower a cover slip at an angle so no air bubbles form.",
+                tip: "Iodine makes the cell walls and nuclei easier to see. Wipe up spills right away, because iodine stains skin and clothes.",
               },
               {
-                title: "Plant Cell Only",
-                label: "Unique to Plants",
-                variant: "secondary",
+                num: 2,
+                title: "Prepare a Cheek Cell Slide (Animal Cell)",
                 color: "secondary",
-                desc: "These three structures are found only in plant cells, and each one solves a problem specific to being a plant.",
-                image: globe,
-                imageAlt:
-                  "Diagram of plant cell showing chloroplasts and central vacuole",
-                examples: [
-                  "Cell wall — rigid cellulose support",
-                  "Chloroplasts — photosynthesis",
-                  "Central vacuole — water storage and turgor pressure",
-                ],
+                description:
+                  "Gently rub the inside of your cheek with a clean cotton swab. Smear it on a drop of water on a new slide, add one drop of methylene blue stain, and cover with a cover slip.",
+                tip: "Use your own swab only, and throw it away after use. Never share swabs.",
               },
               {
-                title: "Animal Cell Only",
-                label: "Unique to Animals",
-                variant: "primary",
-                color: "primary",
-                desc: "Animal cells have specialised structures for precise cell division, movement, and internal digestion.",
-                image: simulation,
-                imageAlt:
-                  "Diagram of animal cell showing centrioles and lysosomes",
-                examples: [
-                  "Centrioles — organise spindle fibres in cell division",
-                  "Prominent lysosomes — cellular digestion",
-                  "Cilia and flagella — movement",
-                ],
+                num: 3,
+                title: "Start on Low Power",
+                color: "accent",
+                description:
+                  "Place the slide on the stage and start with the low-power objective (4× or 10×). Focus with the coarse adjustment knob, then move the slide until you find a clear group of cells.",
+                tip: "Low power shows more cells at once, so it is easier to find a good spot.",
               },
-            ],
-          },
-        },
-
-        {
-          type: "conceptList",
-          heading: "Unique to Plant Cells",
-          data: {
-            concepts: [
-              "The cell wall is built from cellulose fibres in layers, giving enormous tensile strength — this is what lets a tree support its own weight with no skeleton at all.",
-              "Chloroplasts have a double membrane and contain stacks of internal membranes called thylakoids, where light is actually captured.",
-              "The central vacuole can occupy up to 90% of a mature plant cell's volume, storing water, sugars, salts, and even chemicals that deter animals from eating the plant.",
-              "Turgor pressure from the full vacuole presses the membrane against the wall, keeping soft plants firm and upright. When a plant wilts, the vacuoles have lost water — watering refills them and the plant stands again.",
-              "Chromoplasts are plastids holding red, orange, and yellow pigments — the colour of ripe tomatoes, carrots, and flower petals.",
-              "Leucoplasts are colourless plastids that store starch in roots and tubers, which is why the inside of a potato is white and starchy.",
-              "The cell wall is non-selective: it lets almost everything pass. All the selecting is still done by the membrane underneath it.",
-            ],
-          },
-        },
-
-        {
-          type: "conceptList",
-          heading: "Unique to Animal Cells",
-          data: {
-            concepts: [
-              "Animal cells have no cell wall, which is exactly what lets them change shape, move, and squeeze through narrow gaps.",
-              "Centrioles are paired cylinders near the nucleus that organise the spindle fibres pulling chromosomes apart during division.",
-              "Lysosomes hold powerful digestive enzymes that break down worn-out organelles, engulfed bacteria, and food particles.",
-              "Cilia are short and numerous — cells lining your windpipe carry about 200 each, beating up to 1,000 times a minute to sweep mucus and dust out of your lungs.",
-              "Flagella are long and usually single. The classic example is the tail of a sperm cell, which whips to propel it forward.",
-              "Because there is no rigid wall, an animal cell placed in pure water can swell and burst — a plant cell in the same water is held safely by its wall.",
-              "Animal cells store energy as glycogen rather than starch, and have many small vacuoles instead of one large one.",
+              {
+                num: 4,
+                title: "Switch to High Power",
+                color: "primary",
+                description:
+                  "Turn to the high-power objective (40×) and focus with the fine adjustment knob only. At 400× total magnification you can see the cell wall, cell membrane, nucleus and cytoplasm.",
+                tip: "Never use the coarse knob on high power. It can push the lens into the slide and crack it.",
+              },
+              {
+                num: 5,
+                title: "Draw, Label and Compare",
+                color: "secondary",
+                description:
+                  "Draw two or three cells from each slide in pencil. Label only the parts you can really see, and write the total magnification under each drawing. Then list how the onion cells and cheek cells are alike and different.",
+                tip: "Onion cells look like neat bricks with thick walls. Cheek cells look like flat, rounded shapes with a dark nucleus. You will not see mitochondria at 400×: they are too small.",
+              },
+              {
+                num: 6,
+                title: "Performance Task 1: Observing Specimens",
+                color: "accent",
+                description:
+                  "For your first performance task this quarter, you will observe prepared slides of plant and animal cells, then draw, label and compare them. Scoring (100 points): Microscope Use 30, Cell Drawings and Labels 20, Comparison of Plant and Animal Cells 20, Scientific Explanation 20, Presentation and Organization 10.",
+                tip: "Label only what you really see, explain what each visible organelle does, and say why the plant cell has parts the animal cell does not.",
+              },
             ],
           },
         },
 
         {
           type: "scenario",
-          heading: "Real-Life Cell Scenarios",
+          heading: "Think Like a Cell Biologist",
           data: {
             intro:
-              "Each scenario turns on one structural difference between plant and animal cells. Work out which one before reading the answer.",
+              "Use what you know about organelles to explain each situation.",
             scenarios: [
               {
-                title: "The Wilting Plant",
+                title: "Wilted Pechay at the Palengke",
                 situation:
-                  "A potted plant is left unwatered for three days and droops completely. After watering, it stands fully upright again within a few hours — with no visible damage.",
+                  "A vendor at the palengke sprinkles water on her pechay and kangkong every few hours. Bundles that are not sprinkled turn limp by noon.",
                 question:
-                  "Which structure is responsible for the drooping and the recovery? Why does the plant not simply die?",
+                  "Which organelle explains why the vegetables go limp, and why does sprinkling water help?",
                 skill:
-                  "The central vacuole. Without water it shrinks and turgor pressure is lost, so the cells go limp and the plant droops. Watering refills the vacuoles, pressure returns, and the plant stands again — the cells were never damaged, only deflated.",
+                  "The large central vacuole. When it loses water, it stops pushing against the cell wall, so the cells and the leaves go limp. Water refills the vacuoles, they press against the walls again, and the leaves become crisp.",
               },
               {
-                title: "Cells in Pure Water",
+                title: "Is It a Plant Cell?",
                 situation:
-                  "A scientist places a plant cell and an animal cell in pure distilled water. Water enters both. The plant cell swells firm and stops. The animal cell swells and bursts.",
+                  "Under the microscope, Miguel sees cells with a boxy shape, thick outer walls and a nucleus pushed to one side. He sees no green parts at all.",
                 question:
-                  "Why did one survive and the other did not? Name the structure responsible.",
+                  "Could these still be plant cells? What could they be?",
                 skill:
-                  "The cell wall. It is rigid enough to resist the outward pressure once the plant cell is full, so swelling stops safely. The animal cell has only a flexible membrane with nothing to resist the pressure, so it keeps expanding until it ruptures.",
+                  "Yes. The cell wall, the boxy shape and the nucleus at the side are signs of plant cells. They have no chloroplasts because they come from a part that gets no sunlight, such as an onion bulb.",
               },
               {
-                title: "Cilia Clearing the Airways",
+                title: "Mitochondria in Plants",
                 situation:
-                  "You breathe in air containing dust, pollen, and bacteria. These get trapped in the sticky mucus lining your windpipe.",
-                question:
-                  "How does your body move these particles back out before they reach the lungs?",
+                  "A classmate says, “Plants have chloroplasts, so they do not need mitochondria. Only animals have mitochondria.”",
+                question: "Is your classmate correct? Explain.",
                 skill:
-                  "The cells lining the trachea are covered in cilia, which beat in coordinated waves to sweep the mucus — and everything trapped in it — upward toward the throat. This is called the mucociliary escalator, and only animal cells have it.",
+                  "No. Chloroplasts make food (glucose), but mitochondria are still needed to release the energy stored in that food. Both plant and animal cells have mitochondria.",
               },
               {
-                title: "Why Leaves Are Green",
+                title: "Cells in Plain Water",
                 situation:
-                  "A student notices that leaves are green, carrots are orange, and potato flesh is white — yet all three are made of plant cells.",
-                question:
-                  "What explains the three different colours, given they are all plant tissue?",
+                  "A plant cell and an animal cell are both placed in pure water, and water moves into both.",
+                question: "What happens to each cell, and which part makes the difference?",
                 skill:
-                  "Different plastids. Leaves are packed with chloroplasts containing green chlorophyll; carrots hold chromoplasts with orange carotenoid pigments; potato flesh holds colourless leucoplasts full of stored starch.",
+                  "The plant cell swells until it presses firmly against its cell wall, then stops, so it stays safe. The animal cell has no wall, so it can keep swelling until it bursts. The cell wall makes the difference.",
               },
             ],
           },
@@ -305,35 +355,35 @@ export const week13 = {
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Why the Differences Matter",
           data: {
             apps: [
               {
-                title: "Improving Crops",
+                title: "Fresh Vegetables",
                 description:
-                  "Agricultural scientists engineer chloroplasts to raise photosynthesis efficiency, aiming for higher yields from the same land and sunlight.",
-                icon: "🌾",
+                  "Keeping leafy vegetables in a cool, moist place stops their vacuoles from drying out, so pechay and lettuce stay crisp longer.",
+                icon: "🥬",
                 color: "border-l-primary-500",
               },
               {
-                title: "Biofuels and Textiles",
+                title: "Food for Everyone",
                 description:
-                  "Cellulose from plant cell walls becomes biofuel, paper, cotton, and linen. Cotton fibre is almost pure cell-wall cellulose.",
-                icon: "🧵",
+                  "Chloroplasts in rice, corn and vegetable leaves make the food that feeds people and animals. Without them, food chains would have no starting point.",
+                icon: "🌾",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Immune System Research",
+                title: "Cotton, Paper and Abaca",
                 description:
-                  "Lysosomes in white blood cells are the body's main weapon against bacterial infection, so understanding them guides treatments for immune disorders.",
-                icon: "🛡️",
+                  "Cotton, paper and abaca (Manila hemp) fibers are made mostly of cellulose from plant cell walls.",
+                icon: "🧵",
                 color: "border-l-accent-500",
               },
               {
-                title: "Respiratory Medicine",
+                title: "Excellence in Observation",
                 description:
-                  "Diseases such as primary ciliary dyskinesia are caused by defective cilia, leading to chronic lung infections. Research into cilia structure drives the treatments.",
-                icon: "🫁",
+                  "Doctors and medical technologists study stained cells under microscopes to find disease. Careful, honest drawings and labels in class build the same habit of accuracy.",
+                icon: "🔬",
                 color: "border-l-primary-500",
               },
             ],
