@@ -1,11 +1,12 @@
 // Week 11: The Microscope — Grade 7 Science
 //
-// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 11.
+// Curriculum source: Grade 7 Science (MATATAG), 2nd Quarter Week 1 (site Week 11).
 //   Lesson 1 — The Microscope: An Introduction
 //   Lesson 2 — The Importance of Microscope Discovery
 
 import microscope from "../assets/week1/Microscopic.jpg";
 import simulation from "../assets/week1/simulation.jpg";
+import globe from "../assets/week1/globe.jpg";
 import lab from "../assets/lab.jpg";
 
 export const week11 = {
@@ -14,7 +15,7 @@ export const week11 = {
   title: "The Microscope",
   category: "Life Science",
   description:
-    "Meet the instrument that opened up the invisible world — its parts, how to use it correctly, and how its invention changed science forever.",
+    "Meet the compound microscope: its parts, what each one does, and how to handle and store it properly. Then see how early scientists like Antonie van Leeuwenhoek used microscopes to change what we know about life.",
   icon: "ScanSearch",
   color: "accent",
   isLocked: false,
@@ -29,11 +30,12 @@ export const week11 = {
       title: "The Microscope: An Introduction",
       badge: "Lesson 1",
       subtitle:
-        "Learn the parts of a compound microscope, what each one does, how to calculate magnification, and how to prepare a slide correctly.",
-      readTime: "~18 min read",
+        "Identify the parts of a compound microscope, describe what each part does, and learn how to use, carry, clean and store it the right way.",
+      readTime: "~16 min read",
       xp: 50,
       heroImage: microscope,
-      heroImageAlt: "Close-up view of a compound microscope",
+      heroImageAlt:
+        "A compound microscope used in a school science laboratory, showing the eyepiece, objectives, stage and base",
 
       signature: {
         widgetId: "focus-scope",
@@ -44,22 +46,21 @@ export const week11 = {
         explainer: {
           title: "Why fine focus exists",
           points: [
-            "At 4× the sharp band was ten micrometres wide, so the big coarse knob found it easily.",
-            "At 40× that band shrank to under one micrometre, and one coarse step moves two.",
-            "That is why the coarse knob cracked the slide, and why only fine focus could find focus.",
-            "Dropping the coverslip flat trapped air, so bubbles sat in the field until you lowered it on an edge.",
+            "At 4× the sharp zone was about ten micrometers deep, so the big coarse knob found it easily.",
+            "At 40× that zone shrank to under one micrometer, and one coarse step moves two.",
+            "That is why the coarse knob cracked the slide, and why only the fine knob could bring the image into focus.",
+            "Dropping the coverslip flat trapped air, so bubbles sat in the view until you lowered it on one edge.",
           ],
         },
       },
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Microscope Parts",
-        "Using the Microscope Correctly",
+        "Parts of a Compound Microscope",
+        "Using the Microscope Step by Step",
         "Preparing a Wet Mount Slide",
+        "Proper Handling and Storing",
         "Practical Scenarios",
-        "Applications",
       ],
 
       references: [
@@ -68,8 +69,16 @@ export const week11 = {
           url: "https://www.britannica.com/technology/microscope",
         },
         {
-          label: "Khan Academy — Microscopy",
-          url: "https://www.khanacademy.org/science/biology/structure-of-a-cell",
+          label: "Britannica — Compound microscope",
+          url: "https://www.britannica.com/technology/compound-microscope",
+        },
+        {
+          label: "CK-12 — Microscopes (Life Science)",
+          url: "https://www.ck12.org/c/life-science/microscopes/",
+        },
+        {
+          label: "DepEd LR Portal — Grade 7 Science learning resources",
+          url: "https://lrmds.deped.gov.ph/",
         },
       ],
 
@@ -79,113 +88,81 @@ export const week11 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "The <strong class='text-primary-700'>microscope</strong> is one of the most important instruments in science. It magnifies objects far too small for the naked eye — individual cells, bacteria, the structure of a leaf. Without it, biology as we know it could not exist.",
-              "A <strong class='text-primary-700'>compound microscope</strong> uses two sets of lenses working together. The <strong class='text-primary-700'>eyepiece</strong> (usually 10×) is the lens you look through; the <strong class='text-primary-700'>objective lenses</strong> on the rotating nosepiece come in 4× (low), 10× (medium), and 40× (high). Total magnification is the two multiplied together — so 10 × 40 = <strong class='text-primary-700'>400×</strong>.",
+              "Cells, bacteria and the tiny green parts inside a leaf are too small to see with your eyes alone. To study them, scientists use a <strong class='text-primary-700'>microscope</strong>, an instrument that makes small things look much bigger.",
+              "The microscope in your school lab is a <strong class='text-primary-700'>compound microscope</strong>. It is called “compound” because it uses two lenses at once: the <strong class='text-primary-700'>eyepiece</strong> you look into, and an <strong class='text-primary-700'>objective lens</strong> near the specimen. To get the <strong class='text-primary-700'>total magnification</strong>, multiply the two. A 10× eyepiece with a 40× objective gives 10 × 40 = <strong class='text-primary-700'>400×</strong>.",
+              "A school microscope costs many thousands of pesos, and one dropped microscope can mean a whole class has one fewer to share. Being <strong class='text-primary-700'>responsible</strong> with it is part of doing science. In this lesson you will learn each part, what it does, and how to handle and store it properly.",
+              "These are the same skills used by medical technologists in rural health units who check sputum smears for tuberculosis and blood smears for malaria, and by BFAR scientists who count red tide organisms in seawater.",
             ],
             didYouKnow:
-              "Antonie van Leeuwenhoek was the first person to see living microorganisms. He called them 'animalcules' — little animals — when he looked at pond water through his handcrafted lenses in the 1670s.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Compound Microscope",
-                desc: "A microscope that uses two or more lenses — an eyepiece and objective lenses — to produce a highly magnified image.",
-              },
-              {
-                term: "Eyepiece (Ocular Lens)",
-                desc: "The lens at the top that you look through. It typically magnifies 10 times.",
-              },
-              {
-                term: "Objective Lens",
-                desc: "The lens closest to the specimen, mounted on a revolving nosepiece. Common powers are 4×, 10×, and 40×.",
-              },
-              {
-                term: "Magnification",
-                desc: "How much larger the image appears. Total magnification = eyepiece power × objective power.",
-              },
-              {
-                term: "Stage",
-                desc: "The flat platform where the glass slide is placed. Stage clips hold it in position.",
-              },
-              {
-                term: "Diaphragm",
-                desc: "A rotating disc below the stage that controls how much light passes through the specimen, which changes contrast.",
-              },
-              {
-                term: "Coarse Adjustment Knob",
-                desc: "The large knob that moves the stage a long way for initial focusing. Used only at low power.",
-              },
-              {
-                term: "Fine Adjustment Knob",
-                desc: "The small knob that makes tiny focus adjustments. The only knob safe to use at high power.",
-              },
-              {
-                term: "Wet Mount",
-                desc: "A slide preparation where the specimen sits in a drop of water under a cover slip.",
-              },
-              {
-                term: "Cover Slip",
-                desc: "A thin square of glass placed over the specimen to protect it and hold it flat.",
-              },
-              {
-                term: "Stain",
-                desc: "A coloured solution added to increase contrast so cell structures become visible — iodine for plant cells, methylene blue for animal cells.",
-              },
-            ],
+              "The Philippines is hot and humid most of the year. In damp storage, mold can grow on microscope lenses and leave permanent cloudy spots. That is why many schools keep microscopes in cabinets with silica gel packets, the same little packets you find in new shoes and bags.",
           },
         },
 
         {
           type: "imageCards",
-          heading: "Microscope Parts",
+          heading: "Parts of a Compound Microscope",
           data: {
             cards: [
               {
-                title: "Structural Parts",
-                label: "Upper Body",
+                title: "Viewing and Magnifying Parts",
+                label: "Lenses",
                 variant: "primary",
                 color: "primary",
-                desc: "The eyepiece, arm, and body tube form the upper structure and hold the lenses at the correct distance apart.",
+                desc: "These parts make the specimen look bigger. Light passes through the objective lens first, then through the eyepiece to your eye.",
                 image: microscope,
                 imageAlt:
-                  "Upper parts of a microscope including eyepiece and arm",
+                  "Close-up of the top of a compound microscope showing the eyepiece, body tube, revolving nosepiece and three objective lenses",
                 examples: [
-                  "Eyepiece (ocular lens) — 10× magnification",
-                  "Arm — the part you grip when carrying it",
-                  "Body tube — holds the lenses at the right separation",
+                  "Eyepiece (ocular lens): the lens you look into; usually 10×",
+                  "Body tube: holds the eyepiece and objectives the right distance apart",
+                  "Revolving nosepiece: turns to switch from one objective to another",
+                  "Objective lenses: scanner 4× (shortest), low power 10×, high power 40× (longest)",
                 ],
               },
               {
-                title: "Stage and Focus",
-                label: "Middle Section",
+                title: "Support Parts",
+                label: "Body",
                 variant: "secondary",
                 color: "secondary",
-                desc: "The stage holds the slide while the focus knobs raise and lower it to bring the image into sharp view.",
+                desc: "These parts hold the microscope together and keep the slide steady.",
                 image: lab,
-                imageAlt: "Stage area of a microscope with focus knobs",
+                imageAlt:
+                  "Side view of a compound microscope showing the curved arm, the flat stage with stage clips and the heavy base",
                 examples: [
-                  "Stage — flat platform for the slide",
-                  "Stage clips — hold the slide still",
-                  "Coarse and fine adjustment knobs — focus the image",
+                  "Arm: the curved part you hold when carrying the microscope",
+                  "Base: the heavy bottom that keeps the microscope from tipping over",
+                  "Stage: the flat platform where the slide is placed",
+                  "Stage clips: hold the slide in place so it does not slide around",
                 ],
               },
               {
-                title: "Light Control",
-                label: "Lower Section",
+                title: "Focusing Parts",
+                label: "Knobs",
+                variant: "accent",
+                color: "accent",
+                desc: "These knobs move the stage (or body tube) up and down until the image becomes sharp.",
+                image: simulation,
+                imageAlt:
+                  "Close-up of the large coarse adjustment knob and the smaller fine adjustment knob on the side of a microscope",
+                examples: [
+                  "Coarse adjustment knob: the big knob; moves the stage a lot for first focusing at 4× or 10×",
+                  "Fine adjustment knob: the small knob; moves the stage a tiny bit to sharpen the image",
+                  "At 40×, use only the fine adjustment knob",
+                ],
+              },
+              {
+                title: "Lighting Parts",
+                label: "Light",
                 variant: "primary",
                 color: "primary",
-                desc: "The light source and diaphragm control the brightness reaching the specimen, and the base supports everything.",
-                image: simulation,
-                imageAlt: "Light source and diaphragm of a microscope",
+                desc: "A specimen must be lit from below so light can pass through it. These parts give and control that light.",
+                image: globe,
+                imageAlt:
+                  "Underside of a microscope stage showing the light source, the condenser and the diaphragm disc with different-sized holes",
                 examples: [
-                  "Light source (or mirror) — illuminates the specimen",
-                  "Diaphragm — regulates the amount of light",
-                  "Base — supports the whole instrument",
+                  "Light source (lamp) or mirror: sends light up through the specimen",
+                  "Diaphragm: opens or closes to control how much light passes through",
+                  "Condenser: gathers and focuses the light onto the specimen",
                 ],
               },
             ],
@@ -193,51 +170,59 @@ export const week11 = {
         },
 
         {
-          type: "reasonCards",
-          heading: "Using the Microscope Correctly",
+          type: "timeline",
+          heading: "Using the Microscope Step by Step",
           data: {
             intro:
-              "A microscope is delicate and expensive. These five rules protect both the instrument and your specimen — and every one of them exists because somebody once broke something.",
-            reasons: [
+              "Follow these steps in order every time. They protect the lenses and the slide, and they help you find the specimen quickly.",
+            steps: [
               {
                 num: 1,
-                title: "Carry with Both Hands",
+                title: "Set It on a Flat, Steady Table",
                 color: "primary",
-                desc: "One hand on the arm, one under the base",
-                content:
-                  "Carrying it one-handed risks dropping or tilting the microscope, which can damage the lenses or tip the eyepiece straight out of the tube.",
+                description:
+                  "Place the microscope about 10 cm from the edge of the table with the arm facing you. Plug in the lamp, or tilt the mirror toward a window if your microscope has no lamp.",
+                tip: "Never point the mirror at direct sunlight. It can hurt your eyes.",
               },
               {
                 num: 2,
-                title: "Start with Low Power",
+                title: "Start with the Shortest Objective",
                 color: "secondary",
-                desc: "Always begin with the 4× objective",
-                content:
-                  "Low power gives the widest field of view, making it far easier to find the specimen. Starting at 40× usually means staring at an empty field.",
+                description:
+                  "Turn the revolving nosepiece until the 4× scanner objective clicks into place. Raise the objective away from the stage.",
+                tip: "The click tells you the objective is lined up with the body tube.",
               },
               {
                 num: 3,
-                title: "Coarse Focus First, Watching from the Side",
+                title: "Place the Slide",
                 color: "accent",
-                desc: "Use the coarse knob only at low power",
-                content:
-                  "Watch from the side as you raise the stage, so you can see how close the objective is to the slide before you ever look through the eyepiece.",
+                description:
+                  "Put the slide on the stage with the specimen over the hole in the center. Hold it down with the stage clips.",
+                tip: "Hold slides by their edges so your fingerprints do not smudge the view.",
               },
               {
                 num: 4,
-                title: "Never Use Coarse Focus at High Power",
+                title: "Focus with the Coarse Knob, Watching from the Side",
                 color: "primary",
-                desc: "At 40× the lens is millimetres from the glass",
-                content:
-                  "One turn of the coarse knob at high power can drive the objective through the slide, cracking the glass and scratching a lens that costs more than the rest of the microscope.",
+                description:
+                  "Look at the microscope from the side and bring the objective close to the slide without touching it. Then look into the eyepiece and slowly turn the coarse knob to move them apart until the image appears.",
+                tip: "Watching from the side first keeps you from crashing the lens into the slide.",
               },
               {
                 num: 5,
-                title: "Clean Lenses with Lens Paper Only",
+                title: "Sharpen and Center",
                 color: "secondary",
-                desc: "Never use tissue, cloth, or your shirt",
-                content:
-                  "Ordinary paper and fabric are abrasive enough to scratch the lens coating, permanently blurring every image the microscope will ever produce.",
+                description:
+                  "Use the fine adjustment knob to make the image sharp. Move the slide gently until the part you want to see is in the center of the field of view. Adjust the diaphragm for good contrast.",
+                tip: "The image moves the opposite way you move the slide. Push the slide left and the image goes right.",
+              },
+              {
+                num: 6,
+                title: "Switch to Higher Power",
+                color: "accent",
+                description:
+                  "Turn the nosepiece to 10×, then to 40×. After each switch, use only the fine adjustment knob. At high power the specimen looks bigger and more detailed, but you see a smaller area, the image gets darker, and the objective is very close to the slide. Open the diaphragm a little to let in more light.",
+                tip: "If you lose the specimen at 40×, go back to 10×, find it and center it again.",
               },
             ],
           },
@@ -248,55 +233,106 @@ export const week11 = {
           heading: "Preparing a Wet Mount Slide",
           data: {
             intro:
-              "Before you can observe anything, you have to mount it. These six steps produce a clear, bubble-free slide.",
+              "A wet mount is the simplest slide to make. Thin specimens such as onion (sibuyas) skin or a hydrilla leaf work best, because light can pass through them.",
             steps: [
               {
                 num: 1,
-                title: "Clean the Slide",
+                title: "Clean the Slide and Cover Slip",
                 color: "primary",
                 description:
-                  "Wipe the glass slide with lens paper or a clean cloth to remove dust and fingerprints. A dirty slide ruins image quality before you start.",
-                tip: "Handle the slide by its edges only.",
+                  "Wipe both with lens paper or a clean, soft cloth. Hold them by the edges.",
+                tip: "Cover slips are very thin and break easily. Handle them gently.",
               },
               {
                 num: 2,
-                title: "Add a Drop of Water",
+                title: "Add One Drop of Water",
                 color: "secondary",
                 description:
-                  "Place one small drop of clean water at the centre of the slide — about the size of a match head.",
-                tip: "Too much water makes the specimen float and drift while you are trying to focus.",
+                  "Use a dropper to put one small drop of clean water in the center of the slide.",
+                tip: "Too much water makes the cover slip float and the specimen drift.",
               },
               {
                 num: 3,
-                title: "Place the Specimen",
+                title: "Place a Thin Specimen",
                 color: "accent",
                 description:
-                  "Using forceps or a toothpick, lay the specimen flat in the centre of the water drop. Onion skin and cheek cells are the classic school specimens.",
-                tip: "The thinner the specimen, the more light passes through and the clearer the image.",
+                  "Use forceps (tweezers) to lay a thin piece of the specimen flat on the water drop. Peel the thin, clear layer from the inside of an onion scale for a good first slide.",
+                tip: "The thinner the specimen, the clearer the image.",
               },
               {
                 num: 4,
-                title: "Add a Stain if Needed",
+                title: "Lower the Cover Slip at an Angle",
                 color: "primary",
                 description:
-                  "Place one drop of stain at the edge of the specimen — iodine for plant cells, methylene blue for animal cells. It will be drawn under the cover slip.",
-                tip: "One drop only. Over-staining hides the very structures you are trying to see.",
+                  "Hold the cover slip at about 45°, touch one edge to the water, and lower it slowly onto the specimen.",
+                tip: "Dropping it flat traps air bubbles, which look like dark-edged circles under the microscope.",
               },
               {
                 num: 5,
-                title: "Lower the Cover Slip at an Angle",
+                title: "Stain if Your Teacher Says So",
                 color: "secondary",
                 description:
-                  "Hold the cover slip at about 45°, touch its edge to the side of the water drop, then lower it slowly. This pushes air ahead of the liquid instead of trapping it.",
-                tip: "Dropping it flat traps air bubbles, which appear as thick dark circles that hide the specimen.",
+                  "Put one drop of iodine solution at one edge of the cover slip and touch a piece of tissue to the opposite edge. The tissue pulls the stain under the cover slip.",
+                tip: "One drop is enough. Too much stain hides the details.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "reasonCards",
+          heading: "Proper Handling and Storing",
+          data: {
+            intro:
+              "A well-cared-for microscope can serve students for many years. These habits show responsibility for equipment that your whole school shares.",
+            reasons: [
+              {
+                num: 1,
+                title: "Carry with Two Hands",
+                color: "primary",
+                desc: "One hand on the arm, one hand under the base",
+                content:
+                  "Hold it upright and close to your body. Carrying it by the arm alone can make it swing, and the eyepiece can slide out and break.",
+              },
+              {
+                num: 2,
+                title: "Touch Lenses Only with Lens Paper",
+                color: "secondary",
+                desc: "No tissue, shirt, or fingers",
+                content:
+                  "Tissue and cloth can scratch the lens, and the oil from fingers blurs every image. Wipe gently in small circles with lens paper.",
+              },
+              {
+                num: 3,
+                title: "Keep It Dry and Clean",
+                color: "accent",
+                desc: "Wipe spills right away",
+                content:
+                  "Water or stain on the stage can get into the knobs and rust the metal parts. Dry the stage with a clean cloth before you put the microscope away.",
+              },
+              {
+                num: 4,
+                title: "Prepare It for Storage",
+                color: "primary",
+                desc: "Leave it the way you want to find it",
+                content:
+                  "Remove the slide, turn off and unplug the lamp, turn the nosepiece back to the 4× objective, lower the stage (or raise the body tube), and wrap the cord loosely around the base.",
+              },
+              {
+                num: 5,
+                title: "Cover and Store It Properly",
+                color: "secondary",
+                desc: "Dust cover on, then into a dry cabinet",
+                content:
+                  "Put on the dust cover and store the microscope upright in a dry cabinet or its box, ideally with silica gel packets. Damp storage lets mold grow on the lenses.",
               },
               {
                 num: 6,
-                title: "Remove Excess Water",
+                title: "Report Damage Right Away",
                 color: "accent",
-                description:
-                  "If water spills past the edges, touch a corner of tissue to the edge of the cover slip to draw it off. The slide is now ready.",
-                tip: "Touch the edge, never the top — pressing on the cover slip can crush the specimen.",
+                desc: "Honesty protects the next user",
+                content:
+                  "If a slide cracks or a part feels loose, tell your teacher at once. Hiding damage means the next group may cut themselves or break the microscope further.",
               },
             ],
           },
@@ -307,83 +343,46 @@ export const week11 = {
           heading: "Practical Scenarios",
           data: {
             intro:
-              "Read each situation and work out what went wrong — or what the answer should be — before checking.",
+              "Read each situation and decide what is right or wrong before checking the answer.",
             scenarios: [
               {
-                title: "Wrong Focus Knob",
+                title: "The Wrong Knob",
                 situation:
-                  "Maria is viewing a cheek cell slide at the 40× objective. The image is blurry, so she grabs the coarse adjustment knob and turns it quickly.",
+                  "Bea is viewing onion cells with the 40× objective. The image is a bit blurry, so she turns the coarse adjustment knob quickly.",
                 question:
-                  "What mistake is Maria making, and what should she do instead?",
+                  "What mistake is Bea making, and what should she do instead?",
                 skill:
-                  "At high magnification only the fine adjustment knob should be used. The coarse knob at 40× risks cracking the slide and scratching the objective. She should use the fine knob to sharpen the image slowly.",
+                  "At 40× the objective is very close to the slide, so the coarse knob can crash it into the slide and crack it or scratch the lens. She should use only the fine adjustment knob and turn it slowly.",
               },
               {
-                title: "Switching to High Power Too Soon",
+                title: "Computing Magnification",
                 situation:
-                  "Carlos places a slide on the stage and immediately clicks the 40× objective into position without finding the specimen first.",
-                question:
-                  "Why is this a problem, and what should Carlos have done?",
+                  "A microscope has a 10× eyepiece. Miguel looks at a hydrilla leaf with the 4× objective, then with the 40× objective.",
+                question: "What is the total magnification each time?",
                 skill:
-                  "He should have started at 4× to locate and centre the specimen. At high power the field of view is tiny, so finding anything is almost impossible — and the lens is dangerously close to the slide.",
+                  "Total magnification = eyepiece × objective. With the 4× objective: 10 × 4 = 40×. With the 40× objective: 10 × 40 = 400×.",
               },
               {
-                title: "Calculating Total Magnification",
+                title: "Too Dark to See",
                 situation:
-                  "A microscope has a 10× eyepiece. A student switches to the 40× objective to view a plant cell.",
-                question: "What total magnification is the student seeing?",
+                  "Paolo switches from 10× to 40×. The specimen is in focus, but the image is now very dark.",
+                question: "Which part should Paolo adjust, and how?",
                 skill:
-                  "Total magnification = eyepiece × objective = 10 × 40 = 400×. The plant cell appears 400 times its actual size.",
+                  "The diaphragm. At higher power less light reaches the eye, so he should open the diaphragm a little (or turn up the lamp) to let more light pass through the specimen.",
               },
               {
-                title: "Dark Circles in the Field",
+                title: "End of the Period",
                 situation:
-                  "A student prepares a wet mount and sees several perfectly round dark-edged circles covering parts of the specimen.",
+                  "The bell rings. Jessa's group leaves the slide on the stage, the 40× objective in place, and the lamp on, then pushes the microscope into the cabinet without its cover.",
                 question:
-                  "What are these circles, and what step of the preparation caused them?",
+                  "List what the group did wrong and the correct way to store the microscope.",
                 skill:
-                  "Air bubbles, caused by lowering the cover slip flat instead of at a 45° angle. Redo the mount, touching the cover slip edge to the water first and lowering it slowly.",
+                  "They should remove and clean the slide, turn off and unplug the lamp, turn the nosepiece to the 4× objective, lower the stage, wrap the cord, put on the dust cover, and store it upright in a dry cabinet, carrying it with two hands.",
               },
             ],
           },
         },
 
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Diagnosing Diseases",
-                description:
-                  "Medical laboratories examine blood and tissue under the microscope to identify malaria parasites, tuberculosis bacteria, and cancerous cells.",
-                icon: "🩺",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Water Quality Testing",
-                description:
-                  "Scientists identify harmful microorganisms in drinking water, protecting public supplies from pathogens like giardia.",
-                icon: "💧",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "Forensic Science",
-                description:
-                  "Investigators examine hair, fibres, and soil particles from crime scenes to link evidence to suspects.",
-                icon: "🔎",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "School Biology Labs",
-                description:
-                  "Preparing slides of onion skin and cheek cells lets you see cell structure with your own eyes, turning an abstract idea into an observation.",
-                icon: "🔬",
-                color: "border-l-primary-500",
-              },
-            ],
-          },
-        },
       ],
     },
 
@@ -397,12 +396,12 @@ export const week11 = {
       title: "The Importance of Microscope Discovery",
       badge: "Lesson 2",
       subtitle:
-        "Trace how the microscope was invented and improved — and how each improvement unlocked a discovery that changed what humans knew about life.",
+        "See how the invention of the microscope changed what people knew about living things, meet Antonie van Leeuwenhoek and other early scientists, and find out why microscopes still matter today.",
       readTime: "~15 min read",
       xp: 50,
       heroImage: lab,
       heroImageAlt:
-        "Historical microscope illustration representing scientific discovery",
+        "A replica of Antonie van Leeuwenhoek's small single-lens microscope held between two fingers",
 
       signature: {
         widgetId: "scope-through-time",
@@ -413,31 +412,43 @@ export const week11 = {
         explainer: {
           title: "Why better lenses found more",
           points: [
-            "In 1665 the best lens resolved five micrometres, so cork showed empty boxes and nothing inside them.",
-            "The 1830 doublet cleared the coloured fringes and cut the limit to one micrometre, so a nucleus appeared.",
-            "Electrons have a far shorter wavelength than light, so 1933 resolved ribosomes no light lens could reach.",
-            "Each discovery waited for the instrument, not for someone clever enough to look.",
+            "In 1665 the best lens could only show details about five micrometers apart, so cork showed empty boxes with nothing inside.",
+            "The 1830 lens removed the colored blur and could show details one micrometer apart, so a nucleus appeared.",
+            "Electrons have a much shorter wavelength than light, so the 1933 electron microscope showed ribosomes that no light lens could reach.",
+            "Each discovery had to wait for a better instrument, not for someone clever enough to look.",
           ],
         },
       },
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Historical Milestones",
-        "What the Microscope Made Possible",
-        "Light vs. Electron Microscopes",
-        "Applications",
+        "Early Scientists of Microscopy",
+        "Antonie van Leeuwenhoek's Discoveries",
+        "Before and After the Microscope",
+        "Microscopes in Modern Science",
+        "Think About It",
       ],
 
       references: [
         {
-          label: "Britannica — History of the Microscope",
-          url: "https://www.britannica.com/technology/microscope/History-of-the-microscope",
+          label: "Britannica — History of the microscope",
+          url: "https://www.britannica.com/technology/microscope/Historical-background",
         },
         {
-          label: "Royal Society — Hooke's Micrographia",
-          url: "https://royalsociety.org/",
+          label: "Britannica — Antonie van Leeuwenhoek",
+          url: "https://www.britannica.com/biography/Antonie-van-Leeuwenhoek",
+        },
+        {
+          label: "Britannica — Robert Hooke",
+          url: "https://www.britannica.com/biography/Robert-Hooke",
+        },
+        {
+          label: "Nobel Prize — Ernst Ruska, Nobel Prize in Physics 1986",
+          url: "https://www.nobelprize.org/prizes/physics/1986/ruska/facts/",
+        },
+        {
+          label: "Research Institute for Tropical Medicine (RITM), DOH Philippines",
+          url: "https://ritm.gov.ph/",
         },
       ],
 
@@ -447,152 +458,169 @@ export const week11 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "For most of human history, the smallest thing anyone could study was the smallest thing they could see. Disease was blamed on bad air. Nobody knew what living things were built from. The invention of the microscope did not just improve science — it revealed an entire world that nobody had suspected existed.",
-              "Each improvement in lens quality unlocked a new discovery. Better glass meant sharper images, sharper images meant smaller structures became visible, and smaller structures meant new questions. The <strong class='text-primary-700'>cell</strong>, <strong class='text-primary-700'>bacteria</strong>, and eventually the organelles inside cells were all found this way — each one waiting for an instrument good enough to show it.",
+              "Four hundred years ago, nobody knew that living things are made of cells, or that tiny living things too small to see are everywhere: in water, in soil and even in your mouth. People thought diseases came from “bad air” and that maggots grew out of rotting meat by themselves.",
+              "The <strong class='text-primary-700'>microscope</strong> changed all of that. Each time lenses got better, people saw something new: first <strong class='text-primary-700'>cells</strong>, then <strong class='text-primary-700'>microorganisms</strong>, then the parts inside cells. These discoveries led to germ theory, vaccines, antibiotics and modern medicine.",
+              "This lesson is also about <strong class='text-primary-700'>respect</strong>: respect for the patient, careful work of scientists who came before us, and for the tools that let us explore life. Many of them worked for years with simple equipment, and their records are the reason you can learn about cells today.",
             ],
             didYouKnow:
-              "Robert Hooke's 1665 book Micrographia was a bestseller. The diarist Samuel Pepys stayed up until two in the morning reading it and called it 'the most ingenious book that ever I read in my life.'",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Micrographia",
-                desc: "Robert Hooke's 1665 book of microscope observations — the first major scientific work based on what a microscope revealed.",
-              },
-              {
-                term: "Cell",
-                desc: "The name Hooke gave to the box-like compartments he saw in cork, from the Latin 'cellula' meaning small room.",
-              },
-              {
-                term: "Animalcules",
-                desc: "Van Leeuwenhoek's name for the living microorganisms he was the first to observe — literally 'little animals'.",
-              },
-              {
-                term: "Resolution",
-                desc: "The ability of a microscope to show two close-together points as separate. Better resolution reveals finer detail, not just a bigger image.",
-              },
-              {
-                term: "Electron Microscope",
-                desc: "An instrument that uses a beam of electrons instead of light, reaching magnifications of up to two million times.",
-              },
-              {
-                term: "Germ Theory",
-                desc: "The understanding that many diseases are caused by microorganisms — an idea made possible only once microbes could be seen.",
-              },
-              {
-                term: "Microbiology",
-                desc: "The study of microorganisms, a branch of science that could not exist before the microscope.",
-              },
-            ],
+              "Antonie van Leeuwenhoek was not a trained scientist. He was a cloth seller in Delft, Netherlands, who first used lenses to check the threads in fabric. He became so skilled at making lenses that he is now called the Father of Microbiology.",
           },
         },
 
         {
           type: "timeline",
-          heading: "Historical Milestones",
+          heading: "Early Scientists of Microscopy",
           data: {
             intro:
-              "The microscope was not invented by one person in one moment. It evolved across four centuries, and each step made a new kind of discovery possible.",
+              "The microscope was not invented by one person in one day. Many people improved it over about 250 years, and each improvement led to new discoveries.",
             steps: [
               {
                 num: 1,
-                title: "Zacharias Janssen — 1590s",
+                title: "Hans and Zacharias Janssen — 1590s",
                 color: "primary",
                 description:
-                  "Dutch spectacle-makers Hans and Zacharias Janssen built one of the first compound microscopes by placing two lenses in a tube. It magnified about 9 times — modest, but it proved that combining lenses multiplied their power.",
-                tip: "The two-lens principle in that first tube is still the design used in every compound microscope today.",
+                  "These Dutch eyeglass makers are often credited with one of the first compound microscopes: two lenses inside a tube. It magnified objects only about 3 to 9 times.",
+                tip: "Historians still debate who built the very first one, but the two-lens idea is still used in your school microscope.",
               },
               {
                 num: 2,
-                title: "Robert Hooke — 1665",
+                title: "Galileo Galilei — 1620s",
                 color: "secondary",
                 description:
-                  "English scientist Robert Hooke examined thin slices of cork and saw tiny box-like compartments. He named them 'cells' because they reminded him of the small rooms monks lived in. He published his drawings in Micrographia.",
-                tip: "Hooke saw only empty cell walls in dead cork — he did not know cells were alive or what they did.",
+                  "The Italian scientist best known for his telescope also built a small compound microscope and used it to look at insects. In 1625 a member of his science academy gave the instrument its name, “microscope.”",
+                tip: "“Microscope” comes from Greek words meaning “small” and “to look.”",
               },
               {
                 num: 3,
-                title: "Antonie van Leeuwenhoek — 1670s",
+                title: "Robert Hooke — 1665",
                 color: "accent",
                 description:
-                  "A Dutch cloth merchant, van Leeuwenhoek ground his own lenses to a quality nobody could match, reaching over 200×. He was the first human to see bacteria, protozoa, and blood cells, and is called the Father of Microbiology.",
-                tip: "He kept his lens-grinding method secret, and it took over a century for others to match his images.",
+                  "The English scientist looked at a thin slice of cork and saw rows of tiny empty boxes. He called them “cells.” He published his drawings of cork, fleas and other objects in the book Micrographia.",
+                tip: "Cork comes from dead tree bark, so Hooke saw only empty cell walls, not living cells.",
               },
               {
                 num: 4,
-                title: "Schleiden, Schwann, and Virchow — 1838 to 1855",
+                title: "Antonie van Leeuwenhoek — 1670s to 1680s",
                 color: "primary",
                 description:
-                  "Improved achromatic lenses removed the colour blurring that had limited earlier microscopes. With clear images, Schleiden concluded all plants are made of cells, Schwann extended it to animals, and Virchow added that all cells come from existing cells.",
-                tip: "Better lenses did not just show more — they made the cell theory possible. You will study it next week.",
+                  "Using tiny single-lens microscopes he made himself, he magnified objects over 200 times. He was the first to describe living microorganisms and bacteria, gave some of the first detailed descriptions of red blood cells, and sent his findings in letters to the Royal Society in London.",
+                tip: "He made hundreds of microscopes in his lifetime.",
               },
               {
                 num: 5,
-                title: "Louis Pasteur and Robert Koch — 1860s to 1880s",
+                title: "Marcello Malpighi — 1661 onward",
                 color: "secondary",
                 description:
-                  "Using microscopes, Pasteur and Koch showed that specific microorganisms cause specific diseases. Germ theory replaced centuries of guesswork, and led directly to sterilisation, vaccines, and antibiotics.",
-                tip: "This is the microscope's greatest single consequence — it has saved more lives than any other instrument.",
+                  "The Italian doctor used a microscope to discover capillaries, the tiny blood vessels that connect arteries and veins, in the lungs of a frog. He also studied the fine structure of plants and insects.",
+                tip: "His discovery showed how blood gets from arteries to veins, a question nobody could answer before.",
               },
               {
                 num: 6,
-                title: "The Electron Microscope — 1930s to today",
+                title: "Robert Brown, Schleiden and Schwann — 1830s",
                 color: "accent",
                 description:
-                  "By replacing light with a beam of electrons, scientists broke through the limit set by the wavelength of visible light. Electron microscopes magnify up to two million times, revealing organelles, viruses, and individual molecules.",
-                tip: "Electron microscopes cannot show living specimens — the preparation process kills the sample.",
+                  "Better lenses that removed blurry colored edges let Robert Brown describe the nucleus in plant cells (1831). Matthias Schleiden (plants) and Theodor Schwann (animals) then concluded that all living things are made of cells.",
+                tip: "This led to the cell theory, which you will study next week.",
               },
             ],
           },
         },
 
         {
-          type: "conceptList",
-          heading: "What the Microscope Made Possible",
+          type: "imageCards",
+          heading: "Antonie van Leeuwenhoek's Discoveries",
           data: {
-            concepts: [
-              "The discovery of the cell — the realisation that every living thing is built from the same basic unit.",
-              "The discovery of microorganisms — an entire kingdom of life nobody had known existed.",
-              "Germ theory of disease — understanding that illness is caused by specific microbes, not bad air or bad luck.",
-              "Sterilisation and antiseptic surgery — once surgeons could see that microbes existed, they began killing them before operating, and survival rates transformed.",
-              "Vaccines and antibiotics — both depend on being able to identify and study the specific organism causing a disease.",
-              "Modern cell biology and genetics — studying organelles, chromosomes, and cell division all require magnification.",
-              "A general scientific lesson: a better instrument does not just confirm what we know, it reveals questions nobody thought to ask.",
+            cards: [
+              {
+                title: "His Tiny Microscope",
+                label: "The Tool",
+                variant: "primary",
+                color: "primary",
+                desc: "His microscopes were small metal plates, about the size of your palm, holding one tiny, carefully ground glass lens. He held them close to his eye.",
+                image: microscope,
+                imageAlt:
+                  "A replica of van Leeuwenhoek's microscope: a small brass plate with a single tiny lens and a screw that holds the specimen",
+                examples: [
+                  "Only one lens, but very high quality",
+                  "Magnified objects about 200 to 270 times",
+                  "Better than the compound microscopes of his time",
+                ],
+              },
+              {
+                title: "Animalcules in Water",
+                label: "1674–1676",
+                variant: "secondary",
+                color: "secondary",
+                desc: "He looked at lake water and rainwater and saw tiny living things swimming around. He called them animalcules.",
+                image: simulation,
+                imageAlt:
+                  "Microscope view of a drop of pond water with tiny single-celled organisms such as paramecium",
+                examples: [
+                  "First person to describe living microorganisms",
+                  "Many were protists, like those in a rice paddy or pond",
+                  "Showed that a drop of water is full of life",
+                ],
+              },
+              {
+                title: "Bacteria from Teeth",
+                label: "1683",
+                variant: "accent",
+                color: "accent",
+                desc: "He scraped the white material (plaque) from between his teeth and saw even smaller moving things. These were bacteria.",
+                image: lab,
+                imageAlt:
+                  "Van Leeuwenhoek's drawings of bacteria from tooth plaque, showing rod, round and spiral shapes",
+                examples: [
+                  "First drawings of bacteria in history",
+                  "He drew rod, round and spiral shapes",
+                  "A reason we brush our teeth today",
+                ],
+              },
+              {
+                title: "Blood Cells and Blood Flow",
+                label: "1670s–1680s",
+                variant: "primary",
+                color: "primary",
+                desc: "He described red blood cells and watched blood moving through capillaries in the tail of a small fish.",
+                image: globe,
+                imageAlt:
+                  "Microscope view of red blood cells, small round disc-shaped cells",
+                examples: [
+                  "Described red blood cells in detail",
+                  "Saw blood flowing through capillaries",
+                  "Supported Malpighi's discovery of capillaries",
+                ],
+              },
             ],
           },
         },
 
         {
           type: "comparison",
-          heading: "Light vs. Electron Microscopes",
+          heading: "Before and After the Microscope",
           data: {
             intro:
-              "Both are essential, and neither replaces the other. Which one a scientist reaches for depends entirely on the question being asked.",
+              "The microscope did not only make things look bigger. It changed how people understood living things.",
             left: {
-              label: "Light (Compound) Microscope",
+              label: "Before the Microscope",
               color: "primary",
               items: [
-                "Uses visible light passing through the specimen",
-                "Magnifies up to about 1,500×",
-                "Can observe LIVING specimens moving in real time",
-                "Shows natural colour, and stains add more",
-                "Small, affordable, and found in every school laboratory",
+                "People did not know living things are made of cells",
+                "Nobody knew microorganisms existed",
+                "Diseases were blamed on “bad air,” curses or bad luck",
+                "Many believed life could appear from non-living things, like maggots from meat",
+                "Food spoilage and infections could not be explained",
               ],
             },
             right: {
-              label: "Electron Microscope",
+              label: "After the Microscope",
               color: "secondary",
               items: [
-                "Uses a beam of electrons instead of light",
-                "Magnifies up to about 2,000,000×",
-                "Specimens must be dead — the preparation kills them",
-                "Images are black and white; colour is added afterwards",
-                "Very large and expensive, found only in research institutions",
+                "All living things are known to be made of one or more cells",
+                "A whole world of bacteria, protists and fungi was discovered",
+                "Germ theory showed that specific germs cause specific diseases",
+                "Cells were shown to come only from other cells",
+                "Vaccines, antibiotics and safer surgery became possible",
               ],
             },
           },
@@ -600,36 +628,101 @@ export const week11 = {
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Microscopes in Modern Science",
           data: {
             apps: [
               {
-                title: "Fighting Pandemics",
+                title: "Diagnosing Diseases",
                 description:
-                  "Electron microscopes let scientists photograph a new virus within days of isolating it — the first step toward designing a vaccine against it.",
-                icon: "🦠",
+                  "Hospital laboratories use microscopes to count blood cells and to find the germs that cause tuberculosis, malaria and other diseases, so doctors can give the right medicine.",
+                icon: "🩺",
                 color: "border-l-primary-500",
               },
               {
-                title: "Materials Science",
+                title: "Studying Viruses",
                 description:
-                  "Engineers examine metal fractures and semiconductor chips at atomic scale to understand why a component failed.",
-                icon: "🔩",
+                  "Viruses are too small for a light microscope. Electron microscopes let scientists see the shape of viruses like SARS-CoV-2, which helped in making COVID-19 vaccines. In the Philippines, RITM studies infectious diseases like these.",
+                icon: "🦠",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Food Safety",
+                title: "Food and Farming",
                 description:
-                  "Inspectors check food and water samples for bacterial contamination, preventing outbreaks before products reach shops.",
-                icon: "🍽️",
+                  "Scientists check food and water for harmful bacteria, and plant scientists study crop diseases, such as those that attack rice, under the microscope.",
+                icon: "🌾",
                 color: "border-l-accent-500",
               },
               {
-                title: "Understanding Life Itself",
+                title: "Protecting the Sea",
                 description:
-                  "Every fact you will learn about cells over the next six weeks was discovered by someone looking down a microscope.",
+                  "BFAR counts red tide organisms in seawater samples to keep shellfish safe to eat, and marine scientists study plankton that feed the fish we catch.",
+                icon: "🐚",
+                color: "border-l-primary-500",
+              },
+              {
+                title: "Solving Crimes",
+                description:
+                  "Forensic scientists, like those in the PNP Crime Laboratory, compare hair, fibers and soil under the microscope to connect evidence to a crime scene.",
+                icon: "🔎",
+                color: "border-l-secondary-500",
+              },
+              {
+                title: "Light and Electron Microscopes",
+                description:
+                  "A light microscope (up to about 1,000 to 1,500×) can show living cells moving and is affordable for schools. The electron microscope, first built by Ernst Ruska and Max Knoll in 1931, magnifies more than a million times but needs dead, specially prepared specimens.",
                 icon: "🔬",
                 color: "border-l-primary-500",
+              },
+              {
+                title: "Making New Materials",
+                description:
+                  "Engineers look at metals, plastics and computer chips under powerful microscopes to find tiny cracks and to design stronger, smaller parts.",
+                icon: "🔩",
+                color: "border-l-accent-500",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "scenario",
+          heading: "Think About It",
+          data: {
+            intro:
+              "Use what you learned about the history of the microscope to answer these.",
+            scenarios: [
+              {
+                title: "Hooke's Empty Boxes",
+                situation:
+                  "Robert Hooke saw tiny boxes in cork, but he saw nothing inside them.",
+                question: "Why did Hooke's cells look empty?",
+                skill:
+                  "Cork comes from the dead outer bark of a cork oak tree. The living parts of the cells were already gone, so Hooke saw only the empty cell walls.",
+              },
+              {
+                title: "One Lens Beats Two",
+                situation:
+                  "Van Leeuwenhoek's microscope had only one lens, while Hooke's had two or more. Yet van Leeuwenhoek saw much smaller things.",
+                question: "How was this possible?",
+                skill:
+                  "His single lenses were very carefully made and gave clearer, more magnified images (over 200×) than the compound microscopes of that time, which had blurry, low-quality lenses.",
+              },
+              {
+                title: "Germs and Handwashing",
+                situation:
+                  "Your lola says washing your hands before eating is important, even if your hands look clean.",
+                question:
+                  "How does the discovery of the microscope support her advice?",
+                skill:
+                  "Microscopes showed that microorganisms, including germs that cause disease, are too small to see. Hands can look clean but still carry germs, so washing with soap removes them.",
+              },
+              {
+                title: "Choosing a Microscope",
+                situation:
+                  "A scientist wants to watch a living paramecium swim. Another wants to see the shape of a virus.",
+                question: "Which type of microscope should each scientist use?",
+                skill:
+                  "The first should use a light microscope, because it can show living organisms moving. The second needs an electron microscope, because viruses are too small for a light microscope to show.",
               },
             ],
           },

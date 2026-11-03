@@ -1,6 +1,6 @@
 // Week 18: Sexual Reproduction and Energy Flow — Grade 7 Science
 //
-// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 18.
+// Curriculum source: Grade 7 Science (MATATAG), 2nd Quarter Week 8 (site Week 18).
 //   Lesson 1 — Sexual Reproduction
 //   Lesson 2 — Energy Flow in an Ecosystem:
 //              Food Chain, Food Web, and Energy Transfer
@@ -9,6 +9,9 @@ import foodchain from "../assets/foodchain.png";
 import globe from "../assets/week1/globe.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import flowchart from "../assets/flowchart.jpg";
+import microscope from "../assets/week1/Microscopic.jpg";
+import lab from "../assets/lab.jpg";
+import equation from "../assets/week1/equation.jpg";
 
 export const week18 = {
   id: "week-18",
@@ -16,7 +19,7 @@ export const week18 = {
   title: "Sexual Reproduction and Energy Flow",
   category: "Life Science",
   description:
-    "Compare sexual reproduction with the asexual strategies you have studied, then follow energy as it moves through an ecosystem in food chains and food webs.",
+    "See how two parents make offspring that are each one of a kind, then follow energy from the sun through food chains and food webs in Philippine ecosystems.",
   icon: "Network",
   color: "primary",
   isLocked: false,
@@ -31,12 +34,12 @@ export const week18 = {
       title: "Sexual Reproduction",
       badge: "Lesson 1",
       subtitle:
-        "Two parents, two gametes, and offspring that resemble both without copying either — learn how sexual reproduction works and why its variety is worth the cost.",
+        "Follow the key steps from meiosis to fertilization, learn why offspring are never exact copies of their parents, and see how sexual reproduction passes on traits and creates variety.",
       readTime: "~16 min read",
       xp: 50,
       heroImage: globe,
       heroImageAlt:
-        "Diverse living organisms that reproduce sexually",
+        "A mother hen with chicks of slightly different colors and markings",
 
       signature: {
         widgetId: "variation-batch",
@@ -58,22 +61,35 @@ export const week18 = {
 
       sections: [
         "Overview",
-        "Key Terms",
-        "Examples Across the Living World",
+        "Key Steps of Sexual Reproduction",
+        "Why Offspring Are Different",
+        "Examples in Plants and Animals",
+        "Heredity and Variation",
         "Sexual vs. Asexual Reproduction",
-        "Why Variation Matters",
-        "Key Characteristics",
-        "Applications",
+        "Think About It",
+        "Variation at Work",
       ],
 
       references: [
         {
-          label: "Khan Academy — Sexual Reproduction",
-          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology",
+          label: "Britannica — Sexual reproduction",
+          url: "https://www.britannica.com/science/sexual-reproduction",
         },
         {
-          label: "Britannica — Sexual Reproduction",
-          url: "https://www.britannica.com/science/sexual-reproduction",
+          label: "Khan Academy — Variation in a species",
+          url: "https://www.khanacademy.org/science/biology/heredity",
+        },
+        {
+          label: "CK-12 — Sexual Reproduction",
+          url: "https://www.ck12.org/c/biology/sexual-reproduction/",
+        },
+        {
+          label: "Philippine Rice Research Institute (PhilRice)",
+          url: "https://www.philrice.gov.ph/",
+        },
+        {
+          label: "Philippine Carabao Center — Official Website",
+          url: "https://www.pcc.gov.ph/",
         },
       ],
 
@@ -83,51 +99,104 @@ export const week18 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Sexual reproduction</strong> requires two parents. Each produces gametes through <strong class='text-primary-700'>meiosis</strong> — sperm from the male, eggs from the female — and at fertilization one of each fuses to form a zygote.",
-              "Because each parent contributes half of the offspring's genetic material, and because meiosis shuffled that material through crossing over and independent assortment, the offspring is <strong class='text-primary-700'>genetically different from both parents</strong> and from every sibling. This variation is the whole point.",
-              "Sexual reproduction is slower and more expensive than asexual reproduction. An organism must find a mate, produce gametes, and only half the population can bear offspring. Despite all that cost, it has become the dominant strategy among complex organisms — because varied populations survive change and identical ones do not.",
+              "<strong class='text-primary-700'>Sexual reproduction</strong> is reproduction that involves <strong class='text-primary-700'>two parents</strong>. Each parent makes sex cells, or <strong class='text-primary-700'>gametes</strong>: the male makes sperm, and the female makes eggs. A sperm and an egg join at <strong class='text-primary-700'>fertilization</strong> to start a new living thing.",
+              "The offspring get half of their chromosomes from the mother and half from the father. That is why a child may have the mother's eyes and the father's hair. Passing traits from parents to offspring is called <strong class='text-primary-700'>heredity</strong>.",
+              "But the offspring are <strong class='text-primary-700'>not exact copies</strong> of either parent, and brothers and sisters are not copies of each other. These differences are called <strong class='text-primary-700'>variation</strong>. This lesson explains where variation comes from and why it helps living things survive.",
             ],
             didYouKnow:
-              "Flowering plants reproduce sexually too. When a bee carries pollen from one flower to another it is acting as a matchmaker, enabling fertilization between two plants that can never move toward each other.",
+              "Rice flowers usually pollinate themselves. Each tiny rice flower opens for only a short time in the morning, and pollen falls onto its own stigma. To mix traits from two rice varieties, plant breeders must move pollen by hand.",
           },
         },
 
         {
-          type: "keyTerms",
-          heading: "Key Terms",
+          type: "timeline",
+          heading: "Key Steps of Sexual Reproduction",
           data: {
-            terms: [
+            intro:
+              "Sexual reproduction always includes two key processes: meiosis, which makes gametes, and fertilization, which joins them.",
+            steps: [
               {
-                term: "Sexual Reproduction",
-                desc: "Reproduction requiring two parents, each contributing a gamete, producing genetically unique offspring.",
+                num: 1,
+                title: "Meiosis Makes Gametes",
+                color: "primary",
+                description:
+                  "In each parent, special cells divide by meiosis. Each gamete gets only half of the chromosomes: one from each pair. In humans, a body cell has 46 chromosomes and a gamete has 23.",
+                tip: "You learned the stages of meiosis I and II in Week 15.",
               },
               {
-                term: "Gamete",
-                desc: "A haploid sex cell — sperm or egg — produced by meiosis and carrying half the chromosome number.",
+                num: 2,
+                title: "The Gametes Meet",
+                color: "secondary",
+                description:
+                  "The sperm must reach the egg. In many animals, this happens through mating. In flowering plants, wind, insects or birds carry pollen to another flower; this is called pollination.",
+                tip: "In fish and frogs, eggs and sperm meet in the water.",
               },
               {
-                term: "Fertilization",
-                desc: "The fusion of two gametes to form a diploid zygote with the full chromosome number restored.",
+                num: 3,
+                title: "Fertilization",
+                color: "accent",
+                description:
+                  "One sperm and one egg fuse. Their nuclei join, and the chromosomes from both parents come together in one cell.",
+                tip: "23 + 23 = 46 chromosomes in humans: the full number is restored.",
               },
               {
-                term: "Genetic Variation",
-                desc: "Differences in the genetic makeup of individuals in a population. Sexual reproduction creates it; asexual reproduction does not.",
+                num: 4,
+                title: "A Zygote Forms",
+                color: "primary",
+                description:
+                  "The fertilized egg, now called a zygote, has a brand-new mix of genes. No other living thing has exactly the same mix.",
+                tip: "The only exception is identical twins, who come from the same zygote.",
               },
               {
-                term: "Pollination",
-                desc: "The transfer of pollen from one flower to another by wind, water, or animals — the plant equivalent of delivering sperm to the egg.",
+                num: 5,
+                title: "Growth by Mitosis",
+                color: "secondary",
+                description:
+                  "The zygote divides again and again by mitosis to become an embryo, then a young organism. In plants, the fertilized ovule becomes a seed that can grow into a new plant.",
+                tip: "Meiosis happens once to make gametes. After fertilization, mitosis does all the growing.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "reasonCards",
+          heading: "Why Offspring Are Different",
+          data: {
+            intro:
+              "Each offspring gets a new combination of genes. Four things make this happen.",
+            reasons: [
+              {
+                num: 1,
+                title: "Two Parents Mix Their Genes",
+                color: "primary",
+                desc: "Half from the mother, half from the father",
+                content:
+                  "The offspring's genes come from two different individuals. The new combination is not the same as either parent's.",
               },
               {
-                term: "Adaptation",
-                desc: "A trait that helps an organism survive and reproduce in its environment. Variation is what new adaptations arise from.",
+                num: 2,
+                title: "Crossing Over",
+                color: "secondary",
+                desc: "Chromosome pairs swap pieces in meiosis I",
+                content:
+                  "Before the pairs separate, matching chromosomes trade small pieces. This makes new combinations of genes on the same chromosome.",
               },
               {
-                term: "Natural Selection",
-                desc: "The process by which organisms with traits better suited to their environment survive and reproduce more successfully.",
+                num: 3,
+                title: "Independent Assortment",
+                color: "accent",
+                desc: "Each pair splits up in its own random way",
+                content:
+                  "In meiosis I, each chromosome pair lines up and separates independently of the others. With 23 pairs, one person can make about 8 million (2²³) different kinds of gametes, even before crossing over.",
               },
               {
-                term: "Hermaphrodite",
-                desc: "An organism producing both male and female gametes, such as an earthworm. It still needs a partner to reproduce sexually.",
+                num: 4,
+                title: "Random Fertilization",
+                color: "primary",
+                desc: "Any sperm can meet any egg",
+                content:
+                  "Which sperm joins which egg is a matter of chance. Combined with the first three, this makes every offspring one of a kind.",
               },
             ],
           },
@@ -135,51 +204,89 @@ export const week18 = {
 
         {
           type: "imageCards",
-          heading: "Examples Across the Living World",
+          heading: "Examples in Plants and Animals",
           data: {
             cards: [
               {
-                title: "Mammals and Birds",
-                label: "Internal Fertilization",
+                title: "Chicken",
+                label: "Animal · internal fertilization",
                 variant: "primary",
                 color: "primary",
-                desc: "Fertilization happens inside the female's body. Few offspring are produced, but each is well protected while it develops.",
+                desc: "The rooster's sperm fertilizes the egg inside the hen. The hen then lays the egg, and a chick grows inside the shell.",
                 image: globe,
-                imageAlt: "Mammals and birds that reproduce sexually",
+                imageAlt:
+                  "Hen and rooster in a backyard with chicks of different colors",
                 examples: [
-                  "Humans, dogs, whales — embryo develops inside the mother",
-                  "Birds — fertilised egg is laid and incubated in a shell",
-                  "High survival rate per offspring",
+                  "Chicks from the same parents can have different feather colors",
+                  "The hen sits on the eggs for about 21 days",
                 ],
               },
               {
-                title: "Fish and Amphibians",
-                label: "External Fertilization",
+                title: "Carabao",
+                label: "Animal · internal fertilization",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Eggs and sperm are released into water, where fertilization takes place outside the body.",
-                image: simulation,
-                imageAlt:
-                  "Frogs and fish releasing eggs into water for external fertilization",
+                desc: "The calf grows inside the mother for about 11 months before it is born, and it takes traits from both parents.",
+                image: lab,
+                imageAlt: "Mother carabao with her calf standing in a rice field",
                 examples: [
-                  "Frogs, salmon, sea urchins",
-                  "Thousands of eggs released at once",
-                  "Water lets sperm swim to the eggs",
+                  "A calf may have its mother's horns and its father's size",
+                  "Breeders choose parents for strength or milk",
                 ],
               },
               {
-                title: "Flowering Plants",
-                label: "Pollination",
+                title: "Frog",
+                label: "Animal · external fertilization",
                 variant: "primary",
                 color: "primary",
-                desc: "Pollen containing the male gamete is carried by wind or animals to the egg cells in another flower's ovary.",
+                desc: "The female lays eggs in water, and the male releases sperm over them. Each tadpole has its own mix of genes.",
+                image: simulation,
+                imageAlt:
+                  "Clump of frog eggs and tadpoles in the shallow water of a rice field",
+                examples: [
+                  "Hundreds of eggs in one clump",
+                  "Common in rice fields during the rainy season",
+                ],
+              },
+              {
+                title: "Gumamela",
+                label: "Plant · pollination and fertilization",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Pollen from the anther reaches the stigma. A pollen tube grows down to the ovule, where a sperm nucleus fertilizes the egg.",
                 image: flowchart,
                 imageAlt:
-                  "Diagram showing pollination transferring pollen between flowers",
+                  "Gumamela flower with labeled stamen, anther, stigma and pistil",
                 examples: [
-                  "Pollen carries the male gamete",
-                  "Insects, birds, and wind transfer it",
-                  "Fertilization produces seeds inside a fruit",
+                  "Insects and birds carry pollen between flowers",
+                  "Breeders cross gumamela plants to get new flower colors",
+                ],
+              },
+              {
+                title: "Mango",
+                label: "Plant · seeds and fruit",
+                variant: "primary",
+                color: "primary",
+                desc: "After the flowers are pollinated and fertilized, each fertilized ovule becomes a seed, and the ovary grows into the fruit.",
+                image: equation,
+                imageAlt:
+                  "Mango tree branch with small flowers next to young green fruits",
+                examples: [
+                  "A mango tree grown from seed may give fruit different from its parent",
+                  "Bees and flies help pollinate mango flowers",
+                ],
+              },
+              {
+                title: "Rice",
+                label: "Plant · self-pollination",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Each rice grain is a fertilized ovule. Scientists cross two rice varieties to combine good traits in one new variety.",
+                image: microscope,
+                imageAlt: "Rice panicle with open flowers and hanging anthers",
+                examples: [
+                  "PhilRice breeds varieties that survive floods or drought",
+                  "Crossing mixes traits from two parent varieties",
                 ],
               },
             ],
@@ -188,129 +295,138 @@ export const week18 = {
 
         {
           type: "comparison",
+          heading: "Heredity and Variation",
+          data: {
+            intro:
+              "Sexual reproduction does two things at once. It passes traits from parents to offspring (heredity), and it makes every offspring a little different (variation).",
+            left: {
+              label: "Heredity: Passing On Traits",
+              color: "primary",
+              items: [
+                "Offspring get chromosomes, and so genes, from both parents",
+                "That is why children look like their parents",
+                "Puppies of two aspin dogs look like aspins, not cats",
+                "Fertilization gives the offspring a full set of chromosomes, one from each parent per pair",
+                "Traits such as dimples, curly hair and skin color can run in families",
+              ],
+            },
+            right: {
+              label: "Variation: Differences Among Offspring",
+              color: "secondary",
+              items: [
+                "Brothers and sisters from the same parents look different",
+                "Kittens in one litter can have different fur colors",
+                "Meiosis and random fertilization make new gene mixes each time",
+                "Variation lets some individuals survive changes, such as a new disease",
+                "Natural selection works on these differences: the best-suited individuals survive and reproduce more",
+              ],
+            },
+          },
+        },
+
+        {
+          type: "comparison",
           heading: "Sexual vs. Asexual Reproduction",
           data: {
             intro:
-              "You studied asexual reproduction last week. Here are the two strategies side by side — neither is universally better, and many organisms use both.",
+              "You studied asexual reproduction last week. Here are the two side by side. Neither is always better, and many plants use both.",
             left: {
               label: "Sexual Reproduction",
               color: "primary",
               items: [
-                "Requires TWO parents",
-                "Gametes produced by meiosis, then fertilization",
-                "Offspring are genetically UNIQUE",
-                "Slower — a mate must be found",
-                "High energy cost",
-                "Produces great genetic variation",
-                "Examples: humans, frogs, flowering plants",
+                "Two parents",
+                "Gametes are made by meiosis, then joined by fertilization",
+                "Offspring are genetically different from the parents and from each other",
+                "Slower: parents must find a mate, or pollen must be carried",
+                "Uses more time and energy",
+                "Examples: chicken, carabao, frog, mango, rice",
               ],
             },
             right: {
               label: "Asexual Reproduction",
               color: "secondary",
               items: [
-                "Requires only ONE parent",
-                "No gametes and no fertilization — uses mitosis",
-                "Offspring are genetically IDENTICAL clones",
-                "Faster — no mate needed",
-                "Low energy cost",
-                "Produces NO genetic variation",
-                "Examples: bacteria, yeast, sea stars, strawberry plants",
+                "One parent",
+                "No gametes and no fertilization; cells divide by mitosis",
+                "Offspring are identical clones of the parent",
+                "Faster: no mate is needed",
+                "Uses less time and energy",
+                "Examples: bacteria, yeast, planaria, kangkong cuttings",
               ],
             },
           },
         },
 
         {
-          type: "reasonCards",
-          heading: "Why Variation Matters",
+          type: "scenario",
+          heading: "Think About It",
+          isSubsection: true,
           data: {
-            intro:
-              "Sexual reproduction costs more in time and energy. Four benefits explain why it has been worth it across billions of years.",
-            reasons: [
+            intro: "Answer each question, then check the model answer.",
+            scenarios: [
               {
-                num: 1,
-                title: "Adapting to a Changing Environment",
-                color: "primary",
-                desc: "Varied offspring mean some can survive new conditions",
-                content:
-                  "When climate shifts, a new predator arrives, or food becomes scarce, a varied population is likely to contain individuals that can cope. A clone population either all copes or all dies.",
+                title: "Siblings Who Look Different",
+                situation:
+                  "Carlo and his sister Bea have the same parents, but Carlo has straight hair and Bea has curly hair.",
+                question:
+                  "How can two children from the same parents look so different?",
+                skill:
+                  "Each child came from a different sperm and a different egg. Because of crossing over, independent assortment and random fertilization, each gamete carried a different mix of genes, so each child got a different combination.",
               },
               {
-                num: 2,
-                title: "Disease Resistance",
-                color: "secondary",
-                desc: "No single pathogen can wipe out a varied population",
-                content:
-                  "A new virus is unlikely to kill every individual when their genes differ — some will carry natural resistance and survive to reproduce.",
+                title: "A Mango Grown from Seed",
+                situation:
+                  "Lito plants a seed from a very sweet Carabao mango. Years later, the new tree gives fruit that is less sweet.",
+                question:
+                  "Why is the new fruit different from the parent fruit?",
+                skill:
+                  "The seed came from sexual reproduction. Its genes are a mix from the parent tree and from the tree that gave the pollen, so its traits can differ. That is why farmers graft mango branches when they want an exact copy.",
               },
               {
-                num: 3,
-                title: "Driving Evolution",
-                color: "accent",
-                desc: "Variation is the raw material natural selection works on",
-                content:
-                  "Natural selection can only favour traits that already exist. Meiosis and fertilization continually generate new combinations for it to act on, which is how species change over time.",
+                title: "A Disease in the Rice Field",
+                situation:
+                  "A new plant disease spreads through a region. Some rice plants from many different varieties survive.",
+                question:
+                  "Why do some plants survive, and why does this matter for the future?",
+                skill:
+                  "Variation. Some plants happen to carry genes that help them resist the disease. They survive and reproduce, so their offspring can inherit that resistance.",
               },
-              {
-                num: 4,
-                title: "Every Individual Is Unique",
-                color: "primary",
-                desc: "Except identical twins, no two people are genetically the same",
-                content:
-                  "Crossing over, independent assortment, and random fertilization together produce so many combinations that the same one occurring twice is effectively impossible.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "conceptList",
-          heading: "Key Characteristics",
-          data: {
-            concepts: [
-              "Sexual reproduction requires TWO parents, each contributing genetic material through a gamete.",
-              "Gametes are produced by meiosis and are haploid, carrying half the organism's chromosomes.",
-              "Fertilization combines two haploid gametes into a diploid zygote that develops into a new organism.",
-              "Offspring are genetically unique — different from both parents and from each other.",
-              "The variation produced improves a population's ability to adapt to change and resist disease.",
-              "Only females bear offspring, which limits how fast a sexually reproducing population can grow.",
-              "Some organisms, including aphids and sea anemones, use asexual reproduction when conditions are good and switch to sexual reproduction when conditions worsen.",
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Variation at Work",
+          isSubsection: true,
           data: {
             apps: [
               {
-                title: "Selective Breeding",
+                title: "New Rice Varieties",
                 description:
-                  "Farmers choose which plants and animals mate in order to combine desirable traits — disease-resistant crops, higher-yielding livestock.",
+                  "PhilRice scientists cross rice plants to combine traits like high yield and flood tolerance, so farmers can still harvest after typhoons.",
                 icon: "🌾",
                 color: "border-l-primary-500",
               },
               {
-                title: "Conservation Genetics",
+                title: "Stronger Carabaos",
                 description:
-                  "Conservationists deliberately breed individuals from separate groups to maintain genetic diversity and avoid the dangers of inbreeding.",
-                icon: "🌿",
+                  "The Philippine Carabao Center breeds native carabaos with dairy buffaloes so the offspring give more milk for farming families.",
+                icon: "🐃",
                 color: "border-l-secondary-500",
-              },
-              {
-                title: "Understanding Inherited Conditions",
-                description:
-                  "Because sexual reproduction mixes genetic material, some conditions appear unexpectedly. Studying inheritance patterns helps families understand the risks.",
-                icon: "🧬",
-                color: "border-l-accent-500",
               },
               {
                 title: "Protecting Pollinators",
                 description:
-                  "Bees and butterflies enable sexual reproduction in flowering plants. Losing them would devastate both wild plants and food crops.",
+                  "Bees, butterflies and birds carry pollen for many fruit and vegetable crops. Protecting them protects our food supply.",
                 icon: "🐝",
+                color: "border-l-accent-500",
+              },
+              {
+                title: "Saving Endangered Species",
+                description:
+                  "Conservation breeding of animals like the Philippine eagle pairs individuals carefully to keep the population varied and healthy.",
+                icon: "🦅",
                 color: "border-l-primary-500",
               },
             ],
@@ -330,12 +446,12 @@ export const week18 = {
         "Energy Flow in an Ecosystem: Food Chain, Food Web, and Energy Transfer",
       badge: "Lesson 2",
       subtitle:
-        "Follow energy from sunlight into plants and along every arrow of a food chain — then see why real ecosystems are webs, not chains.",
-      readTime: "~18 min read",
+        "Identify the trophic levels in a food chain and food web, explain how energy passes from one organism to the next when one eats another, and build your own food chain and food web.",
+      readTime: "~17 min read",
       xp: 50,
       heroImage: foodchain,
       heroImageAlt:
-        "Diagram of a food chain showing energy flowing from grass to a top predator",
+        "Philippine rice field with a frog sitting among green rice plants",
 
       signature: {
         widgetId: "energy-flow",
@@ -357,23 +473,34 @@ export const week18 = {
 
       sections: [
         "Overview",
-        "Key Terms",
         "Roles in an Ecosystem",
-        "Trophic Levels and the 10% Rule",
+        "Trophic Levels",
+        "How Energy Moves Through Feeding",
         "Food Chain vs. Food Web",
-        "Key Ideas",
-        "Ecosystem Disruption Scenarios",
-        "Applications",
+        "Build Your Own Food Chain and Food Web",
+        "Think About It",
       ],
 
       references: [
         {
-          label: "Khan Academy — Energy Flow in Ecosystems",
-          url: "https://www.khanacademy.org/science/biology/ecology",
+          label: "National Geographic Education — Food Web",
+          url: "https://education.nationalgeographic.org/resource/food-web/",
         },
         {
-          label: "National Geographic — Food Webs",
-          url: "https://education.nationalgeographic.org/resource/food-web/",
+          label: "National Geographic Education — Food Chain",
+          url: "https://education.nationalgeographic.org/resource/food-chain/",
+        },
+        {
+          label: "Khan Academy — Food chains and food webs",
+          url: "https://www.khanacademy.org/science/biology/ecology/intro-to-ecosystems/a/food-chains-food-webs",
+        },
+        {
+          label: "PhilRice — Golden apple snail management",
+          url: "https://www.philrice.gov.ph/",
+        },
+        {
+          label: "Tubbataha Reefs Natural Park",
+          url: "https://tubbatahareef.org/",
         },
       ],
 
@@ -383,69 +510,12 @@ export const week18 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "Every living thing needs energy, and in almost every ecosystem on Earth that energy starts as sunlight. <strong class='text-primary-700'>Producers</strong> capture it through photosynthesis; everything else gets it second-hand by eating.",
-              "A <strong class='text-primary-700'>food chain</strong> shows this transfer as a simple line: Grass → Grasshopper → Frog → Snake → Eagle. Each arrow means 'energy flows to' — the arrow always points toward the eater, never toward the eaten. Getting that direction right is the single most common mistake in this topic.",
-              "But real ecosystems are not simple lines. Most animals eat several things and are eaten by several things. A <strong class='text-primary-700'>food web</strong> shows all those overlapping connections at once, and it is a far more honest picture of how an ecosystem actually works.",
+              "Every living thing needs <strong class='text-primary-700'>energy</strong> to move, grow and stay alive. In almost every ecosystem, that energy starts as <strong class='text-primary-700'>sunlight</strong>. Plants capture it by photosynthesis and store it in their bodies as food.",
+              "Animals get energy by eating. A <strong class='text-primary-700'>food chain</strong> shows who eats whom in a single line. In a rice field: Rice → Rice bug → Frog → Snake → Hawk. Each arrow means “gives energy to,” so it points from the one being eaten to the one doing the eating.",
+              "Most animals eat more than one kind of food, and many are eaten by more than one kind of animal. When we connect all the food chains in one place, we get a <strong class='text-primary-700'>food web</strong>. In this lesson you will identify each organism's <strong class='text-primary-700'>trophic level</strong> (its feeding level) and build your own chain and web with care and <strong class='text-primary-700'>excellence</strong>.",
             ],
             didYouKnow:
-              "To produce 1 kilogram of beef, a cow must eat about 8 kilograms of grain. That is the 10% energy rule in action, and it is why eating lower down the food chain uses far less land and water.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Producer (Autotroph)",
-                desc: "An organism that makes its own food using energy from the sun through photosynthesis. Plants, algae, phytoplankton.",
-              },
-              {
-                term: "Consumer (Heterotroph)",
-                desc: "An organism that cannot make its own food and must eat other organisms to obtain energy.",
-              },
-              {
-                term: "Decomposer",
-                desc: "An organism that breaks down dead matter and waste, recycling nutrients back into the ecosystem. Bacteria, fungi, earthworms.",
-              },
-              {
-                term: "Herbivore",
-                desc: "A consumer that eats only plants. Also called a primary consumer — rabbit, caterpillar, deer.",
-              },
-              {
-                term: "Carnivore",
-                desc: "A consumer that eats only other animals — eagle, shark, frog.",
-              },
-              {
-                term: "Omnivore",
-                desc: "A consumer that eats both plants and animals — humans, bears, raccoons.",
-              },
-              {
-                term: "Trophic Level",
-                desc: "A feeding position in a food chain. Producers occupy the first level, primary consumers the second, and so on.",
-              },
-              {
-                term: "Food Chain",
-                desc: "A simple linear diagram showing energy passing from one organism to the next.",
-              },
-              {
-                term: "Food Web",
-                desc: "A network of interconnected food chains showing all the feeding relationships in an ecosystem.",
-              },
-              {
-                term: "10% Rule",
-                desc: "Only about 10% of the energy at one trophic level passes to the next; roughly 90% is lost, mostly as heat.",
-              },
-              {
-                term: "Keystone Species",
-                desc: "A species with an effect on its ecosystem far larger than its numbers would suggest.",
-              },
-              {
-                term: "Trophic Cascade",
-                desc: "A chain reaction in which changing one trophic level causes dramatic changes throughout the whole web.",
-              },
-            ],
+              "Tubbataha Reefs Natural Park in the Sulu Sea is a UNESCO World Heritage Site. Its food web runs from tiny plankton to sharks and sea turtles, and it is home to hundreds of kinds of fish.",
           },
         },
 
@@ -456,45 +526,60 @@ export const week18 = {
             cards: [
               {
                 title: "Producers",
-                label: "Autotrophs",
+                label: "Make their own food",
                 variant: "primary",
                 color: "primary",
-                desc: "Plants, algae, and phytoplankton capture solar energy through photosynthesis and form the base of every food chain.",
+                desc: "Plants, algae and phytoplankton use sunlight to make food by photosynthesis. Every food chain starts with a producer.",
                 image: globe,
-                imageAlt: "Plants and algae acting as producers in ecosystems",
+                imageAlt:
+                  "Green rice plants and mangrove trees growing in sunlight",
                 examples: [
-                  "Grass, trees, and shrubs on land",
-                  "Algae and phytoplankton in water",
-                  "The only organisms that can capture energy from sunlight",
+                  "Rice, grass and kangkong on land",
+                  "Mangrove trees along the coast",
+                  "Algae and phytoplankton in the sea",
                 ],
               },
               {
-                title: "Consumers",
-                label: "Heterotrophs",
+                title: "Herbivores",
+                label: "Primary consumers",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Animals that eat producers or other consumers, arranged into trophic levels according to what they eat.",
-                image: foodchain,
-                imageAlt:
-                  "Diagram showing herbivores and carnivores in a food chain",
+                desc: "Animals that eat only plants. They get energy that the producers stored.",
+                image: lab,
+                imageAlt: "Grasshopper eating a green rice leaf",
                 examples: [
-                  "Primary: rabbit, grasshopper, deer — they eat plants",
-                  "Secondary: frog, fox, small fish — they eat herbivores",
-                  "Tertiary: eagle, shark, orca — top predators",
+                  "Rice bug (atangya) and grasshopper",
+                  "Golden apple snail (kuhol) eating rice seedlings",
+                  "Carabao and goat eating grass",
+                ],
+              },
+              {
+                title: "Carnivores and Omnivores",
+                label: "Secondary and tertiary consumers",
+                variant: "primary",
+                color: "primary",
+                desc: "Carnivores eat other animals. Omnivores eat both plants and animals.",
+                image: foodchain,
+                imageAlt: "Frog catching an insect with its tongue",
+                examples: [
+                  "Carnivores: frog, snake, hawk, shark",
+                  "Omnivores: humans, chickens, rats",
+                  "Top predators are at the end of the chain",
                 ],
               },
               {
                 title: "Decomposers",
                 label: "Recyclers",
-                variant: "primary",
-                color: "primary",
-                desc: "Bacteria, fungi, and earthworms break down dead matter and return its nutrients to the soil and water.",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Bacteria, fungi and earthworms break down dead plants, dead animals and waste. They return nutrients to the soil and water.",
                 image: simulation,
-                imageAlt: "Fungi and bacteria decomposing organic matter",
+                imageAlt:
+                  "Mushrooms growing on a fallen log in a forest",
                 examples: [
-                  "Mushrooms break down fallen logs",
-                  "Bacteria decompose animal waste",
-                  "Earthworms turn leaf litter into rich soil",
+                  "Mushrooms on rotting wood",
+                  "Bacteria in a compost pit",
+                  "Earthworms in garden soil",
                 ],
               },
             ],
@@ -503,50 +588,101 @@ export const week18 = {
 
         {
           type: "timeline",
-          heading: "Trophic Levels and the 10% Rule",
+          heading: "Trophic Levels",
           data: {
             intro:
-              "Follow the energy from the sun upward, and watch how little survives each step. This is why food chains are short.",
+              "A trophic level is an organism's feeding position in a food chain. Count from the producer upward. Here is the rice field chain: Rice → Rice bug → Frog → Snake → Hawk.",
             steps: [
               {
                 num: 1,
-                title: "First Level: Producers",
+                title: "1st Level: Producers",
                 color: "primary",
                 description:
-                  "Producers capture sunlight through photosynthesis and store it as chemical energy in their tissues. Grass, algae, phytoplankton, and trees are the source of all the energy in the chain.",
-                tip: "All energy in a food chain originally comes from the sun — producers are the only organisms that can capture it.",
+                  "The rice plant captures energy from sunlight and stores it in its leaves and grains.",
+                tip: "Producers are always the first trophic level.",
               },
               {
                 num: 2,
-                title: "Second Level: Primary Consumers",
+                title: "2nd Level: Primary Consumers",
                 color: "secondary",
                 description:
-                  "Herbivores eat producers. Only about 10% of the producer's stored energy ends up in the herbivore — grasshoppers, rabbits, caterpillars, deer.",
-                tip: "The missing 90% is lost as body heat during movement and metabolism, and in undigested waste.",
+                  "The rice bug sucks the sap and milky grains of the rice plant. Herbivores are always primary consumers.",
+                tip: "“Primary” means first: the first consumer in the chain.",
               },
               {
                 num: 3,
-                title: "Third Level: Secondary Consumers",
+                title: "3rd Level: Secondary Consumers",
                 color: "accent",
                 description:
-                  "Secondary consumers eat the herbivores, receiving only about 1% of the producers' original energy — 10% of 10%. Frogs eat grasshoppers; foxes eat rabbits.",
-                tip: "So little energy remains that there are always far fewer secondary consumers than primary ones.",
+                  "The frog eats the rice bug. Animals that eat herbivores are secondary consumers.",
+                tip: "Frogs help farmers by eating insect pests.",
               },
               {
                 num: 4,
-                title: "Fourth Level: Tertiary Consumers",
+                title: "4th Level: Tertiary Consumers",
                 color: "primary",
                 description:
-                  "Top predators eat secondary consumers and receive roughly 0.1% of the original energy. Eagles eat snakes; sharks eat large fish.",
-                tip: "Top predators are always the rarest organisms in an ecosystem — there simply is not energy for many.",
+                  "The snake eats the frog. Animals that eat secondary consumers are tertiary consumers.",
+                tip: "An omnivore can sit at more than one level, depending on what it eats.",
               },
               {
                 num: 5,
-                title: "Decomposers Close the Loop",
+                title: "5th Level: Top Predator",
                 color: "secondary",
                 description:
-                  "When an organism at any level dies, decomposers break it down and return its nutrients to the soil and water, where producers absorb them again.",
-                tip: "Energy flows one way and is lost as heat. Nutrients cycle round and round — that difference matters.",
+                  "The hawk eats the snake. Nothing in this chain eats the hawk, so it is the top predator.",
+                tip: "Most food chains have only 4 or 5 levels, because less energy is left at each step.",
+              },
+              {
+                num: 6,
+                title: "Decomposers at Every Level",
+                color: "accent",
+                description:
+                  "When any of these organisms dies, decomposers break down its body and return nutrients to the soil, where the rice plants can use them again.",
+                tip: "Decomposers are not counted as one trophic level; they feed on every level.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "reasonCards",
+          heading: "How Energy Moves Through Feeding",
+          data: {
+            intro:
+              "Energy moves from one organism to another only when one eats the other. Here is what happens to that energy.",
+            reasons: [
+              {
+                num: 1,
+                title: "Energy Is Stored in Food",
+                color: "primary",
+                desc: "Sunlight becomes chemical energy",
+                content:
+                  "The rice plant turns sunlight into food (sugar) and stores it in its body. That stored food is the energy the next organism will get.",
+              },
+              {
+                num: 2,
+                title: "Eating Passes Energy On",
+                color: "secondary",
+                desc: "Arrows point from the eaten to the eater",
+                content:
+                  "When the rice bug feeds on the rice, some of the plant's stored energy moves into the rice bug. When the frog eats the rice bug, energy moves into the frog.",
+              },
+              {
+                num: 3,
+                title: "Most Energy Is Used or Lost",
+                color: "accent",
+                desc: "Only about 10% reaches the next level",
+                content:
+                  "Each organism uses most of its energy to move, breathe and keep warm, and some leaves its body as heat and waste. Only about 10% gets stored in its body and passes to the next level.",
+              },
+              {
+                num: 4,
+                title: "Energy Flows One Way",
+                color: "primary",
+                desc: "From the sun, through the chain, out as heat",
+                content:
+                  "Energy does not go back to the sun or to the plants. That is why every ecosystem needs a steady supply of sunlight. Nutrients are different: decomposers recycle them again and again.",
               },
             ],
           },
@@ -557,128 +693,134 @@ export const week18 = {
           heading: "Food Chain vs. Food Web",
           data: {
             intro:
-              "Both show energy flow, but one is a simplification and the other is closer to reality.",
+              "Both show how energy moves. A food chain shows one path. A food web shows many paths together.",
             left: {
               label: "Food Chain",
               color: "primary",
               items: [
-                "A simple, LINEAR sequence of organisms",
-                "Shows only ONE feeding pathway",
-                "Less realistic — most organisms eat many things",
-                "Easier to draw and understand",
-                "If one link is removed, the chain breaks completely",
+                "One straight line of organisms",
+                "Shows only one feeding path",
+                "Example: Rice → Rice bug → Frog → Snake → Hawk",
+                "Easy to draw and read",
+                "If one organism disappears, everything after it loses its food",
               ],
             },
             right: {
               label: "Food Web",
               color: "secondary",
               items: [
-                "A complex, INTERCONNECTED network",
-                "Shows MANY overlapping feeding pathways",
-                "More realistic — matches actual feeding relationships",
-                "More complex but far more accurate",
-                "If one species is removed, others can adapt — more resilient",
+                "Many food chains connected together",
+                "Shows many feeding paths in one ecosystem",
+                "Example: the snake also eats rats; the hawk also eats rats and chicks",
+                "Closer to real life",
+                "If one organism disappears, others can switch food, so the ecosystem is more stable",
               ],
             },
           },
         },
 
         {
-          type: "conceptList",
-          heading: "Key Ideas",
+          type: "timeline",
+          heading: "Build Your Own Food Chain and Food Web",
           data: {
-            concepts: [
-              "Arrows in a food chain point in the direction energy flows — from the organism being eaten toward the one eating it.",
-              "The 10% rule: only about 10% of the energy at one trophic level reaches the next; about 90% is lost, mostly as heat.",
-              "Producers are always at the base because they are the only organisms that can capture energy from sunlight.",
-              "Food chains rarely exceed four or five trophic levels, because too little energy remains to support another one.",
-              "Shorter food chains are more energy-efficient — feeding grain to people directly delivers far more energy than feeding it to cattle first.",
-              "A food web is many overlapping food chains, which makes an ecosystem far more resilient than any single chain.",
-              "Removing a keystone species can trigger a trophic cascade that changes the whole ecosystem.",
-              "Energy flows one way through an ecosystem and is eventually lost as heat; nutrients, by contrast, are recycled by decomposers.",
+            intro:
+              "Construct a food chain and a food web for a Philippine ecosystem. Work neatly and check each arrow; excellence is in the details.",
+            steps: [
+              {
+                num: 1,
+                title: "Choose an Ecosystem",
+                color: "primary",
+                description:
+                  "Pick a place you know, such as a rice field, a mangrove forest, a coral reef or your school garden.",
+                tip: "A rice field is a good start: rice, grass, rice bug, grasshopper, golden apple snail, rat, frog, duck, snake, hawk.",
+              },
+              {
+                num: 2,
+                title: "List the Organisms and Their Food",
+                color: "secondary",
+                description:
+                  "Write each organism and what it eats. Mark each one as a producer, herbivore, carnivore, omnivore or decomposer.",
+                tip: "Use real feeding relationships. A frog eats insects, not rice.",
+              },
+              {
+                num: 3,
+                title: "Draw One Food Chain",
+                color: "accent",
+                description:
+                  "Start with a producer on the left. Add a primary consumer, then a secondary consumer, and so on. Draw arrows from the food to the eater.",
+                tip: "Read your arrows aloud: “Rice gives energy to the rice bug.” If it sounds wrong, the arrow is backwards.",
+              },
+              {
+                num: 4,
+                title: "Label the Trophic Levels",
+                color: "primary",
+                description:
+                  "Under each organism, write its trophic level: producer, primary consumer, secondary consumer, tertiary consumer.",
+                tip: "Count from the producer. The producer is always level 1.",
+              },
+              {
+                num: 5,
+                title: "Connect Chains into a Web",
+                color: "secondary",
+                description:
+                  "Add the other organisms and draw every feeding arrow. For example, add Grass → Grasshopper → Frog and Rice → Rat → Snake, linking them to your first chain.",
+                tip: "Some arrows will cross. That is normal for a food web.",
+              },
+              {
+                num: 6,
+                title: "Add Decomposers and Check",
+                color: "accent",
+                description:
+                  "Place decomposers to the side with arrows from several organisms. Then check that every arrow points toward the eater and every organism has a label.",
+                tip: "Swap with a classmate and check each other's arrows.",
+              },
             ],
           },
         },
 
         {
           type: "scenario",
-          heading: "Ecosystem Disruption Scenarios",
+          heading: "Think About It",
+          isSubsection: true,
           data: {
             intro:
-              "These are real cases where removing or adding one part of a food web changed everything else.",
+              "Use what you know about food chains and food webs. Then check the model answer.",
             scenarios: [
-              {
-                title: "Wolves Removed from Yellowstone",
-                situation:
-                  "For most of the 20th century wolves were hunted out of Yellowstone. With no predator, the elk population exploded and grazed the riverbanks bare, causing erosion and destroying habitat.",
-                question:
-                  "How did removing one species from the top of the web affect the entire ecosystem?",
-                skill:
-                  "A trophic cascade. Removing the top predator let the primary consumer population boom, which destroyed the producers, which destabilised everything. When wolves were reintroduced in 1995 the ecosystem recovered — willows regrew and even the rivers changed course.",
-              },
-              {
-                title: "Overfishing Tuna",
-                situation:
-                  "Commercial fishing removes enormous numbers of bluefin tuna each year. Tuna are apex predators that eat smaller fish such as mackerel and herring.",
-                question:
-                  "What happens to the rest of the food web when tuna are overfished?",
-                skill:
-                  "Without tuna controlling them, mackerel and herring populations explode and overgraze the zooplankton and phytoplankton at the base. Since phytoplankton are major oxygen producers, the damage reaches far beyond the fish themselves.",
-              },
-              {
-                title: "Algae Bloom in a Lake",
-                situation:
-                  "Fertilizer runoff flows into a lake, causing an explosion of algae that covers the surface and blocks sunlight from reaching underwater plants.",
-                question:
-                  "How can a sudden INCREASE in producers damage the food web?",
-                skill:
-                  "The bloom blocks light and kills underwater plants. When the algae themselves die, decomposing bacteria consume the dissolved oxygen, and fish and other consumers suffocate. The process is called eutrophication.",
-              },
               {
                 title: "The Reversed Arrow",
                 situation:
-                  "A student draws a food chain as Grass ← Grasshopper ← Frog, explaining that the frog eats the grasshopper and the grasshopper eats the grass.",
+                  "A student draws Rice ← Rice bug ← Frog and says, “The frog eats the rice bug, and the rice bug eats the rice.”",
                 question:
-                  "The student has the feeding relationships right but the diagram is wrong. Why?",
+                  "The feeding relationships are right, but the diagram is wrong. Why?",
                 skill:
-                  "The arrows point the wrong way. An arrow shows the direction ENERGY flows, which is from the eaten to the eater. It should be Grass → Grasshopper → Frog.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Fisheries Management",
-                description:
-                  "Scientists use trophic levels and the 10% rule to set sustainable catch limits, since overfishing one level disrupts everything connected to it.",
-                icon: "🐟",
-                color: "border-l-primary-500",
+                  "The arrows point the wrong way. Arrows show the direction energy flows, from the eaten to the eater. It should be Rice → Rice bug → Frog.",
               },
               {
-                title: "Natural Pest Control",
-                description:
-                  "Protecting or introducing natural predators — ladybugs for aphids, hawks for rodents — controls pests without pesticides.",
-                icon: "🐞",
-                color: "border-l-secondary-500",
+                title: "Frogs Disappear",
+                situation:
+                  "Heavy pesticide use kills most of the frogs in a rice field.",
+                question:
+                  "What may happen to the rice bugs and to the snakes?",
+                skill:
+                  "With fewer frogs to eat them, rice bugs can increase and damage more rice. Snakes lose part of their food and may decrease, or they may eat more rats instead. One change affects many organisms in the web.",
               },
               {
-                title: "Agriculture and Land Use",
-                description:
-                  "The 10% rule explains why growing crops for people directly needs far less land and water than raising livestock on the same grain.",
-                icon: "🌾",
-                color: "border-l-accent-500",
+                title: "Ducks and Golden Apple Snails",
+                situation:
+                  "Golden apple snails (kuhol) eat young rice plants. Some farmers let ducks into their fields after planting to eat the snails.",
+                question:
+                  "What are the trophic levels of the rice, the snail and the duck in this chain?",
+                skill:
+                  "Rice → Golden apple snail → Duck. The rice is the producer (1st level), the snail is the primary consumer (2nd level), and the duck is the secondary consumer (3rd level).",
               },
               {
-                title: "Conservation Planning",
-                description:
-                  "Food web models let scientists predict how habitat loss or hunting will ripple through an entire community before a decision is made.",
-                icon: "🌿",
-                color: "border-l-primary-500",
+                title: "Wolves Return to Yellowstone",
+                situation:
+                  "Wolves were removed from Yellowstone National Park in the United States. Elk, which eat young trees, increased, and riverbank trees almost disappeared. Wolves were brought back in 1995.",
+                question:
+                  "What does this show about food webs?",
+                skill:
+                  "Removing one top predator changed the whole web: more elk meant fewer young trees along the rivers. After the wolves returned, elk numbers dropped and the trees began to grow back. This chain reaction is called a trophic cascade.",
               },
             ],
           },
