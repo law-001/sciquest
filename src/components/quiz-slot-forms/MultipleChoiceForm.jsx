@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import { SELECT } from '../portal';
 
 const INPUT = 'w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors resize-none'
 const LABEL = 'block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1'
@@ -66,7 +67,7 @@ export default function MultipleChoiceForm({ initialData, onSubmit, onCancel }) 
 
       <div>
         <label className={LABEL}>Correct Answer <span className="text-red-400">*</span></label>
-        <select className={INPUT} value={correctAnswer} onChange={e => setCorrectAnswer(e.target.value)} required>
+        <select className={`${SELECT} w-full`} value={correctAnswer} onChange={e => setCorrectAnswer(e.target.value)} required>
           <option value="">Select correct answer…</option>
           {cleanOpts.map(opt => <option key={opt} value={opt}>{opt}</option>)}
         </select>

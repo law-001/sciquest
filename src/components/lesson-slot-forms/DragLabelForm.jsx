@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react'
 
 import ImagePicker from '../ImagePicker'
 import ImagePointEditor from './_ImagePointEditor'
+import { SELECT } from '../portal';
 
 const INPUT =
   'w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors'
@@ -171,7 +172,7 @@ export default function DragLabelForm({
                     {i + 1}
                   </span>
                   <select
-                    className={INPUT + ' flex-1'}
+                    className={`${SELECT} flex-1`}
                     value={z.labelId}
                     onChange={(e) => updateZone(z.id, 'labelId', e.target.value)}
                     aria-label={`Correct label for zone ${i + 1}`}

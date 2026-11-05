@@ -6,6 +6,11 @@
 //   npm run seed:curriculum              # seed, preserving teacher edits
 //   npm run seed:curriculum -- --force   # also overwrite teacher-edited rows
 //   npm run seed:curriculum -- --dry-run # report what would change, write nothing
+//   npm run seed:curriculum -- --weeks=4,5,6
+//                                        # write only those weeks' lessons; quizzes untouched
+//   npm run seed:curriculum -- --weeks=4,5,6 --force
+//                                        # same, overwriting those lessons even if they look
+//                                        # teacher-edited (see wasEditedByTeacher)
 //
 // Requires in .env.local (or the environment):
 //   VITE_SUPABASE_URL           (or SUPABASE_URL)
@@ -29,6 +34,12 @@ import { createClient } from '@supabase/supabase-js'
 const args = new Set(process.argv.slice(2))
 const FORCE = args.has('--force')
 const DRY_RUN = args.has('--dry-run')
+// Lets a batch of rewritten weeks be uploaded without touching any other
+// lesson or any quiz, so --force can be scoped to just those weeks.
+const WEEKS_ARG = [...args].find((a) => a.startsWith('--weeks='))
+const ONLY_WEEKS = WEEKS_ARG
+  ? new Set(WEEKS_ARG.slice('--weeks='.length).split(',').map((n) => Number(n.trim())))
+  : null
 
 // ── Environment ──────────────────────────────────────────────────────────────
 
@@ -122,6 +133,7 @@ async function main() {
 
   const lessonRows = []
   for (const week of weeks) {
+    if (ONLY_WEEKS && !ONLY_WEEKS.has(week.weekNumber)) continue
     for (const lesson of week.lessons ?? []) {
       lessonRows.push(lessonToRow(lesson, week.id))
     }
@@ -129,7 +141,7 @@ async function main() {
 
   const validIds = new Set(lessonRows.map((r) => r.id))
   const quizRows = []
-  for (const [lessonId, quiz] of Object.entries(quizzes)) {
+  for (const [lessonId, quiz] of Object.entries(ONLY_WEEKS ? {} : quizzes)) {
     if (!validIds.has(lessonId)) {
       console.warn(`  ! quiz "${lessonId}" has no matching lesson — skipped`)
       continue
@@ -141,6 +153,9 @@ async function main() {
     `\n  Curriculum loaded: ${weeks.length} weeks, ${lessonRows.length} lessons, ${quizRows.length} quizzes`,
   )
   console.log(`  Target: ${SUPABASE_URL}`)
+  if (ONLY_WEEKS) {
+    console.log(`  Weeks:  ${[...ONLY_WEEKS].join(', ')} only (quizzes untouched)`)
+  }
   console.log(
     `  Mode:   ${DRY_RUN ? 'DRY RUN (no writes)' : FORCE ? 'FORCE (overwrites teacher edits)' : 'preserve teacher edits'}\n`,
   )
@@ -182,6 +197,7 @@ async function main() {
   if (DRY_RUN) {
     console.log(`  would write   ${toWriteLessons.length} lessons, ${toWriteQuizzes.length} quizzes`)
     console.log(`  would preserve ${skippedLessons.length} lessons, ${skippedQuizzes.length} quizzes\n`)
+    if (ONLY_WEEKS) console.log(`  lessons to write: ${toWriteLessons.map((r) => r.id).join(', ')}`)
     if (skippedLessons.length) console.log(`  preserved lessons: ${skippedLessons.join(', ')}`)
     if (skippedQuizzes.length) console.log(`  preserved quizzes: ${skippedQuizzes.join(', ')}`)
     console.log()

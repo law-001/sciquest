@@ -27,6 +27,20 @@ export { SLOT_MAP }
 // back with one flick, so the button would just be in the way.
 const TOP_BUTTON_AFTER_PX = 640
 
+const MAX_TOC_ITEMS = 6;
+// Supporting slot types, most expendable first, folded out of the sidebar
+// when a lesson has more than MAX_TOC_ITEMS entries.
+const TOC_FOLD_ORDER = [
+  "keyTerms",
+  "conceptList",
+  "scenario",
+  "applications",
+  "comparison",
+  "reasonCards",
+  "timeline",
+  "imageCards",
+];
+
 // Wall-clock form of a quiz window edge, e.g. "Fri, Oct 3 at 4:00 PM".
 function formatWindowTime(iso) {
   if (!iso) return ""
@@ -246,6 +260,26 @@ export function LessonTemplate({
   }, []);
 
   const sections = lesson?.sections ?? [];
+  // sections[] stays one-to-one with layout[] (section-i ids), but the sidebar
+  // shows at most MAX_TOC_ITEMS. Slots flagged isSubsection fold under the
+  // entry above them first; if a lesson still has too many, supporting slot
+  // types fold next, then the latest entries, so every lesson (including
+  // teacher-made ones) keeps a short Contents list.
+  let tocItems = sections
+    .map((label, i) => ({ label, i, type: lesson?.layout?.[i]?.type }))
+    .filter(({ i }) => !lesson?.layout?.[i]?.isSubsection);
+  for (const type of TOC_FOLD_ORDER) {
+    while (tocItems.length > MAX_TOC_ITEMS) {
+      const last = tocItems.findLastIndex((t, k) => k > 0 && t.type === type);
+      if (last === -1) break;
+      tocItems = tocItems.filter((_, k) => k !== last);
+    }
+  }
+  tocItems = tocItems.slice(0, MAX_TOC_ITEMS);
+  const activeTocIndex = tocItems.reduce(
+    (acc, item) => (item.i <= activeSection ? item.i : acc),
+    tocItems[0]?.i ?? 0,
+  );
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -403,12 +437,12 @@ export function LessonTemplate({
                   Contents
                 </p>
                 <nav className="space-y-1">
-                  {sections.map((s, i) => (
+                  {tocItems.map(({ label: s, i }) => (
                     <button
                       key={i}
                       onClick={() => scrollToSection(i)}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
-                        activeSection === i
+                        activeTocIndex === i
                           ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
                           : "text-stone-500 dark:text-stone-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-orange-50 dark:hover:bg-stone-700"
                       }`}

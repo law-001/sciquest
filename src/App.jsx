@@ -1265,10 +1265,12 @@ function AppContent() {
               setTeacherPortalTab("lessons");
               handleNavigate("teacher-edit-lesson");
             }}
-            onEditQuiz={(lessonId, weekId) => {
+            onEditQuiz={(lessonId, weekId, returnTab = "quiz-management") => {
               setEditingQuizLessonId(lessonId ?? null);
               setEditingQuizWeekId(weekId ?? null);
-              setTeacherPortalTab("quiz-management");
+              // Live Quest sends its own tab so a host editing mid-lobby lands
+              // back on the room rather than in Quiz Management.
+              setTeacherPortalTab(returnTab);
               handleNavigate("teacher-edit-quiz");
             }}
           />

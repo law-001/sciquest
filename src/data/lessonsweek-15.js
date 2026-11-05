@@ -1,6 +1,6 @@
 // Week 15: Cell Division — Grade 7 Science
 //
-// Curriculum source: Grade 7 Science (MATATAG), 2nd term Week 15.
+// Curriculum source: Grade 7 Science (MATATAG), 2nd Quarter Week 5 (site Week 15).
 //   Lesson 1 — Mitosis Cell Division
 //   Lesson 2 — Meiosis Cell Division
 
@@ -16,7 +16,7 @@ export const week15 = {
   title: "Cell Division",
   category: "Life Science",
   description:
-    "Walk through mitosis stage by stage, then follow meiosis through both of its divisions — and see exactly why one makes copies and the other makes variety.",
+    "Follow mitosis through its four stages, then follow meiosis through two divisions, and learn why one makes identical cells and the other makes sex cells that are all different.",
   icon: "Shuffle",
   color: "primary",
   isLocked: false,
@@ -31,12 +31,12 @@ export const week15 = {
       title: "Mitosis Cell Division",
       badge: "Lesson 1",
       subtitle:
-        "Follow the four stages of mitosis — prophase, metaphase, anaphase, telophase — and see how one cell produces two perfect copies of itself.",
+        "Define mitosis and its purpose, describe prophase, metaphase, anaphase and telophase, build a model of the process, and review the microscope, cell parts and early scientists.",
       readTime: "~16 min read",
       xp: 50,
       heroImage: celldivision,
       heroImageAlt:
-        "Microscope images showing the four stages of mitosis in dividing cells",
+        "Microscope image of onion root tip cells in different stages of mitosis",
 
       signature: {
         widgetId: "mitosis-run",
@@ -57,22 +57,29 @@ export const week15 = {
 
       sections: [
         "Overview",
-        "Key Terms",
         "The Four Stages of Mitosis",
-        "Cytokinesis in Plants and Animals",
-        "Key Ideas",
-        "Mitosis in Real Life",
-        "Applications",
+        "Build a Mitosis Model",
+        "Review: Microscope, Cell Parts and Early Scientists",
+        "Think About It",
+        "Mitosis at Work",
       ],
 
       references: [
         {
-          label: "Khan Academy — Mitosis",
-          url: "https://www.khanacademy.org/science/biology/cell-division",
-        },
-        {
           label: "Britannica — Mitosis",
           url: "https://www.britannica.com/science/mitosis",
+        },
+        {
+          label: "Khan Academy — Phases of mitosis",
+          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology/mitosis/a/phases-of-mitosis",
+        },
+        {
+          label: "CK-12 — Mitosis and Cytokinesis",
+          url: "https://www.ck12.org/c/biology/mitosis/",
+        },
+        {
+          label: "Britannica — Walther Flemming",
+          url: "https://www.britannica.com/biography/Walther-Flemming",
         },
       ],
 
@@ -82,61 +89,12 @@ export const week15 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Mitosis</strong> is the process by which one cell divides its nucleus to produce two nuclei, each holding an identical copy of the cell's DNA. Scientists divide it into four stages — <strong class='text-primary-700'>Prophase, Metaphase, Anaphase, and Telophase</strong> — remembered by the mnemonic PMAT.",
-              "The result of mitosis, followed by cytokinesis, is two <strong class='text-primary-700'>genetically identical daughter cells</strong>, each with the same chromosome number as the parent. In human body cells that means each daughter receives all 46 chromosomes — a complete and accurate copy.",
-              "Remember that the DNA was already copied during S phase of interphase, before mitosis started. Mitosis does not copy DNA; it <em>separates</em> copies that already exist.",
+              "<strong class='text-primary-700'>Mitosis</strong> is the kind of cell division that makes two new cells that are exactly the same as the parent cell. Each new cell, called a <strong class='text-primary-700'>daughter cell</strong>, gets the same number and kind of chromosomes. In humans, that is 46.",
+              "The purpose of mitosis is to make more of the same cells. Living things use it to <strong class='text-primary-700'>grow</strong>, to <strong class='text-primary-700'>repair</strong> wounds, to <strong class='text-primary-700'>replace</strong> worn-out cells, and, in some organisms, to reproduce asexually.",
+              "Mitosis has four stages: <strong class='text-primary-700'>prophase, metaphase, anaphase and telophase</strong>. An easy way to remember them is PMAT. Remember, the DNA was already copied during interphase. Mitosis does not copy DNA; it separates the copies so each new cell gets one full set.",
             ],
             didYouKnow:
-              "Your body produces about 3.8 million new red blood cells every second. Bone marrow cells are almost permanently in the cell cycle to keep up with that demand.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Mitosis",
-                desc: "Division of the nucleus producing two genetically identical nuclei, each with the full chromosome number.",
-              },
-              {
-                term: "Prophase",
-                desc: "The first stage: chromosomes condense and become visible, spindle fibres form, and the nuclear membrane breaks down.",
-              },
-              {
-                term: "Metaphase",
-                desc: "The second stage: chromosomes line up along the centre of the cell, attached to spindle fibres from both poles.",
-              },
-              {
-                term: "Anaphase",
-                desc: "The third stage: sister chromatids are pulled apart to opposite poles as the spindle fibres shorten.",
-              },
-              {
-                term: "Telophase",
-                desc: "The fourth stage: nuclear membranes reform around each set of chromosomes, which then decondense back into chromatin.",
-              },
-              {
-                term: "Spindle Fibre",
-                desc: "A microtubule made of the protein tubulin that extends from the poles and attaches to a chromosome to pull it apart.",
-              },
-              {
-                term: "Metaphase Plate",
-                desc: "The imaginary line across the middle of the cell where chromosomes align during metaphase.",
-              },
-              {
-                term: "Cleavage Furrow",
-                desc: "The inward pinch of the cell membrane that divides an animal cell during cytokinesis.",
-              },
-              {
-                term: "Cell Plate",
-                desc: "The new wall that forms down the middle of a dividing plant cell during cytokinesis.",
-              },
-              {
-                term: "Diploid (2n)",
-                desc: "Having the full set of chromosomes — two of each kind. Human body cells are diploid with 46 chromosomes.",
-              },
-            ],
+              "The word “mitosis” comes from the Greek word for “thread.” The German scientist Walther Flemming gave it this name in 1882, after he saw thread-like chromosomes in dividing cells under his microscope.",
           },
         },
 
@@ -150,14 +108,14 @@ export const week15 = {
                 label: "Stage 1",
                 variant: "primary",
                 color: "primary",
-                desc: "Chromosomes condense and become visible, the spindle begins to form, and the nuclear envelope breaks down.",
+                desc: "The chromosomes coil up and become thick enough to see. The nuclear membrane breaks down, and spindle fibers begin to form.",
                 image: microscope,
                 imageAlt:
-                  "Microscope image of a cell in prophase with condensed chromosomes",
+                  "Microscope image of a cell in prophase with thick, visible chromosomes and no clear nuclear membrane",
                 examples: [
-                  "Chromosomes condense — short, thick, and visible",
-                  "Spindle fibres begin forming from the poles",
-                  "Nuclear membrane breaks down, releasing the chromosomes",
+                  "Each chromosome looks like an X: two sister chromatids",
+                  "Spindle fibers stretch from the two ends of the cell",
+                  "Usually the longest stage of mitosis",
                 ],
               },
               {
@@ -165,13 +123,12 @@ export const week15 = {
                 label: "Stage 2",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Chromosomes line up along the cell's equator, each attached to spindle fibres reaching from both poles.",
+                desc: "The chromosomes line up in a single row across the middle of the cell. Spindle fibers from both ends attach to each one.",
                 image: simulation,
                 imageAlt:
-                  "Diagram of metaphase showing chromosomes aligned at the centre",
+                  "Microscope image of a cell in metaphase with chromosomes lined up in a row across the middle",
                 examples: [
-                  "Chromosomes align at the metaphase plate",
-                  "Spindle fibres from opposite poles attach at each centromere",
+                  "M for Middle: the chromosomes meet in the middle",
                   "The easiest stage for counting chromosomes",
                 ],
               },
@@ -180,29 +137,27 @@ export const week15 = {
                 label: "Stage 3",
                 variant: "primary",
                 color: "primary",
-                desc: "Sister chromatids are pulled apart to opposite poles as the spindle fibres shorten.",
+                desc: "The spindle fibers shorten and pull the sister chromatids apart. One copy of each chromosome moves to each end of the cell.",
                 image: equation,
                 imageAlt:
-                  "Diagram showing sister chromatids pulled to opposite poles in anaphase",
+                  "Microscope image of a cell in anaphase with two groups of chromosomes moving to opposite ends",
                 examples: [
-                  "Sister chromatids separate at the centromere",
-                  "Shortening spindle fibres drag them toward the poles",
-                  "The cell begins to elongate",
+                  "A for Apart: the copies are pulled apart",
+                  "The cell starts to stretch longer",
                 ],
               },
               {
-                title: "Telophase and Cytokinesis",
+                title: "Telophase",
                 label: "Stage 4",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Nuclear envelopes reform around each set of chromosomes, then the cytoplasm divides into two cells.",
+                desc: "A new nuclear membrane forms around each group of chromosomes, making two nuclei. Then cytokinesis splits the cell: an animal cell pinches in at a cleavage furrow, while a plant cell builds a cell plate that becomes the new wall.",
                 image: lab,
                 imageAlt:
-                  "Diagram of telophase showing two forming nuclei and cytokinesis",
+                  "Microscope image of a cell in telophase with two new nuclei forming at opposite ends",
                 examples: [
-                  "Nuclear envelopes reform at each pole",
-                  "Chromosomes decondense back into chromatin",
-                  "Cytokinesis splits the cytoplasm — two daughter cells",
+                  "T for Two: two nuclei are formed",
+                  "Ends with two identical daughter cells",
                 ],
               },
             ],
@@ -210,85 +165,139 @@ export const week15 = {
         },
 
         {
-          type: "comparison",
-          heading: "Cytokinesis in Plants and Animals",
+          type: "timeline",
+          heading: "Build a Mitosis Model",
           data: {
             intro:
-              "Mitosis itself is the same in plants and animals, but the final physical split differs — because one of them has a rigid cell wall in the way.",
-            left: {
-              label: "Animal Cell Cytokinesis",
-              color: "primary",
-              items: [
-                "The cell membrane pinches inward at the middle",
-                "This inward pinch is called a cleavage furrow",
-                "A ring of protein filaments tightens like a drawstring",
-                "The membrane is flexible, so it can be squeezed",
-                "The cell is eventually pinched fully into two",
-              ],
-            },
-            right: {
-              label: "Plant Cell Cytokinesis",
-              color: "secondary",
-              items: [
-                "The rigid cell wall cannot be pinched inward",
-                "Instead a new wall is built from the inside out",
-                "Vesicles from the Golgi line up along the centre",
-                "They fuse to form a structure called the cell plate",
-                "The cell plate grows outward and becomes the new cell wall",
-              ],
-            },
+              "Show the stages of mitosis with simple materials: a sheet of manila paper, colored yarn or pipe cleaners in two colors, and a marker. One color stands for the chromosomes from the mother, the other for the chromosomes from the father.",
+            steps: [
+              {
+                num: 1,
+                title: "Interphase: Set Up the Cell",
+                color: "primary",
+                description:
+                  "Draw a big circle for the cell and a smaller circle inside for the nucleus. Place four short pieces of yarn (two of each color) inside the nucleus. Then add a matching copy beside each one to show the DNA was copied.",
+                tip: "Twist each pair together in the middle to show the centromere joining the sister chromatids.",
+              },
+              {
+                num: 2,
+                title: "Prophase",
+                color: "secondary",
+                description:
+                  "Erase or cross out the nucleus line to show the nuclear membrane breaking down. Draw lines from the top and bottom of the cell for the spindle fibers.",
+                tip: "Make the chromosomes look thick and X-shaped now.",
+              },
+              {
+                num: 3,
+                title: "Metaphase",
+                color: "accent",
+                description:
+                  "Line up all four X-shaped chromosomes in a row across the middle of the cell. Draw spindle fibers from both ends to each centromere.",
+                tip: "Check that each chromosome is attached to fibers from both sides.",
+              },
+              {
+                num: 4,
+                title: "Anaphase",
+                color: "primary",
+                description:
+                  "Untwist each pair and move one copy up and one copy down. Each end of the cell should now have four single chromosomes, two of each color.",
+                tip: "Count them. If one end has more than the other, the model is wrong.",
+              },
+              {
+                num: 5,
+                title: "Telophase and Cytokinesis",
+                color: "secondary",
+                description:
+                  "Draw a new nucleus around each group of chromosomes. Then draw a line across the middle to split the cell into two daughter cells. Label every stage.",
+                tip: "Compare the two daughter cells with the cell you started with. Each should have the same four chromosomes as the parent.",
+              },
+            ],
           },
         },
 
         {
-          type: "conceptList",
-          heading: "Key Ideas",
+          type: "reasonCards",
+          heading: "Review: Microscope, Cell Parts and Early Scientists",
           data: {
-            concepts: [
-              "The four stages of mitosis are remembered with PMAT: Prophase, Metaphase, Anaphase, Telophase.",
-              "Mitosis produces two daughter cells that are genetically identical to each other and to the parent cell.",
-              "In humans, each daughter cell from mitosis has 46 chromosomes — diploid (2n), the same as the parent.",
-              "DNA is copied in S phase BEFORE mitosis begins. Mitosis separates existing copies; it does not make them.",
-              "Spindle fibres are microtubules that extend from the poles and attach to chromosomes at the centromere.",
-              "Mitosis divides the nucleus; cytokinesis divides the cytoplasm. Both are needed to produce two complete cells.",
-              "Mitosis is used for growth, repair, replacement, and asexual reproduction — never for making sex cells.",
+            intro:
+              "Mitosis brings together everything you have learned this quarter. Use these key ideas to connect the microscope, the cell and the scientists who studied it.",
+            reasons: [
+              {
+                num: 1,
+                title: "The Microscope Makes It Visible",
+                color: "primary",
+                desc: "Seeing mitosis",
+                content:
+                  "You need a compound microscope at about 400× to see chromosomes in an onion root tip. Start on low power, focus with the coarse knob, then switch to high power and use only the fine knob.",
+              },
+              {
+                num: 2,
+                title: "Cell Parts in Action",
+                color: "secondary",
+                desc: "Who does what",
+                content:
+                  "The nucleus holds the chromosomes. The nuclear membrane breaks down and forms again. The cell membrane pinches in an animal cell, while a new cell wall forms in a plant cell.",
+              },
+              {
+                num: 3,
+                title: "Early Scientists",
+                color: "accent",
+                desc: "Building the cell theory",
+                content:
+                  "Robert Hooke named “cells” (1665), Antonie van Leeuwenhoek saw the first living microbes, and Schleiden and Schwann said all living things are made of cells.",
+              },
+              {
+                num: 4,
+                title: "Every Cell from a Cell",
+                color: "primary",
+                desc: "Virchow and Flemming",
+                content:
+                  "Rudolf Virchow said that all cells come from existing cells (1855). Walther Flemming later watched cells divide and named the process mitosis (1882), showing how it happens.",
+              },
             ],
           },
         },
 
         {
           type: "scenario",
-          heading: "Mitosis in Real Life",
+          heading: "Think About It",
           data: {
             intro:
-              "Mitosis is happening in your body right now. These scenarios connect the four stages to things you can actually observe.",
+              "Use what you know about the stages of mitosis to explain each one.",
             scenarios: [
-              {
-                title: "Skin Healing After a Cut",
-                situation:
-                  "You scrape your knee and lose several layers of skin cells. Within hours the area begins to heal, and within days new skin covers the wound — then the healing stops exactly when the gap is filled.",
-                question:
-                  "What is happening at the cellular level, and what makes the process stop at the right moment?",
-                skill:
-                  "Cells at the wound edge re-enter the cell cycle, complete interphase, and undergo mitosis to produce new skin cells. They stop when they touch neighbouring cells — contact inhibition — which is why healthy healing does not overshoot.",
-              },
               {
                 title: "Counting Chromosomes",
                 situation:
-                  "A student is asked to photograph a cell and count its chromosomes. Looking through the microscope, most cells show only a fuzzy nucleus, but a few show clear separate structures lined up in a row.",
+                  "Ana needs to count the chromosomes in an onion root tip cell. Most cells show only a round nucleus, but a few show chromosomes lined up in a row.",
                 question:
-                  "Which stage should the student photograph, and why is that the easiest one for counting?",
+                  "Which stage should she choose, and why?",
                 skill:
-                  "Metaphase. The chromosomes are fully condensed and neatly lined up along the metaphase plate in a single plane, so each one can be seen and counted separately rather than overlapping.",
+                  "Metaphase. The chromosomes are thick and lined up in one row across the middle, so they do not overlap and each one can be counted.",
               },
               {
-                title: "Cancer Cells Dividing Without Stopping",
+                title: "Name the Stage",
                 situation:
-                  "A mutation in a lung cell disables its G1 checkpoint. The cell begins dividing even when signals tell it to stop. After many divisions a visible tumour has formed.",
-                question:
-                  "How does disabling a checkpoint lead to a tumour, and why is that dangerous?",
+                  "Under the microscope, Miguel sees a stretched cell with two groups of chromosomes moving toward opposite ends.",
+                question: "Which stage of mitosis is this?",
                 skill:
-                  "Checkpoints normally block division when conditions are wrong or DNA is damaged. With one disabled, the cell divides continuously without verification, producing a mass of cells. If they also lose contact inhibition and the ability to stay in place, the cancer spreads — metastasis.",
+                  "Anaphase. The sister chromatids have been pulled apart, and each group is moving to an opposite end of the cell.",
+              },
+              {
+                title: "How Many Chromosomes?",
+                situation:
+                  "A human skin cell with 46 chromosomes divides by mitosis.",
+                question:
+                  "How many daughter cells are formed, and how many chromosomes does each have?",
+                skill:
+                  "Two daughter cells, each with 46 chromosomes. Mitosis makes cells identical to the parent, so the number stays the same.",
+              },
+              {
+                title: "Out of Order",
+                situation:
+                  "Your classmate's model shows the chromosomes lined up in the middle before the nuclear membrane has broken down.",
+                question: "What is wrong with the model?",
+                skill:
+                  "The nuclear membrane breaks down in prophase, before the chromosomes line up in metaphase. The chromosomes cannot reach the middle of the cell while the nucleus is still whole.",
               },
             ],
           },
@@ -296,35 +305,35 @@ export const week15 = {
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Mitosis at Work",
           data: {
             apps: [
               {
-                title: "Growth and Development",
+                title: "Growing Up",
                 description:
-                  "From one fertilised egg, mitosis produces the trillions of cells in a human body during development.",
+                  "From one cell, mitosis makes all the cells of your body. It is also why a tiny monggo seed can sprout into a seedling in just a few days.",
                 icon: "🌱",
                 color: "border-l-primary-500",
               },
               {
-                title: "Replacing Dead Cells",
+                title: "Healing and Replacing",
                 description:
-                  "Skin cells live only two to three weeks. Mitosis in the lower skin layer constantly produces replacements that push upward — you renew your outer skin every month.",
+                  "Mitosis heals cuts and replaces the outer layer of your skin every few weeks. Your stomach lining is replaced every few days.",
                 icon: "🩹",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Cancer Therapy",
+                title: "Copies of Good Plants",
                 description:
-                  "Most cancer treatments work by disrupting mitosis in rapidly dividing cells, often by blocking spindle formation.",
-                icon: "🔬",
+                  "Farmers grow new banana, kamote and sugarcane plants from parts of a parent plant. Mitosis makes the new plants identical to the parent.",
+                icon: "🍌",
                 color: "border-l-accent-500",
               },
               {
-                title: "Asexual Reproduction",
+                title: "Serving Cancer Patients",
                 description:
-                  "Amoeba, yeast, and hydra reproduce through mitosis or mitosis-like division, producing genetically identical offspring.",
-                icon: "🔄",
+                  "Some cancer medicines stop the spindle fibers from working, so cancer cells cannot finish mitosis. Knowing the stages helps doctors and researchers help patients.",
+                icon: "🏥",
                 color: "border-l-primary-500",
               },
             ],
@@ -343,12 +352,12 @@ export const week15 = {
       title: "Meiosis Cell Division",
       badge: "Lesson 2",
       subtitle:
-        "Follow meiosis through two rounds of division as one diploid cell becomes four genetically unique haploid gametes — and find out where variation comes from.",
-      readTime: "~18 min read",
+        "Define meiosis and its purpose, follow the stages of meiosis I and meiosis II, compare meiosis with mitosis, and show the process with a diagram or model.",
+      readTime: "~17 min read",
       xp: 50,
       heroImage: simulation,
       heroImageAlt:
-        "Diagram of chromosomes during the stages of meiosis",
+        "Diagram of meiosis showing one cell dividing twice to make four sex cells",
 
       signature: {
         widgetId: "crossover-lab",
@@ -369,22 +378,29 @@ export const week15 = {
 
       sections: [
         "Overview",
-        "Key Terms",
-        "The Stages of Meiosis",
-        "Where Variation Comes From",
+        "The Stages of Meiosis I and II",
         "Mitosis vs. Meiosis",
-        "Key Concepts",
-        "Applications",
+        "Draw a Meiosis Diagram",
+        "Think About It",
+        "Meiosis in Real Life",
       ],
 
       references: [
         {
-          label: "Khan Academy — Meiosis",
-          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology/meiosis",
-        },
-        {
           label: "Britannica — Meiosis",
           url: "https://www.britannica.com/science/meiosis",
+        },
+        {
+          label: "Khan Academy — Phases of meiosis I and II",
+          url: "https://www.khanacademy.org/science/biology/cellular-molecular-biology/meiosis/a/phases-of-meiosis",
+        },
+        {
+          label: "CK-12 — Meiosis",
+          url: "https://www.ck12.org/c/biology/meiosis/",
+        },
+        {
+          label: "PhilRice — Philippine Rice Research Institute",
+          url: "https://www.philrice.gov.ph/",
         },
       ],
 
@@ -394,161 +410,77 @@ export const week15 = {
           heading: "Overview",
           data: {
             paragraphs: [
-              "<strong class='text-primary-700'>Meiosis</strong> is a special kind of cell division that produces sex cells, or <strong class='text-primary-700'>gametes</strong> — sperm in males and eggs in females. Unlike mitosis, which makes two identical cells, meiosis makes four genetically unique ones.",
-              "Meiosis starts with one <strong class='text-primary-700'>diploid</strong> cell (2n) carrying two full sets of chromosomes — 46 in humans. It ends with four <strong class='text-primary-700'>haploid</strong> cells (n) carrying only 23 each. This halving is essential: when a sperm and egg fuse at fertilisation, 23 + 23 restores the full 46.",
-              "Meiosis involves <strong class='text-primary-700'>two rounds of division</strong> and introduces genetic variation through <strong class='text-primary-700'>crossing over</strong> and <strong class='text-primary-700'>independent assortment</strong>. This is why children resemble their parents without being copies of them.",
+              "<strong class='text-primary-700'>Meiosis</strong> is a special kind of cell division that makes sex cells, or <strong class='text-primary-700'>gametes</strong>: sperm cells in males and egg cells in females. It happens only in the reproductive organs, the testes and the ovaries. In flowering plants, it happens in the flowers.",
+              "The purpose of meiosis is to make gametes with <strong class='text-primary-700'>half</strong> the number of chromosomes. A human body cell has 46 chromosomes, but each gamete has only 23. When a sperm and an egg join during fertilization, 23 + 23 = 46, the right number again.",
+              "Meiosis has <strong class='text-primary-700'>two divisions</strong>, called meiosis I and meiosis II. One cell becomes four cells, and each of the four is genetically different. That is why brothers and sisters from the same parents do not look exactly alike.",
             ],
             didYouKnow:
-              "A human female is born with every egg cell she will ever have — about one to two million immature eggs are present at birth, though only a few hundred are ever released.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Meiosis",
-                desc: "Cell division producing four haploid gametes from one diploid parent cell, through two rounds of division.",
-              },
-              {
-                term: "Gamete",
-                desc: "A sex cell — sperm or egg — containing half the normal chromosome number.",
-              },
-              {
-                term: "Haploid (n)",
-                desc: "A cell with one set of chromosomes — half the number in a body cell. In humans, n = 23.",
-              },
-              {
-                term: "Diploid (2n)",
-                desc: "A cell with two complete sets of chromosomes, the normal number for body cells. In humans, 2n = 46.",
-              },
-              {
-                term: "Homologous Chromosomes",
-                desc: "A matching pair of chromosomes, one inherited from each parent, carrying the same genes in the same order.",
-              },
-              {
-                term: "Crossing Over",
-                desc: "The exchange of DNA segments between homologous chromosomes during Prophase I — the main source of genetic variation.",
-              },
-              {
-                term: "Independent Assortment",
-                desc: "The random orientation of each homologous pair at Metaphase I, which shuffles which chromosomes end up together.",
-              },
-              {
-                term: "Meiosis I",
-                desc: "The first division, called the reduction division, which separates homologous pairs and halves the chromosome number.",
-              },
-              {
-                term: "Meiosis II",
-                desc: "The second division, very similar to mitosis, which separates sister chromatids in each of the two cells.",
-              },
-              {
-                term: "Nondisjunction",
-                desc: "An error where chromosomes fail to separate properly, producing gametes with too many or too few chromosomes.",
-              },
-            ],
+              "Because of how meiosis shuffles chromosomes, one person can make more than 8 million different kinds of gametes, even before crossing over is counted.",
           },
         },
 
         {
           type: "timeline",
-          heading: "The Stages of Meiosis",
+          heading: "The Stages of Meiosis I and II",
           data: {
             intro:
-              "DNA is replicated once, before meiosis begins — then there are two divisions with no copying in between. That single fact is what halves the chromosome number.",
+              "Before meiosis starts, the cell copies its DNA once during interphase, just like before mitosis. Meiosis I separates each pair of matching chromosomes. Meiosis II, with no DNA copying in between, separates the sister chromatids, a lot like mitosis.",
             steps: [
               {
                 num: 1,
                 title: "Prophase I",
                 color: "primary",
                 description:
-                  "Chromosomes condense and pair up with their homologous partners. Crossing over occurs — homologous chromosomes exchange matching segments of DNA at points called chiasmata. This is the single most important source of genetic variation.",
-                tip: "Crossing over happens only in Meiosis I — never in Meiosis II, and never in mitosis.",
+                  "The chromosomes coil up and become visible. Each chromosome finds its matching partner (one from the mother, one from the father) and they pair up. The partners swap small pieces of DNA. This swap is called crossing over.",
+                tip: "Crossing over happens only in prophase I. It never happens in mitosis.",
               },
               {
                 num: 2,
                 title: "Metaphase I",
                 color: "secondary",
                 description:
-                  "Homologous PAIRS line up along the middle of the cell — not single chromosomes as in mitosis. Which member of each pair faces which pole is completely random, and this is called independent assortment.",
-                tip: "Random orientation alone can produce over 8 million different chromosome combinations in a human gamete.",
+                  "The chromosome PAIRS line up across the middle of the cell. Which partner faces which side is random for every pair. This is called independent assortment, and it mixes the mother's and father's chromosomes differently in every gamete.",
+                tip: "In mitosis, single chromosomes line up. In meiosis I, pairs line up.",
               },
               {
                 num: 3,
-                title: "Anaphase I and Telophase I",
+                title: "Anaphase I",
                 color: "accent",
                 description:
-                  "Whole homologous chromosomes are pulled to opposite poles — the sister chromatids stay joined. The cell then divides into two cells, each now haploid, though each chromosome still consists of two chromatids.",
-                tip: "This is the reduction division. The chromosome number is halved here, not in Meiosis II.",
+                  "The partners in each pair are pulled to opposite ends of the cell. The sister chromatids of each chromosome stay joined together.",
+                tip: "This is the step where the chromosome number is cut in half.",
               },
               {
                 num: 4,
-                title: "Prophase II",
+                title: "Telophase I",
                 color: "primary",
                 description:
-                  "Both cells from Meiosis I enter the second division. Chromosomes condense again and a new spindle forms. Critically, there is no DNA replication before Meiosis II and no further crossing over.",
-                tip: "Meiosis II is essentially mitosis, except it starts with haploid cells instead of diploid ones.",
+                  "The cell divides into two cells. Each new cell has only one chromosome from each pair. In humans, each cell now has 23 chromosomes, each still made of two chromatids.",
+                tip: "The two cells are already different from each other because of crossing over.",
               },
               {
                 num: 5,
-                title: "Metaphase II and Anaphase II",
+                title: "Prophase II and Metaphase II",
                 color: "secondary",
                 description:
-                  "In each of the two cells, chromosomes line up singly at the metaphase plate. Sister chromatids are then pulled apart to opposite poles, exactly as in mitosis.",
-                tip: "By the end of Anaphase II each pole holds individual, unpaired chromosomes.",
+                  "In each of the two cells, the chromosomes coil up again and new spindle fibers form. Then the chromosomes line up one by one across the middle, just like in mitosis.",
+                tip: "No crossing over happens in meiosis II, and single chromosomes line up, not pairs.",
               },
               {
                 num: 6,
-                title: "Telophase II — Four Haploid Cells",
+                title: "Anaphase II",
                 color: "accent",
                 description:
-                  "Each cell completes division, producing four haploid daughter cells in total. Every one is genetically unique thanks to the crossing over and independent assortment that happened in Meiosis I.",
-                tip: "In males all four become sperm. In females one becomes the egg and three become polar bodies that break down.",
+                  "The sister chromatids are pulled apart and move to opposite ends of each cell.",
+                tip: "Now each chromatid is a separate chromosome.",
               },
-            ],
-          },
-        },
-
-        {
-          type: "reasonCards",
-          heading: "Where Variation Comes From",
-          data: {
-            intro:
-              "Meiosis does not just halve chromosome number — it deliberately shuffles the genetic deck. Three mechanisms do the shuffling.",
-            reasons: [
               {
-                num: 1,
-                title: "Crossing Over",
+                num: 7,
+                title: "Telophase II",
                 color: "primary",
-                desc: "Homologous chromosomes swap matching segments in Prophase I",
-                content:
-                  "A chromosome that goes into a gamete is not the one that came from either parent — it is a mixture of both, recombined at points chosen essentially at random.",
-              },
-              {
-                num: 2,
-                title: "Independent Assortment",
-                color: "secondary",
-                desc: "Each homologous pair lines up independently at Metaphase I",
-                content:
-                  "With 23 pairs orienting randomly, a human can produce over 8 million different chromosome combinations from independent assortment alone — before crossing over is even counted.",
-              },
-              {
-                num: 3,
-                title: "Random Fertilisation",
-                color: "accent",
-                desc: "Any one sperm may fertilise any one egg",
-                content:
-                  "Multiply 8 million possible sperm by 8 million possible eggs and a single couple could produce over 64 trillion genetically different children.",
-              },
-              {
-                num: 4,
-                title: "Why Variation Matters",
-                color: "primary",
-                desc: "Varied populations survive change; identical ones do not",
-                content:
-                  "When a new disease or a drought arrives, a genetically varied population is likely to contain some individuals that survive. A population of identical clones either all cope or all die.",
+                description:
+                  "Both cells divide, making four cells in all. Each has 23 single chromosomes in humans, and no two cells have the same mix of genes, because of crossing over and independent assortment.",
+                tip: "In males, all four become sperm cells. In females, usually one becomes an egg cell and the other three break down.",
               },
             ],
           },
@@ -559,84 +491,163 @@ export const week15 = {
           heading: "Mitosis vs. Meiosis",
           data: {
             intro:
-              "These two processes are the most commonly confused pair in cell biology. Compare them line by line.",
+              "Mitosis and meiosis both start with a cell that has copied its DNA, but they work differently and have different jobs.",
             left: {
               label: "Mitosis",
               color: "primary",
               items: [
-                "Produces 2 daughter cells",
-                "Daughter cells are diploid (2n)",
-                "Daughter cells are genetically IDENTICAL",
-                "ONE round of division",
-                "No crossing over",
-                "Purpose: growth, repair, and asexual reproduction",
-                "Occurs in body (somatic) cells",
+                "Purpose: growth, repair and replacing cells",
+                "Happens in body cells",
+                "ONE division",
+                "Makes 2 daughter cells",
+                "Daughter cells are diploid: 46 chromosomes in humans",
+                "Daughter cells are identical to the parent",
+                "No pairing and no crossing over",
               ],
             },
             right: {
               label: "Meiosis",
               color: "secondary",
               items: [
-                "Produces 4 daughter cells",
-                "Daughter cells are haploid (n)",
-                "Daughter cells are genetically UNIQUE",
-                "TWO rounds of division (I and II)",
-                "Crossing over occurs in Prophase I",
-                "Purpose: producing gametes for sexual reproduction",
-                "Occurs only in the ovaries and testes",
+                "Purpose: making sex cells (gametes)",
+                "Happens only in the testes, ovaries or flowers",
+                "TWO divisions: meiosis I and meiosis II",
+                "Makes 4 daughter cells",
+                "Daughter cells are haploid: 23 chromosomes in humans",
+                "Daughter cells are all different from each other",
+                "Matching chromosomes pair up and cross over",
               ],
             },
           },
         },
 
         {
-          type: "conceptList",
-          heading: "Key Concepts",
+          type: "timeline",
+          heading: "Draw a Meiosis Diagram",
           data: {
-            concepts: [
-              "Meiosis produces FOUR daughter cells, compared to mitosis which produces two.",
-              "All four cells are haploid (n) — they carry half the chromosomes of the parent cell.",
-              "Every daughter cell is genetically unique; no two are the same.",
-              "There are TWO rounds of division: Meiosis I halves the chromosome number, Meiosis II separates sister chromatids.",
-              "DNA is replicated only once, before Meiosis I. There is no replication between the two divisions — this is what halves the count.",
-              "Meiosis occurs only in the gonads: the ovaries in females and the testes in males.",
-              "Crossing over in Prophase I and independent assortment in Metaphase I are the two main sources of variation.",
-              "If chromosomes fail to separate correctly (nondisjunction), the resulting gamete has the wrong chromosome number.",
+            intro:
+              "Illustrate meiosis on a sheet of bond paper using two colors of pencil: one for chromosomes from the mother and one for chromosomes from the father. Use a cell with 4 chromosomes (2 pairs) to keep it simple.",
+            steps: [
+              {
+                num: 1,
+                title: "Start with One Cell",
+                color: "primary",
+                description:
+                  "Draw one cell with 4 X-shaped chromosomes: two long and two short, one of each in each color. Label it “2n = 4, DNA already copied.”",
+                tip: "Each X is one chromosome made of two sister chromatids.",
+              },
+              {
+                num: 2,
+                title: "Show Crossing Over",
+                color: "secondary",
+                description:
+                  "Draw the matching chromosomes side by side in pairs. Color a small tip of each chromosome with its partner's color to show the swapped pieces.",
+                tip: "This step is what makes your four gametes different at the end.",
+              },
+              {
+                num: 3,
+                title: "Draw the End of Meiosis I",
+                color: "accent",
+                description:
+                  "Draw two cells. Each gets one long and one short X-shaped chromosome. Label each “n = 2.”",
+                tip: "Check: the pairs were split, but each chromosome still has two chromatids.",
+              },
+              {
+                num: 4,
+                title: "Draw the End of Meiosis II",
+                color: "primary",
+                description:
+                  "Draw four cells. Each gets one long and one short single chromosome (no X shape). Label each “gamete, n = 2.”",
+                tip: "Look at the colors: no two of your four gametes should be exactly the same.",
+              },
+              {
+                num: 5,
+                title: "Compare with Mitosis",
+                color: "secondary",
+                description:
+                  "Beside your diagram, write how many cells you ended with, how many chromosomes each has, and whether they are identical. Compare with your mitosis model from Lesson 1.",
+                tip: "Mitosis: 2 identical cells with 4 chromosomes. Meiosis: 4 different cells with 2 chromosomes.",
+              },
+            ],
+          },
+        },
+
+        {
+          type: "scenario",
+          heading: "Think About It",
+          data: {
+            intro:
+              "Use what you know about meiosis and mitosis to answer each one.",
+            scenarios: [
+              {
+                title: "Rice Gametes",
+                situation:
+                  "A rice plant has 24 chromosomes in each body cell. A cell in its flower goes through meiosis.",
+                question:
+                  "How many cells are made, and how many chromosomes does each have?",
+                skill:
+                  "Four cells, each with 12 chromosomes. Meiosis makes four haploid cells with half the chromosome number of the parent cell.",
+              },
+              {
+                title: "Mitosis or Meiosis?",
+                situation:
+                  "A cell divides once and makes two cells with the same chromosomes as the parent.",
+                question: "Which type of cell division is this?",
+                skill:
+                  "Mitosis. Meiosis would have two divisions, making four cells with half the chromosomes, and they would not be identical.",
+              },
+              {
+                title: "Why Halve the Number?",
+                situation:
+                  "A classmate asks, “Why don't gametes just have all 46 chromosomes like other cells?”",
+                question: "What would happen if they did?",
+                skill:
+                  "At fertilization, 46 + 46 would give the baby 92 chromosomes, double the normal number. Each generation would double again. Halving the number in meiosis keeps it at 46 in every generation.",
+              },
+              {
+                title: "Brothers and Sisters",
+                situation:
+                  "Three siblings have the same parents, but they all look different.",
+                question:
+                  "Which events in meiosis explain the differences?",
+                skill:
+                  "Crossing over in prophase I and independent assortment (the random line-up of pairs) in metaphase I make every gamete different. Fertilization is also random: different sperm and eggs joined to form each sibling, so each got a different mix of genes.",
+              },
             ],
           },
         },
 
         {
           type: "applications",
-          heading: "Applications",
+          heading: "Meiosis in Real Life",
           data: {
             apps: [
               {
-                title: "Understanding Fertility",
+                title: "Better Rice Varieties",
                 description:
-                  "Doctors study meiosis to work out why some people cannot produce healthy gametes, guiding fertility treatments such as IVF.",
-                icon: "🏥",
+                  "PhilRice breeds new rice varieties by crossing parent plants. Meiosis mixes their genes, and breeders pick offspring with useful traits, such as resistance to floods or pests.",
+                icon: "🌾",
                 color: "border-l-primary-500",
               },
               {
-                title: "Chromosomal Conditions",
+                title: "Stronger Farm Animals",
                 description:
-                  "When chromosomes fail to separate during anaphase, a gamete ends up with an extra or missing chromosome — the cause of conditions such as Down syndrome.",
-                icon: "🧬",
+                  "The Philippine Carabao Center breeds carabaos that give more milk. Each calf gets a new mix of genes from both parents through meiosis and fertilization.",
+                icon: "🐃",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Selective Breeding",
+                title: "Chromosome Conditions",
                 description:
-                  "Farmers rely on the variation meiosis produces to breed crops and livestock with better traits over successive generations.",
-                icon: "🌾",
+                  "Sometimes chromosomes do not separate properly in meiosis, so a gamete gets an extra or a missing chromosome. Down syndrome happens when a person has an extra copy of chromosome 21.",
+                icon: "🧬",
                 color: "border-l-accent-500",
               },
               {
-                title: "Evolution",
+                title: "Helping Families",
                 description:
-                  "The genetic variation meiosis creates is the raw material natural selection acts on. Without it, populations could not adapt.",
-                icon: "🔬",
+                  "Doctors who understand meiosis can help couples who have trouble having children, and can explain conditions caused by chromosome differences with care and respect.",
+                icon: "🏥",
                 color: "border-l-primary-500",
               },
             ],

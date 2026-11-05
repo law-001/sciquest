@@ -43,6 +43,13 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
     color-scheme: dark;
   }
 
+  /* NOTE: a native <select>'s open list is drawn by the browser, not the page,
+     so its corners cannot be rounded from CSS — border-radius on the control
+     rounds only the closed box. Chrome's `appearance: base-select` can take the
+     picker over, but it also hands over the closed control, which then renders
+     its label and arrow top-aligned instead of centred. Rounding the panel in
+     every browser means replacing <select> with a custom listbox. */
+
   /* The page's own scrollbar. Without this the browser paints its default —
      a light track that sits badly against the dark theme. Unlike the
      .themed-scrollbar utility, the track here is an explicit colour rather than

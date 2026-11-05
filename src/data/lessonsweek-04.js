@@ -5,6 +5,11 @@
 //   (FIRST SUMMATIVE TEST)
 
 import lesson7hero from "../assets/week3/lesson7hero.jpg";
+import solid from "../assets/week2/solid.webp";
+import liquid from "../assets/week2/liquid.jpg";
+import gas from "../assets/week2/gas.jpg";
+import lesson8hero from "../assets/week3/lesson8hero.jpg";
+import lesson9hero from "../assets/week3/lesson9hero.jpg";
 
 export const week04 = {
   id: "week-4",
@@ -12,7 +17,7 @@ export const week04 = {
   title: "Changes in the State of Matter",
   category: "Matter",
   description:
-    "Explain all six changes of state in terms of particle arrangement, motion, and energy. Covered by the First Summative Test.",
+    "Describe how particles are arranged in solids, liquids, and gases, and explain every change of state by what happens to the particles and their energy. Covered by the First Summative Test.",
   icon: "Thermometer",
   color: "primary",
   isLocked: false,
@@ -27,11 +32,12 @@ export const week04 = {
       title: "Changes in the State of Matter in Terms of Particle Arrangement",
       badge: "Lesson 1",
       subtitle:
-        "Follow all six changes of state — melting, freezing, evaporation, condensation, sublimation, and deposition — and explain each one by what the particles are doing.",
-      readTime: "~20 min read",
+        "See how particles are packed in solids, liquids, and gases, then follow them as they gain or lose energy during melting, freezing, evaporation, boiling, condensation, sublimation, and deposition.",
+      readTime: "~22 min read",
       xp: 100,
       heroImage: lesson7hero,
-      heroImageAlt: "Ice melting in a laboratory setting",
+      heroImageAlt:
+        "A pot of water boiling on a stove, with bubbles rising through the water and steam above it",
 
       signature: {
         widgetId: "heating-curve",
@@ -44,8 +50,8 @@ export const week04 = {
           title: "Why the line went flat",
           points: [
             "While the line climbed, the heat was making particles move faster, so the thermometer rose.",
-            "On each flat run the heat kept going in, but it went into breaking bonds instead.",
-            "Cooling walked the same line backwards, so freezing gave back exactly what melting took.",
+            "On each flat part the heat kept going in, but it went into pulling particles apart instead.",
+            "Cooling followed the same line backwards, so freezing gave back exactly what melting took.",
             "With the pump on, the solid went straight to gas and the liquid stage never happened.",
           ],
         },
@@ -53,32 +59,33 @@ export const week04 = {
 
       sections: [
         "Introduction",
-        "The Six Changes of State",
-        "Temperature During a Change of State",
-        "Melting vs. Freezing",
+        "How Particles Are Arranged",
+        "Heating and Cooling",
+        "Changes of State Around You",
         "Evaporation vs. Boiling",
-        "Sublimation and Deposition",
-        "Key Terms",
         "Real-World Scenarios",
-        "Applications",
       ],
 
       references: [
         {
-          label: "The Physics Classroom — Phase Changes",
-          url: "https://www.physicsclassroom.com/class/thermalP/Lesson-2/Phase-Changes",
+          label: "CK-12 — States of Matter",
+          url: "https://www.ck12.org/c/physical-science/states-of-matter",
         },
         {
-          label: "CK-12 — Melting and Freezing",
-          url: "https://www.ck12.org/c/physical-science/melting-and-freezing",
+          label: "Khan Academy — States of Matter",
+          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces/states-of-matter/v/states-of-matter",
+        },
+        {
+          label: "Britannica — Phase (Matter)",
+          url: "https://www.britannica.com/science/phase-state-of-matter",
         },
         {
           label: "Britannica — Sublimation (Phase Change)",
           url: "https://www.britannica.com/science/sublimation-phase-change",
         },
         {
-          label: "Khan Academy — States of Matter and Intermolecular Forces",
-          url: "https://www.khanacademy.org/science/chemistry/states-of-matter-and-intermolecular-forces",
+          label: "PAGASA — Climate of the Philippines",
+          url: "https://www.pagasa.dost.gov.ph/information/climate-philippines",
         },
       ],
 
@@ -88,152 +95,217 @@ export const week04 = {
           heading: "Introduction",
           data: {
             paragraphs: [
-              "Matter changes from one state to another when energy is added or removed. Every one of these changes has the same underlying explanation: <strong class='text-primary-700'>heating gives particles more motion energy so they can break away from each other, and cooling takes it away so attractive forces can pull them back together</strong>.",
-              "Adding heat is an <strong class='text-primary-700'>endothermic</strong> change — the substance absorbs energy from its surroundings. Removing heat is an <strong class='text-primary-700'>exothermic</strong> change — the substance releases energy to its surroundings. There are six named changes, and this lesson covers all of them.",
+              "Imagine a sealed box with three things inside: a marble, some water in a bottle, and an inflated balloon. Without opening it, how would you describe each one? The marble keeps its shape. The water takes the shape of its bottle. The air fills the whole balloon. These are the three common states of matter: <strong class='text-primary-700'>solid, liquid, and gas</strong>.",
+              "Scientists explain these states with the <strong class='text-primary-700'>particle model of matter</strong>. All matter is made of tiny particles that are always moving and that attract each other. What makes a solid different from a liquid or a gas is <strong class='text-primary-700'>how close the particles are, how they are arranged, and how much they move</strong>.",
+              "When you heat matter, its particles <strong class='text-primary-700'>gain energy</strong> and move faster. When you cool it, they <strong class='text-primary-700'>lose energy</strong> and slow down. Enough of either one changes the state. This is why ice in your halo-halo melts and why water in a pot of sinaing turns to steam.",
+              "Changes that <strong class='text-primary-700'>absorb</strong> heat are called <strong class='text-primary-700'>endothermic</strong>: melting, evaporation, boiling and sublimation. Changes that <strong class='text-primary-700'>release</strong> heat are called <strong class='text-primary-700'>exothermic</strong>: freezing, condensation and deposition. Pure water melts and freezes at 0 °C and boils at 100 °C at sea level.",
+              "Matter in all its forms keeps us alive: water to drink, air to breathe, and LPG to cook our food. Showing <strong class='text-primary-700'>respect</strong> for matter means using it responsibly, like turning off the stove when the rice is done and not leaving the faucet running.",
             ],
             didYouKnow:
-              "Pure gold melts at 1,064 °C, hot enough to melt almost any container on Earth. Scientists use special crucibles made of graphite or ceramic to melt and work with precious metals.",
+              "In Baguio City, about 1,500 meters above sea level, water boils at around 95 °C instead of 100 °C. The air pressure is lower up there, so the water particles escape more easily.",
+          },
+        },
+
+        {
+          type: "imageCards",
+          heading: "How Particles Are Arranged",
+          data: {
+            cards: [
+              {
+                title: "Solid",
+                label: "Fixed shape",
+                variant: "primary",
+                color: "primary",
+                desc: "Particles are packed very closely in a regular, fixed pattern. They cannot move from place to place. They only vibrate where they are. This is why a solid keeps its own shape and volume.",
+                image: solid,
+                imageAlt: "Clear ice cubes piled together, each keeping its own cube shape",
+                examples: [
+                  "Arrangement: close together, in an orderly pattern",
+                  "Motion: vibrate in fixed positions",
+                  "Ice, a coin, a block of wood",
+                ],
+              },
+              {
+                title: "Liquid",
+                label: "Takes the container's shape",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Particles are still close together, but they are not in a fixed pattern. They slide past one another. A liquid flows and takes the shape of its container, but its volume stays the same.",
+                image: liquid,
+                imageAlt: "Water being poured from a pitcher into a glass",
+                examples: [
+                  "Arrangement: close together, but disorderly",
+                  "Motion: slide and flow past each other",
+                  "Water, cooking oil, calamansi juice",
+                ],
+              },
+              {
+                title: "Gas",
+                label: "Fills any space",
+                variant: "accent",
+                color: "accent",
+                desc: "Particles are far apart and move quickly in all directions. They bump into each other and into the walls of their container. A gas spreads out to fill the whole space it is in.",
+                image: gas,
+                imageAlt: "Colorful inflated balloons filled with air",
+                examples: [
+                  "Arrangement: far apart, no pattern",
+                  "Motion: move fast and freely in all directions",
+                  "Air in a balloon, steam, LPG gas",
+                ],
+              },
+            ],
           },
         },
 
         {
           type: "timeline",
-          heading: "The Six Changes of State",
+          heading: "Heating and Cooling",
           data: {
             intro:
-              "Each change has a name, a direction, and a particle-level explanation. Learn them as a set of three pairs — each change and its reverse.",
+              "Follow water from ice to vapor and back again. Heating gives the particles energy. Cooling takes it away. Watch what the thermometer does at each step.",
             steps: [
               {
                 num: 1,
-                title: "Melting — Solid to Liquid",
+                title: "Heating the Solid",
                 color: "primary",
                 description:
-                  "When a solid is heated, its particles absorb energy and vibrate more vigorously. At the melting point, particles gain enough energy to break free from their fixed positions and begin to slide past one another. The regular pattern of the solid collapses.",
-                tip: "Endothermic. Ice melts at 0 °C. Different solids melt at different temperatures depending on how strongly their particles attract.",
+                  "Heat goes into the ice. Its particles gain energy and vibrate faster in their fixed places. The temperature of the ice goes up, but it is still solid.",
+                tip: "Faster particles = higher temperature.",
               },
               {
                 num: 2,
-                title: "Freezing — Liquid to Solid",
+                title: "Melting (Solid → Liquid)",
                 color: "secondary",
                 description:
-                  "When a liquid loses heat energy, its particles slow down. At the freezing point they no longer have enough energy to slide past each other, so attractive forces lock them into a fixed, regular arrangement.",
-                tip: "Exothermic. Freezing and melting happen at the same temperature for a given pure substance — for water, both at 0 °C.",
+                  "At the melting point (0 °C for ice), the particles have enough energy to break out of their fixed pattern and slide past each other. While the ice melts, the temperature stays flat at 0 °C. The added energy goes into pulling the particles apart, not into making them move faster.",
+                tip: "Melting absorbs energy. That is why melting ice keeps your drink cold.",
               },
               {
                 num: 3,
-                title: "Evaporation and Boiling — Liquid to Gas",
+                title: "Heating the Liquid",
                 color: "accent",
                 description:
-                  "As a liquid is heated, the faster-moving particles at the surface escape into the air — this is evaporation, and it happens at any temperature. At the boiling point, particles throughout the whole liquid have enough energy to escape, forming bubbles of vapour inside the liquid.",
-                tip: "Endothermic. Evaporation happens only at the surface; boiling happens throughout. Water boils at 100 °C at sea level.",
+                  "Once all the ice has melted, the water keeps absorbing heat. Its particles move faster and faster, and the temperature rises again.",
+                tip: "Some fast particles at the surface already escape as vapor even before boiling. This is evaporation.",
               },
               {
                 num: 4,
-                title: "Condensation — Gas to Liquid",
+                title: "Boiling (Liquid → Vapor)",
                 color: "primary",
                 description:
-                  "When a gas loses energy and cools, its particles slow down until attractive forces can pull them back together into a liquid. This is why water droplets form on a cold glass on a warm day.",
-                tip: "Exothermic. Fog, clouds, and morning dew are all condensed water vapour.",
+                  "At the boiling point (100 °C for water at sea level), particles all through the liquid have enough energy to escape. Bubbles of vapor form inside and rise to the top. The temperature stays flat again until all the water has turned to gas.",
+                tip: "Boiling water stays at about 100 °C no matter how high you turn the flame. A stronger flame only makes it boil faster, so a medium flame saves LPG.",
               },
               {
                 num: 5,
-                title: "Sublimation — Solid to Gas",
+                title: "Condensation (Vapor → Liquid)",
                 color: "secondary",
                 description:
-                  "Some solids change directly into a gas without ever becoming a liquid. This happens when particles at the surface of the solid gain enough energy to escape straight into the air, usually because the attractive forces are weak or the pressure is low.",
-                tip: "Endothermic. Dry ice (solid CO₂) sublimates at room temperature, producing fog without leaving anything wet behind.",
+                  "Now run it backwards. Water vapor touches something cool, like the inside of a rice cooker lid. The particles lose energy, slow down, and are pulled closer together into liquid droplets.",
+                tip: "Condensation releases energy. This is why steam can burn your skin more than hot water does.",
               },
               {
                 num: 6,
-                title: "Deposition — Gas to Solid",
+                title: "Freezing (Liquid → Solid)",
                 color: "accent",
                 description:
-                  "Some gases change directly into a solid without passing through the liquid state. Gas particles lose energy so quickly on contact with a very cold surface that they lock immediately into a fixed arrangement.",
-                tip: "Exothermic. Frost is the classic example — water vapour depositing straight onto cold surfaces as ice crystals.",
+                  "As the water keeps losing heat, its particles slow down. At the freezing point (0 °C), they lock into a fixed, orderly pattern. The temperature stays flat until all the water has frozen, as the particles give back the energy they took in during melting.",
+                tip: "Water melts and freezes at the same temperature. Only the direction of the energy is different.",
               },
             ],
           },
         },
 
         {
-          type: "timeline",
-          heading: "Temperature During a Change of State",
+          type: "imageCards",
+          heading: "Changes of State Around You",
           data: {
-            intro:
-              "Here is the part that surprises most students: while a substance is changing state, its temperature does not rise, even though heat is still being added. Follow what happens to a block of ice on a hotplate.",
-            steps: [
+            cards: [
               {
-                num: 1,
-                title: "Heating the Solid (Below Melting Point)",
+                title: "Melting",
+                label: "Solid → Liquid",
+                variant: "primary",
                 color: "primary",
-                description:
-                  "Heat energy is added to the ice. The temperature rises steadily as the particles vibrate faster and faster in their fixed positions. The ice remains solid throughout this stage.",
-                tip: "The colder the solid, the more energy is needed to raise it to its melting point.",
+                desc: "Ice absorbs heat from the warm air and from the food around it. Its particles break out of their fixed pattern and flow as water.",
+                image: lesson7hero,
+                imageAlt: "Ice cubes melting into a puddle of water",
+                examples: [
+                  "Shaved ice melting in halo-halo",
+                  "Ice candy softening in your hand",
+                  "Ice packed around fish melting on the way to the palengke",
+                ],
               },
               {
-                num: 2,
-                title: "Reaching the Melting Point",
+                title: "Freezing",
+                label: "Liquid → Solid",
+                variant: "secondary",
                 color: "secondary",
-                description:
-                  "The temperature stops rising when the melting point is reached (0 °C for ice). All heat energy added at this stage goes into breaking the attractions between particles, not into raising the temperature.",
-                tip: "This energy is called the latent heat of fusion — energy used to change state rather than temperature.",
+                desc: "The freezer takes heat away from the water. Its particles slow down until they lock into the fixed pattern of ice.",
+                image: solid,
+                imageAlt: "An ice cube tray filled with frozen ice cubes",
+                examples: [
+                  "Water in an ice tray turning into ice cubes",
+                  "Juice in plastic bags becoming ice candy",
+                  "Fish frozen in cold storage",
+                ],
               },
               {
-                num: 3,
-                title: "Melting Occurs (Solid and Liquid Together)",
+                title: "Evaporation",
+                label: "Liquid → Gas",
+                variant: "accent",
                 color: "accent",
-                description:
-                  "While the substance sits at its melting point, solid and liquid exist side by side. The temperature stays flat until the last of the solid has melted. On a temperature-time graph this shows as a horizontal plateau.",
-                tip: "Pure substances melt at a sharp, exact temperature. Impurities spread melting across a range instead.",
+                desc: "The fastest water particles at the surface of wet clothes escape into the air. It happens below 100 °C. Sun and wind make it faster.",
+                image: lesson8hero,
+                imageAlt: "Laundry hanging on a clothesline outdoors to dry in the sun",
+                examples: [
+                  "Clothes drying on a sampayan",
+                  "Daing (dried fish) drying in the sun",
+                  "Sweat drying on your skin",
+                ],
               },
               {
-                num: 4,
-                title: "Heating the Liquid",
+                title: "Condensation",
+                label: "Gas → Liquid",
+                variant: "primary",
                 color: "primary",
-                description:
-                  "Once everything has melted, the temperature begins to climb again as heat is added to the liquid. The particles now move freely past one another and the substance is entirely liquid.",
-                tip: "Liquid water keeps warming until it reaches 100 °C, its boiling point — where a second plateau appears.",
+                desc: "Water vapor in the air touches the cold glass, loses energy, and turns back into tiny liquid droplets on the outside of the glass.",
+                image: lesson8hero,
+                imageAlt: "Water droplets forming on the outside of a cold glass",
+                examples: [
+                  "Droplets on a glass of iced tea",
+                  "Water drops under a rice cooker lid",
+                  "Fog on the windows of an air-conditioned bus",
+                ],
               },
               {
-                num: 5,
-                title: "Cooling Back Down (Reverse Process)",
+                title: "Sublimation",
+                label: "Solid → Gas",
+                variant: "secondary",
                 color: "secondary",
-                description:
-                  "Remove heat and the whole sequence runs backwards. The temperature drops until it reaches the freezing point, then holds flat while particles release energy, slow down, and lock into a solid arrangement.",
-                tip: "Freezing releases energy, which is why a pond takes a long time to freeze even in very cold weather.",
+                desc: "Some solids turn straight into a gas without melting first. The particles at the surface gain enough energy to escape directly into the air.",
+                image: lesson9hero,
+                imageAlt: "White mothballs (naphthalene balls) in a pile",
+                examples: [
+                  "Naphthalene balls (mothballs) slowly shrinking in a closet",
+                  "Air freshener blocks getting smaller",
+                  "Dry ice giving off white fog",
+                ],
+              },
+              {
+                title: "Deposition",
+                label: "Gas → Solid",
+                variant: "accent",
+                color: "accent",
+                desc: "Water vapor touches a surface far below freezing and gives off its energy so fast that it turns directly into ice crystals, skipping the liquid stage.",
+                image: lesson9hero,
+                imageAlt: "White frost crystals built up inside a freezer",
+                examples: [
+                  "Frost building up inside a freezer",
+                  "Frost on grass in very cold places",
+                  "Snowflakes forming in clouds",
+                ],
               },
             ],
-          },
-        },
-
-        {
-          type: "comparison",
-          heading: "Melting vs. Freezing",
-          data: {
-            intro:
-              "Melting and freezing are opposite phase changes that occur at the same temperature for a given pure substance.",
-            left: {
-              label: "Melting",
-              color: "primary",
-              items: [
-                "Direction: Solid → Liquid (gains energy)",
-                "Energy: Endothermic — absorbs heat from the surroundings",
-                "Particles gain energy, vibrate faster, and break free of fixed positions",
-                "Temperature stays constant at the melting point during the change",
-                "Examples: ice becoming water, wax softening, chocolate melting",
-              ],
-            },
-            right: {
-              label: "Freezing",
-              color: "secondary",
-              items: [
-                "Direction: Liquid → Solid (loses energy)",
-                "Energy: Exothermic — releases heat to the surroundings",
-                "Particles lose energy, slow down, and lock into a rigid arrangement",
-                "Temperature stays constant at the freezing point during the change",
-                "Examples: water turning to ice, candle wax solidifying, cast metal cooling",
-              ],
-            },
           },
         },
 
@@ -242,101 +314,29 @@ export const week04 = {
           heading: "Evaporation vs. Boiling",
           data: {
             intro:
-              "Both turn a liquid into a gas, but they differ in where they happen and what conditions they need. This distinction is a common exam question.",
+              "Both change a liquid into a gas, but they are not the same. This is a common test question.",
             left: {
               label: "Evaporation",
               color: "primary",
               items: [
-                "Occurs only at the surface of the liquid",
-                "Can happen at any temperature, not only at the boiling point",
-                "Slower — the rate depends on temperature, humidity, surface area, and wind",
+                "Happens only at the surface of the liquid",
+                "Happens at any temperature, even below the boiling point",
+                "Slow; faster when it is hot, windy, or less humid",
                 "No bubbles form inside the liquid",
-                "Examples: puddles drying, wet clothes drying, sweat cooling skin",
+                "Examples: clothes drying on a sampayan, salt beds in Pangasinan drying in the sun",
               ],
             },
             right: {
               label: "Boiling",
               color: "secondary",
               items: [
-                "Occurs throughout the entire liquid at once",
-                "Only happens at one specific temperature — the boiling point",
-                "Much faster — rapid conversion of liquid to gas",
-                "Bubbles of vapour form inside the liquid and rise to the surface",
-                "Examples: water on a stove, kettle steam, pasta water",
+                "Happens all through the liquid",
+                "Happens only at the boiling point (100 °C for water at sea level)",
+                "Fast; the liquid turns to gas quickly",
+                "Bubbles of vapor form inside and rise to the surface",
+                "Examples: water boiling for instant noodles, a kettle whistling",
               ],
             },
-          },
-        },
-
-        {
-          type: "comparison",
-          heading: "Sublimation and Deposition",
-          data: {
-            intro:
-              "These two changes skip the liquid stage entirely. They are rarer than the other four, but they follow exactly the same energy rules.",
-            left: {
-              label: "Sublimation",
-              color: "primary",
-              items: [
-                "Direction: Solid → Gas (skips the liquid phase)",
-                "Energy: Endothermic — the solid absorbs heat to sublimate",
-                "Conditions: low atmospheric pressure or very weak attractions in the solid",
-                "Examples: dry ice fogging, iodine crystals releasing violet vapour, mothballs shrinking",
-                "Used for: freeze-drying food and medicine, shipping with dry ice",
-              ],
-            },
-            right: {
-              label: "Deposition",
-              color: "secondary",
-              items: [
-                "Direction: Gas → Solid (skips the liquid phase)",
-                "Energy: Exothermic — the gas releases heat as it becomes solid",
-                "Conditions: very cold surfaces that drain energy from gas particles fast",
-                "Examples: frost on windows, snowflakes forming in clouds",
-                "Used for: understanding frost warnings in agriculture",
-              ],
-            },
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Melting Point",
-                desc: "The specific temperature at which a solid changes to a liquid. For a pure substance this is a fixed, characteristic value — 0 °C for water.",
-              },
-              {
-                term: "Freezing Point",
-                desc: "The specific temperature at which a liquid changes to a solid. For a pure substance the freezing point equals the melting point.",
-              },
-              {
-                term: "Boiling Point",
-                desc: "The temperature at which a liquid boils throughout and becomes a gas. Water boils at 100 °C at sea level.",
-              },
-              {
-                term: "Endothermic",
-                desc: "A process that absorbs heat energy from the surroundings. Melting, evaporation, and sublimation are all endothermic.",
-              },
-              {
-                term: "Exothermic",
-                desc: "A process that releases heat energy to the surroundings. Freezing, condensation, and deposition are all exothermic.",
-              },
-              {
-                term: "Latent Heat",
-                desc: "The energy absorbed or released during a change of state, which changes the arrangement of particles rather than the temperature.",
-              },
-              {
-                term: "Humidity",
-                desc: "The amount of water vapour present in the air. High humidity slows evaporation because the air already holds a lot of vapour.",
-              },
-              {
-                term: "Phase Change",
-                desc: "Any change in the physical state of matter — melting, freezing, evaporation, condensation, sublimation, or deposition.",
-              },
-            ],
           },
         },
 
@@ -345,89 +345,52 @@ export const week04 = {
           heading: "Real-World Scenarios",
           data: {
             intro:
-              "For each situation, identify which change of state is happening, whether it is endothermic or exothermic, and what the particles are doing.",
+              "For each situation, name the change of state, say whether the particles gain or lose energy, and describe what the particles are doing.",
             scenarios: [
               {
-                title: "Chocolate Dipped Strawberry",
+                title: "Ice Candy on a Hot Afternoon",
                 situation:
-                  "You dip a cold strawberry into a bowl of melted chocolate. When you pull it out, the chocolate coating hardens almost instantly into a solid shell.",
+                  "Bea buys a frozen ice candy from the sari-sari store. After ten minutes in the afternoon heat, the bottom of the plastic is full of sweet liquid.",
                 question:
-                  "What change of state happened to the chocolate? Is this endothermic or exothermic? What happened to the chocolate particles?",
+                  "What change of state happened? Did the particles gain or lose energy? What happened to their arrangement?",
                 skill:
-                  "Freezing — exothermic. The cold strawberry drew energy out of the liquid chocolate, its particles slowed, and attractive forces locked them into a solid arrangement.",
+                  "Melting. The particles gained energy from the warm air, vibrated faster, and broke out of their fixed pattern, so they could slide past each other as a liquid.",
               },
               {
-                title: "Drying Clothes on a Clothesline",
+                title: "Drying Clothes in the Rainy Season",
                 situation:
-                  "Maria hangs wet clothes outside on a sunny, windy day. By afternoon the clothes are dry, even though the temperature never came close to 100 °C.",
+                  "Nanay hangs the laundry on the sampayan. In April the clothes dry by lunch. In August, during the rainy season, they are still damp by evening, even though it never got close to 100 °C either time.",
                 question:
-                  "What process removed the water? Why did the clothes dry faster on a windy, sunny day than on a cold, still day?",
+                  "What process dries the clothes? Why is it slower in August?",
                 skill:
-                  "Evaporation — endothermic, and it happens at any temperature because only the fastest surface particles need to escape. Heat raises particle energy and wind carries vapour away, so both speed it up.",
+                  "Evaporation. It happens below the boiling point because only the fastest particles at the surface need to escape. In August there is less sun to give the particles energy, and the humid air already holds a lot of water vapor, so evaporation is slower.",
               },
               {
-                title: "Steam on the Bathroom Mirror",
+                title: "Droplets Under the Rice Cooker Lid",
                 situation:
-                  "After a hot shower, Ana notices the bathroom mirror is completely fogged with tiny water droplets she has to wipe away.",
+                  "Carlo opens the rice cooker after the rice is done. Water drops fall from the inside of the lid.",
                 question:
-                  "The shower produced water vapour. What happened when this vapour touched the cool mirror surface?",
+                  "Where did the drops come from? What did the particles do?",
                 skill:
-                  "Condensation — exothermic. The cool glass drew energy from the vapour, its particles slowed, and attractive forces pulled them into liquid droplets.",
+                  "Condensation. Water vapor from the cooking rice touched the cooler lid, lost energy, slowed down, and was pulled closer together into liquid droplets.",
               },
               {
-                title: "Dry Ice in a Bowl",
+                title: "Shrinking Mothballs",
                 situation:
-                  "You place a block of dry ice in a bowl at room temperature. Thick white fog pours over the sides, but the block never becomes wet. After a few hours it has vanished completely.",
+                  "Lola puts naphthalene balls in the cabinet with the old clothes. After a few months they are much smaller, but the cabinet is completely dry.",
                 question:
-                  "What change of state occurred? Why did the block never produce any liquid?",
+                  "What change of state happened? Why was there no liquid?",
                 skill:
-                  "Sublimation — endothermic. At normal atmospheric pressure carbon dioxide cannot exist as a liquid, so the solid passes straight to gas with no liquid stage at all.",
+                  "Sublimation. Particles at the surface of the naphthalene balls gained enough energy to escape straight into the air as a gas, skipping the liquid state, so nothing got wet.",
               },
               {
-                title: "Frost on a Car Windshield",
+                title: "Frost in the Freezer",
                 situation:
-                  "On a cold morning you notice white frost on a car windshield, even though it did not rain or snow overnight. The temperature dropped below 0 °C during the night.",
+                  "The family has not defrosted the freezer in weeks. A thick layer of white frost has formed on the walls, although no one spilled any water.",
                 question:
-                  "Where did the frost come from, and why did it form directly on the glass with no liquid water appearing first?",
+                  "Where did the frost come from? Why didn't liquid water form first?",
                 skill:
-                  "Deposition — exothermic. Water vapour in the air lost energy so rapidly against the freezing glass that its particles locked straight into ice crystals, skipping liquid entirely.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Food Preservation",
-                description:
-                  "Freezing removes heat from food, slowing bacterial growth. Freeze-drying goes further, using sublimation in a vacuum to remove water without any heat damage.",
-                icon: "🥶",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Casting Metal",
-                description:
-                  "Metals are melted at high temperature, poured into moulds, and allowed to freeze into the finished shape — an industrial use of melting and freezing.",
-                icon: "⚙️",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "The Water Cycle",
-                description:
-                  "Evaporation, condensation, freezing, and deposition move water between ocean, atmosphere, and land — the process that produces all rain, snow, and frost.",
-                icon: "🌦️",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Cooling Your Body",
-                description:
-                  "Sweat evaporating from your skin is endothermic — it absorbs heat from your body and carries it away, which is how you avoid overheating.",
-                icon: "💧",
-                color: "border-l-primary-500",
+                  "Deposition. Water vapor from the air that entered when the door was opened touched the very cold walls and released its energy so fast that the particles locked directly into ice crystals.",
               },
             ],
           },

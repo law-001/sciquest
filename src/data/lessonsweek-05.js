@@ -8,6 +8,8 @@ import equation from "../assets/week1/equation.jpg";
 import simulation from "../assets/week1/simulation.jpg";
 import lab from "../assets/lab.jpg";
 import flowchart from "../assets/flowchart.jpg";
+import scimethod from "../assets/week1/scimethod.jpg";
+import modernclassroom from "../assets/modernclassroom.jpg";
 
 export const week05 = {
   id: "week-5",
@@ -15,7 +17,7 @@ export const week05 = {
   title: "Scientific Investigation and Measurement",
   category: "Scientific Method",
   description:
-    "Design a fair investigation from question to conclusion, then master the SI units and instruments scientists measure with.",
+    "Follow the steps of a scientific investigation from aim to conclusion, then measure accurately in standard units and record your data in tables.",
   icon: "Ruler",
   color: "secondary",
   isLocked: false,
@@ -30,11 +32,12 @@ export const week05 = {
       title: "Appropriate Steps in Scientific Investigation",
       badge: "Lesson 1",
       subtitle:
-        "Learn the ordered steps of a scientific investigation and how to control variables so your results actually mean something.",
-      readTime: "~16 min read",
+        "Learn the five parts of a scientific investigation (aim, materials, method, results, and conclusion) and use them to answer a simple question fairly.",
+      readTime: "~18 min read",
       xp: 50,
       heroImage: flowchart,
-      heroImageAlt: "Flowchart showing the steps of a scientific investigation",
+      heroImageAlt:
+        "Students doing a hands-on science experiment together at a table",
 
       signature: {
         widgetId: "investigation-rig",
@@ -45,20 +48,19 @@ export const week05 = {
         explainer: {
           title: "Why the machine jammed",
           points: [
-            "With all five stages fitted, the sample rode the belt straight into the result tray.",
+            "With all five stages in place, the sample rode the belt straight into the result tray.",
             "Pulling a stage out left a gap in the belt, and the sample stopped there. Steps cannot be skipped.",
             "With the second variable on, the cause arrows crossed and the tray showed a question mark.",
-            "Two things changed at once, so the result could not be pinned on either one.",
+            "Two things changed at once, so the result could not be blamed on either one.",
           ],
         },
       },
 
       sections: [
         "Introduction",
-        "Key Terms",
         "Steps of a Scientific Investigation",
-        "Independent vs. Dependent Variable",
-        "Rules for a Fair Test",
+        "The Steps in Action",
+        "Variables and Fair Tests",
         "Experiment Scenarios",
         "Applications",
       ],
@@ -70,7 +72,15 @@ export const week05 = {
         },
         {
           label: "UC Berkeley — Understanding Science: How Science Works",
-          url: "https://undsci.berkeley.edu/understanding-science/how-science-works/the-scientific-method/",
+          url: "https://undsci.berkeley.edu/understanding-science-101/how-science-works/",
+        },
+        {
+          label: "Khan Academy — The Science of Biology (The Scientific Method)",
+          url: "https://www.khanacademy.org/science/biology/intro-to-biology/science-of-biology/a/the-science-of-biology",
+        },
+        {
+          label: "PhilRice — Philippine Rice Research Institute",
+          url: "https://www.philrice.gov.ph/",
         },
       ],
 
@@ -80,52 +90,12 @@ export const week05 = {
           heading: "Introduction",
           data: {
             paragraphs: [
-              "A <strong class='text-primary-700'>scientific investigation</strong> is a systematic process used to answer questions about the natural world. Unlike guessing, an investigation gathers real <strong class='text-primary-700'>evidence</strong> through careful observation and experiment. Every good investigation follows the same ordered steps so that the results are valid and reliable.",
-              "Getting the order right is only half of it. For results to mean anything, you must also control what changes. In every experiment there is an <strong class='text-primary-700'>independent variable</strong> (what you deliberately change), a <strong class='text-primary-700'>dependent variable</strong> (what you measure), and <strong class='text-primary-700'>controlled variables</strong> (everything else, held constant). Change two things at once and you can never say which one caused the result.",
+              "Your Lolo says monggo seeds grow faster if you water them with rice water (hugas-bigas). Your classmate says plain water is just as good. Who is right? Arguing will not settle it. A <strong class='text-primary-700'>scientific investigation</strong> will.",
+              "A scientific investigation is a careful, step-by-step way of answering a question with <strong class='text-primary-700'>evidence</strong>. Every investigation report has five parts: <strong class='text-primary-700'>(a) the aim or problem, (b) the materials and equipment, (c) the method or procedure, (d) the results, including the data, and (e) the conclusion</strong>.",
+              "Good scientists show <strong class='text-primary-700'>respect for evidence</strong>. They let the data decide the answer, even when it is not the answer they hoped for. A conclusion must come from what you measured, not from what you already believed.",
             ],
             didYouKnow:
-              "The controlled experiment was pioneered by the Arab scientist Ibn al-Haytham around 1000 CE. His controlled tests of light and vision laid the foundation for modern experimental design.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "Hypothesis",
-                desc: "An educated, testable prediction that answers a scientific question, usually written as an 'If… then…' statement based on prior knowledge.",
-              },
-              {
-                term: "Independent Variable",
-                desc: "The one factor the experimenter deliberately changes. Ask: what am I changing?",
-              },
-              {
-                term: "Dependent Variable",
-                desc: "The factor that is observed and measured to see the effect of the change. Ask: what am I measuring?",
-              },
-              {
-                term: "Controlled Variable",
-                desc: "A factor that could affect the result but is deliberately kept the same in every trial — such as pot size, soil type, or room temperature.",
-              },
-              {
-                term: "Control Group",
-                desc: "A group that receives no treatment, used as a baseline to compare the experimental groups against.",
-              },
-              {
-                term: "Fair Test",
-                desc: "An experiment in which only the independent variable is changed while everything else is held constant.",
-              },
-              {
-                term: "Data",
-                desc: "The measurements and observations collected during an investigation — the evidence used to support or reject the hypothesis.",
-              },
-              {
-                term: "Conclusion",
-                desc: "A statement explaining what the data shows and whether the hypothesis was supported or rejected.",
-              },
-            ],
+              "Ibn al-Haytham, a scientist who lived about 1,000 years ago, insisted on testing ideas with careful experiments instead of trusting famous books. Many historians call him one of the first experimental scientists.",
           },
         },
 
@@ -134,111 +104,129 @@ export const week05 = {
           heading: "Steps of a Scientific Investigation",
           data: {
             intro:
-              "Every scientific investigation follows these seven steps in order. Skipping or reordering them is what produces results nobody can trust.",
+              "Here is how to solve the monggo question step by step. Each step matches a part of your investigation report.",
             steps: [
               {
                 num: 1,
-                title: "Identify the Problem or Question",
+                title: "Aim or Problem",
                 color: "primary",
                 description:
-                  "Start with a specific, testable question about something you want to understand. A good question is clear, focused, and answerable through investigation. Example: 'Does the amount of water affect the height of bean plants after 2 weeks?'",
-                tip: "Avoid questions that are too broad or that cannot be tested with an experiment.",
+                  "Write one clear question that you can test. Example: \"Does watering monggo seeds with rice water make the sprouts grow taller after 7 days than watering with plain water?\" Then write your hypothesis: \"If monggo seeds are watered with rice water, then the sprouts will be taller after 7 days.\"",
+                tip: "A good aim names what you will change and what you will measure.",
               },
               {
                 num: 2,
-                title: "Research the Topic",
+                title: "Materials and Equipment",
                 color: "secondary",
                 description:
-                  "Before designing your experiment, gather background information. Read textbooks, articles, or reports to find out what is already known. This prevents duplicating past work and helps you form a smarter hypothesis.",
-                tip: "Use reliable sources — science journals, textbooks, and educational sites beat random web pages.",
+                  "List everything you need, with exact amounts: 20 monggo seeds, 2 plastic cups with the same soil, a 10 mL measuring syringe or graduated cylinder, plain water, rice water, a ruler marked in millimeters, and labels.",
+                tip: "If an amount matters, write the number and the unit.",
               },
               {
                 num: 3,
-                title: "Form a Hypothesis",
+                title: "Method or Procedure",
                 color: "accent",
                 description:
-                  "Based on your research, write a testable prediction of what you think will happen. Example: 'If a bean plant receives more water per day, then it will grow taller after 2 weeks.'",
-                tip: "A hypothesis is not a fact and not a random guess — it is your best prediction from available evidence.",
+                  "Write numbered steps. 1) Plant 10 seeds in each cup. 2) Label one cup \"Plain water\" and the other \"Rice water.\" 3) Place both cups in the same spot by the window. 4) Give each cup 10 mL of its water every morning. 5) Measure each sprout's height every day for 7 days.",
+                tip: "Change only one thing (the kind of water). Keep the soil, cup, sunlight, and amount of water the same.",
               },
               {
                 num: 4,
-                title: "Design the Experiment",
+                title: "Results, Including Data",
                 color: "primary",
                 description:
-                  "Plan how you will test the hypothesis. Identify the independent variable, the dependent variable, and every controlled variable. Write a clear step-by-step procedure that someone else could follow exactly.",
-                tip: "Change only ONE variable at a time, or your results will not show what caused what.",
+                  "Record every measurement right away in a table, with units. Then find the average height of each group and show it in a bar graph. Write down anything unusual, like a seed that did not sprout.",
+                tip: "Record what actually happened. Never change a number to fit your hypothesis.",
               },
               {
                 num: 5,
-                title: "Collect Data",
+                title: "Conclusion",
                 color: "secondary",
                 description:
-                  "Carry out the experiment and record every observation and measurement carefully in tables. Always record what actually happens — never adjust data to match your hypothesis.",
-                tip: "Run at least three trials so a single odd result cannot mislead you.",
-              },
-              {
-                num: 6,
-                title: "Analyze Data and Identify Patterns",
-                color: "accent",
-                description:
-                  "Look for patterns, trends, and relationships. Calculate averages, draw graphs, and compare results across trials. Ask yourself honestly: what does the data actually show?",
-                tip: "Graphs make patterns visible that a table of numbers hides.",
-              },
-              {
-                num: 7,
-                title: "Draw Conclusions and Communicate Results",
-                color: "primary",
-                description:
-                  "State whether the hypothesis was supported or rejected and explain why. Account for unexpected results, then share your findings through a report, presentation, or poster.",
-                tip: "A rejected hypothesis is still a valuable finding — it rules out an explanation.",
+                  "Answer the aim using your data. Example: \"The rice-water sprouts averaged 8.2 cm and the plain-water sprouts averaged 8.0 cm. The difference is very small, so our data does not clearly support the hypothesis.\" Then suggest how to improve the test.",
+                tip: "A hypothesis that is not supported is still a useful result. It tells you something real.",
               },
             ],
           },
         },
 
         {
-          type: "comparison",
-          heading: "Independent vs. Dependent Variable",
+          type: "imageCards",
+          heading: "The Steps in Action",
           data: {
-            intro:
-              "These two variables play opposite roles. Telling them apart is the single most useful skill in experimental design.",
-            left: {
-              label: "Independent Variable",
-              color: "primary",
-              items: [
-                "Definition: the variable deliberately changed by the experimenter",
-                "Example: the amount of fertilizer added to each group (0 g, 5 g, 10 g)",
-                "Who controls it: you — it is intentionally varied",
-                "How to identify: ask 'What am I changing?'",
-                "Role: the cause",
-              ],
-            },
-            right: {
-              label: "Dependent Variable",
-              color: "secondary",
-              items: [
-                "Definition: the variable observed and measured for an effect",
-                "Example: the height of the plant in cm after 2 weeks",
-                "Who controls it: nobody — it responds on its own",
-                "How to identify: ask 'What am I measuring?'",
-                "Role: the effect",
-              ],
-            },
+            cards: [
+              {
+                title: "Ask a Testable Question",
+                label: "Aim / Problem",
+                variant: "primary",
+                color: "primary",
+                desc: "Every investigation starts with something you noticed. A question about how monggo sprouts grow can be tested with a simple setup at home.",
+                image: scimethod,
+                imageAlt: "Mung bean (monggo) sprouts growing from seeds",
+                examples: [
+                  "Does rice water help monggo grow taller?",
+                  "Does salt make ice melt faster?",
+                  "Which brand of towel absorbs the most water?",
+                ],
+              },
+              {
+                title: "Prepare the Materials",
+                label: "Materials & Equipment",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Gather everything before you start, and write down how much of each. Using the right measuring tools makes your results trustworthy.",
+                image: lab,
+                imageAlt: "Laboratory glassware and tools laid out on a table, ready for an experiment",
+                examples: [
+                  "Graduated cylinder for measuring water",
+                  "Ruler for measuring height",
+                  "Labels so the setups do not get mixed up",
+                ],
+              },
+              {
+                title: "Record the Data",
+                label: "Results",
+                variant: "accent",
+                color: "accent",
+                desc: "Write measurements in a table as soon as you take them. A graph made from the table helps you see the pattern.",
+                image: equation,
+                imageAlt: "A notebook with a hand-drawn data table and graph",
+                examples: [
+                  "A table of sprout height for each day",
+                  "A bar graph of the average heights",
+                  "Notes about anything unexpected",
+                ],
+              },
+              {
+                title: "Share the Conclusion",
+                label: "Conclusion",
+                variant: "primary",
+                color: "primary",
+                desc: "Scientists share what they found so others can check it. A poster at a science fair shows the aim, method, data, and conclusion.",
+                image: modernclassroom,
+                imageAlt: "Students presenting a science fair project poster",
+                examples: [
+                  "Investigation report",
+                  "Science fair poster",
+                  "Short class presentation",
+                ],
+              },
+            ],
           },
         },
 
         {
           type: "conceptList",
-          heading: "Rules for a Fair Test",
+          heading: "Variables and Fair Tests",
           data: {
             concepts: [
-              "In a fair test, only the independent variable changes — every other condition must stay the same across all groups.",
-              "Controlled variables are factors that could affect the result but are deliberately held constant (pot size, soil type, watering schedule, temperature).",
-              "A control group receives no treatment and acts as the baseline you compare every other group against.",
-              "If more than one variable changes at once, it is impossible to say which change caused the result.",
-              "Every experiment should be repeated for multiple trials, so you can tell a real effect from random chance.",
-              "Record measurements honestly and immediately — writing data down later invites error.",
-              "The more variables you control, the more confident you can be that the independent variable caused the change.",
+              "The independent variable is the one thing you change on purpose. Ask: \"What am I changing?\" In the monggo test, it is the kind of water. It is the cause.",
+              "The dependent variable is the thing you measure. Ask: \"What am I measuring?\" In the monggo test, it is the sprout height in cm after 7 days. It is the effect.",
+              "Controlled variables are everything you keep the same, like cup size, soil, sunlight, and amount of water. A fair test changes only the independent variable.",
+              "Use a control setup (like the plain-water cup) to compare the other setups against.",
+              "If two things change at the same time, you cannot tell which one caused the result.",
+              "Repeat the test or use many samples (like 10 seeds per cup), so one odd result does not fool you.",
+              "Base your conclusion only on your data. Respect the evidence, even when it surprises you.",
             ],
           },
         },
@@ -248,34 +236,34 @@ export const week05 = {
           heading: "Experiment Scenarios",
           data: {
             intro:
-              "For each scenario, identify the independent variable, the dependent variable, and at least two controlled variables.",
+              "For each scenario, identify the variables or the problem in the investigation.",
             scenarios: [
               {
-                title: "Plant Growth Experiment",
+                title: "Ice and Salt",
                 situation:
-                  "A student sets up 4 groups of bean plants. Group A gets 0 mL of water per day, Group B gets 50 mL, Group C gets 100 mL, and Group D gets 150 mL. All plants use the same soil, pot size, amount of sunlight, and room temperature. After 2 weeks the student measures plant height.",
+                  "Jay wants to know if salt makes ice melt faster. He puts one ice cube with a pinch of salt on a plate and another ice cube with no salt on an identical plate. He sets them side by side and times how long each takes to melt.",
                 question:
-                  "What is the independent variable, the dependent variable, and the control group? Name two controlled variables.",
+                  "What is the aim? What are the independent and dependent variables? Name two controlled variables.",
                 skill:
-                  "IV: amount of water per day. DV: plant height after 2 weeks. Control group: Group A (0 mL). Controlled variables: soil type, pot size, sunlight, temperature.",
-              },
-              {
-                title: "Dissolving Sugar Experiment",
-                situation:
-                  "A student tests whether temperature affects how quickly sugar dissolves. She dissolves 10 g of sugar in 200 mL of water at 10 °C, 30 °C, 50 °C, and 70 °C, using the same brand of sugar and the same volume of water each time.",
-                question:
-                  "What is the independent variable? The dependent variable? What would a control group look like?",
-                skill:
-                  "IV: temperature of the water. DV: time taken for the sugar to dissolve. Control: a trial at room temperature with no heating or cooling. Controlled: amount of sugar, volume of water, brand of sugar.",
+                  "Aim: Does salt make ice melt faster? Independent variable: whether salt is added. Dependent variable: the time for the ice to melt. Controlled: same size of ice cube, same kind of plate, same place and room temperature.",
               },
               {
                 title: "The Unfair Test",
                 situation:
-                  "A student wants to know whether fertilizer helps plants grow. He puts fertilizer on one plant and leaves it on a sunny windowsill, and puts no fertilizer on a second plant which he keeps in a dark corner. The fertilized plant grows much taller.",
+                  "Mika puts fertilizer on a pechay plant by the sunny window and no fertilizer on a second pechay plant in a dark corner. The fertilized plant grows taller, so she says fertilizer works.",
                 question:
-                  "Why can this student NOT conclude that fertilizer caused the extra growth? What should he change?",
+                  "Why is her conclusion not valid? How should she fix the method?",
                 skill:
-                  "Two variables changed at once — fertilizer AND light. The result could be caused by either, so nothing can be concluded. Both plants must get identical light, with fertilizer as the only difference.",
+                  "Two things changed at once: fertilizer and sunlight. The extra growth could come from either one. Both plants must be in the same spot with the same light, with fertilizer as the only difference.",
+              },
+              {
+                title: "The Missing Step",
+                situation:
+                  "A group tested which paper towel absorbs the most water. Their report has an aim, a list of materials, and a conclusion that says \"Brand B is the best.\" There is no procedure and no data table.",
+                question:
+                  "Which parts of the investigation are missing, and why does that matter?",
+                skill:
+                  "The method and the results (data) are missing. Without a method, no one can repeat the test. Without data, there is no evidence to support the conclusion that Brand B is best.",
               },
             ],
           },
@@ -287,31 +275,31 @@ export const week05 = {
           data: {
             apps: [
               {
-                title: "Medicine",
+                title: "Rice Research",
                 description:
-                  "Clinical trials are controlled investigations that test whether new treatments and vaccines are safe and effective before they reach patients.",
-                icon: "💊",
+                  "Scientists at the Philippine Rice Research Institute (PhilRice) plant different rice varieties side by side under the same conditions to find which ones give more harvest.",
+                icon: "🌾",
                 color: "border-l-primary-500",
               },
               {
-                title: "Engineering",
+                title: "Medicine and Vaccines",
                 description:
-                  "Engineers run controlled tests on the strength of materials and the safety of structures before anything is built at full scale.",
-                icon: "🏗️",
+                  "Before a new medicine is approved, it is tested in carefully planned trials, and the results are checked by other scientists.",
+                icon: "💊",
                 color: "border-l-secondary-500",
               },
               {
-                title: "Environmental Science",
+                title: "Weather Forecasting",
                 description:
-                  "Scientists investigate pollution levels and ecosystem health, controlling for season and location so that changes can be attributed to the right cause.",
-                icon: "🌿",
+                  "PAGASA collects measurements every day, studies the data, and draws conclusions about coming rain and typhoons.",
+                icon: "🌀",
                 color: "border-l-accent-500",
               },
               {
-                title: "Agriculture",
+                title: "Everyday Decisions",
                 description:
-                  "Farmers run side-by-side trials of fertilizers and crop varieties, holding soil and watering constant, to find what genuinely improves yield.",
-                icon: "🌾",
+                  "Testing which detergent removes stains best, or which rice cooker setting cooks best, uses the same steps: aim, materials, method, results, and conclusion.",
+                icon: "🏠",
                 color: "border-l-primary-500",
               },
             ],
@@ -330,11 +318,12 @@ export const week05 = {
       title: "Measurement",
       badge: "Lesson 2",
       subtitle:
-        "Master the SI system, choose the right instrument for every quantity, and learn the difference between being accurate and being precise.",
-      readTime: "~18 min read",
+        "Measure length, volume, mass, temperature, and time in standard units, use each instrument properly, and organize your data in tables and charts.",
+      readTime: "~20 min read",
       xp: 50,
       heroImage: equation,
-      heroImageAlt: "Scientific measurement tools and unit labels",
+      heroImageAlt:
+        "Common measuring instruments together on a table, including a ruler and laboratory glassware",
 
       signature: {
         widgetId: "meniscus-bench",
@@ -346,22 +335,20 @@ export const week05 = {
           title: "Why eye level gave the true volume",
           points: [
             "Looking down at the liquid made the scale read high, and looking up made it read low.",
-            "Only at eye level did the sightline cross the scale exactly where the liquid sat.",
-            "The balance was out by 2.40 g on every single mass, not by a different amount each time.",
-            "An error that repeats identically is a systematic error. You fixed it at the instrument by zeroing it.",
+            "Only at eye level did your line of sight cross the scale exactly where the liquid sat.",
+            "The balance was off by 2.40 g on every single mass, not by a different amount each time.",
+            "An error that repeats the same way every time is a systematic error. You fixed it by zeroing the balance.",
           ],
         },
       },
 
       sections: [
         "Introduction",
-        "Key Terms",
         "Measurement Tools",
         "Using a Graduated Cylinder",
-        "Measurement Tips",
+        "Recording Data in Tables and Charts",
         "Accuracy vs. Precision",
         "Measurement Scenarios",
-        "Applications",
       ],
 
       references: [
@@ -370,8 +357,12 @@ export const week05 = {
           url: "https://www.nist.gov/pml/owm/metric-si/si-units",
         },
         {
-          label: "Khan Academy — Measurement and Units",
-          url: "https://www.khanacademy.org/math/cc-fifth-grade-math/measurement-and-data",
+          label: "NASA — Mars Climate Orbiter",
+          url: "https://science.nasa.gov/mission/mars-climate-orbiter/",
+        },
+        {
+          label: "Britannica — International System of Units",
+          url: "https://www.britannica.com/science/International-System-of-Units",
         },
       ],
 
@@ -381,60 +372,12 @@ export const week05 = {
           heading: "Introduction",
           data: {
             paragraphs: [
-              "The <strong class='text-primary-700'>International System of Units</strong> (SI) is the modern metric system used by scientists worldwide. By agreeing on one system, scientists in different countries can share and verify each other's results without confusion.",
-              "SI is built on <strong class='text-primary-700'>base units</strong> — the metre for length, the kilogram for mass, the second for time. Metric prefixes such as <strong class='text-primary-700'>kilo-</strong>, <strong class='text-primary-700'>centi-</strong>, and <strong class='text-primary-700'>milli-</strong> scale those units by powers of ten. But choosing the right unit is only half the skill: you also have to use each instrument correctly, and understand the difference between a measurement that is <strong class='text-primary-700'>accurate</strong> and one that is merely <strong class='text-primary-700'>precise</strong>.",
+              "At the palengke, a vendor weighs your galunggong on a scale in kilograms. At the gas station, fuel is sold in liters. In science, we also need numbers that everyone understands, so scientists around the world use the <strong class='text-primary-700'>International System of Units (SI)</strong>.",
+              "The main units you will use are the <strong class='text-primary-700'>meter (m)</strong> for length, the <strong class='text-primary-700'>kilogram (kg)</strong> for mass, the <strong class='text-primary-700'>second (s)</strong> for time, and the <strong class='text-primary-700'>degree Celsius (°C)</strong> for everyday temperature. Volume is usually measured in <strong class='text-primary-700'>liters (L)</strong> and <strong class='text-primary-700'>milliliters (mL)</strong>. Prefixes like kilo- (× 1,000), centi- (÷ 100), and milli- (÷ 1,000) make units bigger or smaller.",
+              "A measurement is only useful if it is taken carefully and written down honestly. This lesson is about <strong class='text-primary-700'>integrity</strong>: using each instrument the right way, and recording exactly what you see, even when it is not the number you expected.",
             ],
             didYouKnow:
-              "In 1999 NASA lost a $125 million Mars orbiter because one engineering team used metric units while another used imperial. The spacecraft burned up in the Martian atmosphere — a costly reminder of why standard units matter.",
-          },
-        },
-
-        {
-          type: "keyTerms",
-          heading: "Key Terms",
-          data: {
-            terms: [
-              {
-                term: "SI Units",
-                desc: "The International System of Units — the globally agreed standard for scientific measurement, based on the metric system.",
-              },
-              {
-                term: "Meter (m)",
-                desc: "The SI base unit of length. Smaller lengths use centimetres (cm) or millimetres (mm); larger ones use kilometres (km).",
-              },
-              {
-                term: "Kilogram (kg)",
-                desc: "The SI base unit of mass. One kilogram equals 1,000 grams.",
-              },
-              {
-                term: "Liter (L)",
-                desc: "The SI unit for the volume of liquids and gases. One litre equals 1,000 millilitres (mL). 1 mL = 1 cm³.",
-              },
-              {
-                term: "Metric Prefix",
-                desc: "A word part added before a unit to show a multiple or fraction: kilo- (×1,000), centi- (÷100), milli- (÷1,000).",
-              },
-              {
-                term: "Derived Unit",
-                desc: "A unit formed by combining base units — speed (m/s), area (m²), density (g/cm³).",
-              },
-              {
-                term: "Meniscus",
-                desc: "The curved surface a liquid forms in a narrow tube. Always read volume from the bottom of the curve, at eye level.",
-              },
-              {
-                term: "Parallax Error",
-                desc: "The reading error caused by viewing a scale from an angle instead of straight on at eye level.",
-              },
-              {
-                term: "Accuracy",
-                desc: "How close a measurement is to the true or accepted value.",
-              },
-              {
-                term: "Precision",
-                desc: "How consistent repeated measurements are with each other — regardless of whether they are correct.",
-              },
-            ],
+              "In 1999, NASA lost its Mars Climate Orbiter because one team used metric units and another used English units (pounds). The spacecraft flew too close to Mars and was destroyed, a costly lesson in why standard units matter.",
           },
         },
 
@@ -444,45 +387,87 @@ export const week05 = {
           data: {
             cards: [
               {
-                title: "Length Tools",
+                title: "Ruler",
                 label: "Length",
                 variant: "primary",
                 color: "primary",
-                desc: "Length is measured in metres (m), centimetres (cm), or millimetres (mm) using rulers, metre sticks, and calipers.",
+                desc: "Measures short lengths in centimeters (cm) and millimeters (mm). Line up the object with the zero mark, not the edge of the ruler.",
                 image: equation,
-                imageAlt: "Ruler and measurement tools",
+                imageAlt: "A ruler with centimeter and millimeter markings",
                 examples: [
-                  "Ruler (15–30 cm): small objects like pencils or paper",
-                  "Metre stick (1 m): furniture or room dimensions",
-                  "Vernier caliper: very small lengths with high precision, such as wire diameter",
+                  "Length of a pencil: 17.5 cm",
+                  "Height of a monggo sprout: 42 mm",
+                  "Read with your eye directly above the mark",
                 ],
               },
               {
-                title: "Mass Tools",
-                label: "Mass",
+                title: "Tape Measure / Meter Stick",
+                label: "Length",
                 variant: "secondary",
                 color: "secondary",
-                desc: "Mass is measured in kilograms (kg) or grams (g) using balances and digital scales.",
-                image: lab,
-                imageAlt: "Balance scale in a laboratory",
+                desc: "Measures longer lengths in meters (m) and centimeters. A flexible tape can also measure around curved objects.",
+                image: equation,
+                imageAlt: "A tape measure pulled out to show its markings",
                 examples: [
-                  "Triple beam balance: precise mass in grams using sliding riders",
-                  "Digital electronic scale: direct mass reading",
-                  "Platform balance: classroom use for larger masses",
+                  "Length of the classroom: 8.5 m",
+                  "Around a coconut: 52 cm",
+                  "Keep the tape straight and tight",
                 ],
               },
               {
-                title: "Volume Tools",
+                title: "Graduated Cylinder",
                 label: "Volume",
+                variant: "accent",
+                color: "accent",
+                desc: "Measures the volume of liquids in milliliters (mL). It is more accurate than a beaker. Read it at eye level, at the bottom of the meniscus.",
+                image: simulation,
+                imageAlt: "A graduated cylinder holding a colored liquid",
+                examples: [
+                  "50.0 mL of water for an experiment",
+                  "10 mL of vinegar",
+                  "Place it on a flat table before reading",
+                ],
+              },
+              {
+                title: "Balance",
+                label: "Mass",
                 variant: "primary",
                 color: "primary",
-                desc: "The volume of liquids is measured in litres (L) or millilitres (mL) using graduated cylinders, beakers, and pipettes.",
-                image: simulation,
-                imageAlt: "Graduated cylinder with liquid",
+                desc: "Measures mass in grams (g) or kilograms (kg). Zero (tare) it before you place anything on it.",
+                image: lab,
+                imageAlt: "A laboratory balance used to measure mass",
                 examples: [
-                  "Graduated cylinder: most accurate — read at the bottom of the meniscus",
-                  "Beaker: approximate volume and mixing only, not precise readings",
-                  "Measuring pipette: very small, precise volumes",
+                  "5.0 g of salt",
+                  "Mass of an egg: 58 g",
+                  "Use a container and tare it first",
+                ],
+              },
+              {
+                title: "Thermometer",
+                label: "Temperature",
+                variant: "secondary",
+                color: "secondary",
+                desc: "Measures temperature in degrees Celsius (°C). Keep the bulb in the liquid, not touching the bottom or sides of the container, and wait until the reading stops changing.",
+                image: lab,
+                imageAlt: "A laboratory thermometer with a Celsius scale",
+                examples: [
+                  "Tap water: about 28 °C",
+                  "Boiling water: about 100 °C",
+                  "Handle glass thermometers gently",
+                ],
+              },
+              {
+                title: "Stopwatch",
+                label: "Time",
+                variant: "accent",
+                color: "accent",
+                desc: "Measures time in seconds (s) and minutes. Start and stop it at exactly the moments the procedure says.",
+                image: simulation,
+                imageAlt: "A stopwatch showing elapsed time",
+                examples: [
+                  "Time for sugar to dissolve: 45 s",
+                  "Time for ice to melt: 12 min 30 s",
+                  "Have the same person press start and stop",
                 ],
               },
             ],
@@ -494,71 +479,107 @@ export const week05 = {
           heading: "Using a Graduated Cylinder",
           data: {
             intro:
-              "A graduated cylinder is the most accurate common tool for measuring liquid volume. Follow these steps every time for a correct reading.",
+              "A graduated cylinder is the most accurate common tool for measuring liquid volume. Follow these steps every time.",
             steps: [
               {
                 num: 1,
-                title: "Choose the Correct Cylinder Size",
+                title: "Choose the Right Size",
                 color: "primary",
                 description:
-                  "Select a cylinder whose capacity is close to the volume you want to measure. Using a 100 mL cylinder for 5 mL of liquid gives far less precision than a 10 mL cylinder.",
-                tip: "Use the smallest cylinder that can hold the full volume.",
+                  "Pick a cylinder close to the volume you need. For 8 mL, a 10 mL cylinder gives a better reading than a 100 mL cylinder.",
+                tip: "Use the smallest cylinder that can hold the whole amount.",
               },
               {
                 num: 2,
-                title: "Place It on a Flat, Level Surface",
+                title: "Put It on a Flat Surface",
                 color: "secondary",
                 description:
-                  "Set the cylinder on a flat bench — never hold it in your hand while reading. A tilted surface makes the liquid sit at an angle and gives a wrong reading.",
-                tip: "Always place measuring tools on a stable, level surface before reading.",
+                  "Set the cylinder on a level table. Do not hold it in your hand while reading, because a tilted cylinder gives a wrong reading.",
+                tip: "A steady cylinder means a steady reading.",
               },
               {
                 num: 3,
-                title: "Pour the Liquid Carefully",
+                title: "Pour Carefully",
                 color: "accent",
                 description:
-                  "Pour slowly, stopping when you are close to the target volume. Avoid splashing or overfilling — removing small amounts accurately is difficult.",
-                tip: "Use a dropper for the last few millilitres.",
+                  "Pour slowly and stop just before the mark you need. Add the last few drops with a dropper.",
+                tip: "It is easier to add a little more than to remove extra.",
               },
               {
                 num: 4,
                 title: "Read at Eye Level",
                 color: "primary",
                 description:
-                  "Bend down so your eyes are level with the liquid surface. Looking from above or below causes parallax error, making the volume appear different from the true value.",
-                tip: "Your line of sight must be horizontal and level with the bottom of the meniscus.",
+                  "Bend down so your eyes are level with the liquid. Looking from above or below causes parallax error.",
+                tip: "Your line of sight should be flat, like a table top.",
               },
               {
                 num: 5,
                 title: "Read the Bottom of the Meniscus",
                 color: "secondary",
                 description:
-                  "Water and most liquids curve upward at the edges. Always read the volume from the lowest point of that curve.",
-                tip: "Exception: mercury curves the other way — read from the top of its curve.",
+                  "Water curves up at the sides of the cylinder. Read the volume at the lowest point of the curve.",
+                tip: "A white card held behind the cylinder makes the curve easier to see.",
               },
               {
                 num: 6,
-                title: "Record the Value with Units",
+                title: "Record the Number and the Unit",
                 color: "accent",
                 description:
-                  "Write down the volume including the unit (mL or cm³). Estimate one digit between the smallest markings. A reading without units is meaningless in science.",
-                tip: "If markings are every 1 mL, record to one decimal place — e.g. 23.5 mL.",
+                  "Write the reading with its unit, like 23.5 mL. Estimate one digit between the smallest marks.",
+                tip: "\"23.5\" alone means nothing. \"23.5 mL\" is a measurement.",
               },
             ],
           },
         },
 
         {
-          type: "conceptList",
-          heading: "Measurement Tips",
+          type: "timeline",
+          heading: "Recording Data in Tables and Charts",
           data: {
-            concepts: [
-              "Align the zero mark of a ruler with the edge of the object — never start from the physical end of the ruler, which may not be at zero.",
-              "Read every scale at eye level to avoid parallax error.",
-              "Always record measurements with their unit — the number '15' alone is meaningless.",
-              "Zero (tare) a balance before placing anything on it, and make sure it sits level.",
-              "Take multiple measurements and calculate the mean to reduce the effect of random error.",
-              "Estimate one digit beyond the smallest division on the instrument to gain an extra significant figure.",
+            intro:
+              "Data is only useful if it is organized. Here is how to record the time it takes for 5 g of sugar to dissolve in 100 mL of water at different temperatures.",
+            steps: [
+              {
+                num: 1,
+                title: "Make the Table Before You Start",
+                color: "primary",
+                description:
+                  "Draw a table with a title and labeled columns: \"Water Temperature (°C)\", \"Trial 1 (s)\", \"Trial 2 (s)\", \"Trial 3 (s)\", and \"Average (s)\".",
+                tip: "Put the units in the column headings so you do not have to write them in every box.",
+              },
+              {
+                num: 2,
+                title: "Put the Independent Variable First",
+                color: "secondary",
+                description:
+                  "The first column lists what you changed, from lowest to highest: 30 °C, 50 °C, 70 °C. The other columns hold what you measured.",
+                tip: "This order makes patterns easy to spot.",
+              },
+              {
+                num: 3,
+                title: "Fill It In Right Away",
+                color: "accent",
+                description:
+                  "Write each reading in the table the moment you take it. Do not depend on your memory.",
+                tip: "If you make a mistake, draw one line through it and write the correct value beside it, so the record stays honest.",
+              },
+              {
+                num: 4,
+                title: "Calculate the Average",
+                color: "primary",
+                description:
+                  "Add the trials and divide by the number of trials. Example: (62 s + 58 s + 60 s) ÷ 3 = 60 s.",
+                tip: "Averages make your results more reliable than a single trial.",
+              },
+              {
+                num: 5,
+                title: "Show It in a Chart",
+                color: "secondary",
+                description:
+                  "Make a bar graph or line graph. Put the independent variable (temperature) on the horizontal axis and the dependent variable (average time) on the vertical axis. Label both axes with units and give the graph a title.",
+                tip: "A line graph is best when the independent variable is a number that changes step by step, like temperature.",
+              },
             ],
           },
         },
@@ -568,27 +589,27 @@ export const week05 = {
           heading: "Accuracy vs. Precision",
           data: {
             intro:
-              "These two words are used interchangeably in everyday speech, but in science they mean different things — and a measurement can have one without the other.",
+              "In everyday talk these words mean the same thing, but in science they are different. A measurement can have one without the other.",
             left: {
               label: "Accuracy",
               color: "primary",
               items: [
-                "Definition: how close a measurement is to the true or accepted value",
-                "Example: measuring a 10.0 g mass and getting 9.9 g is accurate",
-                "Caused by: systematic error — poor calibration or wrong technique",
-                "How to improve: calibrate the instrument, use correct technique",
-                "Formula: Percent Error = |(measured − true) ÷ true| × 100%",
+                "Meaning: how close a measurement is to the true value",
+                "Example: weighing a 50.0 g mass and getting 49.9 g",
+                "Spoiled by: systematic error, like a balance that was not zeroed",
+                "How to improve: zero and check the instrument, use the right technique",
+                "Ask: \"Is my answer close to the real value?\"",
               ],
             },
             right: {
               label: "Precision",
               color: "secondary",
               items: [
-                "Definition: how consistent repeated measurements are with each other",
-                "Example: getting 9.2, 9.2, 9.3 g repeatedly is precise — even if the true value is 10.0 g",
-                "Caused by: random error — inconsistent reading, vibration, shaky hands",
-                "How to improve: repeat measurements, read the instrument the same way each time",
-                "Often written as ± — e.g. 9.2 ± 0.1 g",
+                "Meaning: how close repeated measurements are to each other",
+                "Example: getting 48.1 g, 48.0 g, and 48.1 g again and again",
+                "Spoiled by: random error, like shaky hands or reading at different angles",
+                "How to improve: repeat measurements and read the same way each time",
+                "Ask: \"Do my answers agree with each other?\"",
               ],
             },
           },
@@ -599,71 +620,34 @@ export const week05 = {
           heading: "Measurement Scenarios",
           data: {
             intro:
-              "Decide whether each situation shows accuracy, precision, both, or neither — and identify the type of error present.",
+              "Decide what went right or wrong in each situation.",
             scenarios: [
               {
-                title: "The Archery Target Analogy",
+                title: "The Unzeroed Balance",
                 situation:
-                  "Archer A hits near the bullseye every shot but each arrow lands in a slightly different spot. Archer B hits the same spot on the edge of the target every time, far from the bullseye. Archer C hits near the bullseye, tightly grouped.",
+                  "A student measures a 50.0 g standard mass five times and gets 48.1, 48.0, 48.2, 48.0, and 48.1 g. Nobody zeroed the balance before starting.",
                 question:
-                  "Which archer is accurate? Which is precise? Which is both?",
+                  "Are the readings precise? Are they accurate? What should the student do?",
                 skill:
-                  "Archer A = accurate but not precise (near the bullseye but scattered). Archer B = precise but not accurate (consistent but wrong). Archer C = both.",
+                  "They are precise, because they agree within 0.2 g. They are not accurate, because they are all about 2 g below the true value. This is a systematic error from the unzeroed balance. Tare the balance and measure again.",
               },
               {
-                title: "Lab Mass Measurements",
+                title: "Reading from Above",
                 situation:
-                  "A student measures a 50.0 g standard mass five times: 48.1, 48.0, 48.2, 48.0, 48.1 grams. The balance was never zeroed.",
+                  "Two students read the same 25 mL of water in the same graduated cylinder. One bends down to eye level and reads 25.0 mL. The other stays standing and reads 26.5 mL.",
                 question:
-                  "Are these precise? Accurate? What type of error is responsible and how should it be fixed?",
+                  "Why are the readings different? Which one should be recorded?",
                 skill:
-                  "Precise — the values agree within ±0.2 g. Not accurate — all are about 2 g below the true value. Systematic error from the unzeroed balance. Fix: tare the balance before measuring.",
+                  "Parallax error. Looking from above makes the liquid seem higher than it really is. The eye-level reading, 25.0 mL, is correct.",
               },
               {
-                title: "Reading the Cylinder from Above",
+                title: "The Tempting Eraser",
                 situation:
-                  "Two students measure the same 25 mL of water in the same graduated cylinder. One bends down to eye level and reads 25.0 mL. The other stays standing and reads 26.5 mL.",
+                  "In the sugar-dissolving test, Trial 2 at 50 °C took 95 s while Trials 1 and 3 took about 40 s. A groupmate wants to erase 95 s and write 40 s so the table looks neat.",
                 question:
-                  "Why did the two students get different numbers from the identical cylinder? Which reading should be recorded?",
+                  "What is the honest way to handle this?",
                 skill:
-                  "Parallax error — viewing the scale from above makes the liquid appear higher than it is. The eye-level reading of 25.0 mL is correct.",
-              },
-            ],
-          },
-        },
-
-        {
-          type: "applications",
-          heading: "Applications",
-          data: {
-            apps: [
-              {
-                title: "Medicine and Dosing",
-                description:
-                  "Doctors and pharmacists prescribe exact doses in milligrams and millilitres. An error of a few units can be life-threatening.",
-                icon: "💊",
-                color: "border-l-primary-500",
-              },
-              {
-                title: "Engineering and Construction",
-                description:
-                  "Engineers work to precise SI measurements. A wall framed even 5 mm out of square creates major problems fitting doors and windows.",
-                icon: "🏗️",
-                color: "border-l-secondary-500",
-              },
-              {
-                title: "International Trade",
-                description:
-                  "Countries trading goods rely on SI units to agree on the mass, volume, and dimensions of everything from food shipments to steel.",
-                icon: "🚢",
-                color: "border-l-accent-500",
-              },
-              {
-                title: "Scientific Research",
-                description:
-                  "Results are only trusted when they are both accurate and precise, so that laboratories in other countries can reproduce them exactly.",
-                icon: "🔬",
-                color: "border-l-primary-500",
+                  "Keep the 95 s in the record and note what might have gone wrong (for example, the water cooled or no one stirred the same way). Repeat the trial if possible. Changing data to look neat is dishonest and makes the results untrustworthy.",
               },
             ],
           },

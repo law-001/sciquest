@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import { SELECT } from '../portal';
 
 const INPUT = 'w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors resize-none'
 const LABEL = 'block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1'
@@ -31,7 +32,7 @@ function SubQuestionEditor({ sub, index, onChange, onRemove }) {
         <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
           <span className="text-xs font-black text-primary-600 dark:text-primary-400 shrink-0">#{index + 1}</span>
           <select
-            className="px-2 py-1 rounded-lg border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-bold text-stone-700 dark:text-stone-200 focus:outline-none"
+            className={SELECT}
             value={sub.type} onChange={e => onChange(newSubQuestion(e.target.value))}
           >
             {SUB_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -62,7 +63,7 @@ function SubQuestionEditor({ sub, index, onChange, onRemove }) {
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 mb-1">Correct Answer</label>
-            <select className={INPUT} value={sub.correctAnswer || ''}
+            <select className={`${SELECT} w-full`} value={sub.correctAnswer || ''}
               onChange={e => updateField('correctAnswer', e.target.value)}>
               <option value="">Select…</option>
               {(sub.options || []).filter(o => o.trim()).map(opt => <option key={opt} value={opt}>{opt}</option>)}

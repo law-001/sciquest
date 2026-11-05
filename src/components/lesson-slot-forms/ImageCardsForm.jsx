@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import ColorPicker from './_ColorPicker'
+import { SELECT } from '../portal';
 
 const INPUT =
   'w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors'
@@ -92,7 +93,7 @@ export default function ImageCardsForm({ initialHeading, initialData, onSubmit, 
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className={LABEL}>Badge Variant</label>
-                  <select className={INPUT} value={c.variant} onChange={(e) => updateCard(i, 'variant', e.target.value)}>
+                  <select className={`${SELECT} w-full`} value={c.variant} onChange={(e) => updateCard(i, 'variant', e.target.value)}>
                     {BADGE_VARIANTS.map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
                 </div>

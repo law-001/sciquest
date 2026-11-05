@@ -27,6 +27,7 @@ import OutlinePanel from '../components/editor/OutlinePanel'
 import UndoBar from '../components/editor/UndoBar'
 import { QUESTION_FORM_MAP, QUESTION_META, DEFAULT_QUESTION_DATA } from '../components/quiz-slot-forms'
 import Badge from '../components/Badge'
+import { SELECT } from "../components/portal";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -300,7 +301,7 @@ function LessonPickerField({ week, value, onChange, disabled, getQuiz, originalL
             value={value || ''}
             onChange={(e) => onChange(e.target.value || '')}
             disabled={disabled}
-            className="w-full px-3 py-2 rounded-xl border border-orange-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className={`${SELECT} w-full`}
           >
             <option value="">— Pick a lesson —</option>
             {lessons.map((l) => {
