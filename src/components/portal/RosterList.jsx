@@ -48,7 +48,7 @@ export function RosterRow({
   const body = (
     <>
       {index != null && (
-        <span className="w-7 shrink-0 text-[13px] font-black tabular-nums text-stone-300 dark:text-stone-600">
+        <span className="w-7 shrink-0 text-[13px] font-semibold tabular-nums text-stone-300 dark:text-stone-600">
           {index}
         </span>
       )}

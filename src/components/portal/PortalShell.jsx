@@ -70,7 +70,7 @@ function NavList({ items, activeId, onSelect, expanded, tone, onPick }) {
             aria-label={fullLabel}
             title={expanded ? undefined : fullLabel}
             className={cn(
-              "relative flex items-center h-11 rounded-xl text-sm font-bold transition-colors duration-200",
+              "relative flex items-center h-11 rounded-xl text-sm font-medium transition-colors duration-150",
               expanded ? "gap-3 px-3" : "justify-center px-0",
               isActive ? tone.activeItem : NAV_IDLE,
             )}
@@ -85,7 +85,7 @@ function NavList({ items, activeId, onSelect, expanded, tone, onPick }) {
             <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={2} />
             {expanded && <span className="truncate">{label}</span>}
             {hasBadge && expanded && (
-              <span className="ml-auto min-w-5.5 h-5.5 px-1.5 rounded-full bg-primary-700 text-white text-[11px] font-black tabular-nums flex items-center justify-center">
+              <span className="ml-auto min-w-5.5 h-5.5 px-1.5 rounded-full bg-primary-700 text-white text-[11px] font-semibold tabular-nums flex items-center justify-center">
                 {badge > 99 ? "99+" : badge}
               </span>
             )}
@@ -112,10 +112,10 @@ function Brand({ expanded, BrandIcon, brandLabel, tone }) {
       </div>
       {expanded && (
         <div className="min-w-0">
-          <p className="font-heading font-black text-[15px] leading-tight text-stone-900 dark:text-white truncate">
+          <p className="font-heading font-black text-[16px] leading-tight text-stone-900 dark:text-white truncate">
             {brandLabel}
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-400 dark:text-stone-400">
+          <p className="text-[12px] text-stone-500 dark:text-stone-400">
             SciQuest
           </p>
         </div>
@@ -220,7 +220,7 @@ export function PortalShell({
             aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
             title={collapsed ? "Expand navigation" : "Collapse navigation"}
             className={cn(
-              "flex items-center h-10 w-full rounded-xl text-sm font-bold transition-colors",
+              "flex items-center h-10 w-full rounded-xl text-sm font-medium transition-colors",
               NAV_IDLE,
               collapsed ? "justify-center" : "gap-3 px-3",
             )}
@@ -239,7 +239,7 @@ export function PortalShell({
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             title={isDark ? "Light mode" : "Dark mode"}
             className={cn(
-              "flex items-center h-10 w-full rounded-xl text-sm font-bold transition-colors",
+              "flex items-center h-10 w-full rounded-xl text-sm font-medium transition-colors",
               NAV_IDLE,
               collapsed ? "justify-center" : "gap-3 px-3",
             )}
@@ -266,7 +266,7 @@ export function PortalShell({
             >
               <span
                 className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shrink-0",
+                  "w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm shrink-0",
                   tone.chip,
                 )}
               >
@@ -275,7 +275,7 @@ export function PortalShell({
               {!collapsed && (
                 <>
                   <span className="min-w-0 flex-1 text-left">
-                    <span className="block text-sm font-bold text-stone-700 dark:text-stone-200 truncate">
+                    <span className="block text-sm font-medium text-stone-700 dark:text-stone-200 truncate">
                       {userName}
                     </span>
                     <span className="block text-[11px] text-stone-500 dark:text-stone-400 truncate">
@@ -295,7 +295,7 @@ export function PortalShell({
             {menuOpen && (
               <div className="absolute bottom-full left-0 mb-2 w-56 rounded-2xl bg-white dark:bg-stone-800 border border-orange-100 dark:border-stone-700 shadow-xl overflow-hidden z-50">
                 <div className="px-4 py-3 border-b border-orange-100 dark:border-stone-700">
-                  <p className="text-sm font-black text-stone-900 dark:text-white truncate">
+                  <p className="text-sm font-semibold text-stone-900 dark:text-white truncate">
                     {userName}
                   </p>
                   {userEmail && (
@@ -305,7 +305,7 @@ export function PortalShell({
                   )}
                   <span
                     className={cn(
-                      "inline-block mt-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md",
+                      "inline-block mt-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md",
                       tone.badge,
                     )}
                   >
@@ -315,7 +315,7 @@ export function PortalShell({
                 <button
                   type="button"
                   onClick={onSignOut}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Log out
@@ -396,14 +396,14 @@ export function PortalShell({
               <div className="flex items-center gap-2.5 px-1 py-2">
                 <span
                   className={cn(
-                    "w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0",
+                    "w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm shrink-0",
                     tone.chip,
                   )}
                 >
                   {initial}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-stone-700 dark:text-stone-200 truncate">
+                  <p className="text-sm font-medium text-stone-700 dark:text-stone-200 truncate">
                     {userName}
                   </p>
                   {userEmail && (
@@ -416,7 +416,7 @@ export function PortalShell({
               <button
                 type="button"
                 onClick={onSignOut}
-                className="mt-1 w-full flex items-center gap-2.5 h-11 px-3 rounded-xl text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
+                className="mt-1 w-full flex items-center gap-2.5 h-11 px-3 rounded-xl text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-900/20 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Log out

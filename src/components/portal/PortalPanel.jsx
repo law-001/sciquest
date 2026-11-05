@@ -10,7 +10,7 @@ export function PortalPanel({ className, children, ...props }) {
   return (
     <section
       className={cn(
-        "rounded-3xl border border-orange-100 dark:border-stone-700 bg-white dark:bg-stone-800 overflow-hidden",
+        "rounded-2xl border border-orange-100 dark:border-stone-700 bg-white dark:bg-stone-800 overflow-hidden",
         className,
       )}
       {...props}
@@ -24,11 +24,11 @@ export function PortalPanel({ className, children, ...props }) {
 export function PanelHeader({ title, count, children }) {
   return (
     <div className="flex items-center gap-3 px-5 h-12 border-b border-orange-100 dark:border-stone-700">
-      <h2 className="text-[13px] font-black uppercase tracking-[0.1em] text-stone-500 dark:text-stone-400">
+      <h2 className="text-[14px] font-black text-stone-800 dark:text-stone-100">
         {title}
       </h2>
       {count != null && (
-        <span className="text-[11px] font-bold tabular-nums text-stone-400 dark:text-stone-500 px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-stone-700/60">
+        <span className="text-[12px] tabular-nums text-stone-500 dark:text-stone-400">
           {count}
         </span>
       )}

@@ -263,7 +263,7 @@
         if (bb && bd > 30) { tx = bb.x; ty = bb.y; }
         else if (bb && bd <= 30) { this._escape(r); return; }
         else { tx = r.x + (r.x - this.p.x); ty = r.y + (r.y - this.p.y); }
-        let a = Math.atan2(ty - r.y, tx - r.x);
+        let a = this.avoidHeading(r, r.x, r.y, tx, ty, 13);
         a += Math.sin(this.time * 8 + r.jit) * 0.28;       // juke
         speed = this.rabbitFleeSpeed; anim = 'sprint'; fps = 16; r.face = a; this._moveRabbit(r, a, speed, dt);
         if (r.exclaim > 0) r.exclaim -= dt;
@@ -273,7 +273,7 @@
         if (r.sentinel) { r.scanT -= dt; if (r.scanT <= 0) { r.scanAng += rand(-1.4, 1.4); r.scanT = rand(1.0, 2.4); anim = 'alert'; } }
         if (r.t > rand(1.8, 3.6)) { r.state = 'wander'; r.t = 0; this._newWander(r); }
       } else { // wander
-        const a = Math.atan2(r.wp.y - r.y, r.wp.x - r.x);
+        const a = this.avoidHeading(r, r.x, r.y, r.wp.x, r.wp.y, 13);
         speed = 78; anim = 'hop'; fps = 11; r.face = a; this._moveRabbit(r, a, speed, dt);
         if (r.sentinel) r.scanAng = a;
         if (dist(r.x, r.y, r.wp.x, r.wp.y) < 24 || r.t > 4) { r.state = 'graze'; r.t = 0; }
@@ -374,7 +374,7 @@
         tx = f.wp.x; ty = f.wp.y; speed = 92; anim = 'walk'; fps = 9;
         if (dist(f.x, f.y, tx, ty) < 28) f.wp = this._wander(f.x, f.y);
       }
-      const a = Math.atan2(ty - f.y, tx - f.x);
+      const a = this.avoidHeading(f, f.x, f.y, tx, ty, 20);
       const turn = (f.state === 'pounce' ? 7 : 3.2) * dt;
       f.faceSmooth = f.faceSmooth == null ? a : f.faceSmooth + clamp(angleDiff(f.faceSmooth, a), -turn, turn);
       f.face = f.faceSmooth;

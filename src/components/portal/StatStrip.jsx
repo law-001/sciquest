@@ -12,7 +12,7 @@ import { TICK, TONE_ORDER } from "./tones";
  */
 export function StatStrip({ items }) {
   return (
-    <section className="rounded-3xl border border-orange-100 dark:border-stone-700 bg-white dark:bg-stone-800 overflow-hidden grid grid-cols-2 md:grid-cols-4">
+    <section className="rounded-2xl border border-orange-100 dark:border-stone-700 bg-white dark:bg-stone-800 overflow-hidden grid grid-cols-2 md:grid-cols-4">
       {items.map((item, i) => (
         <div
           key={item.label}
@@ -31,10 +31,10 @@ export function StatStrip({ items }) {
               TICK[item.tone ?? TONE_ORDER[i % TONE_ORDER.length]],
             )}
           />
-          <p className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
+          <p className="text-[12px] font-medium text-stone-500 dark:text-stone-400">
             {item.label}
           </p>
-          <p className="mt-1 text-[22px] leading-none font-black tabular-nums text-stone-900 dark:text-white">
+          <p className="mt-1 text-[22px] leading-none font-semibold tabular-nums text-stone-900 dark:text-white">
             {item.value}
           </p>
           {item.hint && (

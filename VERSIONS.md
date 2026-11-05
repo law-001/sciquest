@@ -723,169 +723,49 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Commit: Plant cell L3: move answer pills onto the stage, drop bottom bar
 
 ## VERSION_103
-- Mobile navbar: moved the leaderboard trophy out of the top bar and into the burger menu as a "Leaderboard" row under the nav links; the dark-mode toggle now sits alone on the right next to the burger, so the bar no longer crowds the SciQuest logo on a narrow screen.
-  - `layout/Navbar.jsx`: dropped the trophy button from the `md:hidden` bar, sized the theme toggle to a 44px tap target, added the leaderboard entry to the mobile menu. Desktop bar unchanged.
-- Commit: Mobile navbar: leaderboard into the burger menu, theme toggle to the right
+- Plant Cell thumbnail: replaced `src/assets/plantcell.png` with the plant-by-the-window room scene, cropped to 16:9 (612 × 344) around the window and plant so the game card's `object-cover` doesn't cut it unpredictably.
+- Commit: Plant cell: new room-scene thumbnail
 
 ## VERSION_104
-- Live Quest lobby: lesson-quiz questions are now inspectable and editable, not just a line of text.
-  - `lib/liveQuest.js`: added `getPickerOptions` — normalises a question's answers for the picker, handling both the lesson shape (`correctAnswer`) and the set shape (`correctIndexes` into blank-padded `options`).
-  - `live-quest/LiveQuestHost.jsx`: new `QuestionOptions` renders each question's answers under it with the correct one(s) ticked (lettered A–D, green + check icon, never colour alone); lesson questions gained a per-question pencil that opens that lesson's quiz editor. `onEditQuiz` threaded `LiveQuestHost` → `HostRoom` → `HostLobby` → `QuestionGroupPicker`.
-  - `pages/TeacherPortalPage.jsx`: passes `onEditQuiz` into `LiveQuestHost`.
-  - `App.jsx`: `onEditQuiz` takes an optional `returnTab` (default `quiz-management`) so a host editing mid-lobby returns to the Live Quest tab and `fetchOpenHostedRoom` picks the room back up.
-- Commit: Live Quest: preview lesson question answers in the lobby and open the quiz editor from it
+- Food Chain Survival performance: fixed low FPS / lag.
+  - `js/levels.js` `renderScene`: props wholly off screen are no longer drawn (margins `CULL_X` / `CULL_BELOW` / `CULL_ABOVE`; the world tree always draws). Before, every bush, grass clump, flower and pond on the whole map was redrawn every frame.
+  - `js/grass.js`: blade colours (base, tip, vein) are worked out once per blade when a clump is generated instead of re-mixing arrays and building colour strings for every blade every frame. Looks identical.
+- Commit: Food chain survival: cull off-screen props, cache grass colours
 
 ## VERSION_105
-- Week 1 Lesson 1 quiz ("Uses of Scientific Models"): added a multiple-choice question asking which model type a globe is, with the four types as options and an explanation drawn from the lesson's Breakdown section. Appended after the existing essay so the essay keeps `q1` and existing attempts aren't disturbed.
-  - `data/quizzesweek-01.js`: new `q2`, 5 points.
-- Commit: Week 1 Lesson 1 quiz: add a multiple-choice question on model types
+- Food Chain Survival: smarter animal movement — foxes and rabbits now steer around bushes, ponds, rocks and other blockers instead of walking straight into them and sliding along the edge.
+  - `js/levels.js`: new shared `avoidHeading(agent, x, y, tx, ty, r)` — looks `AVOID_LOOK` (130px) ahead; if the straight path crosses a blocker (grown by the animal's radius + `AVOID_PAD` 16px so they clear the drawn edge), it aims at the tangent past it, remembering which side until the path is clear. Never avoids a blocker the target is inside (burrows).
+  - `js/level1.js` (hunting foxes), `js/level2.js` (rival foxes, fleeing + wandering rabbits), `js/level3.js` (fox, fleeing + wandering bunnies) use it. The old push-out collision and stuck fallback stay as a safety net.
+- Commit: Food chain survival: foxes and rabbits steer around obstacles
 
 ## VERSION_106
-- Live Quest lobby: removed the inline answer list from the question picker. A host's screen is often mirrored to the class projector while students join, so listing the options and flagging the correct one gave the answer away before the question started. The picker now shows only the question text and its type/settings chips; answers are seen in the quiz editor via the per-question pencil (added in VERSION_104), which is unchanged.
-  - `live-quest/LiveQuestHost.jsx`: dropped the `QuestionOptions` component and its call site.
-  - `lib/liveQuest.js`: removed the now-unused `getPickerOptions`.
-- Commit: Live Quest: stop revealing answers in the lobby picker, keep them in the editor
+- Added the `unslop` Claude skill (from github.com/heydamir/unslop, CC BY 4.0) to `.claude/skills/unslop/` so it ships with the repo. It's a UI redesign pass that strips AI-looking design tells.
+- Commit: Add unslop Claude skill to project skills
 
 ## VERSION_107
-- Live Quest lobby: question groups now start collapsed. Landing on the tab showed every lesson's full question list expanded at once, which buried the week picker and the lessons below it; the host now opens just the group they're picking from.
-  - `live-quest/LiveQuestHost.jsx`: `QuestionGroupPicker`'s `isOpen` defaults to `false`.
-- Commit: Live Quest: start question groups collapsed in the lobby
+- Admin dashboard unslop polish (also touches the shared portal components, so the teacher portal gets the same type and radius fixes).
+  - `src/components/portal/*`: dropped weight-900 headings and figures to 500/600; uppercase tracked labels (panel titles, metric labels, table heads, "SciQuest" under the brand) are now sentence case; panels `rounded-3xl` to `rounded-2xl`; panel count pill is now quiet text; nav labels `font-medium`.
+  - `MetricRibbon.jsx`: removed the rainbow tick per metric (and the now-unused `tone` keys in admin + teacher metrics), so the stats read as neutral numbers.
+  - `AdminDashboardPage.jsx` Dashboard tab: title "Control Center" to "Dashboard"; role badges to plain text; removed the 2-slice donut, and Account mix is now a students-per-teacher figure; section bar colors limited to orange/teal/yellow + stone (no violet/blue); Curriculum reach is the one orange moment, with week-boundary ruler ticks and an "About week N of M on average" line; teaching staff use `Avatar`; one fade-and-rise entrance instead of three.
+  - Modals: sentence-case titles/buttons, no "!", the email label is linked to its input, lighter weights, `rounded-xl` confirm buttons with a 0.98 press.
+- Commit: Unslop admin dashboard and shared portal type
 
 ## VERSION_108
-- Live Quest lobby: added a disclaimer above the lesson list stating the pre-built questions are the exact questions from each lesson's quiz, so playing them doubles as review. Also notes that only multiple-choice and true/false can go live, and points at the pencil for edits.
-  - `live-quest/LiveQuestHost.jsx`: teal callout with an `Info` icon in the Lessons source tab.
-- Unified every dropdown a teacher sees. There were four different looks in play (`rounded-lg` vs `rounded-xl`, three focus rings, `stone-800` vs `stone-900` dark backgrounds, four text sizes, and two with no focus ring at all).
-  - `components/portal/fields.js` (new): one `SELECT` class string — `rounded-xl`, orange-200/stone-600 border, white/stone-800 background, stone-900/white text, orange focus ring, 44px min height, disabled states. Width is left to the call site. Exported from `components/portal/index.js`.
-  - Applied to all 18 teacher-side dropdowns: `TeacherPortalPage.jsx` (4), `QuizEditorPage.jsx` (1), `live-quest/LiveQuestHost.jsx` (2), `live-quest/QuestionSetEditor.jsx` (3), and the slot forms Applications, ImageCards, SortBuckets, DragLabel, MultipleChoice, CaseStudy (2), PictureBased, Matching.
-  - The Live Quest week picker and the two `focus:outline-none`-only dropdowns gained a visible focus ring they previously lacked.
-  - Left alone: `AdminDashboardPage.jsx` (admin, not teacher) and `quiz-slots/MatchingQuestion.jsx` (student-facing).
-- Commit: Live Quest disclaimer on lesson questions; unify every teacher-side dropdown on one SELECT token
+- Portal titles back to `font-black`, per preference: page titles (`MetricRibbon`, `TabHead`), panel titles (`PanelHeader`), the sidebar brand label, `RosterGroup` names, and admin modal headings. Figures, labels and table heads stay at the lighter VERSION_107 weights; titles stay sentence case.
+- Commit: Restore bold portal titles
 
 ## VERSION_109
-- Quiz Checking: the "All caught up" group is now collapsed by default, so the screen opens on what still needs grading. "Needs grading" stays expanded. Reuses the `<details>`/`<summary>` pattern already used for "Not attempted" in the same file, so no new state.
-  - `pages/TeacherPortalPage.jsx`: `QuizCheckingSlot`'s group list gained an `isCollapsed` flag; the done group renders as `<details>` with a rotating chevron.
-- Dropdown picker panels: rounded the open list, as far as the platform allows. A native `<select>`'s popup is drawn by the browser rather than the page, so `border-radius` on the control only rounds the closed box. Chrome/Edge 135+ allow the page to take the picker over with `appearance: base-select`; Firefox and Safari treat the value as invalid and keep their native popup, so this is progressive enhancement and nothing depends on it.
-  - `index.css`: new `@supports (appearance: base-select)` block — 14px panel radius, 10px per-option radius, cream/stone-800 panel with light and dark borders, shadows and hover/selected colours for both themes, and Chrome's duplicate checkmark hidden.
-  - `components/portal/fields.js`: `SELECT` now carries the `sq-select` hook class.
-- Commit: Collapse "All caught up" by default; round the dropdown picker panel where the browser allows it
+- `MetricRibbon` stat labels (STUDENTS / TEACHERS / LESSONS / COMPLETIONS) are back to small uppercase tracked `font-black`, per preference. Color is now `stone-500` instead of the original `stone-400`, so the 10px text passes 4.5:1 contrast on white.
+- Commit: Restore uppercase metric labels in portal ribbon
 
 ## VERSION_110
-- Reverted the `appearance: base-select` picker styling from VERSION_109. Opting in hands Chrome the closed control as well as the popup, and the auto-generated button is not vertically centred inside the 44px box — every dropdown rendered its label and arrow top-aligned, and the arrow became a text glyph instead of the native chevron. Native dropdowns centre their own label, so removing the block restores correct rendering in every browser.
-  - `index.css`: `@supports (appearance: base-select)` block removed, replaced by a note recording why the popup cannot be rounded from CSS and what rounding it would actually cost.
-  - `components/portal/fields.js`: dropped the now-unused `sq-select` hook class.
-  - The unified `SELECT` token from VERSION_108 is untouched — closed controls keep their rounded corners, shared border, background, text and focus ring.
-- Commit: Revert base-select picker styling, it top-aligned every dropdown label
+- Admin Lessons tab week cards: everything now sits in the same place on every card. The category badge moved up to the WEEK row (right-aligned, one line) so it no longer squeezes the title; the title and description each get a fixed two-line slot; the lesson/XP footer is pinned to the card bottom. The icon tile is 40px (was 48). "1 lessons" now reads "1 lesson". The entrance animation skips when reduced motion is on.
+- Commit: Align admin lesson week cards
 
 ## VERSION_111
-- Mobile navbar: the hamburger now sits flush against the right edge with the dark-mode toggle beside it. It was held ~24px in from the edge because `Button` concatenates class strings without tailwind-merge, so the hamburger kept `px-6` from its default `md` size on top of the `p-2` it was given. Both bar buttons are now plain 44px squares sharing one `iconButton` class.
-- Fixed the close icon: the path was `M6 18L18 6M6 6h12v12`, whose second subpath draws a top edge plus a right edge rather than the second diagonal, so the open-menu icon rendered as an arrow-and-corner instead of an X. Now `M6 6l12 12M6 18L18 6`. The two icons also collapsed into one `<svg>` with a conditional `d`, and the stroke follows `currentColor` instead of four hardcoded hex values.
-- The hamburger gained `aria-label` and `aria-expanded`, which it never had.
-- Removed the trophy icon from the "Leaderboard" row in the burger menu so it matches the plain text nav links above it.
-  - `layout/Navbar.jsx`.
-- Commit: Mobile navbar: flush-right hamburger, fix malformed close icon, plain leaderboard row
+- Admin Lessons tab week cards: the title is now a single line that ends in "…" when too long (full title on hover), instead of a fixed two-line slot that left a gap under short titles.
+- Commit: Single-line truncated titles on admin lesson cards
 
 ## VERSION_112
-- Mobile navbar: the theme toggle + hamburger now sit together on the far right with a clear gap from the SciQuest logo. The group was auto-placing into the hidden centre grid column; pinned it with `col-start-3`, and the gap between the two buttons is now `gap-2`.
-  - `layout/Navbar.jsx`.
-- Landing hero on tall portrait phones (e.g. iPhone 16 Pro Max): the mountain/cloud SVGs had no height, so they shrank to their 1440×600 aspect and left empty bands across the bottom of the scene. They now fill their layers (`height: "100%"`), and the scene container is capped at `min(62vh, 90vw)` so the ranges don't stretch into spikes. Also fixed the last Earth cloud layer height `"38"` (38px) → `"38%"`.
-  - `pages/LandingPage.jsx`.
-- Commit: Fix mobile navbar button placement and hero scene distortion on portrait phones
-
-## VERSION_113
-- Seed script: added `--weeks=4,5,6` to `scripts/seed-curriculum.mjs`, so a batch of rewritten weeks can be uploaded to Supabase without touching any other lesson or any quiz. Combined with `--force`, it overwrites only those weeks' lessons.
-  - Why: the `bump_updated_at` trigger fires on every upsert, so a lesson that has been seeded twice looks "teacher-edited" to `wasEditedByTeacher()` and a plain re-seed skips it. Before this flag, the only way past that was a full `--force`, which also wiped every real teacher edit and every quiz.
-  - Default behaviour without `--weeks` is unchanged (all lessons and quizzes).
-- Commit: Add --weeks filter to seed:curriculum so single weeks can be re-uploaded
-
-## VERSION_114
-- MATATAG content: rewrote the text of Weeks 4–6 (5 lessons) to teach the Q1 W4–W6 curriculum-map competencies, in Grade 7 language, with Filipino examples and American spelling. Ids, titles, badges, XP, and signature widgets are unchanged; `sections[]` match `layout[]` one-to-one.
-  - `lessonsweek-04.js` (w04-l1): new "How Particles Are Arranged" imageCards (solid/liquid/gas), split heating (solid→liquid→vapor) and cooling (vapor→liquid→solid) timelines, plateau explanation, new "Changes of State Around You" imageCards (halo-halo, sampayan, rice-cooker lid, mothballs, freezer frost), local scenarios and applications (Pangasinan salt beds, daing, saving LPG). Removed the "Melting vs. Freezing" comparison (now covered by the timelines). RESPECT values in the intro.
-  - `lessonsweek-05.js` (w05-l1): steps rebuilt around the map's five parts (aim, materials, method, results/data, conclusion), using a monggo/rice-water example, plus a new "The Steps in Action" imageCards. RESPECT for evidence. (w05-l2): tools now ruler, tape measure, graduated cylinder, balance, thermometer, and stopwatch; new "Recording Data in Tables and Charts" timeline; INTEGRITY scenario about not erasing data.
-  - `lessonsweek-06.js` (w06-l1): Iced Tea Dilemma intro, "Solute and Solvent Around You" (solid/liquid/gas/solid-in-solid solutions), new "How Much Solute Is in a Solution?" (g per mL, % by mass, % by volume), heat-and-solubility figures; dropped the suspension/colloid cards. (w06-l2): Performance Task 2 rewritten to the map's GRASPS: groups of 5, a 1–3 minute "Solution Showcase" video, and the map's rubric (25/25/20/20/10).
-  - Pictures not done yet (text-only pass, as requested). New picture spots temporarily reuse existing images (`week2/*`, `week3/*`, `lab.jpg`, etc.), and each `imageAlt` already describes the intended picture.
-  - Uploaded to Supabase with `seed:curriculum --weeks=4,5,6` (5 lessons, 0 quizzes).
-- Commit: MATATAG content: rewrite Weeks 4–6 lesson text to the Q1 curriculum map
-
-## VERSION_115
-- MATATAG content: shortened the lesson sidebar for Weeks 4–5 by merging or dropping sections. `sections[]` still match `layout[]` one-to-one.
-  - `lessonsweek-04.js` (w04-l1), 11 → 7: the heating, cooling and temperature timelines are now one "Heating and Cooling" timeline (the flat-temperature explanation is inside the melting/boiling/freezing steps). Dropped the "Sublimation and Deposition" comparison (still covered by the picture cards, key terms and scenarios) and "Applications" (daing and the ice-packed fish moved into the card examples; the LPG point moved into the boiling step).
-  - `lessonsweek-05.js` (w05-l1), 8 → 6: dropped "Key Terms" (each term is defined where it is taught); merged "Independent vs. Dependent Variable" and "Rules for a Fair Test" into one "Variables and Fair Tests" list.
-  - `lessonsweek-05.js` (w05-l2), 9 → 6: dropped "Key Terms", "Measurement Tips" and "Applications"; their points already appear in the tool cards, the graduated-cylinder steps and the data-table steps.
-  - Re-uploaded with `seed:curriculum --weeks=4,5 --force` (3 lessons, 0 quizzes); the earlier upload had falsely marked them as teacher-edited.
-- Commit: MATATAG content: trim Weeks 4–5 lesson sections so the sidebar is shorter
-
-## VERSION_116
-- MATATAG content: rewrote the text of Weeks 7–9 (5 lessons) to teach the Q1 W7–W9 curriculum-map competencies, in Grade 7 language, with Filipino examples and American spelling. Ids, titles, badges, XP, and signature widgets are unchanged; `sections[]` match `layout[]` one-to-one.
-  - `lessonsweek-07.js` (w07-l1): unsaturated / saturated / supersaturated cards, dilute vs. concentrated, step-by-step percent by mass and by volume with local practice problems (gulaman syrup, calamansi juice), and solubility factors as mini-demos (temperature for solids and gases, like dissolves like, pressure, stirring only speeds dissolving). Dropped ppm and C₁V₁ = C₂V₂. (w07-l2): litmus reactions in acid, base and neutral solutions; household and school items sorted as acid, base or salt; where salts come from (neutralization); new "Safe Use, Storage and Disposal" (never mix bleach with acids, original labeled bottles, 911). RESPONSIBLE values.
-  - `lessonsweek-08.js` (w08-l1): tools grouped into glassware, measuring instruments, and heating/handling/viewing tools (alcohol lamp added); new "Proper Use and Handling" steps and a "Choosing the Right Tool" scenario. The microscope-focusing steps were dropped (Week 11 teaches them). (w08-l2): rules with reasons, six safety-symbol cards (flammable, corrosive, toxic, irritant, environmental, lab signs) with the proper response for each, label reading, accident steps, and scenarios.
-  - `lessonsweek-09.js` (w09-l1): Performance Task 3 rewritten as the map's "Color Clues": six products (vinegar, calamansi, salt solution, shampoo, liquid soap, diluted Zonrox), measured in mL, red cabbage / eggplant indicator or pH paper, GRASPS cards, lab-report parts, and the map's rubric (25/25/20/20/10).
-  - Pictures not done yet (text-only pass, as requested). New picture spots temporarily reuse existing images, and each `imageAlt` describes the intended picture.
-- Lesson sidebar: a layout slot can now set `isSubsection: true`. It still renders in full, but it isn't listed in the Contents sidebar, and while it is on screen the entry above it stays highlighted. Weeks 7–9 use it to keep the sidebar to at most 6 entries per lesson.
-  - `components/LessonTemplate.jsx`.
-- Uploaded to Supabase with `seed:curriculum --weeks=7,8,9` (5 lessons, 0 quizzes; no `--force` needed).
-- Commit: MATATAG content: rewrite Weeks 7–9 lesson text; cap lesson sidebar at 6 entries via isSubsection
-
-## VERSION_117
-- MATATAG content: rewrote the text of Weeks 11–12 (4 lessons) to teach the Q2 W1–W2 curriculum-map competencies, in Grade 7 language, with Filipino examples and American spelling. Week 10 is an exam week with no lessons and was left as is. Ids, titles, badges, XP, and signature widgets are unchanged (explainer text respelled only); `sections[]` match `layout[]` one-to-one, and `isSubsection` keeps every sidebar at 6 entries.
-  - `lessonsweek-11.js` (w11-l1): microscope parts grouped as viewing/magnifying, support, focusing and lighting parts; new "Low Power vs. High Power" comparison; step-by-step use; wet mount (onion skin, iodine); new "Proper Handling and Storing" (two hands, lens paper, 4× objective down, dust cover, dry cabinet with silica gel because of humid weather). Applications: TB sputum smears, malaria in Palawan, BFAR red tide monitoring. RESPONSIBLE values. (w11-l2): early scientists (Janssens, Galileo, Hooke, Leeuwenhoek, Malpighi, Brown/Schleiden/Schwann), new "Antonie van Leeuwenhoek's Discoveries" imageCards, "Before and After the Microscope", modern uses (RITM, BFAR, PNP Crime Lab), light vs. electron microscopes, and "Think About It" scenarios. RESPECT values. Pasteur/Koch removed.
-  - `lessonsweek-12.js` (w12-l1): three ideas of the cell theory, new "Unicellular or Multicellular?" imageCards (Yakult bacteria, nata de coco, paramecium, yeast in pandesal, kangkong, carabao, oyster mushrooms), unicellular vs. multicellular, prokaryotic vs. eukaryotic, and "Classify It!" scenarios. Specialized cell types removed. RESPECT for the diversity of life. (w12-l2): six major parts (cell membrane, nucleus, cytoplasm, mitochondria, chloroplasts, ribosomes) with a bakery analogy, "What You Can See at 400×", helper organelles, "Observing Cells Under the Microscope" (onion, cheek cells, hydrilla, drawing and labeling), and good observing habits. EXCELLENCE values. Cytoskeleton section and ATP/phospholipid detail removed.
-  - Pictures not done yet (text-only pass, as requested). New picture spots temporarily reuse existing images, and each `imageAlt` describes the intended picture.
-  - Uploaded to Supabase with `seed:curriculum --weeks=11,12` (4 lessons, 0 quizzes; no `--force` needed).
-- Commit: MATATAG content: rewrite Weeks 11–12 lesson text to the Q2 curriculum map
-
-## VERSION_118
-- MATATAG content: Weeks 11–12 now have exactly 6 sections per lesson, so the sidebar shows at most 6 even on a build without the `isSubsection` sidebar change. `isSubsection` is no longer used in these weeks.
-  - `lessonsweek-11.js` (w11-l1): removed Key Terms, "Low Power vs. High Power" (its points are now in the "Switch to Higher Power" step) and Applications (TB, malaria and red tide uses are now in the intro). "Preparing a Wet Mount Slide" is now a sidebar entry. (w11-l2): removed Key Terms and "Light vs. Electron Microscopes", which is now a card in "Microscopes in Modern Science".
-  - `lessonsweek-12.js` (w12-l1): removed Key Terms, "Unicellular vs. Multicellular" and "Key Distinctions"; the key distinctions are now in the prokaryotic/eukaryotic intro. (w12-l2): removed Key Terms, "What You Can See at 400×" (now in the high-power step tip) and "Helper Organelles" (ER and Golgi are now in the intro).
-  - Re-uploaded with `seed:curriculum --weeks=11,12 --force` (4 lessons, 0 quizzes). The upload from VERSION_117 had falsely flagged them as teacher-edited.
-- Commit: MATATAG content: cut Weeks 11–12 lessons to 6 sections each
-
-## VERSION_117
-- Lesson sidebar: the Contents list now shows at most 6 entries on every lesson, not only the ones that use `isSubsection`. When a lesson still has more than 6, supporting slot types fold out first (Key Terms, then Key Concepts, Scenarios, Applications, Comparison, Reason cards, Timeline, Image cards, always keeping the first entry), and anything left over past 6 is cut from the end. Hidden sections still render in full and highlight the sidebar entry above them while on screen.
-  - Limit and fold order: `MAX_TOC_ITEMS` and `TOC_FOLD_ORDER` at the top of `components/LessonTemplate.jsx`.
-  - Checked against every lesson in `src/data/`: the largest sidebar is now 6 entries (it was 9 on w06-l1).
-- Commit: Cap the lesson Contents sidebar at 6 entries for every lesson
-
-## VERSION_118
-- MATATAG content: rewrote the text of Weeks 13–15 (5 lessons) to teach the Q2 W3–W5 curriculum-map competencies, in Grade 7 language, with Filipino examples and American spelling. Ids, titles, badges, XP, and signature widgets are unchanged (signature text respelled only). `sections[]` match `layout[]` one-to-one, and `isSubsection` keeps every lesson's sidebar at exactly 6 entries, while lessons still have 8–9 sections each.
-  - `lessonsweek-13.js` (w13-l1): new "The Major Organelles" imageCards (cell membrane, nucleus, cytoplasm, mitochondria, chloroplasts, cell wall, vacuole, each saying which cell type has it), plant vs. animal comparison, "How They Are Alike", step-by-step onion-skin and cheek-cell slides, Performance Task 1 rubric (30/20/20/20/10), palengke/pechay scenarios. EXCELLENCE values. Golgi/ER/lysosome/plastid/cilia detail removed.
-  - `lessonsweek-14.js` (w14-l1): why cells reproduce, "From Parents to Offspring" (46 → 23 → fertilization → zygote), "One Parent or Two?" sexual vs. asexual comparison, new example cards (bacteria, katakataka, chicken, mango), SERVICE applications (blood donation, cancer care). (w14-l2): cell-cycle stages G1/S/G2/mitosis/cytokinesis, "What Happens During Interphase", checkpoints, interphase vs. mitotic phase, new onion-root-tip imageCards, scenarios.
-  - `lessonsweek-15.js` (w15-l1): four stages of mitosis with PMAT cues, cytokinesis in plants vs. animals, new "Build a Mitosis Model" (yarn/pipe cleaners), new "Review: Microscope, Cell Parts and Early Scientists" (covers competency 4; adds Flemming). (w15-l2): separate Meiosis I and Meiosis II timelines, mitosis vs. meiosis, why every gamete is different, new "Draw a Meiosis Diagram", rice/PhilRice/Carabao Center examples.
-  - Pictures not done yet (text-only pass, as requested). New picture spots temporarily reuse existing images, and each `imageAlt` describes the intended picture.
-  - Uploaded to Supabase with `seed:curriculum --weeks=13,14,15` (5 lessons, 0 quizzes; no `--force` needed).
-- Commit: MATATAG content: rewrite Weeks 13–15 lesson text; 6-entry sidebar per lesson
-
-## VERSION_119
-- MATATAG content: Weeks 4 and 6–9 now have exactly 6 sections per lesson (same as Weeks 5, 11 and 12), so the sidebar never shows more than 6, even on a build without the `isSubsection` sidebar change. No lesson in Weeks 4–12 uses `isSubsection` anymore.
-  - `lessonsweek-04.js` (w04-l1): removed Key Terms; endothermic/exothermic and the melting/boiling points of water are now in the intro.
-  - `lessonsweek-06.js` (w06-l1): removed Key Terms, Key Concepts and Applications. (w06-l2): removed "Why This Task Matters".
-  - `lessonsweek-07.js` (w07-l1): removed Key Terms, Key Concepts and "Concentration in Daily Life". (w07-l2): removed Key Terms, "The pH Scale" and "Where Salts Come From" (pH range and neutralization are now in the "Acids vs. Bases" intro) and "Why Acids and Bases Matter".
-  - `lessonsweek-08.js` (w08-l1): removed Key Terms, "Care and Storage" (now the tip on the "Clean and Return" step) and "Tools Beyond the Classroom". (w08-l2): removed Key Terms and "Safety Beyond the Lab".
-  - `lessonsweek-09.js` (w09-l1): removed "GRASPS at a Glance" (now a GRASPS paragraph in the intro), "What You Will Need" (materials list now in the "Making Your Indicator" intro) and "Why Acids and Bases Matter".
-  - Supabase upload still pending: `seed:curriculum --weeks=4,6,7,8,9 --force`.
-- Commit: MATATAG content: cut Weeks 4 and 6–9 lessons to 6 sections each
-
-## VERSION_119
-- MATATAG content: Weeks 13–15 lessons now have exactly 6 sections each, so the Contents sidebar shows 6 entries even where the sidebar cap in `LessonTemplate.jsx` isn't deployed yet (that change was never committed, so the live site still listed every section).
-  - Removed the `isSubsection` slots and moved their content into the sections that remain:
-    - `lessonsweek-13.js`: plant/animal similarities moved into the comparison intro; the Performance Task 1 rubric became step 6 of "Observing Plant and Animal Cells".
-    - `lessonsweek-14.js` (w14-l1): "When Division Goes Wrong" (contact inhibition, cancer) became a 6th "Why Cells Reproduce" card; Key Terms and the example cards dropped (terms are defined in "From Parents to Offspring", and examples are in "One Parent or Two?"). (w14-l2): checkpoints became a 5th interphase card; the onion root tip moved into the "Counting Cells" scenario; Key Terms dropped. Removed the now-unused placeholder image imports.
-    - `lessonsweek-15.js` (w15-l1): plant vs. animal cytokinesis moved into the Telophase card; Key Terms dropped. (w15-l2): Meiosis I and II merged into one 7-step "The Stages of Meiosis I and II" timeline (independent assortment named in metaphase I); "Why Every Gamete Is Different" moved into that timeline and the siblings scenario; Key Terms dropped.
-- Commit: MATATAG content: cut Weeks 13–15 lessons to exactly 6 sections each
-
-## VERSION_120
-- MATATAG content: rewrote the text of Weeks 16–18 (5 lessons) to teach the Q2 W6–W8 curriculum-map competencies, in Grade 7 language, with Filipino examples and American spelling. Ids, titles, badges, XP, and signature widgets are unchanged (signature text respelled only). `sections[]` match `layout[]` one-to-one. Each lesson has 7–8 sections, but only 6 show in the Contents sidebar; the extras use `isSubsection: true`.
-  - `lessonsweek-16.js` (w16-l1): Math and Science Fair 2025 as the map's GRASPS (exhibit, experiment or model on a Q2 topic), project-idea cards, team build steps, team roles, "Make It Original and Green" (RELIABLE values), a 2-minute presentation flow, and the map's rubric (40/30/15/15). (w16-l2): gametes (sperm, egg, pollen, ovule), steps of fertilization, "Restoring the Diploid Number" (23 + 23 = 46, dog/rice/corn counts), internal vs. external with local animals (carabao, chicken, tilapia, bangus, frogs), "Illustrate Fertilization" clay/diagram model, PCC and BFAR hatchery examples (SERVICE).
-  - `lessonsweek-17.js` (w17-l1): five types (binary fission, budding, fragmentation, spore formation, vegetative propagation), why one parent gives identical offspring, plants vs. animals comparison, real-life example "Kangkong from Cuttings", local scenarios (amag, adobo, La Trinidad strawberries, planaria), banana/mango/Panama disease applications, and a 2nd Quarter Summative Test review.
-  - `lessonsweek-18.js` (w18-l1): key steps from meiosis to fertilization, four sources of variation (2²³ gamete combinations), plant and animal examples (chicken, carabao, frog, gumamela, mango, rice), "Heredity and Variation", sexual vs. asexual, PhilRice/PCC applications. (w18-l2): roles in an ecosystem, trophic levels with a rice-field chain, how energy moves through feeding (~10%), food chain vs. web, "Build Your Own Food Chain and Food Web", scenarios (reversed arrow, pesticides, ducks and golden apple snails, Yellowstone). Keystone/eutrophication/tuna detail removed.
-  - Pictures not done yet (text-only pass, as requested). New picture spots temporarily reuse existing images, and each `imageAlt` describes the intended picture.
-  - Uploaded to Supabase with `seed:curriculum --weeks=16,17,18` (5 lessons, 0 quizzes; no `--force` needed).
-- Commit: MATATAG content: rewrite Weeks 16–18 lesson text; 6-entry sidebar per lesson
-
-## VERSION_121
-- MATATAG content: rewrote the text of Week 19 (2 lessons) to teach the Q2 W9 curriculum-map competencies, in Grade 7 language, with Filipino examples and American spelling. Week 20 is an exam week with no lessons and was left as is. Ids, titles, badges, XP, and the `ten-percent` signature widget are unchanged (explainer respelled only). `sections[]` match `layout[]` one-to-one. Each lesson has 9 sections, but only 6 show in the Contents sidebar; the extras use `isSubsection: true`.
-  - `lessonsweek-19.js` (w19-l1): sun-to-top-predator path (Phytoplankton → Zooplankton → Dilis → Tuna), energy pyramid cards (10,000 → 1,000 → 100 → 10 kcal), where the lost 90% goes, "Draw Your Own Energy Pyramid", energy flows vs. nutrients cycle, why energy flow keeps ecosystems balanced, scenarios, and applications (Philippine eagle, Tubbataha no-take zone, BFAR Zamboanga sardine closed season, composting). EXCELLENCE values. Pyramids of numbers/biomass and species interactions (symbiosis) removed; they are not in the map.
-  - (w19-l2): rebuilt around the map's task: a 3D shoebox diorama of the levels of biological organization (cell → tissue → organ → organ system → organism → population → community → ecosystem → biosphere, using a carabao in a rice field), how the levels connect, ecosystem choices (rice field, mangrove, coral reef, rainforest), build steps with recycled materials, presentation Q&A, and the map's GRASPS and rubric (35/20/20/15/10). SERVICE values. The old food-web diorama brief and 60/40 rubric were replaced.
-  - Pictures not done yet (text-only pass, as requested). New picture spots temporarily reuse existing images, and each `imageAlt` describes the intended picture.
-  - Uploaded to Supabase with `seed:curriculum --weeks=19` (2 lessons, 0 quizzes; no `--force` needed).
-- Commit: MATATAG content: rewrite Week 19 lesson text; 6-entry sidebar per lesson
+- Admin Quizzes tab week cards now use the Lessons tab card layout: the quiz-count badge sits on the WEEK row (right-aligned, one line), the title is one line ending in "…" when too long (full title on hover), and the questions/pts/min footer is pinned to the card bottom. The icon tile is 40px. "1 quizzes" and "1 questions" are now singular. The entrance animation skips when reduced motion is on.
+- Commit: Align admin quiz week cards with lesson cards
