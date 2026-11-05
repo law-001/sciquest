@@ -157,24 +157,21 @@ function OverviewSlot({
   });
 
   const metrics = [
-    { label: "Students", value: totalStudents, hint: scopeName, tone: "orange" },
+    { label: "Students", value: totalStudents, hint: scopeName },
     {
       label: "Live lessons",
       value: publishedLessons,
       hint: `of ${totalLessons} written`,
-      tone: "teal",
     },
     {
       label: "Avg. score",
       value: `${avgScore}%`,
       hint: "across graded work",
-      tone: "yellow",
     },
     {
       label: "Needs grading",
       value: pending.length,
       hint: pending.length ? "waiting on you" : "all caught up",
-      tone: "pink",
     },
   ];
 

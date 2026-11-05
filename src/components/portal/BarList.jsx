@@ -42,7 +42,7 @@ export function BarList({ items, emptyLabel = "Nothing to show yet." }) {
                 {item.sub}
               </span>
             )}
-            <span className="shrink-0 w-10 text-right text-[13px] font-black tabular-nums text-stone-900 dark:text-white">
+            <span className="shrink-0 w-10 text-right text-[13px] font-semibold tabular-nums text-stone-900 dark:text-white">
               {item.value}%
             </span>
           </div>

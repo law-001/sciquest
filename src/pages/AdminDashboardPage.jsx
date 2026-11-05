@@ -69,62 +69,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Donut Chart ──────────────────────────────────────────────────────────────
-
-function polarToCartesian(cx, cy, r, deg) {
-  const rad = ((deg - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
-
-function DonutChart({ data, size = 160, label }) {
-  const total = data.reduce((s, d) => s + d.value, 0);
-  if (total === 0) return null;
-  const cx = size / 2;
-  const cy = size / 2;
-  const ro = size / 2 - 8;
-  const ri = ro * 0.58;
-  let angle = 0;
-  const slices = data.map((d) => {
-    const start = angle;
-    const sweep = (d.value / total) * 360;
-    // eslint-disable-next-line react-hooks/immutability
-    angle += sweep;
-    const s = polarToCartesian(cx, cy, ro, start);
-    const e = polarToCartesian(cx, cy, ro, start + sweep);
-    const si = polarToCartesian(cx, cy, ri, start);
-    const ei = polarToCartesian(cx, cy, ri, start + sweep);
-    const lg = sweep > 180 ? 1 : 0;
-    return {
-      ...d,
-      path: `M ${s.x} ${s.y} A ${ro} ${ro} 0 ${lg} 1 ${e.x} ${e.y} L ${ei.x} ${ei.y} A ${ri} ${ri} 0 ${lg} 0 ${si.x} ${si.y} Z`,
-    };
-  });
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} style={{ display: "block" }}>
-        {slices.map((s, i) => (
-          <path
-            key={i}
-            d={s.path}
-            fill={s.color}
-            className="transition-opacity hover:opacity-80"
-          />
-        ))}
-      </svg>
-      {label && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-xl font-black text-stone-900 dark:text-white leading-none">
-            {label.value}
-          </span>
-          <span className="text-xs font-bold text-stone-500 dark:text-stone-400 mt-0.5">
-            {label.sub}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Modal Base ───────────────────────────────────────────────────────────────
 
 function Modal({ onClose, children }) {
@@ -154,7 +98,7 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
         </div>
         <div>
           <h2 className="text-lg font-black text-stone-900 dark:text-white">
-            Remove User
+            Remove user
           </h2>
           <p className="text-sm text-stone-500 dark:text-stone-400">
             This action cannot be undone
@@ -179,9 +123,9 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
         <button
           onClick={() => onConfirm(user)}
           disabled={isLoading}
-          className="flex-1 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold text-sm transition-colors active:scale-95"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold text-sm transition-[background-color,transform] active:scale-[0.98]"
         >
-          {isLoading ? "Removing…" : "Remove User"}
+          {isLoading ? "Removing…" : "Remove user"}
         </button>
       </div>
       {error && (
@@ -202,7 +146,7 @@ function WipeDataModal({ user, onConfirm, onClose, isLoading, error }) {
         </div>
         <div>
           <h2 className="text-lg font-black text-stone-900 dark:text-white">
-            Reset User Data
+            Reset user data
           </h2>
           <p className="text-sm text-stone-500 dark:text-stone-400">
             The account is kept — only progress is wiped
@@ -228,9 +172,9 @@ function WipeDataModal({ user, onConfirm, onClose, isLoading, error }) {
         <button
           onClick={() => onConfirm(user)}
           disabled={isLoading}
-          className="flex-1 px-4 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-semibold text-sm transition-colors active:scale-95"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-semibold text-sm transition-[background-color,transform] active:scale-[0.98]"
         >
-          {isLoading ? "Wiping…" : "Wipe Data"}
+          {isLoading ? "Wiping…" : "Wipe data"}
         </button>
       </div>
       {error && (
@@ -270,7 +214,7 @@ function InviteTeacherModal({ onClose }) {
         </div>
         <div>
           <h2 className="text-lg font-black text-stone-900 dark:text-white">
-            Invite Teacher
+            Invite teacher
           </h2>
           <p className="text-sm text-stone-500 dark:text-stone-400">
             Send a setup link via email
@@ -280,8 +224,8 @@ function InviteTeacherModal({ onClose }) {
       {sent ? (
         <div className="flex flex-col items-center py-4 gap-3">
           <CheckCircle2 className="w-12 h-12 text-secondary-500" />
-          <p className="text-base font-bold text-stone-900 dark:text-white">
-            Invite sent!
+          <p className="text-base font-semibold text-stone-900 dark:text-white">
+            Invite sent
           </p>
           <p className="text-sm text-stone-600 dark:text-stone-300 font-medium">
             {email}
@@ -297,10 +241,11 @@ function InviteTeacherModal({ onClose }) {
       ) : (
         <>
           <div className="mb-4">
-            <label className="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
-              Teacher Email Address
+            <label htmlFor="invite-teacher-email" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+              Teacher email address
             </label>
             <input
+              id="invite-teacher-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -327,7 +272,7 @@ function InviteTeacherModal({ onClose }) {
               isLoading={loading}
               disabled={!email.trim()}
             >
-              Send Invite
+              Send invite
             </Button>
           </div>
         </>
@@ -338,8 +283,45 @@ function InviteTeacherModal({ onClose }) {
 
 // ─── Dashboard Tab ─────────────────────────────────────────────────────────────
 
-const SECTION_COLORS = ["#f97316", "#14b8a6", "#eab308", "#8b5cf6", "#3b82f6"];
-const MIX_COLORS = ["#f97316", "#14b8a6"];
+// Categorical, so each section needs its own hue; brand colors lead, stone
+// steps take the rest so the bar never turns into a rainbow.
+const SECTION_COLORS = [
+  "var(--color-primary-500)",
+  "var(--color-secondary-500)",
+  "var(--color-accent-500)",
+  "var(--color-stone-400)",
+  "var(--color-stone-500)",
+];
+
+// Cumulative lesson count at the end of each week — the reach bar's ruler.
+const WEEK_ENDS = WEEKS_DATA.reduce(
+  (ends, week) => [...ends, (ends.at(-1) ?? 0) + week.lessons.length],
+  [],
+);
+
+const TH = "py-2 text-[12px] font-medium text-stone-500 dark:text-stone-400";
+
+function StatusLabel({ status }) {
+  const isActive = status === "Active";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 text-[12px] font-medium whitespace-nowrap",
+        isActive
+          ? "text-secondary-700 dark:text-secondary-400"
+          : "text-stone-500 dark:text-stone-400",
+      )}
+    >
+      <span
+        className={cn(
+          "w-1.5 h-1.5 rounded-full",
+          isActive ? "bg-secondary-500" : "bg-stone-300 dark:bg-stone-600",
+        )}
+      />
+      {status}
+    </span>
+  );
+}
 
 function DashboardTab({
   metrics,
@@ -356,27 +338,12 @@ function DashboardTab({
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
-      gsap.from(".anim-ribbon", {
-        y: 14,
+      gsap.from(".anim-panel", {
+        y: 8,
         opacity: 0,
         duration: 0.4,
-        ease: "power2.out",
-      });
-      gsap.from(".anim-panel", {
-        y: 20,
-        opacity: 0,
-        duration: 0.45,
-        stagger: 0.08,
-        ease: "power2.out",
-        delay: 0.1,
-      });
-      gsap.from(".roster-row", {
-        x: -12,
-        opacity: 0,
-        duration: 0.32,
-        stagger: 0.045,
-        ease: "power2.out",
-        delay: 0.3,
+        stagger: 0.05,
+        ease: "power3.out",
       });
     }, containerRef);
     return () => ctx.revert();
@@ -388,17 +355,21 @@ function DashboardTab({
   }));
   const totalSectionStudents = sectionSlices.reduce((s, d) => s + d.value, 0);
 
-  const mix = [
-    { label: "Students", value: counts?.students ?? 0, color: MIX_COLORS[0] },
-    { label: "Teachers", value: counts?.teachers ?? 0, color: MIX_COLORS[1] },
-  ];
-  const mixTotal = mix.reduce((s, d) => s + d.value, 0);
+  const studentCount = counts?.students ?? 0;
+  const teacherCount = counts?.teachers ?? 0;
+  const perTeacher = teacherCount
+    ? Math.round(studentCount / teacherCount)
+    : null;
 
   // How much of the curriculum the student body has actually worked through:
   // completions against every lesson every enrolled student could finish.
-  const possible = (counts?.students ?? 0) * totalLessons;
+  const possible = studentCount * totalLessons;
   const done = counts?.completedLessons ?? 0;
   const reachPct = possible ? Math.round((done / possible) * 100) : 0;
+  // Assumes lessons are taken in order, so "about week N" is an estimate.
+  const avgDone = studentCount ? done / studentCount : 0;
+  const reachWeek =
+    WEEK_ENDS.findIndex((end) => avgDone < end) + 1 || WEEKS_DATA.length;
 
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -408,10 +379,10 @@ function DashboardTab({
 
   return (
     <div className="space-y-4" ref={containerRef}>
-      <div className="anim-ribbon">
+      <div className="anim-panel">
         <MetricRibbon
           accent="primary"
-          title="Control Center"
+          title="Dashboard"
           subtitle={`${today} · signed in as ${adminName}`}
           metrics={metrics}
           action={
@@ -436,11 +407,11 @@ function DashboardTab({
           {recentUsers.length === 0 ? (
             <div className="px-5 py-12 text-center">
               <UserCheck className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600" />
-              <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+              <p className="mt-2 text-sm font-medium text-stone-700 dark:text-stone-300">
                 No accounts yet
               </p>
-              <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
-                Invite a teacher or add students to see them here.
+              <p className="mt-1 text-[13px] text-stone-500 dark:text-stone-400">
+                Invite a teacher or add students to see them here
               </p>
             </div>
           ) : (
@@ -449,35 +420,27 @@ function DashboardTab({
               <table className="hidden md:table w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-orange-100 dark:border-stone-700">
-                    <th className="px-5 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
-                      Person
-                    </th>
-                    <th className="px-3 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
-                      Role
-                    </th>
-                    <th className="px-3 py-2 text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
-                      Status
-                    </th>
-                    <th className="px-5 py-2 text-right text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-[0.13em]">
-                      Joined
-                    </th>
+                    <th className={cn(TH, "px-5")}>Person</th>
+                    <th className={cn(TH, "px-3")}>Role</th>
+                    <th className={cn(TH, "px-3")}>Status</th>
+                    <th className={cn(TH, "px-5 text-right")}>Joined</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-orange-100 dark:divide-stone-700">
                   {recentUsers.map((user) => (
                     <tr
                       key={user.id}
-                      className="roster-row hover:bg-orange-50/60 dark:hover:bg-stone-700/40 transition-colors"
+                      className="hover:bg-orange-50/60 dark:hover:bg-stone-700/40 transition-colors"
                     >
-                      <td className="px-5 py-2.5 max-w-0 w-full">
-                        <div className="flex items-center gap-2.5">
+                      <td className="px-5 py-3 max-w-0 w-full">
+                        <div className="flex items-center gap-3">
                           <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={28} />
                           <span className="min-w-0">
-                            <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                            <span className="block text-[14px] font-medium text-stone-900 dark:text-white truncate">
                               {user.name}
                             </span>
                             <span
-                              className="block text-[11px] text-stone-500 dark:text-stone-400 truncate"
+                              className="block text-[12px] text-stone-500 dark:text-stone-400 truncate"
                               title={user.email}
                             >
                               {user.email}
@@ -485,36 +448,13 @@ function DashboardTab({
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <Badge
-                          variant={
-                            user.role === "Teacher" ? "secondary" : "primary"
-                          }
-                        >
-                          {user.role}
-                        </Badge>
+                      <td className="px-3 py-3 text-[13px] text-stone-600 dark:text-stone-300">
+                        {user.role}
                       </td>
-                      <td className="px-3 py-2.5">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1.5 text-[11px] font-bold whitespace-nowrap",
-                            user.status === "Active"
-                              ? "text-secondary-600 dark:text-secondary-400"
-                              : "text-stone-400 dark:text-stone-500",
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "w-1.5 h-1.5 rounded-full",
-                              user.status === "Active"
-                                ? "bg-secondary-500"
-                                : "bg-stone-300 dark:bg-stone-600",
-                            )}
-                          />
-                          {user.status}
-                        </span>
+                      <td className="px-3 py-3">
+                        <StatusLabel status={user.status} />
                       </td>
-                      <td className="px-5 py-2.5 text-right text-[12px] tabular-nums text-stone-500 dark:text-stone-400 font-medium whitespace-nowrap">
+                      <td className="px-5 py-3 text-right text-[12px] tabular-nums text-stone-500 dark:text-stone-400 whitespace-nowrap">
                         {user.joined}
                       </td>
                     </tr>
@@ -525,45 +465,25 @@ function DashboardTab({
               {/* Mobile rows */}
               <div className="md:hidden divide-y divide-orange-100 dark:divide-stone-700">
                 {recentUsers.map((user) => (
-                  <div key={user.id} className="roster-row px-4 py-3">
-                    <div className="flex items-center gap-2.5">
+                  <div key={user.id} className="px-4 py-3">
+                    <div className="flex items-center gap-3">
                       <Avatar avatarId={user.avatar} avatarStyle={user.avatarStyle} name={user.name} size={32} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                        <p className="text-[14px] font-medium text-stone-900 dark:text-white truncate">
                           {user.name}
                         </p>
-                        <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                        <p className="text-[12px] text-stone-500 dark:text-stone-400 truncate">
                           {user.email}
                         </p>
                       </div>
-                      <Badge
-                        variant={
-                          user.role === "Teacher" ? "secondary" : "primary"
-                        }
-                      >
+                      <span className="text-[13px] text-stone-600 dark:text-stone-300">
                         {user.role}
-                      </Badge>
-                    </div>
-                    <div className="mt-1.5 pl-[42px] flex items-center justify-between">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1.5 text-[11px] font-bold",
-                          user.status === "Active"
-                            ? "text-secondary-600 dark:text-secondary-400"
-                            : "text-stone-400 dark:text-stone-500",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "w-1.5 h-1.5 rounded-full",
-                            user.status === "Active"
-                              ? "bg-secondary-500"
-                              : "bg-stone-300 dark:bg-stone-600",
-                          )}
-                        />
-                        {user.status}
                       </span>
-                      <span className="text-[11px] tabular-nums text-stone-500 dark:text-stone-400 font-medium">
+                    </div>
+                    {/* pl-11 = 32px avatar + 12px gap, so this line starts under the name */}
+                    <div className="mt-2 pl-11 flex items-center justify-between">
+                      <StatusLabel status={user.status} />
+                      <span className="text-[12px] tabular-nums text-stone-500 dark:text-stone-400">
                         {user.joined}
                       </span>
                     </div>
@@ -580,16 +500,16 @@ function DashboardTab({
 
           <div className="px-5 py-4">
             <div className="flex items-baseline justify-between mb-3">
-              <h3 className="text-[13px] font-bold text-stone-700 dark:text-stone-300">
+              <h3 className="text-[13px] font-medium text-stone-700 dark:text-stone-300">
                 Students by section
               </h3>
-              <span className="text-[11px] font-black tabular-nums text-stone-400">
+              <span className="text-[12px] tabular-nums text-stone-500 dark:text-stone-400">
                 {totalSectionStudents}
               </span>
             </div>
             {totalSectionStudents === 0 ? (
-              <p className="text-[12px] text-stone-500 dark:text-stone-400 py-3">
-                No students are assigned to a section yet.
+              <p className="text-[13px] text-stone-500 dark:text-stone-400 py-3">
+                No students are assigned to a section yet
               </p>
             ) : (
               <ProportionBar data={sectionSlices} unit="students" />
@@ -597,63 +517,62 @@ function DashboardTab({
           </div>
 
           <div className="px-5 py-4 border-t border-orange-100 dark:border-stone-700">
-            <h3 className="text-[13px] font-bold text-stone-700 dark:text-stone-300 mb-3">
+            <h3 className="text-[13px] font-medium text-stone-700 dark:text-stone-300 mb-3">
               Account mix
             </h3>
-            {mixTotal === 0 ? (
-              <p className="text-[12px] text-stone-500 dark:text-stone-400 py-3">
-                No accounts yet.
+            {studentCount + teacherCount === 0 ? (
+              <p className="text-[13px] text-stone-500 dark:text-stone-400 py-3">
+                No accounts yet
               </p>
             ) : (
-              <div className="flex items-center gap-5">
-                <DonutChart
-                  data={mix}
-                  size={104}
-                  label={{ value: mixTotal.toLocaleString(), sub: "people" }}
-                />
-                <dl className="flex-1 min-w-0 space-y-2">
-                  {mix.map((d) => (
-                    <div key={d.label} className="flex items-center gap-2">
-                      <span
-                        aria-hidden="true"
-                        className="w-1.5 h-4 rounded-full shrink-0"
-                        style={{ background: d.color }}
-                      />
-                      <dt className="text-[12px] font-medium text-stone-600 dark:text-stone-400">
-                        {d.label}
-                      </dt>
-                      <dd className="ml-auto text-[12px] font-black tabular-nums text-stone-900 dark:text-white">
-                        {d.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+              <div className="flex items-baseline gap-3">
+                <p className="text-[28px] leading-none font-semibold tabular-nums text-stone-900 dark:text-white">
+                  {perTeacher ?? "—"}
+                </p>
+                <p className="text-[13px] text-stone-500 dark:text-stone-400">
+                  students per teacher · {studentCount.toLocaleString()}{" "}
+                  students, {teacherCount.toLocaleString()} teachers
+                </p>
               </div>
             )}
           </div>
         </PortalPanel>
 
-        {/* Square-ish: one big figure carrying the whole story */}
+        {/* The one moment on the screen: the only place the orange accent sits */}
         <PortalPanel className="anim-panel xl:col-span-5">
           <PanelHeader title="Curriculum reach" />
           <div className="px-5 py-5">
-            <p className="text-[44px] leading-none font-black tabular-nums text-stone-900 dark:text-white">
+            <p className="text-[44px] leading-none font-semibold tabular-nums text-stone-900 dark:text-white">
               {reachPct}
               <span className="text-[20px] align-top">%</span>
             </p>
-            <p className="mt-1.5 text-[12px] font-medium text-stone-500 dark:text-stone-400">
+            <p className="mt-2 text-[13px] text-stone-500 dark:text-stone-400">
               of everything the student body could have finished
             </p>
             <div
-              className="mt-4 h-2 w-full rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden"
+              className="relative mt-4 h-3 w-full rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden"
               role="img"
-              aria-label={`Curriculum reach: ${reachPct} percent`}
+              aria-label={`Curriculum reach: ${reachPct} percent, about week ${reachWeek} of ${WEEKS_DATA.length}`}
             >
               <div
-                className="h-full rounded-full bg-primary-500"
+                className="h-full bg-primary-500"
                 style={{ width: `${Math.min(100, reachPct)}%` }}
               />
+              {/* Notebook-ruler marks at each week boundary */}
+              {WEEK_ENDS.slice(0, -1).map((end) => (
+                <span
+                  key={end}
+                  aria-hidden="true"
+                  className="absolute inset-y-0 w-px bg-white dark:bg-stone-800"
+                  style={{ left: `${(end / totalLessons) * 100}%` }}
+                />
+              ))}
             </div>
+            {studentCount > 0 && (
+              <p className="mt-2 text-[12px] tabular-nums text-stone-500 dark:text-stone-400">
+                About week {reachWeek} of {WEEKS_DATA.length} on average
+              </p>
+            )}
             <dl className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-orange-100 dark:border-stone-700">
               {[
                 { label: "Completed", value: done.toLocaleString() },
@@ -661,10 +580,10 @@ function DashboardTab({
                 { label: "Lessons each", value: totalLessons.toLocaleString() },
               ].map((cell) => (
                 <div key={cell.label}>
-                  <dt className="text-[10px] font-black uppercase tracking-[0.13em] text-stone-400 dark:text-stone-500">
+                  <dt className="text-[12px] text-stone-500 dark:text-stone-400">
                     {cell.label}
                   </dt>
-                  <dd className="mt-0.5 text-[15px] font-black tabular-nums text-stone-900 dark:text-white">
+                  <dd className="mt-1 text-[16px] font-semibold tabular-nums text-stone-900 dark:text-white">
                     {cell.value}
                   </dd>
                 </div>
@@ -677,18 +596,18 @@ function DashboardTab({
       {/* Wide and short: who holds teaching access, at a glance */}
       <PortalPanel className="anim-panel">
         <PanelHeader title="Teaching staff" count={teachers.length}>
-          <span className="text-[11px] font-medium text-stone-400 dark:text-stone-500">
+          <span className="text-[12px] text-stone-500 dark:text-stone-400">
             Accounts with portal access
           </span>
         </PanelHeader>
         {teachers.length === 0 ? (
           <div className="px-5 py-10 text-center">
             <GraduationCap className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600" />
-            <p className="mt-2 text-sm font-bold text-stone-600 dark:text-stone-300">
+            <p className="mt-2 text-sm font-medium text-stone-700 dark:text-stone-300">
               No teachers yet
             </p>
-            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
-              Invite one and they will appear here.
+            <p className="mt-1 text-[13px] text-stone-500 dark:text-stone-400">
+              Invite one and they will appear here
             </p>
           </div>
         ) : (
@@ -698,17 +617,15 @@ function DashboardTab({
             {teachers.slice(0, 8).map((t) => (
               <li
                 key={t.id}
-                className="flex items-center gap-2.5 px-5 py-3 bg-white dark:bg-stone-800"
+                className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-stone-800"
               >
-                <span className="w-8 h-8 shrink-0 rounded-full bg-secondary-100 dark:bg-secondary-950 text-secondary-700 dark:text-secondary-200 flex items-center justify-center font-black text-[11px]">
-                  {t.name.charAt(0)}
-                </span>
+                <Avatar name={t.name} size={32} />
                 <span className="min-w-0">
-                  <span className="block text-[13px] font-bold text-stone-900 dark:text-white truncate">
+                  <span className="block text-[14px] font-medium text-stone-900 dark:text-white truncate">
                     {t.name}
                   </span>
                   <span
-                    className="block text-[11px] text-stone-500 dark:text-stone-400 truncate"
+                    className="block text-[12px] text-stone-500 dark:text-stone-400 truncate"
                     title={t.email}
                   >
                     joined {t.joined}
@@ -2138,6 +2055,7 @@ function LessonsTab() {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
       gsap.from(".anim-heading", {
         y: 18,
@@ -2168,30 +2086,36 @@ function LessonsTab() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {WEEKS_DATA.map((week) => (
-          <PortalPanel className="week-card p-5" key={week.id}>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    Week {week.weekNumber}
-                  </p>
-                  <h3 className="text-base font-black text-stone-900 dark:text-white">
-                    {week.title}
-                  </h3>
-                </div>
+          <PortalPanel className="week-card p-5 flex flex-col" key={week.id}>
+            {/* Badge shares the short WEEK row, never the title row, so a long
+                category can't squeeze the title into extra lines */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
+                <BookOpen className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               </div>
-              <Badge variant="primary">{week.category}</Badge>
+              <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                Week {week.weekNumber}
+              </p>
+              <Badge variant="primary" className="ml-auto whitespace-nowrap">
+                {week.category}
+              </Badge>
             </div>
-            <p className="text-sm text-stone-600 dark:text-stone-300 mb-4 line-clamp-2">
+            {/* One-line title + fixed two-line description slot (min-h = 2 ×
+                line height) keep every footer on the same line across a row */}
+            <h3
+              className="mt-4 text-base leading-6 truncate font-black text-stone-900 dark:text-white"
+              title={week.title}
+            >
+              {week.title}
+            </h3>
+            <p className="mt-2 text-sm leading-5 min-h-10 line-clamp-2 text-stone-600 dark:text-stone-300">
               {week.description}
             </p>
-            <div className="flex items-center gap-4 text-xs font-bold text-stone-500 dark:text-stone-400">
+            <div className="mt-auto pt-4 flex items-center gap-4 text-xs font-bold text-stone-500 dark:text-stone-400">
               <span className="flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5" />
-                {week.lessons.length} lessons
+                {week.lessons.length}{" "}
+                {week.lessons.length === 1 ? "lesson" : "lessons"}
               </span>
               <span className="flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5" />
@@ -2214,6 +2138,7 @@ function QuizzesTab() {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
       gsap.from(".anim-heading", {
         y: 18,
@@ -2261,27 +2186,32 @@ function QuizzesTab() {
           );
 
           return (
-            <PortalPanel className="week-card p-5" key={week.id}>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
-                    <HelpCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                      Week {week.weekNumber}
-                    </p>
-                    <h3 className="text-base font-black text-stone-900 dark:text-white">
-                      {week.title}
-                    </h3>
-                  </div>
+            <PortalPanel className="week-card p-5 flex flex-col" key={week.id}>
+              {/* Same layout as the Lessons tab cards: badge on the WEEK row,
+                  one-line title, footer pinned to the bottom */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
+                  <HelpCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                 </div>
-                <Badge variant="secondary">{weekQuizzes.length} quizzes</Badge>
+                <p className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  Week {week.weekNumber}
+                </p>
+                <Badge variant="secondary" className="ml-auto whitespace-nowrap">
+                  {weekQuizzes.length}{" "}
+                  {weekQuizzes.length === 1 ? "quiz" : "quizzes"}
+                </Badge>
               </div>
-              <div className="flex items-center gap-4 text-xs font-bold text-stone-500 dark:text-stone-400">
+              <h3
+                className="mt-4 text-base leading-6 truncate font-black text-stone-900 dark:text-white"
+                title={week.title}
+              >
+                {week.title}
+              </h3>
+              <div className="mt-auto pt-4 flex items-center gap-4 text-xs font-bold text-stone-500 dark:text-stone-400">
                 <span className="flex items-center gap-1.5">
                   <HelpCircle className="w-3.5 h-3.5" />
-                  {totalQuestions} questions
+                  {totalQuestions}{" "}
+                  {totalQuestions === 1 ? "question" : "questions"}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5" />

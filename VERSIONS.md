@@ -737,3 +737,35 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
   - `js/levels.js`: new shared `avoidHeading(agent, x, y, tx, ty, r)` — looks `AVOID_LOOK` (130px) ahead; if the straight path crosses a blocker (grown by the animal's radius + `AVOID_PAD` 16px so they clear the drawn edge), it aims at the tangent past it, remembering which side until the path is clear. Never avoids a blocker the target is inside (burrows).
   - `js/level1.js` (hunting foxes), `js/level2.js` (rival foxes, fleeing + wandering rabbits), `js/level3.js` (fox, fleeing + wandering bunnies) use it. The old push-out collision and stuck fallback stay as a safety net.
 - Commit: Food chain survival: foxes and rabbits steer around obstacles
+
+## VERSION_106
+- Added the `unslop` Claude skill (from github.com/heydamir/unslop, CC BY 4.0) to `.claude/skills/unslop/` so it ships with the repo. It's a UI redesign pass that strips AI-looking design tells.
+- Commit: Add unslop Claude skill to project skills
+
+## VERSION_107
+- Admin dashboard unslop polish (also touches the shared portal components, so the teacher portal gets the same type and radius fixes).
+  - `src/components/portal/*`: dropped weight-900 headings and figures to 500/600; uppercase tracked labels (panel titles, metric labels, table heads, "SciQuest" under the brand) are now sentence case; panels `rounded-3xl` to `rounded-2xl`; panel count pill is now quiet text; nav labels `font-medium`.
+  - `MetricRibbon.jsx`: removed the rainbow tick per metric (and the now-unused `tone` keys in admin + teacher metrics), so the stats read as neutral numbers.
+  - `AdminDashboardPage.jsx` Dashboard tab: title "Control Center" to "Dashboard"; role badges to plain text; removed the 2-slice donut, and Account mix is now a students-per-teacher figure; section bar colors limited to orange/teal/yellow + stone (no violet/blue); Curriculum reach is the one orange moment, with week-boundary ruler ticks and an "About week N of M on average" line; teaching staff use `Avatar`; one fade-and-rise entrance instead of three.
+  - Modals: sentence-case titles/buttons, no "!", the email label is linked to its input, lighter weights, `rounded-xl` confirm buttons with a 0.98 press.
+- Commit: Unslop admin dashboard and shared portal type
+
+## VERSION_108
+- Portal titles back to `font-black`, per preference: page titles (`MetricRibbon`, `TabHead`), panel titles (`PanelHeader`), the sidebar brand label, `RosterGroup` names, and admin modal headings. Figures, labels and table heads stay at the lighter VERSION_107 weights; titles stay sentence case.
+- Commit: Restore bold portal titles
+
+## VERSION_109
+- `MetricRibbon` stat labels (STUDENTS / TEACHERS / LESSONS / COMPLETIONS) are back to small uppercase tracked `font-black`, per preference. Color is now `stone-500` instead of the original `stone-400`, so the 10px text passes 4.5:1 contrast on white.
+- Commit: Restore uppercase metric labels in portal ribbon
+
+## VERSION_110
+- Admin Lessons tab week cards: everything now sits in the same place on every card. The category badge moved up to the WEEK row (right-aligned, one line) so it no longer squeezes the title; the title and description each get a fixed two-line slot; the lesson/XP footer is pinned to the card bottom. The icon tile is 40px (was 48). "1 lessons" now reads "1 lesson". The entrance animation skips when reduced motion is on.
+- Commit: Align admin lesson week cards
+
+## VERSION_111
+- Admin Lessons tab week cards: the title is now a single line that ends in "…" when too long (full title on hover), instead of a fixed two-line slot that left a gap under short titles.
+- Commit: Single-line truncated titles on admin lesson cards
+
+## VERSION_112
+- Admin Quizzes tab week cards now use the Lessons tab card layout: the quiz-count badge sits on the WEEK row (right-aligned, one line), the title is one line ending in "…" when too long (full title on hover), and the questions/pts/min footer is pinned to the card bottom. The icon tile is 40px. "1 quizzes" and "1 questions" are now singular. The entrance animation skips when reduced motion is on.
+- Commit: Align admin quiz week cards with lesson cards
