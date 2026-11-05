@@ -8,6 +8,7 @@ export const GAME_MEDALS = [
   { gameId: 'food-chain-survival', gameName: 'Food Chain Survival', names: ['Meadow Forager', 'Apex Hunter', 'Circle of Life'], keys: ['meadow-forager', 'apex-hunter', 'circle-of-life'], xp: [20, 40, 60], levels: [['l1'], ['l2'], ['l3']] },
   { gameId: 'quake-ready', gameName: 'Quake Ready', names: ['Seismic Scout', 'Quake Survivor', 'Rescue Commander'], keys: ['seismic-scout', 'quake-survivor', 'rescue-commander'], xp: [20, 40, 60], levels: [['l1'], ['l2'], ['l3']] },
   { gameId: 'plant-cell', gameName: 'Plant Cell', names: ['Sun Catcher', 'Water Keeper', 'Cell Medic'], keys: ['sun-catcher', 'water-keeper', 'cell-medic'], xp: [GAME_XP['plant-cell'].achievementXp, 40, 60], levels: [['l1'], ['l2'], ['l3']] },
+  { gameId: 'animal-cell', gameName: 'Animal Cell', names: ['Energy Maker', 'Balance Keeper', 'Organelle Doctor'], keys: ['energy-maker', 'balance-keeper', 'organelle-doctor'], xp: [GAME_XP['animal-cell'].achievementXp, 40, 60], levels: [['l1'], ['l2'], ['l3']] },
 ];
 
 export const GAME_ACHIEVEMENTS = GAME_MEDALS.flatMap((game) => game.keys.map((key, index) => ({
