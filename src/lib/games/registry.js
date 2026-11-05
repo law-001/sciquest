@@ -5,6 +5,7 @@ import mysteryLab from "../../assets/mysterylab.png";
 import foodchain from "../../assets/foodchain.png";
 import quakeready from "../../assets/quakeready.png";
 import plantcell from "../../assets/plantcell.png";
+import animalcell from "../../assets/animalcell.svg";
 
 const _lazyCache = new Map();
 function _lazyLoader(loader) {
@@ -145,6 +146,30 @@ export const GAMES = {
     engine: "react",
     category: "Biology",
     loader: () => import("../../games/plant-cell/index.jsx"),
+    minRole: "student",
+    totalLevels: 3,
+    countCompletedLevels: (progress) => {
+      const LEVEL_CHALLENGES = new Set(["l1", "l2", "l3"]);
+      return new Set(
+        progress
+          .filter((r) => r.completed && LEVEL_CHALLENGES.has(r.challenge_id))
+          .map((r) => r.challenge_id),
+      ).size;
+    },
+  },
+  "animal-cell": {
+    id: "animal-cell",
+    title: "Animal Cell: Power the Cell",
+    tagline:
+      "Fuel the mitochondria, predict where water goes, then find the organelle that broke.",
+    subject: "Science",
+    relatedLessonIds: ["week-12", "week-13"],
+    difficulty: 2,
+    estimatedMinutes: 15,
+    thumbnail: animalcell,
+    engine: "react",
+    category: "Biology",
+    loader: () => import("../../games/animal-cell/index.jsx"),
     minRole: "student",
     totalLevels: 3,
     countCompletedLevels: (progress) => {

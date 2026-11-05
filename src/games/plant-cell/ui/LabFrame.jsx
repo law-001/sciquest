@@ -29,6 +29,8 @@ export function LabFrame({
   controls,
   overlay,
   stageOverlay,
+  // The toggle's name for the `plant` (outside) view; the animal cell game passes its dog.
+  outsideView = { icon: '🪴', label: 'Whole plant' },
 }) {
   const { isDark, toggle: toggleDark } = useTheme();
 
@@ -119,8 +121,8 @@ export function LabFrame({
                   className={`pc-lab-viewtoggle${view === 'cell' ? ' is-on' : ''}`}
                   onClick={() => onViewChange(view === 'plant' ? 'cell' : 'plant')}
                 >
-                  <span aria-hidden="true">{view === 'cell' ? '🪴' : '🔬'}</span>
-                  {view === 'cell' ? 'Whole plant' : 'Inside a cell'}
+                  <span aria-hidden="true">{view === 'cell' ? outsideView.icon : '🔬'}</span>
+                  {view === 'cell' ? outsideView.label : 'Inside a cell'}
                 </button>
               )}
 

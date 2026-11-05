@@ -25,4 +25,9 @@ export const GAME_XP = {
     // One-time achievement bonus XP awarded on the first level completed.
     achievementXp: 70,
   },
+  'animal-cell': {
+    // Same scheme as the plant cell game, its sibling.
+    starsXp: [0, 40, 80, 120],
+    achievementXp: 70,
+  },
 };

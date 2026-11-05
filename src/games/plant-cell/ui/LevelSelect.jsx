@@ -17,13 +17,20 @@ function StarIcon({ filled }) {
 
 const TOTAL_STARS = 3;
 
-export function LevelSelect({ progressByLevel, onSelect, onExit }) {
+// `levels` and `subtitle` let the animal cell game reuse this screen as-is.
+export function LevelSelect({
+  progressByLevel,
+  onSelect,
+  onExit,
+  levels = LEVELS,
+  subtitle = 'Keep the plant cell alive, one system at a time.',
+}) {
   const { isDark, toggle } = useTheme();
   const headerRef = useRef(null);
   const cardsRef = useRef(null);
   const hasAnimated = useRef(false);
 
-  const completedIds = LEVELS.filter((l) => progressByLevel[l.id]?.completed).map((l) => l.id);
+  const completedIds = levels.filter((l) => progressByLevel[l.id]?.completed).map((l) => l.id);
 
   useEffect(() => {
     if (hasAnimated.current) return;
@@ -42,7 +49,7 @@ export function LevelSelect({ progressByLevel, onSelect, onExit }) {
 
   function prereqLevelNumber(level) {
     if (!level.unlocksAfter) return null;
-    const prereq = LEVELS.find((l) => l.id === level.unlocksAfter);
+    const prereq = levels.find((l) => l.id === level.unlocksAfter);
     return prereq?.number ?? null;
   }
 
@@ -101,7 +108,7 @@ export function LevelSelect({ progressByLevel, onSelect, onExit }) {
           </div>
           <p style={{ color: 'var(--sq-ink-3)', marginTop: 0, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: 'var(--sq-orange)', flexShrink: 0 }} aria-hidden="true" />
-            Keep the plant cell alive, one system at a time.
+            {subtitle}
             <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: 'var(--sq-teal)', flexShrink: 0 }} aria-hidden="true" />
           </p>
         </div>
@@ -133,7 +140,7 @@ export function LevelSelect({ progressByLevel, onSelect, onExit }) {
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '36px 48px' }}>
         <div ref={cardsRef} className="sq-level-grid">
-          {LEVELS.map((level) => {
+          {levels.map((level) => {
             const prog = progressByLevel[level.id] || {};
             const unlocked = isLevelUnlocked(level, completedIds);
             const done = !!prog.completed;

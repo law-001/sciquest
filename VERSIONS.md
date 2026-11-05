@@ -769,3 +769,26 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_112
 - Admin Quizzes tab week cards now use the Lessons tab card layout: the quiz-count badge sits on the WEEK row (right-aligned, one line), the title is one line ending in "…" when too long (full title on hover), and the questions/pts/min footer is pinned to the card bottom. The icon tile is 40px. "1 quizzes" and "1 questions" are now singular. The entrance animation skips when reduced motion is on.
 - Commit: Align admin quiz week cards with lesson cards
+
+## VERSION_113
+- New game: **Animal Cell: Power the Cell** (`src/games/animal-cell/`), the sibling of the plant cell game. Three levels:
+  - L1 Fuel the Cell (`FuelTheCell.jsx`): glucose + oxygen sliders feed the mitochondria; energy, carbon dioxide and water come out. Five quests; the run ends only if the cell runs out of energy.
+  - L2 Water In, Water Out (`WaterInOut.jsx`): predict-then-test osmosis. Animal cell in salty / pure / balanced water, then a plant cell in pure and salty water (the wall stops it bursting). Runs on plant-cell's `engine/water.js` + `ui/WaterCell.jsx`.
+  - L3 Cell Doctor (`CellDoctor.jsx`): six job meters (energy, proteins made, proteins shipped, waste cleared, controlling entry, following instructions); pick the organelle(s) that broke. Six rounds incl. a two-organelle round.
+  - Content and tuning in `levels.js`; plain-SVG cell in `AnimalCellView.jsx`. Quests, sim loop, meters, modals, shell and CSS are reused from `plant-cell` as-is.
+- `plant-cell/ui/LevelSelect.jsx`: optional `levels` and `subtitle` props (defaults unchanged) so both games share it.
+- Registered in `registry.js` (placeholder thumbnail `src/assets/animalcell.svg`), `config/xp.js`, `game-achievements.js` (Energy Maker / Balance Keeper / Organelle Doctor) and `GAMES_WITH_OWN_BACK`.
+- Medal PNGs `energy-maker`, `balance-keeper`, `organelle-doctor` are temporary copies of the plant medals until real art lands.
+- Art brief: `docs/asset-prompts/animal-cell.md`.
+- Commit: Add Animal Cell game: respiration, osmosis predictions, organelle doctor
+
+## VERSION_114
+- Animal Cell Level 1 now has a **Whole animal** view (the default) beside **Inside a cell**: a dog in the plant game's room, by the same window.
+  - `src/games/animal-cell/AnimalView.jsx` (new): the food bowl shows empty / half / full with the Glucose slider; breath puffs speed up with Oxygen; kibble flows bowl → mouth while respiration runs. The dog trots (energy high, respiration ≥ 90%), stands, sits tired (energy < 12 or health < 40) or collapses (health < 12).
+  - Art in `public/games/animal-cell/art/`: `dog-{idle,active,tired,collapsed}`, `bowl-{empty,half,full}`, `particle-{breath,food}` — background noise cleared, downscaled and cropped to content so each sprite stands on the floor line.
+  - `plant-cell/ui/LabFrame.jsx`: optional `outsideView` prop ({ icon, label }) for the view-toggle button; defaults to the plant's 🪴 Whole plant.
+- Commit: Animal cell: add whole-dog view to Level 1
+
+## VERSION_115
+- Animal Cell Level 1 whole-animal view: the window now shows daylight — blue sky behind the glass and the plant game's sun in the top-left pane (`AnimalView.jsx`), matching PlantView at full sunlight.
+- Commit: Animal cell: add sky and sun to the dog's window
