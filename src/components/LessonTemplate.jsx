@@ -9,18 +9,21 @@ import {
   Lock,
   BookOpen,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import Button from "./Button";
 import Card from "./Card";
 import Badge from "./Badge";
 import ProgressBar from "./ProgressBar";
 import MaterialsPanel from "./MaterialsPanel";
+import { InteractiveModal } from "./InteractiveModal";
 import { cn } from "../lib/utils";
 import { UNLOCK_ALL } from "../lib/lessonGating";
 
 // ── Slot imports ──
 import { SLOT_MAP } from './slotMap'
 import SignatureWidgetSection from './lesson-slots/interactive/SignatureWidgetSection'
+import { SIGNATURE_WIDGETS } from './lesson-slots/interactive/signatureWidgets'
 export { SLOT_MAP }
 
 // How far down the page the "Top" button appears. Below this a reader can get
@@ -140,6 +143,10 @@ export function LessonTemplate({
   onInteractionComplete,
   onLessonComplete,
   onLessonSelect,
+  // When required, the lesson can't complete (progress stops at 99%, quiz
+  // button stays hidden) until its signature interactive is done.
+  isInteractiveRequired = false,
+  isInteractiveDone = false,
   quizLocked = false,
   personalQuizGrant = null,
   // The quiz's scheduled window ({ from, until } ISO instants) and where the
@@ -156,6 +163,10 @@ export function LessonTemplate({
   // Shown once the reader is far enough down that scrolling back by hand is a
   // chore. Driven by the same scroll listener as the progress bar.
   const [showTopButton, setShowTopButton] = useState(false);
+  const [isInteractiveOpen, setIsInteractiveOpen] = useState(false);
+  // The widget is only loaded on first open, then kept alive so its state
+  // survives closing and reopening the panel.
+  const [hasOpenedInteractive, setHasOpenedInteractive] = useState(false);
   // Once the bar hits 100% it stays there — scrolling back up can't lower it,
   // so XP can't be farmed by scrubbing. Resets when the lesson changes.
   const lessonCompletedRef = useRef(false);
@@ -167,8 +178,20 @@ export function LessonTemplate({
   if (lesson?.id !== prevLessonId) {
     setPrevLessonId(lesson?.id);
     setActiveSection(0);
+    setIsInteractiveOpen(false);
+    setHasOpenedInteractive(false);
     lessonCompletedRef.current = false;
   }
+
+  // Only a widget that actually exists in the registry can be required; an
+  // unknown id renders nothing, and a student could never finish it.
+  const hasSignature = Boolean(SIGNATURE_WIDGETS[lesson?.signature?.widgetId]);
+  // A lesson completed before this check existed stays completed.
+  const isGated =
+    isInteractiveRequired &&
+    hasSignature &&
+    !isInteractiveDone &&
+    !completedLessons.includes(lesson?.id);
 
   useEffect(() => {
     const t = setTimeout(() => setTitleVisible(true), 60);
@@ -210,8 +233,15 @@ export function LessonTemplate({
       } else {
         const pct = ((window.scrollY - startY) / range) * 100;
         const clamped = Math.max(0, Math.min(100, Math.round(pct)));
-        setScrollProgress(clamped);
-        if (clamped >= 100) {
+        // Reaching the bottom doesn't count until the interactive is done.
+        // Finishing it changes isGated, which re-runs this effect, so a
+        // student already at the bottom completes the lesson right then.
+        if (isGated && clamped >= 100) {
+          setScrollProgress(99);
+        } else {
+          setScrollProgress(clamped);
+        }
+        if (clamped >= 100 && !isGated) {
           lessonCompletedRef.current = true;
           onLessonCompleteRef.current?.(lesson?.id);
         }
@@ -241,7 +271,7 @@ export function LessonTemplate({
       window.removeEventListener("resize", onScroll);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [lesson?.id]);
+  }, [lesson?.id, isGated]);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -280,6 +310,11 @@ export function LessonTemplate({
     (acc, item) => (item.i <= activeSection ? item.i : acc),
     tocItems[0]?.i ?? 0,
   );
+
+  const openInteractive = () => {
+    setHasOpenedInteractive(true);
+    setIsInteractiveOpen(true);
+  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -451,6 +486,21 @@ export function LessonTemplate({
                     </button>
                   ))}
                 </nav>
+                {hasSignature && (
+                  <button
+                    type="button"
+                    onClick={openInteractive}
+                    aria-haspopup="dialog"
+                    className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--sq-orange)_0%,var(--sq-orange-deep)_100%)] px-3 py-2 text-sm font-black text-white shadow-[0_4px_18px_rgba(240,138,75,0.45)] transition-[filter] hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  >
+                    {isInteractiveDone ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 shrink-0" />
+                    )}
+                    {isInteractiveDone ? "Interactive Done" : "Try the Interactive"}
+                  </button>
+                )}
                 <div className="mt-4 pt-4 border-t border-orange-100 dark:border-stone-700">
                   <ProgressBar
                     progress={scrollProgress}
@@ -458,6 +508,12 @@ export function LessonTemplate({
                     size="sm"
                     showLabel
                   />
+                  {isGated && (
+                    <p className="mt-2 flex items-center gap-1.5 text-xs font-bold text-stone-500 dark:text-stone-400">
+                      <Lock className="h-3.5 w-3.5 shrink-0" />
+                      Finish the interactive to complete
+                    </p>
+                  )}
                 </div>
               </Card>
             </div>
@@ -581,19 +637,6 @@ export function LessonTemplate({
               })}
             </div>
 
-            {/* The lesson's own pinned interactive. It lives outside layout[] so
-                a teacher can't reorder or delete it. */}
-            {lesson.signature?.widgetId && (
-              <div className="mt-16">
-                <SignatureWidgetSection
-                  id="signature-interactive"
-                  lessonId={lesson.id}
-                  signature={lesson.signature}
-                  onInteractionComplete={onInteractionComplete}
-                />
-              </div>
-            )}
-
             {/* Teacher-attached videos and handouts. Renders nothing when the
                 lesson has none, so every existing lesson is unaffected. */}
             <MaterialsPanel lessonId={lesson.id} />
@@ -610,17 +653,32 @@ export function LessonTemplate({
             >
               <Card className="p-8 text-center bg-white">
                 <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-accent-600" />
+                  {isGated ? (
+                    <Sparkles className="w-8 h-8 text-accent-600" />
+                  ) : (
+                    <CheckCircle2 className="w-8 h-8 text-accent-600" />
+                  )}
                 </div>
                 <h3 className="text-2xl font-black text-stone-900 mb-2 dark:text-stone-100">
-                  Ready to test your knowledge?
+                  {isGated ? "One step left" : "Ready to test your knowledge?"}
                 </h3>
                 <p className="text-stone-500 mb-8 max-w-md mx-auto">
-                  You've completed the lesson! Take the quiz to earn your XP and
-                  unlock the next lesson.
+                  {isGated
+                    ? "Finish the interactive to complete the lesson and unlock the quiz."
+                    : "You've completed the lesson! Take the quiz to earn your XP and unlock the next lesson."}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {quizLocked ? (
+                  {isGated ? (
+                    <button
+                      type="button"
+                      onClick={openInteractive}
+                      aria-haspopup="dialog"
+                      className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--sq-orange)_0%,var(--sq-orange-deep)_100%)] px-8 py-3 text-base font-black text-white shadow-[0_4px_18px_rgba(240,138,75,0.45)] transition-[filter] hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                    >
+                      <Sparkles className="h-5 w-5" />
+                      Open the Interactive
+                    </button>
+                  ) : quizLocked ? (
                     <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-400 dark:text-stone-500 font-bold cursor-not-allowed select-none">
                       {quizWindowState === "before" ? (
                         <Clock className="w-5 h-5" />
@@ -682,6 +740,40 @@ export function LessonTemplate({
           </div>
         </div>
       </div>
+
+      {/* Phones and tablets have no sidebar, so the CTA floats instead,
+          stacked above the Top button (bottom-6 + its 44px + 16px gap). */}
+      {hasSignature && (
+        <button
+          type="button"
+          onClick={openInteractive}
+          aria-haspopup="dialog"
+          className="fixed bottom-[84px] right-6 z-30 flex min-h-11 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--sq-orange)_0%,var(--sq-orange-deep)_100%)] px-4 py-2.5 text-sm font-black text-white shadow-[0_4px_18px_rgba(240,138,75,0.45)] transition-[filter] hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 lg:hidden"
+        >
+          {isInteractiveDone ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
+          {isInteractiveDone ? "Interactive Done" : "Try the Interactive"}
+        </button>
+      )}
+
+      {hasSignature && (
+        <InteractiveModal
+          isOpen={isInteractiveOpen}
+          hasOpened={hasOpenedInteractive}
+          title={`${lesson.badge} · Interactive`}
+          onClose={() => setIsInteractiveOpen(false)}
+        >
+          <SignatureWidgetSection
+            id="signature-interactive"
+            lessonId={lesson.id}
+            signature={lesson.signature}
+            onInteractionComplete={onInteractionComplete}
+          />
+        </InteractiveModal>
+      )}
 
       {/* ── Back to top ──
           Bottom-right, below the XP toast (z-50) and the notification bell

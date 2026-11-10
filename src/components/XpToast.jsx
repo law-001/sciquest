@@ -169,7 +169,7 @@ export function XpToast({ notifications = [], onDismiss }) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed z-50 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 bottom-6 flex flex-col gap-3 items-center sm:items-end"
+      className="fixed z-[60] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 bottom-6 flex flex-col gap-3 items-center sm:items-end"
     >
       {notifications.map((n) => (
         <ToastItem key={n.id} notification={n} onDismiss={onDismiss} />

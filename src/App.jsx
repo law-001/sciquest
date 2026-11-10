@@ -1217,6 +1217,12 @@ function AppContent() {
             onGoToQuiz={handleGoToQuiz}
             onLessonComplete={handleLessonComplete}
             onInteractionComplete={handleInteractionComplete}
+            // Students must finish the lesson's signature interactive before
+            // the lesson can complete. Staff previewing a lesson aren't held.
+            isInteractiveRequired={isStudent}
+            isInteractiveDone={interactionRows.some(
+              (r) => r.lesson_id === activeLessonId && r.block_id === "signature",
+            )}
             quizLocked={isQuizLocked(activeWeekId, activeLessonId)}
             personalQuizGrant={getPersonalQuizGrant(activeWeekId, activeLessonId)}
             quizWindow={activeQuizWindow}

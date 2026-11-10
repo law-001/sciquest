@@ -12,6 +12,8 @@ export function LessonContentPage({
   onGoToQuiz,
   onLessonComplete,
   onInteractionComplete,
+  isInteractiveRequired = false,
+  isInteractiveDone = false,
   onLessonSelect,
   quizLocked = false,
   personalQuizGrant = null,
@@ -37,6 +39,8 @@ export function LessonContentPage({
       onComplete={onGoToQuiz}
       onLessonComplete={onLessonComplete}
       onInteractionComplete={onInteractionComplete}
+      isInteractiveRequired={isInteractiveRequired}
+      isInteractiveDone={isInteractiveDone}
       onLessonSelect={onLessonSelect}
       quizLocked={quizLocked}
       personalQuizGrant={personalQuizGrant}
