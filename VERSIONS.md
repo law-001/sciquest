@@ -792,3 +792,43 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_115
 - Animal Cell Level 1 whole-animal view: the window now shows daylight — blue sky behind the glass and the plant game's sun in the top-left pane (`AnimalView.jsx`), matching PlantView at full sunlight.
 - Commit: Animal cell: add sky and sun to the dog's window
+
+## VERSION_116
+- Lesson 1 (trial): the signature interactive ("Watch It: Four Models at Work") now opens in a pop-up side panel instead of sitting at the bottom of the page, so students can keep scrolling the lesson while using it.
+  - New `src/components/InteractivePanel.jsx`: non-blocking panel (no backdrop, no scroll lock), docked right at 520px on desktop, 60vh bottom sheet on phones. Slides with transform only; the widget loads on first open and stays mounted so its progress survives close/reopen. Escape or ✕ closes it, and focus goes back to the button that opened it.
+  - `LessonTemplate.jsx`: "Try the Interactive" CTA in the Contents sidebar just above the progress bar (toggles to "Hide Interactive"); on screens without the sidebar the CTA sits where the interactive used to be. At xl+ the lesson gets right padding while the panel is open so no text is hidden. Gated by `POPUP_INTERACTIVE_LESSONS` (currently just `lesson-1`); every other lesson is unchanged.
+- Commit: Lesson 1: open signature interactive in a side panel beside the lesson
+
+## VERSION_117
+- Lesson 1 interactive is now a real centered pop-up modal instead of a side panel, per feedback (the side panel squeezed the interactive's proportions).
+  - `src/components/InteractivePanel.jsx` replaced by `src/components/InteractiveModal.jsx`: dimmed backdrop (no blur, so it stays smooth), lesson scroll locked while open, focus trapped inside, closes on ✕ Close, Escape or a backdrop click. Modal is up to 1024px wide (the width the interactive had in the lesson column), scrolls inside if it's taller than the screen. Fades and scales in with opacity/transform only. The widget stays mounted after first open, so progress survives closing and reopening.
+  - `LessonTemplate.jsx`: removed the side-panel page padding. Sidebar CTA just above the progress bar now always reads "Try the Interactive" with the interactive's name under it. On screens without the sidebar, a floating "Try the Interactive" button sits bottom-right above the Top button, so it can be opened from anywhere in the lesson.
+- Commit: Lesson 1: show signature interactive in a centered pop-up modal
+
+## VERSION_118
+- Lesson 1 interactive modal: sized to fit any screen, dims the navbar, gradient CTA.
+  - `InteractiveModal.jsx`: max width 896px (was 1024px). Height capped to the visible screen with `dvh`, so phone browser bars are accounted for; extra content scrolls inside. Tighter padding on phones (8px around the modal, 12px inside). Sets `--sim-height: clamp(240px, 100dvh − 360px, 440px)` so the simulation shrinks to fit the screen on desktop. Raised to `z-[55]`, above the main navbar (z-50), so the navbar now dims too. The widget sits in React's `<Activity>`: progress is kept while closed, but its animation loop pauses so the closed modal doesn't slow down lesson scrolling.
+  - `SimLayout.jsx`: desktop sim height reads `var(--sim-height, 62vh)`. Nothing sets the variable inline in a lesson, so every other lesson still gets 62vh.
+  - `XpToast.jsx`: `z-50` → `z-[60]` so the XP toast shows above the modal.
+  - `LessonTemplate.jsx`: both "Try the Interactive" buttons use the global orange gradient (`--sq-orange` → `--sq-orange-deep`, the same one as `.sq-ccard--active`) with its orange glow shadow.
+- Commit: Lesson 1 interactive modal: fit all screens, dim navbar, gradient CTA
+
+## VERSION_119
+- Lesson 1 sidebar "Try the Interactive" CTA is now a single line: removed the interactive's name under the label, centered the text, and trimmed the vertical padding (`py-2.5` → `py-2`). It's 44px tall, the minimum tap height.
+- Commit: Slim down the sidebar interactive CTA
+
+## VERSION_120
+- Signature interactive pop-up modal now on **every** lesson that has one (removed the Lesson 1-only `POPUP_INTERACTIVE_LESSONS` gate). The old inline interactive at the bottom of the page is gone everywhere.
+- Completion checker: students can't complete a lesson until they've finished its interactive.
+  - `LessonTemplate.jsx`: new `isInteractiveRequired` / `isInteractiveDone` props. While gated, scroll progress stops at 99% (no lesson XP, not marked complete), the sidebar shows "🔒 Finish the interactive to complete" under the progress bar, and the end-of-lesson card reads "One step left" with an "Open the Interactive" button in place of "Complete Lesson & Start Quiz". Finishing the interactive while at the bottom completes the lesson right then. The CTA buttons switch to "✓ Interactive Done" once finished.
+  - Only applies to students (`isStudent`); teachers/admins previewing and logged-out visitors aren't held. Lessons already completed before this change stay completed. A lesson whose `widgetId` isn't in `SIGNATURE_WIDGETS` is never gated, since it can't be finished.
+  - `App.jsx` derives "done" from the existing `lesson_interactions` rows (`block_id: 'signature'`), so it survives reloads; passed through `LessonContentPage.jsx`. No schema change.
+  - `CLAUDE.md`: noted the signature-interactive exception to "interactive blocks never gate lesson completion".
+- Commit: Pop-up interactive on all lessons; require it before a lesson completes
+
+## VERSION_121
+- Fixed interactive modals looking "zoomed in" (scene cropped at the sides) after the window resized. Cause: the sim row height came from the screen height (`--sim-height`), but every scene is drawn at ~16:10 and fills its frame by cropping. When the frame came out taller/narrower than 16:10 the scene's sides were cut off.
+  - `SimLayout.jsx`: `Stage` is now always `aspect-ratio: 16/10`, so the scene shows whole at every width. The grid row takes its height from the picture; the control panel uses `contain: size` on `lg+` so it matches the picture's height and scrolls inside instead of stretching the row. On short desktop screens the stage width is capped at `(100dvh − --stage-chrome) × 1.6`, min 240px, so the modal still fits. Phones stack at full width.
+  - `InteractiveModal.jsx`: replaced `--sim-height` with `--stage-chrome: 400px`.
+  - Applies to all 30 signature widgets (all use `<Stage bleed>`; ModelGallery adds a caption above it). None of them measure their container, and canvas widgets draw at a fixed size and are scaled by CSS, so nothing else needed changing.
+- Commit: Keep interactive scenes 16:10 so they never crop on resize
