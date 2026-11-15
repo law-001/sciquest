@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import ImagePicker from '../ImagePicker'
 import ColorPicker from './_ColorPicker'
 import { SELECT } from '../portal';
 
@@ -8,7 +9,7 @@ const INPUT =
 const LABEL = 'block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1'
 const BADGE_VARIANTS = ['primary', 'secondary', 'accent', 'outline']
 
-export default function ImageCardsForm({ initialHeading, initialData, onSubmit, onCancel }) {
+export default function ImageCardsForm({ initialHeading, initialData, lessonId, onSubmit, onCancel }) {
   const [heading, setHeading] = useState(initialHeading || '')
   const [cards, setCards] = useState(
     initialData?.cards?.length
@@ -76,10 +77,7 @@ export default function ImageCardsForm({ initialHeading, initialData, onSubmit, 
                 <button type="button" onClick={() => removeCard(i)} disabled={cards.length === 1} className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
 
-              <div>
-                <label className={LABEL}>Image URL</label>
-                <input className={INPUT} value={c.image} onChange={(e) => updateCard(i, 'image', e.target.value)} placeholder="https://..." />
-              </div>
+              <ImagePicker value={c.image} onChange={(url) => updateCard(i, 'image', url)} lessonId={lessonId} label="Image" />
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className={LABEL}>Image Alt</label>
