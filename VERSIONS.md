@@ -832,3 +832,7 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
   - `InteractiveModal.jsx`: replaced `--sim-height` with `--stage-chrome: 400px`.
   - Applies to all 30 signature widgets (all use `<Stage bleed>`; ModelGallery adds a caption above it). None of them measure their container, and canvas widgets draw at a fixed size and are scaled by CSS, so nothing else needed changing.
 - Commit: Keep interactive scenes 16:10 so they never crop on resize
+
+## VERSION_122
+- Image Cards editor: each card's "Image URL" text box is now the shared `ImagePicker` (Upload / URL tabs). Teachers can upload a picture from their computer straight to the Supabase `lesson-media` bucket, so the file doesn't need to be added to the repo. `ImageCardsForm.jsx` now takes the `lessonId` prop, which the editor was already passing.
+- Commit: Add image upload to Image Cards editor
