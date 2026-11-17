@@ -836,3 +836,34 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_122
 - Image Cards editor: each card's "Image URL" text box is now the shared `ImagePicker` (Upload / URL tabs). Teachers can upload a picture from their computer straight to the Supabase `lesson-media` bucket, so the file doesn't need to be added to the repo. `ImageCardsForm.jsx` now takes the `lessonId` prop, which the editor was already passing.
 - Commit: Add image upload to Image Cards editor
+
+## VERSION_123
+- Lock games behind their related lessons. Each gated game in [registry.js](src/lib/games/registry.js) declares the lesson IDs that unlock it (e.g. `w13-l1` opens Plant Cell + Animal Cell), with an `unlockHint` line for the locked card. Non-student roles bypass locks.
+  - `isGameUnlocked(game, completedLessonIds)` and `getGamesNewlyUnlockedBy(lessonId, prevCompleted)` in [registry.js](src/lib/games/registry.js).
+  - [GamesHubPage.jsx](src/pages/GamesHubPage.jsx): new `completedLessons` + `bypassLocks` props; `LockedCard` now takes `reason` (`"coming-soon"` vs `"lesson"`), shows the unlock hint for lesson-gated games, keeps the old "Coming Soon" badge for dev-locked ones.
+  - [App.jsx](src/App.jsx): passes `completedLessons={effectiveCompletedLessons}` and `bypassLocks={!isStudent}` to GamesHubPage; wires `onNavigate` into `XpToast`.
+- Pop-up when a game unlocks, clickable → goes to the Games hub.
+  - [App.jsx](src/App.jsx) `handleLessonComplete` fires a `kind: "game-unlocked"` notification for every game whose gate the just-completed lesson opens.
+  - [XpToast.jsx](src/components/XpToast.jsx): game-unlock toasts become real `<button>`s with hover/active states, a chevron, and a 7s linger (vs 3.2s) so there's time to click. Click dismisses + navigates to `"games"`.
+  - [NotificationBubble.jsx](src/components/NotificationBubble.jsx): bell entry for the new kind routes to `"games"` on click.
+- Commit: Lock games behind lessons + clickable unlock toast
+
+## VERSION_124
+- Food Chain Survival now gates on `w19-l1` with the hint "Finish the Energy Flow lesson to unlock" ([registry.js](src/lib/games/registry.js)).
+- Reordered the Games hub grid by curriculum: Quake Ready pinned first, then Mystery Lab (wk 1) → Matter State Sandbox (wk 3-4) → Animal Cell (wk 12-13) → Plant Cell (wk 13) → Cell Division Lab (wk 15-16) → Food Chain Survival (wk 19). Grid picks order up directly from `GAMES` key order via `listGames()`.
+- Commit: Reorder Games hub by week + gate Food Chain Survival on w19-l1
+
+## VERSION_125
+- Every lesson-gated game now unlocks on the **final** lesson of its primary week — scrolling that lesson's page to 100% flips the gate (unchanged mechanism: `handleLessonComplete` already fires on scroll to 100%).
+  - Mystery Lab → `lesson-3` (last of Week 1) — hint "Finish Week 1 to unlock".
+  - Matter State Sandbox → `w03-l2` (was `w03-l1`/`w04-l1`) — hint "Finish Week 3 to unlock".
+  - Cell Division Lab → `w12-l2` (was `w15-l1`/`w16-l1`) — hint "Finish Week 12 to unlock". Opens earlier in the curriculum per request.
+  - Animal Cell → `w13-l1` (last of Week 13) — hint "Finish Week 13 to unlock".
+  - Plant Cell → `w13-l1` (last of Week 13) — hint "Finish Week 13 to unlock".
+  - Food Chain Survival → `w19-l2` (was `w19-l1`) — hint "Finish Week 19 to unlock".
+- Reordered the Games grid: Quake Ready → Mystery Lab (wk 1) → Matter State Sandbox (wk 3) → Cell Division Lab (wk 12) → Animal Cell (wk 13) → Plant Cell (wk 13) → Food Chain Survival (wk 19). File: [registry.js](src/lib/games/registry.js).
+- Commit: Gate games on last-lesson-of-week; move Cell Division Lab to Week 12
+
+## VERSION_126
+- Mystery Lab now gates on Week 5 (Scientific Investigation and Measurement) instead of Week 1 — matches the game's scientific-method theme. Related lesson flipped to `w05-l2`, hint "Finish Week 5 to unlock". Grid order swap: Matter State Sandbox (wk 3) now comes before Mystery Lab (wk 5).
+- Commit: Move Mystery Lab gate to Week 5

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
-import { listGames } from "../lib/games/registry";
+import { listGames, isGameUnlocked } from "../lib/games/registry";
 import { useGameProgress } from "../games/_shared/progress/useGameProgress";
 import { levelFromXp, xpToNextLevel } from "../lib/xp-config";
 import { levelIconSrc } from "../lib/level-icons";
@@ -180,21 +180,23 @@ function UnlockedCard({ game, userId, onPlay }) {
   );
 }
 
-// Locked / coming-soon card
-function LockedCard({ game }) {
+// Locked card — either "Coming Soon" (dev-locked) or lesson-gated.
+function LockedCard({ game, reason = "coming-soon" }) {
+  const isLessonGated = reason === "lesson";
+  const badgeText = isLessonGated ? "Locked" : "Coming Soon";
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 opacity-70 select-none flex flex-col">
+    <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 opacity-80 select-none flex flex-col">
       <div className="aspect-video relative">
-        <GameThumbnail game={game} />
-        <div className="absolute inset-0 flex items-center justify-center bg-stone-900/10 dark:bg-black/20">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-white/80 dark:bg-stone-700/80 flex items-center justify-center shadow">
-              <Lock size={18} className="text-stone-400 dark:text-stone-500" />
-            </div>
+        <div className="w-full h-full grayscale">
+          <GameThumbnail game={game} />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-stone-900/20 dark:bg-black/40">
+          <div className="w-12 h-12 rounded-full bg-white/90 dark:bg-stone-700/90 flex items-center justify-center shadow-lg">
+            <Lock size={20} className="text-stone-500 dark:text-stone-300" />
           </div>
         </div>
         <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 bg-white/90 dark:bg-stone-700/90 px-2.5 py-1 rounded-full shadow-sm">
-          Coming Soon
+          {badgeText}
         </span>
       </div>
       <div className="p-5 flex flex-col gap-2.5">
@@ -203,7 +205,9 @@ function LockedCard({ game }) {
           {game.title}
         </p>
         <p className="text-sm text-stone-300 dark:text-stone-600 line-clamp-2">
-          {game.tagline}
+          {isLessonGated
+            ? (game.unlockHint ?? "Finish the related lesson to unlock.")
+            : game.tagline}
         </p>
       </div>
     </div>
@@ -236,6 +240,9 @@ export function GamesHubPage({
   totalXp = 0,
   isLoggedIn,
   onLoginClick,
+  completedLessons = [],
+  // Staff (teacher/admin) preview every game regardless of gating.
+  bypassLocks = false,
 }) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -485,7 +492,9 @@ export function GamesHubPage({
                   style={{ transitionDelay: `${index * 80}ms` }}
                 >
                   {game.locked ? (
-                    <LockedCard game={game} />
+                    <LockedCard game={game} reason="coming-soon" />
+                  ) : !bypassLocks && !isGameUnlocked(game, completedLessons) ? (
+                    <LockedCard game={game} reason="lesson" />
                   ) : (
                     <UnlockedCard
                       game={game}
