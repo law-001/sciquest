@@ -928,3 +928,7 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_135
 - Food Chain Survival: fixed the boot-size bug where the canvas rendered at the wrong dimensions until the user toggled browser zoom. `resizeCanvas()` reads `current.level.world` to cap the buffer to world extent (1720×1200), but on first entry it ran *before* `level.init()` — and `this.world` is created inside `init()`, so the cap silently skipped. Any later resize (e.g. zoom change) saw the real world and snapped the canvas to the correct size, which is why toggling zoom appeared to "fix" it. [main.js:249-251](public/games/food-chain-survival/js/main.js#L249-L251): re-run `resizeCanvas()` once after `level.init()` so the boot state matches what any subsequent resize would produce.
 - Commit: Fix Food Chain Survival canvas sizing on first entry
+
+## VERSION_136
+- AboutPage: added Aries Walao to the team but the entry referenced `ariesPhoto` / `ariesPhotoDark` without importing them, crashing the page with a `ReferenceError`. Added the two imports from the existing `src/assets/ARIES.jpg` and `src/assets/ARIESDARKMODE.jpg` files. [AboutPage.jsx:9](src/pages/AboutPage.jsx#L9) + [AboutPage.jsx:14](src/pages/AboutPage.jsx#L14).
+- Commit: Add missing Aries photo imports to AboutPage
