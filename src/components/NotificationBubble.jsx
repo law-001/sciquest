@@ -1,6 +1,6 @@
 import { AchievementMedal } from "./AchievementMedal";
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, Star, Trophy, Sparkles, X, ChevronRight, ClipboardCheck } from "lucide-react";
+import { Bell, Star, Trophy, Sparkles, X, ChevronRight, ClipboardCheck, Gamepad2 } from "lucide-react";
 
 function notifMeta(n) {
   if (n.kind === "level-up") {
@@ -28,6 +28,15 @@ function notifMeta(n) {
       icon: <ClipboardCheck className="w-4 h-4 text-secondary-500 dark:text-secondary-400" />,
       iconBg: "bg-secondary-500/10 dark:bg-secondary-400/15",
       navigateTo: "profile",
+    };
+  }
+  if (n.kind === "game-unlocked") {
+    return {
+      title: `Game Unlocked — ${n.gameTitle ?? "New game"}`,
+      sub: "Tap to open the Games hub and play it now.",
+      icon: <Gamepad2 className="w-4 h-4 text-primary-500 dark:text-primary-400" />,
+      iconBg: "bg-primary-500/10 dark:bg-primary-500/15",
+      navigateTo: "games",
     };
   }
   // xp — lesson completions route to the profile's Recent Activity
