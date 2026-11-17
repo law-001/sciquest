@@ -30,7 +30,7 @@ export default function QuakeReady({ user, profile, onExit, onProgressUpdate }) 
         onExitRef.current?.();
         return;
       }
-      if (data.type === 'qr:cleared' && [1, 2, 3].includes(Number(data.levelId))) {
+      if (data.type === 'qr:cleared' && Number(data.levelId) === 1) {
         recordRef.current?.({
           challengeId: `l${data.levelId}`,
           score: data.stars ?? 1,

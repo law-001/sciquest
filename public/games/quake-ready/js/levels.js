@@ -42,48 +42,6 @@
         },
       },
     },
-    {
-      id: 2, key: 'survivor', cls: 'Level2', color: 'teal', num: '02',
-      role: 'Survivor', title: 'Shake Safe',
-      desc: 'An earthquake is coming — you just don\'t know when. Prepare your house, protect yourself when the shaking starts, and stay sharp afterwards. Everything you skip comes back to bite you.',
-      stars: 3, goal: 'Survive before, during & after',
-      hudGoal: 'Prepare the house',
-      edu: {
-        pre: {
-          title: 'Before · During · After',
-          html: `<p>Surviving an earthquake is mostly decided <b>before</b> it starts. You'll play all three phases — and your preparation in phase one changes what happens later.</p>
-                 ${fact(ICO.bag, `<b>Before:</b> strap tall furniture, turn off hazards, pack a <b>go-bag</b> (water, flashlight, first-aid kit, radio), and know your exits and family meeting place.`)}
-                 ${fact(ICO.table, `<b>During:</b> <b>DUCK</b> under a sturdy table, <b>COVER</b> your head, and <b>HOLD ON</b> until the shaking stops. Stay away from windows. Never use elevators or run outside mid-shake.`)}
-                 ${fact(ICO.shield, `<b>After:</b> check people for injuries, shut off leaking gas if it's safe, take your go-bag, move to an open evacuation area — and expect <b>aftershocks</b>.`)}`,
-          controls: 'survivor',
-        },
-        post: {
-          title: 'Preparedness is a superpower',
-          html: `<p>Notice what hurt you: it was almost always something that could have been prepared away — an unstrapped shelf, a missing first-aid kit, standing near glass. Real earthquakes last under a minute; the choices that save lives are made in the calm weeks before. Final mission: the whole town needs you.</p>`,
-        },
-      },
-    },
-    {
-      id: 3, key: 'ops', cls: 'Level3', color: 'gold', num: '03',
-      role: 'Commander', title: 'Rescue Ops',
-      desc: 'A major quake just hit Bayside Town. Fires spread, the school collapsed, the bridge is blocked. Command rescue teams with limited fuel, crews, and time — and choose who gets help first.',
-      stars: 3, goal: 'Save as many lives as you can',
-      hudGoal: 'Command the response',
-      edu: {
-        pre: {
-          title: 'You are the Incident Commander',
-          html: `<p>After a disaster, responders never have enough people, fuel, or time. Commanders <b>triage</b>: life-saving first, spreading dangers second, everything else after.</p>
-                 ${fact(ICO.siren, `Click a flashing <b>incident</b> on the map, then choose which unit to send from the Command Post. Trapped people have a <b>survival timer</b> — watch it.`)}
-                 ${fact(ICO.truck, `Every dispatch burns <b>fuel</b> and units drive by road. A <b>blocked bridge</b> stops everyone — sometimes clearing a road saves more lives than a rescue.`)}
-                 ${fact(ICO.heart, `Injured survivors must reach a <b>working hospital</b>. No electricity, no surgeons — infrastructure keeps people alive too.`)}`,
-          controls: 'ops',
-        },
-        post: {
-          title: 'How communities recover',
-          html: `<p>You just ran a real emergency-management playbook: reopen routes, protect the hospital, stop fires before they spread, and always put lives first. Recovery isn't one hero — it's rescue teams, fire crews, medics, engineers and line workers, coordinated. That coordination is why prepared communities lose fewer people to the same size quake.</p>`,
-        },
-      },
-    },
   ];
 
   /* ----- shared base class ----- */

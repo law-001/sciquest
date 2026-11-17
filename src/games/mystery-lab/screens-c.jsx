@@ -147,12 +147,12 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
           position: "relative",
           overflow: "hidden",
           background: "linear-gradient(180deg, #fef3c7 0%, #fed7aa 70%, #f97316 100%)",
-          minHeight: 460,
+          minHeight: "clamp(360px, 60vh, 460px)",
         }}>
           <img src={`${import.meta.env.BASE_URL}games/mystery-lab/art/tent-canopy.png`} alt="" aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, width: "100%", height: 80, objectFit: "cover", objectPosition: "top", pointerEvents: "none" }} />
 
           {/* Bench surface */}
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, backgroundImage: `url(${import.meta.env.BASE_URL}games/mystery-lab/art/bench-surface.png)`, backgroundSize: "cover", backgroundPosition: "center", borderTop: "4px solid #5b4530" }} />
+          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "min(360px, 72%)", backgroundImage: `url(${import.meta.env.BASE_URL}games/mystery-lab/art/bench-surface.png)`, backgroundSize: "cover", backgroundPosition: "center", borderTop: "4px solid #5b4530" }} />
 
           {/* Title above tools */}
           <div style={{ position: "absolute", top: 24, left: 32, right: 32, zIndex: 2 }}>
@@ -165,8 +165,8 @@ function LabScreen({ go, energy, setEnergy, experiments, addExperiment, hypothes
             </p>
           </div>
 
-          {/* Tools row */}
-          <div style={{ position: "absolute", left: 32, right: 32, bottom: 32, top: 180, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16, alignItems: "end" }}>
+          {/* Tools row — 5 columns on desktop, auto-shrinks on phone via the auto-fit grid. */}
+          <div className="ml-tools-row" style={{ position: "absolute", left: 16, right: 16, bottom: 20, top: 170, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(84px, 1fr))", gap: 12, alignItems: "end" }}>
             {TESTS.map(t => {
               const done = experiments.find(e => e.id === t.id);
               const can = energy >= t.cost && !done;
@@ -621,7 +621,7 @@ function PHMiniGame({ onDone }) {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div className="ml-twin-grid" style={{ gap: 10 }}>
         {PH_OPTIONS.map(opt => {
           const isSelected = selected === opt.value;
           return (
@@ -1384,7 +1384,7 @@ function MicroMiniGame({ onDone }) {
 function MiniGameResults({ test, onClose }) {
   return (
     <div className="bounce-in">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
+      <div className="ml-twin-grid" style={{ gap: 14, marginBottom: 18 }}>
         <ResultCard pond="A" value={test.resultA} sick />
         <ResultCard pond="B" value={test.resultB} />
       </div>

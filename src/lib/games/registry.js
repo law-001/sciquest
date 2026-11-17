@@ -32,15 +32,9 @@ export const GAMES = {
     category: "Earth Science",
     loader: () => import("../../games/quake-ready/index.jsx"),
     minRole: "student",
-    totalLevels: 3,
-    countCompletedLevels: (progress) => {
-      const LEVEL_CHALLENGES = new Set(["l1", "l2", "l3"]);
-      return new Set(
-        progress
-          .filter((r) => r.completed && LEVEL_CHALLENGES.has(r.challenge_id))
-          .map((r) => r.challenge_id),
-      ).size;
-    },
+    totalLevels: 1,
+    countCompletedLevels: (progress) =>
+      progress.some((r) => r.completed && r.challenge_id === "l1") ? 1 : 0,
   },
   "matter-state-sandbox": {
     id: "matter-state-sandbox",

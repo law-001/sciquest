@@ -867,3 +867,43 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_126
 - Mystery Lab now gates on Week 5 (Scientific Investigation and Measurement) instead of Week 1 — matches the game's scientific-method theme. Related lesson flipped to `w05-l2`, hint "Finish Week 5 to unlock". Grid order swap: Matter State Sandbox (wk 3) now comes before Mystery Lab (wk 5).
 - Commit: Move Mystery Lab gate to Week 5
+
+## VERSION_127
+- Quake Ready is now a single-level game — Levels 2 (Shake Safe) and 3 (Rescue Ops) removed.
+  - [public/games/quake-ready/js/levels.js](public/games/quake-ready/js/levels.js): stripped the Level2 and Level3 entries from the `LEVELS` array. Level 1 (Fault Lab) is the only mission; the level-select renderer and "X / Y missions complete" footer auto-size to it.
+  - [public/games/quake-ready/index.html](public/games/quake-ready/index.html): removed the `<script src="js/level2.js">` and `<script src="js/level3.js">` tags. The dormant JS files are kept on disk but never loaded.
+  - [src/games/quake-ready/index.jsx](src/games/quake-ready/index.jsx): clear-event guard tightened from `[1, 2, 3].includes(…)` to `Number(data.levelId) === 1` — no accidental persistence of level 2/3 clears if the old pages are cached.
+  - [src/lib/games/registry.js](src/lib/games/registry.js): `totalLevels: 3` → `1`; `countCompletedLevels` now returns 0 or 1 based on whether `l1` has been cleared.
+- Commit: Reduce Quake Ready to a single Fault Lab level
+
+## VERSION_128
+- Quake Ready skips the level-select screen entirely — opening the game goes straight into Fault Lab (Level 1) via its briefing modal. Fewer taps, no empty 1-card grid.
+  - [main.js](public/games/quake-ready/js/main.js): boot now calls `startLevel(1)` instead of `renderCards() + show('menu')`. Dead `renderCards` function removed.
+  - `quitToMenu` repurposed: still runs cleanup (cancels rAF, calls `level.cleanup()`) but then posts `qr:exit` to the host instead of returning to the menu. All in-game buttons that said "Level Select" are now "Exit" and call the same path.
+  - Back arrow in the top bar always exits to SciQuest (no level to quit back to).
+  - Pause menu: "Level Select" button removed — only Resume / Sound / Restart / Exit game remain.
+  - [index.html](public/games/quake-ready/index.html): `#menu` default class is now `screen` (not `screen show`) so the empty menu doesn't flash behind the briefing modal on load; header defaults to "Quake Ready" with the subtitle hidden.
+- Commit: Quake Ready — skip level select, open straight into Fault Lab
+
+## VERSION_129
+- Mystery Lab: responsive-design pass across every screen (phone ≤640/≤480, tablet 641–1023, desktop ≥1024).
+  - [styles.css](src/games/mystery-lab/styles.css): keyframes `ml-fly-across` + `ml-cloud-drift` use `110vw` instead of fixed `1400px` so bird/cloud animations always exit the viewport. `.ml-opening-grid` relaxed from `minmax(330px, 560px) minmax(440px, 1fr)` to `1fr 1fr` with a `@media (max-width: 900px)` collapse to one column + light-mode readability wash. Added utility responsive grid classes `.ml-twin-grid`, `.ml-cards-grid`, `.ml-tabs-grid` that collapse at 640/767px. Added `@media (max-width: 480px)` block tightening HUD, cards, buttons, opening copy, footer. Mascot speech bubble now capped at `min(220px, 100vw - 48px)` on phone.
+  - [expedition.css](src/games/mystery-lab/expedition.css): map card `min-height` fluid (`clamp(220px, 50vh, 360px)` from `360px` fixed). Added `@media (max-width: 480px)` block shrinking map heading, compass, legend, location labels so the pond map reads on small phones.
+  - [screens-b.jsx](src/games/mystery-lab/screens-b.jsx): observation `.ml-scene-card` height clamped (`clamp(260px, 56vh, 460px)` from `460`). Hypothesis grid → `.ml-cards-grid`; notebook sidebar → `.ml-tabs-grid`; two 1fr/1fr grids → `.ml-twin-grid`. Notebook padding + minHeight fluid.
+  - [screens-c.jsx](src/games/mystery-lab/screens-c.jsx): lab bench card `minHeight` clamped; bench surface height → `min(360px, 72%)`; 5-column tools row → auto-fit `minmax(84px, 1fr)` so tests wrap on narrow cards. pH + results grids → `.ml-twin-grid`.
+  - [screens-d.jsx](src/games/mystery-lab/screens-d.jsx): evidence grid, comic strip, conclusion form, supports checkboxes, case summary, rewards all switched to responsive utility classes. Comic strip `repeat(5, 1fr)` → auto-fit `minmax(96px, 1fr)`.
+- No change to the portrait-rotate overlay — intentional UX for phones that need landscape to play.
+- Commit: Mystery Lab — responsive across phone/tablet/desktop
+
+## VERSION_130
+- Games hub tidy-up pass (unslop/polish): every card now aligns in its grid row and the locked state wears a single quiet cue instead of four.
+  - [GamesHubPage.jsx](src/pages/GamesHubPage.jsx): shared `CARD_SHELL` + `THUMB_WRAP` so unlocked and locked cards use the same frame (`aspect-video` thumb, `h-full`, same border/shadow). CSS Grid row-stretches them to one height.
+  - Locked card redesigned: dropped the full-card `opacity-80`, the dark image wash, the giant centered lock button, and the top-right "LOCKED" pill. Kept the grayscale thumbnail and added a quiet lock chip at the bottom (same slot as Play) so both card types read as the same layout.
+  - `CategoryBadge` is now `inline-flex` so it never stretches to full width inside a flex-col.
+  - "LOCKED" / "Coming Soon" / "ALL GAMES" → sentence case ("Locked", "Coming soon", "All games").
+  - Unlocked card thumb changed from `aspect-25/9` to `aspect-video` to match the locked thumbnail and give the hero art more vertical room.
+- Commit: Tidy up Games hub cards and align unlocked/locked heights
+
+## VERSION_131
+- Locked game cards now mirror the unlocked density: difficulty dots + estimated time row, a 0/N progress bar, then the "Locked" chip. Same vertical skeleton as unlocked cards, zero dead space. [GamesHubPage.jsx `LockedCard`](src/pages/GamesHubPage.jsx).
+- Commit: Fill locked-card space with difficulty + progress rows

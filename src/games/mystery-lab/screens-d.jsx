@@ -170,7 +170,7 @@ function EvidenceScreen({ go, evidenceLinks, setEvidenceLinks, observations = []
               <h3 style={{ margin: "8px 0 0", fontSize: 20, fontFamily: "Comic Sans MS, cursive", fontWeight: 700, color: "var(--text)" }}>
                 "{currentStep.prompt}"
               </h3>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 10, marginTop: 12 }}>
+              <div className="ml-cards-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 190px), 1fr))", gap: 10, marginTop: 12 }}>
                 {STORY_CLUES.filter(c => !placed.includes(c.id)).map(c => (
                   <ClueCard key={c.id} clue={c} shaking={shake === c.id} onClick={() => onPickClue(c)} />
                 ))}
@@ -249,9 +249,9 @@ function ComicStrip({ steps, placed, currentStepIdx, justPlaced }) {
         ))}
       </div>
 
-      <div style={{
+      <div className="ml-comic-strip" style={{
         display: "grid",
-        gridTemplateColumns: "repeat(5, 1fr) ",
+        gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))",
         gap: 10,
         margin: "12px 0",
         position: "relative",
@@ -569,7 +569,7 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
         <h2 className="title-xl">Submit your final report</h2>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
+      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
         {/* report form */}
         <div className="card" style={{ padding: 24, background: "var(--bg-paper)" }}>
           {/* Letterhead */}
@@ -653,7 +653,7 @@ function ConclusionScreen({ cause, setCause, supports, setSupports, written, set
           {step === 1 && <div>
             <div className="uppercase-eyebrow">Q2 · Supporting evidence</div>
             <h4 style={{ fontSize: 16, margin: "4px 0 12px" }}>Which evidence supports your answer? (pick all that apply)</h4>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="ml-twin-grid" style={{ gap: 8 }}>
               {SUPPORTS.map(s => {
                 const checked = supports.includes(s.id);
                 return (
@@ -819,7 +819,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks }) {
           </div>
 
           {/* 2-col body */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginTop: 18, borderTop: "2px solid var(--text)", paddingTop: 18 }}>
+          <div className="ml-twin-grid" style={{ gap: 28, marginTop: 18, borderTop: "2px solid var(--text)", paddingTop: 18 }}>
             <div>
               <div style={{ fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 900, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
                 Case at a glance
@@ -887,7 +887,7 @@ function VictoryScreen({ victory, observations, experiments, evidenceLinks }) {
       </div>
 
       {/* Rewards */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
+      <div className="ml-2col-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
         <div className="card" style={{ padding: 22 }}>
           <h3 className="title-lg">Your investigation rating</h3>
           <p className="text-soft" style={{ fontSize: 13, fontWeight: 600, margin: "6px 0 16px" }}>How you scored against detective standards.</p>
