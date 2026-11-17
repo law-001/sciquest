@@ -74,6 +74,19 @@ export default function MysteryLab({
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  // Stop the procedural ambient music whenever the game unmounts — screens
+  // start the loop in their own effects but don't all clean up (opening
+  // screens, intro cutscene). Without this, exiting the game leaves the
+  // AudioContext scheduling notes forever.
+  useEffect(() => () => mlAudio.stopAmbient(), []);
+
+  // Wrap the host-provided exit so audio starts fading the instant the user
+  // clicks Back, not after React gets around to unmounting the tree.
+  const handleExit = useCallback(() => {
+    mlAudio.stopAmbient();
+    onExit?.();
+  }, [onExit]);
+
   const visited = useMemo(() => {
     const seen = new Set();
     observations.forEach(o => seen.add(o.pond === "A" ? "pondA" : "pondB"));
@@ -172,7 +185,7 @@ export default function MysteryLab({
             </p>
           </div>
           {onExit && (
-            <button type="button" onClick={onExit} style={{
+            <button type="button" onClick={handleExit} style={{
               marginTop: 8, padding: "10px 24px", borderRadius: 999,
               border: "1.5px solid rgba(253,246,227,0.2)",
               background: "rgba(255,255,255,0.08)", color: "#fdf6e3",
@@ -196,14 +209,14 @@ export default function MysteryLab({
             onToggleTheme={toggleTheme}
             isMuted={isMuted}
             onToggleMute={toggleMute}
-            onExit={onExit}
+            onExit={handleExit}
           />
         )}
 
         {(screen === "opening" || screen === "intro") && onExit && (
           <button
             type="button"
-            onClick={onExit}
+            onClick={handleExit}
             aria-label="Back to games"
             title="Back to games"
             style={{ ...FLOATING_BTN, position: "absolute", top: 14, left: 16, zIndex: 60 }}

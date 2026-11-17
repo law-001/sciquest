@@ -16,7 +16,11 @@
   --primary: #35755f; --primary-d: #183e30;
   background-image: none;
 }
-.mystery-lab-root .screen { max-width: 1520px; padding: 16px 24px 20px; }
+/* Cap gameplay screens for readability, but centre them so wide viewports don't
+   leave a chunk of empty cream on the right. Opening + intro are cinematic
+   full-bleed scenes — they ignore the cap and keep their zero padding. */
+.mystery-lab-root .screen { width: 100%; max-width: 1520px; margin-inline: auto; padding: 16px 24px 20px; }
+.mystery-lab-root .screen.full-bleed { max-width: none; padding: 0; }
 .mystery-lab-root .hud { background: var(--bg-paper); padding: 12px 24px; border-bottom: 2px solid var(--line); }
 .mystery-lab-root .hud .brand .logo { background: #35755f; border-radius: 12px; box-shadow: none; }
 .mystery-lab-root .hud .stat { border-radius: 10px; box-shadow: none; background: var(--bg); }

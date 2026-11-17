@@ -907,3 +907,24 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_131
 - Locked game cards now mirror the unlocked density: difficulty dots + estimated time row, a 0/N progress bar, then the "Locked" chip. Same vertical skeleton as unlocked cards, zero dead space. [GamesHubPage.jsx `LockedCard`](src/pages/GamesHubPage.jsx).
 - Commit: Fill locked-card space with difficulty + progress rows
+
+## VERSION_132
+- Mystery Lab opening screen fluid-sizes on wide monitors. At 100% zoom on ≥1600px displays the title lockup and copy block were pinned to 470/560px absolute, which made the left half look empty next to the full-bleed map art. The absolute caps are now viewport-aware `clamp()`s so the content scales with the hero width.
+  - [styles.css](src/games/mystery-lab/styles.css): `.ml-opening-title` width `min(100%, 470px)` → `clamp(300px, 34vw, 640px)`; `.ml-opening-copy` max-width `min(46ch, 560px)` → `clamp(360px, 42vw, 680px)`; `.ml-opening-desc` cap `17px` → `19px`; `.ml-opening-hoot-line` + buttons get fluid font-sizes and padding; opening-grid padding cap raised (112px → 140px top, 96px → 128px side) so wide monitors don't look cramped against the edge.
+  - All `clamp()` floors unchanged, so phone/tablet layouts stay the same and the ≤900px collapse still fires.
+- Commit: Fluid opening title + copy so wide monitors stop looking empty
+
+## VERSION_133
+- Mystery Lab: ambient music now stops when the user exits the game. Before, `OpeningScreen` + `LegacyOpeningScreen` + `IntroScreen` started the procedural ambient loop on mount but never cleaned up — only `MapScreen` did — so exiting from the opening/intro left a `setInterval` scheduling melody notes against the Web Audio context forever.
+  - [index.jsx](src/games/mystery-lab/index.jsx): top-level unmount cleanup `useEffect(() => () => mlAudio.stopAmbient(), [])` fires the 1.2s fade-out whenever the whole game unmounts, regardless of which screen was active. Also wrapped the host-provided `onExit` as `handleExit` which calls `mlAudio.stopAmbient()` first so the fade starts the instant the Back button is clicked, not after React tears down the tree.
+- Commit: Fix Mystery Lab music continuing after exit
+
+## VERSION_134
+- Mystery Lab: whole game now fills wide viewports instead of pinning to the left edge. [expedition.css:19](src/games/mystery-lab/expedition.css#L19) was capping `.mystery-lab-root .screen` at `max-width: 1520px` with no auto margin, so anything past 1520px (100% zoom on a 1920-wide monitor) showed ~400px of empty cream on the right. The same rule was also overriding the `padding: 0` that `.screen.full-bleed` is supposed to apply to the cinematic opening / intro — so even the opening map art wasn't reaching the viewport edges.
+  - Added `width: 100%; margin-inline: auto` so capped gameplay screens centre instead of left-anchoring.
+  - Added a `.screen.full-bleed { max-width: none; padding: 0 }` override so the opening scene and intro cutscene go edge-to-edge again.
+- Commit: Center Mystery Lab screens + let opening go full-bleed on wide monitors
+
+## VERSION_135
+- Food Chain Survival: fixed the boot-size bug where the canvas rendered at the wrong dimensions until the user toggled browser zoom. `resizeCanvas()` reads `current.level.world` to cap the buffer to world extent (1720×1200), but on first entry it ran *before* `level.init()` — and `this.world` is created inside `init()`, so the cap silently skipped. Any later resize (e.g. zoom change) saw the real world and snapped the canvas to the correct size, which is why toggling zoom appeared to "fix" it. [main.js:249-251](public/games/food-chain-survival/js/main.js#L249-L251): re-run `resizeCanvas()` once after `level.init()` so the boot state matches what any subsequent resize would produce.
+- Commit: Fix Food Chain Survival canvas sizing on first entry
