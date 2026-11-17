@@ -56,7 +56,7 @@ function DifficultyDots({ level }) {
 function CategoryBadge({ category }) {
   const cls = CATEGORY_STYLES[category] ?? "bg-stone-100 text-stone-500";
   return (
-    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${cls}`}>
+    <span className={`inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full ${cls}`}>
       {category}
     </span>
   );
@@ -123,7 +123,12 @@ function ProgressRow({ completed, total }) {
   );
 }
 
-// Unlocked game card
+// Shared card shell — identical frame for locked and unlocked so the two
+// render at the same height in the grid row. Content inside decides density.
+const CARD_SHELL =
+  "flex flex-col h-full rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-sm";
+const THUMB_WRAP = "aspect-video relative overflow-hidden shrink-0";
+
 function UnlockedCard({ game, userId, onPlay }) {
   const { progress } = useGameProgress(supabase, game.id, userId);
   const totalLevels = game.totalLevels ?? 3;
@@ -132,8 +137,10 @@ function UnlockedCard({ game, userId, onPlay }) {
     : Math.min(progress.filter((r) => r.completed).length, totalLevels);
 
   return (
-    <div className="group rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 hover:border-orange-300 dark:hover:border-orange-500/50 transition-all duration-300 ease-out flex flex-col">
-      <div className="aspect-25/9 relative overflow-hidden">
+    <div
+      className={`group ${CARD_SHELL} hover:shadow-xl hover:-translate-y-1 hover:border-orange-300 dark:hover:border-orange-500/50 transition-[transform,box-shadow,border-color] duration-300 ease-out`}
+    >
+      <div className={THUMB_WRAP}>
         <div className="w-full h-full transition-transform duration-500 ease-out group-hover:scale-105">
           <GameThumbnail game={game} />
         </div>
@@ -166,7 +173,7 @@ function UnlockedCard({ game, userId, onPlay }) {
 
         <button
           onClick={onPlay}
-          className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 active:scale-95 text-white font-semibold text-sm transition-all duration-200 group-hover:shadow-md group-hover:shadow-orange-200 dark:group-hover:shadow-orange-900/40"
+          className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 active:scale-95 text-white font-semibold text-sm transition-colors duration-200"
         >
           <Play
             size={15}
@@ -180,35 +187,51 @@ function UnlockedCard({ game, userId, onPlay }) {
   );
 }
 
-// Locked card — either "Coming Soon" (dev-locked) or lesson-gated.
+// Locked card — mirrors the unlocked shell so cards align in every row.
+// One lock cue: grayscale thumb + quiet lock pill at the bottom where Play
+// would sit. No full-card opacity dim, no dark wash on the image.
 function LockedCard({ game, reason = "coming-soon" }) {
   const isLessonGated = reason === "lesson";
-  const badgeText = isLessonGated ? "Locked" : "Coming Soon";
+  const badgeText = isLessonGated ? "Locked" : "Coming soon";
+  const hint = isLessonGated
+    ? (game.unlockHint ?? "Finish the related lesson to unlock")
+    : game.tagline;
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 opacity-80 select-none flex flex-col">
-      <div className="aspect-video relative">
-        <div className="w-full h-full grayscale">
+    <div className={`${CARD_SHELL} select-none`}>
+      <div className={THUMB_WRAP}>
+        <div className="w-full h-full grayscale opacity-90">
           <GameThumbnail game={game} />
         </div>
-        <div className="absolute inset-0 flex items-center justify-center bg-stone-900/20 dark:bg-black/40">
-          <div className="w-12 h-12 rounded-full bg-white/90 dark:bg-stone-700/90 flex items-center justify-center shadow-lg">
-            <Lock size={20} className="text-stone-500 dark:text-stone-300" />
+        {game.category && (
+          <span className="absolute top-3 left-3">
+            <CategoryBadge category={game.category} />
+          </span>
+        )}
+      </div>
+      <div className="p-5 flex flex-col gap-4 flex-1">
+        <div>
+          <h3 className="font-bold text-stone-500 dark:text-stone-400 text-base leading-snug">
+            {game.title}
+          </h3>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 line-clamp-2">
+            {hint}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <DifficultyDots level={game.difficulty ?? 1} />
+          <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500">
+            <Clock size={13} />
+            <span className="text-xs">~{game.estimatedMinutes} min</span>
           </div>
         </div>
-        <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 bg-white/90 dark:bg-stone-700/90 px-2.5 py-1 rounded-full shadow-sm">
+
+        <ProgressRow completed={0} total={game.totalLevels ?? 3} />
+
+        <div className="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-stone-100 dark:bg-stone-700/50 text-stone-500 dark:text-stone-400 font-semibold text-sm">
+          <Lock size={14} />
           {badgeText}
-        </span>
-      </div>
-      <div className="p-5 flex flex-col gap-2.5">
-        {game.category && <CategoryBadge category={game.category} />}
-        <p className="font-bold text-stone-400 dark:text-stone-500 text-base leading-snug">
-          {game.title}
-        </p>
-        <p className="text-sm text-stone-300 dark:text-stone-600 line-clamp-2">
-          {isLessonGated
-            ? (game.unlockHint ?? "Finish the related lesson to unlock.")
-            : game.tagline}
-        </p>
+        </div>
       </div>
     </div>
   );
@@ -417,8 +440,8 @@ export function GamesHubPage({
         {(displayedGames.length > 0 || searchQuery) && (
           <section className="mt-5">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest shrink-0">
-                All Games
+              <p className="text-sm font-semibold text-stone-500 dark:text-stone-400 shrink-0">
+                All games
               </p>
 
               {/* Mobile: icon toggles inline input */}

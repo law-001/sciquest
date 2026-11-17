@@ -236,7 +236,7 @@ function ObservationScreen({ go, pond, setPond, observations, addObservation }) 
         {/* Scene viewport */}
         <div className="card ml-scene-card" style={{
           padding: 0, position: "relative", overflow: "hidden",
-          height: 460,
+          height: "clamp(260px, 56vh, 460px)",
           backgroundColor: sick ? "#7c5a30" : "#6ee7b7",
           backgroundImage: `url(${import.meta.env.BASE_URL}games/mystery-lab/art/observation-backdrop-${sick ? "polluted" : "healthy"}-v1.png)`,
           backgroundPosition: "center",
@@ -552,7 +552,7 @@ function QuestionScreen({ go, observations, question, setQuestion, hypotheses, s
           <p className="text-soft" style={{ margin: "6px 0 16px", fontSize: 14 }}>
             A hypothesis is an <i>educated guess</i> you can test. Multiple can be reasonable.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14 }}>
+          <div className="ml-cards-grid">
             {HYPOTHESES.map(h => {
               const picked = hypotheses.includes(h.id);
               return (
@@ -703,7 +703,7 @@ function NotebookScreen({ go, observations, question, hypotheses, experiments, c
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 20, alignItems: "stretch" }}>
+      <div className="ml-tabs-grid">
         {/* Tabs */}
         <div className="col gap-2">
           {NOTEBOOK_TABS.map(t => {
@@ -731,7 +731,7 @@ function NotebookScreen({ go, observations, question, hypotheses, experiments, c
         </div>
 
         {/* Notebook page */}
-        <div className="notebook" style={{ padding: "24px 28px 24px 52px", minHeight: 440 }}>
+        <div className="notebook" style={{ padding: "clamp(16px, 4vw, 24px) clamp(18px, 5vw, 28px) clamp(16px, 4vw, 24px) clamp(36px, 7vw, 52px)", minHeight: "clamp(300px, 50vh, 440px)" }}>
           {/* Spiral binding decorative */}
           <div style={{ position: "absolute", left: 12, top: 0, bottom: 0, width: 4, display: "flex", flexDirection: "column", justifyContent: "space-around", padding: "20px 0" }}>
             {Array.from({ length: 14 }).map((_, i) => (
@@ -758,7 +758,7 @@ function ObsPage({ observations }) {
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Observations</h3>
       <div className="text-soft" style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 14 }}>Maple Creek · Day 1 · cloudy</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 24 }}>
+      <div className="ml-twin-grid" style={{ gap: 24, marginTop: 24 }}>
         <div>
           <div style={{ display: "inline-block", background: "#fee2e2", color: "#991b1b", padding: "4px 12px", borderRadius: 999, fontFamily: "Trebuchet MS, system-ui, sans-serif", fontWeight: 800, fontSize: 13, marginBottom: 12 }}>POND A · SICK</div>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6, fontFamily: "Comic Sans MS, cursive", fontSize: 17 }}>
@@ -815,7 +815,7 @@ function HypPage({ hypotheses }) {
     <div className="bounce-in">
       <h3 className="h-hand" style={{ fontSize: 36, color: "var(--orange-700)" }}>Hypotheses</h3>
       <p style={{ fontFamily: "Comic Sans MS, cursive", fontSize: 16, margin: "6px 0 18px" }}>An <b>educated guess</b> we can test.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div className="ml-twin-grid" style={{ gap: 16 }}>
         {picks.length === 0 && <div className="text-muted" style={{ fontStyle: "italic", fontFamily: "Comic Sans MS, cursive", fontSize: 18 }}>No hypotheses yet.</div>}
         {picks.map((h, i) => (
           <div key={h.id} className={`sticky ${h.color}`} style={{ transform: `rotate(${i % 2 ? 2 : -2}deg)`, fontSize: 15 }}>

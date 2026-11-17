@@ -102,25 +102,10 @@
     $('#headTitle').textContent = name === 'menu' ? 'Choose a level' : (current ? current.meta.title : 'Quake Ready');
     $('#headSub').style.display = name === 'menu' ? '' : 'none';
   }
-  // NOTE: on the menu screen there is no level to quit, so the back arrow
-  // exits the whole game back to the SciQuest games hub (host listens).
-  $('#backBtn').addEventListener('click', () => {
-    if (current) { quitToMenu(); }
-    else { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} }
-  });
-
-  /* ---------------- cards ---------------- */
-  function renderCards() {
-    LS.render({
-      container: $('#cards'),
-      levels: G.LEVELS,
-      progress: progress,
-      isUnlocked: unlocked,
-      onPlay: (id) => { G.Audio.ensure(); startLevel(id); },
-      footerEl: $('#progressLabel'),
-      footerText: (cleared, total) => cleared + ' / ' + total + ' missions complete',
-    });
-  }
+  // Level select is gone — the single Fault Lab opens immediately. The back
+  // arrow always sends the host (SciQuest) the exit message.
+  function exitToHost() { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} }
+  $('#backBtn').addEventListener('click', exitToHost);
 
   /* ---------------- modal ---------------- */
   function showModal({ accent, kicker, title, bodyHTML, actions }) {
@@ -170,7 +155,7 @@
       accent: meta.color, kicker: 'BEFORE YOU PLAY', title: meta.edu.pre.title,
       bodyHTML: meta.edu.pre.html + (meta.edu.pre.controls ? controlsHTML(meta.edu.pre.controls) : ''),
       actions: [
-        { label: 'Back', kind: 'ghost', onClick: () => {} },
+        { label: 'Exit', kind: 'ghost', onClick: exitToHost },
         { label: 'Start &nbsp;→', onClick: () => enterGame(meta) },
       ],
     });
@@ -198,12 +183,13 @@
     const h = current && current.level.hud; if (h) h.actionPressed = false;
   }
 
+  // Level select is gone, so "quit" means hand control back to SciQuest. Still
+  // runs the cleanup path so audio loops + rAF stop before the iframe unmounts.
   function quitToMenu() {
     cancelAnimationFrame(raf); raf = 0;
     if (current) { current.level.cleanup && current.level.cleanup(); current = null; }
-    ['#taskPanel', '#simPanel', '#simSidebar', '#opsPanel'].forEach((s) => { $(s).style.display = 'none'; });
-    $('#game').classList.remove('mode-shell');
-    hideModal(); show('menu'); renderCards();
+    hideModal();
+    exitToHost();
   }
 
   /* ---------------- HUD factory ---------------- */
@@ -297,7 +283,7 @@
       actions.push({ label: 'Replay', kind: 'ghost', onClick: () => enterGame(meta) });
     } else {
       actions.push({ label: 'Try again', onClick: () => enterGame(meta) });
-      actions.push({ label: 'Level Select', kind: 'ghost', onClick: quitToMenu });
+      actions.push({ label: 'Exit', kind: 'ghost', onClick: quitToMenu });
     }
     showModal({
       accent: meta.color, kicker: payload.resultKicker || (won ? 'MISSION REPORT' : 'MISSION FAILED'),
@@ -310,7 +296,7 @@
     const nextUnlocked = nextMeta && unlocked(nextMeta);
     const actions = [];
     if (nextMeta && nextUnlocked) actions.push({ label: 'Next: ' + nextMeta.title + ' &nbsp;→', accent: nextMeta.color, onClick: () => startLevel(nextMeta.id) });
-    actions.push({ label: 'Level Select', kind: nextMeta ? 'ghost' : undefined, onClick: quitToMenu });
+    actions.push({ label: 'Exit', kind: nextMeta ? 'ghost' : undefined, onClick: quitToMenu });
     showModal({ accent: meta.color, kicker: 'DID YOU KNOW', title: meta.edu.post.title, bodyHTML: meta.edu.post.html, actions });
   }
 
@@ -326,8 +312,7 @@
         { label: 'Resume', icon: MENU_ICONS.play, onClick: () => { paused = false; lastTs = performance.now(); } },
         { label: G.Audio.muted ? 'Sound: Off' : 'Sound: On', icon: G.Audio.muted ? MENU_ICONS.soundOff : MENU_ICONS.soundOn, kind: 'ghost', tone: 'mute', keep: true, onClick: () => { setMute(!G.Audio.muted); if (!G.Audio.muted) G.Audio.blip(660, .08, 'triangle', .12); openPauseMenu(); } },
         { label: 'Restart', icon: MENU_ICONS.redo, kind: 'ghost', tone: 'warn', onClick: () => enterGame(current.meta) },
-        { label: 'Level Select', icon: MENU_ICONS.grid, kind: 'ghost', tone: 'nav', onClick: quitToMenu },
-        { label: 'Exit game', icon: MENU_ICONS.exit, kind: 'ghost', tone: 'danger', onClick: () => { try { parent.postMessage({ type: 'qr:exit' }, '*'); } catch (e) {} } },
+        { label: 'Exit game', icon: MENU_ICONS.exit, kind: 'ghost', tone: 'danger', onClick: exitToHost },
       ],
     });
   }
@@ -374,7 +359,8 @@
   }
 
   /* ---------------- boot ---------------- */
-  renderCards();
+  // Single-level game: open Fault Lab (Level 1) directly, skipping the level
+  // select screen. The briefing modal still runs as the game's intro.
   setupTouch();
-  show('menu');
+  startLevel(1);
 })(window);
