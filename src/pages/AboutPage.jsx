@@ -4,8 +4,8 @@ import Card from "../components/Card"; // Default import
 import { useTheme } from "../context/ThemeContext";
 import miguelPhoto from "../assets/MIGUEL.png";
 import aezenPhoto from "../assets/AEZEN.png";
-import cheskaPhoto from "../assets/CHESKA.jpg";
-import markPhoto from "../assets/MARK.jpg";
+import cheskaPhoto from "../assets/CHESKA.png";
+import markPhoto from "../assets/MARK.png";
 import ariesPhoto from "../assets/ARIES.jpg";
 import miguelPhotoDark from "../assets/MIGUELDARKMODE.jpg";
 import aezenPhotoDark from "../assets/AEZENDARKMODE.jpg";
