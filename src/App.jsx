@@ -16,6 +16,7 @@ import { GamesHubPage } from "./pages/GamesHubPage";
 import { LiveQuestPage } from "./pages/LiveQuestPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
+import { PasswordResetPage } from "./pages/PasswordResetPage";
 import { LessonEditorPage } from "./pages/LessonEditorPage";
 import { QuizEditorPage } from "./pages/QuizEditorPage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
@@ -151,7 +152,11 @@ function AppContent() {
   const _urlParams  = new URLSearchParams(window.location.search);
   const _hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   // Plain variables — read once at mount from URL params (never change after load).
-  const _isOnInvite = (
+  const _isRecoveryFlow = (
+    _urlParams.get('type') === 'recovery' ||
+    _hashParams.get('type') === 'recovery'
+  );
+  const _isOnInvite = !_isRecoveryFlow && (
     _urlParams.get('type') === 'invite' ||
     _hashParams.get('type') === 'invite' ||
     _urlParams.get('error_code') === 'otp_expired' ||
@@ -163,13 +168,16 @@ function AppContent() {
   );
   // Ref so the onComplete handler can clear it without a re-render.
   const isInviteFlow = useRef(_isOnInvite);
-  // Restore the last view on refresh; invite flow always wins.
+  const isRecoveryFlow = useRef(_isRecoveryFlow);
+  // Restore the last view on refresh; invite + recovery flows always win.
   const _savedView = readNav(NAV_VIEW_KEY);
-  const _restoredView = _savedView && _savedView !== 'teacher-setup' ? _savedView : null;
+  const _restoredView = _savedView && _savedView !== 'teacher-setup' && _savedView !== 'password-reset' ? _savedView : null;
   const [currentView, setCurrentView] = useState(
-    _isOnInvite ? 'teacher-setup' : (_restoredView ?? 'home'),
+    _isRecoveryFlow ? 'password-reset'
+      : _isOnInvite ? 'teacher-setup'
+      : (_restoredView ?? 'home'),
   );
-  const didRestoreView = useRef(!_isOnInvite && !!_restoredView);
+  const didRestoreView = useRef(!_isOnInvite && !_isRecoveryFlow && !!_restoredView);
   const initialRedirectDone = useRef(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [reachedLessons, setReachedLessons] = useState([]);
@@ -634,6 +642,7 @@ function AppContent() {
     if (loading || initialRedirectDone.current) return;
     initialRedirectDone.current = true;
     if (isInviteFlow.current) return;
+    if (isRecoveryFlow.current) return;
     // A refresh restored the prior view — leave the user where they were.
     if (didRestoreView.current) return;
     if (!user) return;
@@ -651,7 +660,7 @@ function AppContent() {
 
   // Mirror the nav state into sessionStorage so a refresh restores it.
   useEffect(() => {
-    writeNav(NAV_VIEW_KEY, currentView === 'teacher-setup' ? null : currentView);
+    writeNav(NAV_VIEW_KEY, (currentView === 'teacher-setup' || currentView === 'password-reset') ? null : currentView);
     writeNav(NAV_WEEK_KEY, activeWeekId);
     writeNav(NAV_LESSON_KEY, activeLessonId);
     writeNav(NAV_GAME_KEY, activeGameId);
@@ -1186,6 +1195,7 @@ function AppContent() {
     currentView === "teacher-portal" ||
     currentView === "game-play" ||
     currentView === "teacher-setup" ||
+    currentView === "password-reset" ||
     currentView === "teacher-edit-lesson" ||
     currentView === "teacher-edit-quiz";
 
@@ -1366,6 +1376,16 @@ function AppContent() {
             onComplete={() => {
               isInviteFlow.current = false;
               handleNavigate("teacher-portal");
+            }}
+          />
+        );
+
+      case "password-reset":
+        return (
+          <PasswordResetPage
+            onDone={() => {
+              isRecoveryFlow.current = false;
+              handleNavigate("home");
             }}
           />
         );

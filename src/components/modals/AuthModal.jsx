@@ -165,14 +165,15 @@ const PASSWORD_RULES = [
 const isPasswordStrong = (v) => PASSWORD_RULES.every((rule) => rule.test(v));
 
 export function AuthModal({ isOpen, onClose, onLogin }) {
-  const { signIn, signUp, verifyEmailOtp, resendEmailOtp } = useAuth();
+  const { signIn, signUp, verifyEmailOtp, resendEmailOtp, sendPasswordReset } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [phase, setPhase] = useState("form"); // "form" | "verify"
+  const [phase, setPhase] = useState("form"); // "form" | "verify" | "forgot" | "forgot-sent"
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", "", "", ""]);
   const otpRefs = useRef([]);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [forgotEmail, setForgotEmail] = useState("");
   const [rememberMe, setRememberMe] = useState(
     () => localStorage.getItem('sq_pref_remember_me') === '1'
   );
@@ -226,11 +227,42 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
     setOtpDigits(["", "", "", "", "", "", "", ""]);
     setIsLogin(true);
     setForm(EMPTY_FORM);
+    setForgotEmail("");
     setShowPassword(false);
     setShowConfirm(false);
     setPasswordFocused(false);
     setFieldErrors({ email: "", studentNumber: "" });
     onClose();
+  };
+
+  const openForgot = () => {
+    setError("");
+    setForgotEmail(form.email);
+    setPhase("forgot");
+  };
+
+  const backToLogin = () => {
+    setError("");
+    setPhase("form");
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    const trimmed = forgotEmail.trim();
+    if (!trimmed) {
+      setError("Please enter your email address.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await sendPasswordReset(trimmed);
+      setPhase("forgot-sent");
+    } catch (err) {
+      setError(err.message || "Could not send reset link. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleToggle = () => {
@@ -388,6 +420,114 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
       setIsLoading(false);
     }
   };
+
+  if (phase === "forgot" || phase === "forgot-sent") {
+    const sent = phase === "forgot-sent";
+    return (
+      <div className="modal-backdrop">
+        <div
+          className="bg-white dark:bg-stone-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative animate-bounce-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="absolute top-0 left-0 w-full h-34 bg-linear-to-br from-primary-50 to-accent-100 opacity-60" />
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-white/70 rounded-full transition-all z-20 dark:text-stone-600"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div className="px-8 py-10 relative z-10">
+            <div className="text-center mb-6">
+              <div
+                className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 shadow-md ${
+                  sent
+                    ? "bg-teal-50 text-teal-500"
+                    : "bg-primary-50 text-primary-500"
+                }`}
+              >
+                {sent ? (
+                  <CheckCircle2 className="w-7 h-7" />
+                ) : (
+                  <Lock className="w-7 h-7" />
+                )}
+              </div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-white mb-2">
+                {sent ? "Check your email" : "Reset your password"}
+              </h2>
+              <p className="text-stone-500 dark:text-stone-100 text-sm font-medium">
+                {sent ? (
+                  <>
+                    We sent a reset link to
+                    <strong className="block text-stone-700 dark:text-stone-50 break-all mt-0.5">
+                      {forgotEmail}
+                    </strong>
+                    Open it on this device to set a new password.
+                  </>
+                ) : (
+                  "Enter the email tied to your account and we'll send you a link to set a new password."
+                )}
+              </p>
+            </div>
+
+            {error && !sent && (
+              <div className="flex items-start gap-2 p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {sent ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                className="w-full"
+                onClick={backToLogin}
+              >
+                Back to login
+              </Button>
+            ) : (
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
+                <Input
+                  label="Email Address"
+                  type="email"
+                  placeholder="marie@student.fatima.edu.ph"
+                  icon={<Mail className="w-5 h-5" />}
+                  value={forgotEmail}
+                  onChange={(e) => {
+                    setForgotEmail(e.target.value);
+                    if (error) setError("");
+                  }}
+                  required
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  className="w-full"
+                  isLoading={isLoading}
+                >
+                  Send reset link
+                </Button>
+              </form>
+            )}
+
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={backToLogin}
+                className="font-bold text-primary-600 hover:text-primary-700 transition-colors text-sm"
+              >
+                ← Back to login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === "verify") {
     return (
@@ -693,6 +833,7 @@ export function AuthModal({ isOpen, onClose, onLogin }) {
                   </label>
                   <button
                     type="button"
+                    onClick={openForgot}
                     className="text-sm font-bold text-primary-600 hover:text-primary-700 transition-colors"
                   >
                     Forgot password?
