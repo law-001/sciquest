@@ -932,3 +932,9 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_136
 - AboutPage: added Aries Walao to the team but the entry referenced `ariesPhoto` / `ariesPhotoDark` without importing them, crashing the page with a `ReferenceError`. Added the two imports from the existing `src/assets/ARIES.jpg` and `src/assets/ARIESDARKMODE.jpg` files. [AboutPage.jsx:9](src/pages/AboutPage.jsx#L9) + [AboutPage.jsx:14](src/pages/AboutPage.jsx#L14).
 - Commit: Add missing Aries photo imports to AboutPage
+
+## VERSION_137
+- Games hub: locked cards now expose an **unlock-week disclaimer tooltip** on the "Locked" pill at the bottom of the card. Hover (desktop) or tap (touch) the pill to reveal `game.unlockHint` (e.g. "Finish Week 3 to unlock"); Escape or tapping outside closes it. The pill is a real `<button>` with `aria-expanded` and `focus-visible` ring so keyboard users get the same hint on focus. Coming-soon cards (no related lesson) keep the non-interactive pill. [GamesHubPage.jsx:193-250](src/pages/GamesHubPage.jsx#L193-L250).
+- AboutPage: removed the two unused `ariesPhoto` / `ariesPhotoDark` imports that VERSION_136 added — the Aries entry itself is currently commented out in `TEAM`, so the imports were dead code tripping ESLint's `no-unused-vars`. Re-add them together with the entry when Aries is restored. [AboutPage.jsx:1-14](src/pages/AboutPage.jsx#L1-L14).
+- No change to the game-unlock notification system — that pipeline was already live: [App.jsx:882](src/App.jsx#L882) fires a `kind: "game-unlocked"` notification whenever `getGamesNewlyUnlockedBy()` flags a game, which surfaces as both a bottom-right toast ([XpToast.jsx:174-186](src/components/XpToast.jsx#L174-L186), 7s dwell, tap → Games hub) and a bell-dropdown entry ([NotificationBubble.jsx:33-40](src/components/NotificationBubble.jsx#L33-L40)).
+- Commit: Add hover/tap unlock-week tooltip to locked game cards
