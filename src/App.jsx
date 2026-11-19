@@ -17,6 +17,7 @@ import { LiveQuestPage } from "./pages/LiveQuestPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
 import { TeacherSetupPage } from "./pages/TeacherSetupPage";
 import { PasswordResetPage } from "./pages/PasswordResetPage";
+import { isRecoveryLink } from "./lib/supabaseClient";
 import { LessonEditorPage } from "./pages/LessonEditorPage";
 import { QuizEditorPage } from "./pages/QuizEditorPage";
 import { WEEKS_DATA } from "./data/lessonsweek-01";
@@ -152,10 +153,7 @@ function AppContent() {
   const _urlParams  = new URLSearchParams(window.location.search);
   const _hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   // Plain variables — read once at mount from URL params (never change after load).
-  const _isRecoveryFlow = (
-    _urlParams.get('type') === 'recovery' ||
-    _hashParams.get('type') === 'recovery'
-  );
+  const _isRecoveryFlow = isRecoveryLink;
   const _isOnInvite = !_isRecoveryFlow && (
     _urlParams.get('type') === 'invite' ||
     _hashParams.get('type') === 'invite' ||
@@ -711,8 +709,13 @@ function AppContent() {
       window.history.replaceState({ sqView: initialViewRef.current, sqPayload: null }, '');
     }
     const handlePop = (event) => {
-      const view = event.state?.sqView ?? 'home';
-      const payload = event.state?.sqPayload ?? undefined;
+      // A hash-only change also fires popstate, on an entry with no state.
+      // supabase-js makes one when it wipes the tokens from a recovery or
+      // invite link, and treating it as "back to home" threw the user off the
+      // password-reset / teacher-setup page the moment the link loaded.
+      const view = event.state?.sqView;
+      if (!view) return;
+      const payload = event.state.sqPayload ?? undefined;
       skipHistoryPushRef.current = true;
       handleNavigate(view, payload);
     };

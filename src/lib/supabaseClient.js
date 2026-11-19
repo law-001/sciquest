@@ -13,6 +13,24 @@
 
 import { createClient } from '@supabase/supabase-js'
 
+// Read before createClient below: supabase-js strips the recovery tokens from
+// the URL while it initialises, which can finish before React's first render,
+// so App.jsx can't reliably see `type=recovery` by reading the URL itself.
+export const isRecoveryLink = /(^|[?#&])type=recovery(&|$)/.test(
+  window.location.search + window.location.hash,
+)
+
+// Only the session this exact link signed in may skip AuthContext's stale-
+// inactivity check. Matching on the token (not just the URL flag) stops a
+// hand-typed `#type=recovery` from reviving an old session left in storage on
+// a shared lab machine and opening the reset form for that account.
+const recoveryAccessToken = isRecoveryLink
+  ? new URLSearchParams(window.location.hash.slice(1)).get('access_token')
+  : null
+
+export const isRecoverySession = (session) =>
+  !!recoveryAccessToken && session?.access_token === recoveryAccessToken
+
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 

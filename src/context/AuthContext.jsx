@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { isRecoverySession } from '../lib/supabaseClient'
 import { clearStudentDrafts } from '../lib/studentStorage'
 
 // ---------------------------------------------------------------------------
@@ -129,7 +130,14 @@ export function AuthProvider({ children }) {
       // the elapsed time is computed against the persisted LS_LAST_ACTIVE so the
       // check is accurate even if the tab was closed for hours.
       const lastActive = parseInt(localStorage.getItem(LS_LAST_ACTIVE) ?? '0', 10)
-      if (lastActive > 0 && isSessionExpired()) {
+      if (isRecoverySession(session)) {
+        // The reset link just signed the user in. Restart the inactivity clock
+        // so stamps left by an older login (including a lapsed remember-me
+        // deadline) can't sign them out of the reset form a minute later.
+        localStorage.setItem(LS_LAST_ACTIVE, Date.now().toString())
+        localStorage.setItem(LS_REMEMBER_ME, '0')
+        localStorage.removeItem(LS_SESSION_EXPIRY)
+      } else if (lastActive > 0 && isSessionExpired()) {
         signedOutRef.current = true
         supabase.auth.signOut({ scope: 'local' }).catch(() => {})
         setUser(null)
@@ -165,7 +173,7 @@ export function AuthProvider({ children }) {
           // where sq_last_active hasn't been stamped yet.
           if (_event === 'INITIAL_SESSION' || _event === 'TOKEN_REFRESHED') {
             const lastActive = parseInt(localStorage.getItem(LS_LAST_ACTIVE) ?? '0', 10)
-            if (lastActive > 0 && isSessionExpired()) {
+            if (lastActive > 0 && !isRecoverySession(session) && isSessionExpired()) {
               signedOutRef.current = true
               supabase.auth.signOut({ scope: 'local' }).catch(() => {})
               setUser(null)
