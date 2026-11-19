@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Play,
   Clock,
@@ -187,6 +187,68 @@ function UnlockedCard({ game, userId, onPlay }) {
   );
 }
 
+// Lock pill with a tooltip explaining what still gates the game. On desktop it
+// opens on hover/focus; on touch devices a tap toggles it. The outside-click
+// listener only runs while open so touch users can dismiss without re-tapping.
+function LockPill({ badgeText, hint, interactive }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  if (!interactive) {
+    return (
+      <div className="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-stone-100 dark:bg-stone-700/50 text-stone-500 dark:text-stone-400 font-semibold text-sm">
+        <Lock size={14} />
+        {badgeText}
+      </div>
+    );
+  }
+
+  return (
+    <div ref={wrapRef} className="mt-auto relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        aria-expanded={open}
+        aria-describedby={`unlock-hint-${hint.length}`}
+        className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-stone-100 dark:bg-stone-700/50 text-stone-500 dark:text-stone-400 font-semibold text-sm hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+      >
+        <Lock size={14} />
+        {badgeText}
+      </button>
+      <div
+        role="tooltip"
+        id={`unlock-hint-${hint.length}`}
+        className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[calc(100%-8px)] px-3 py-2 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-semibold shadow-lg pointer-events-none transition-opacity duration-150 ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {hint}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-px w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-stone-900 dark:border-t-stone-100" />
+      </div>
+    </div>
+  );
+}
+
 // Locked card — mirrors the unlocked shell so cards align in every row.
 // One lock cue: grayscale thumb + quiet lock pill at the bottom where Play
 // would sit. No full-card opacity dim, no dark wash on the image.
@@ -228,10 +290,7 @@ function LockedCard({ game, reason = "coming-soon" }) {
 
         <ProgressRow completed={0} total={game.totalLevels ?? 3} />
 
-        <div className="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-stone-100 dark:bg-stone-700/50 text-stone-500 dark:text-stone-400 font-semibold text-sm">
-          <Lock size={14} />
-          {badgeText}
-        </div>
+        <LockPill badgeText={badgeText} hint={hint} interactive={isLessonGated} />
       </div>
     </div>
   );
