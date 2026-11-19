@@ -62,6 +62,27 @@ export function PasswordResetPage({ onDone }) {
     return () => clearTimeout(id)
   }, [])
 
+  // Must come before the user checks below: a successful reset signs the
+  // recovery session out, so `user` is already null when this screen shows.
+  if (done) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] dark:bg-stone-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white dark:bg-stone-800 rounded-2xl shadow-lg p-8 flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+          </div>
+          <h1 className="text-xl font-black text-stone-900 dark:text-white">Password updated</h1>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Sign in with your new password to continue.
+          </p>
+          <Button className="w-full mt-2" onClick={onDone}>
+            Back to login
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (loading || (!user && !waited)) {
     return (
       <div className="min-h-screen bg-[#FAF7F2] dark:bg-stone-900 flex items-center justify-center">
@@ -100,25 +121,6 @@ export function PasswordResetPage({ onDone }) {
     }
   }
 
-  if (done) {
-    return (
-      <div className="min-h-screen bg-[#FAF7F2] dark:bg-stone-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white dark:bg-stone-800 rounded-2xl shadow-lg p-8 flex flex-col items-center gap-4 text-center">
-          <div className="w-14 h-14 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-teal-600 dark:text-teal-400" />
-          </div>
-          <h1 className="text-xl font-black text-stone-900 dark:text-white">Password updated</h1>
-          <p className="text-sm text-stone-500 dark:text-stone-400">
-            Sign in with your new password to continue.
-          </p>
-          <Button className="w-full mt-2" onClick={onDone}>
-            Back to login
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-[#FAF7F2] dark:bg-stone-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -141,6 +143,11 @@ export function PasswordResetPage({ onDone }) {
           onSubmit={handleSubmit}
           className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-orange-100 dark:border-stone-700 p-6 flex flex-col gap-4"
         >
+          {/* Tells Chrome's password manager which saved login this is, so it
+              offers to update that entry instead of saving a new password with
+              no username and keeping the old one for autofill. */}
+          <input type="email" autoComplete="username" value={user.email} readOnly hidden />
+
           <Input
             label="New password"
             icon={<Lock className="w-4 h-4" />}

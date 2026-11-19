@@ -956,3 +956,15 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
   - [App.jsx](src/App.jsx): recovery-URL detection (`_isRecoveryFlow`), new `password-reset` case in `renderView`, added to `isPortalView` so the navbar is hidden, excluded from the sessionStorage nav persistence so a refresh after reset does not loop.
   - [PasswordResetPage.jsx](src/pages/PasswordResetPage.jsx): new page. Mirrors the signup password rules (length/upper/lower/number), shows the "expired/invalid link" screen when Supabase cannot restore a recovery session within 2s.
 - Commit: Wire up forgot-password flow with Supabase recovery link
+
+## VERSION_139
+- Fixed the password-reset link dropping users on the landing page instead of the reset form. supabase-js strips `type=recovery` from the URL while it initialises, which could finish before `App.jsx` read the URL. The flag is now captured once in [supabaseClient.js](src/lib/supabaseClient.js) as `isRecoveryLink`, before `createClient` runs, and `App.jsx` uses it for `_isRecoveryFlow`.
+- [AuthContext.jsx](src/context/AuthContext.jsx): the inactivity-expiry check no longer signs out the fresh recovery session when an old `sq_last_active` timestamp is still in localStorage. Without this, the reset page would show "Reset link expired".
+- Commit: Fix recovery link losing type=recovery before the reset view mounts
+
+## VERSION_140
+- Fixed the reset link logging users straight into the app instead of showing the reset form. Root cause: supabase-js wipes the tokens from the link with `location.hash = ''`, which fires `popstate` with no state, and the back/forward handler in [App.jsx](src/App.jsx) treated that as "go to home". `handlePop` now ignores popstate entries without an `sqView`. The same bug was also knocking teacher invite links off the teacher-setup page.
+- [PasswordResetPage.jsx](src/pages/PasswordResetPage.jsx): the "Password updated" screen now renders before the `!user` check. The success path signs the recovery session out, so users were seeing "Reset link expired" after a successful reset.
+- [PasswordResetPage.jsx](src/pages/PasswordResetPage.jsx): hidden `autocomplete="username"` field with the account email, so Chrome's password manager offers to update the saved login instead of keeping the old password for autofill.
+- Narrowed the VERSION_139 inactivity bypass in [AuthContext.jsx](src/context/AuthContext.jsx): it now applies only to the session the link itself created (`isRecoverySession` in [supabaseClient.js](src/lib/supabaseClient.js) matches the link's access token), so a hand-typed `#type=recovery` can no longer revive a stale session on a shared machine. That session also restarts the inactivity clock (fresh `sq_last_active`, remember-me off), so an old remember-me deadline can't sign the user out mid-reset.
+- Commit: Fix password reset link skipping the reset form and showing "expired" after success
