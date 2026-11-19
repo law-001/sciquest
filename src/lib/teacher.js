@@ -79,7 +79,7 @@ export async function fetchTeacherDashboard(sectionNames) {
         fetchAllPages(() =>
           supabase
             .from('students')
-            .select('id, first_name, last_name, email, section')
+            .select('id, first_name, last_name, email, section, student_number')
             .in('section', sectionNames)
             .order('id'),
         ),
@@ -111,6 +111,7 @@ export async function fetchTeacherDashboard(sectionNames) {
       id: s.id,
       name: fullName(s),
       email: s.email ?? '—',
+      studentNumber: s.student_number ?? null,
       section: s.section || 'Unassigned',
       avatar: s.avatar ?? null,
       avatarStyle: s.avatar_style,
@@ -144,6 +145,7 @@ export async function fetchTeacherDashboard(sectionNames) {
         id: st.id,
         name: st.name,
         email: st.email,
+        studentNumber: st.studentNumber,
         section: st.section,
         avatar: st.avatar,
         avatarStyle: st.avatarStyle,

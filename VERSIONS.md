@@ -794,6 +794,16 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Commit: Animal cell: add sky and sun to the dog's window
 
 ## VERSION_116
+- Added `supabase/seed_demo_students.sql` (manual dev seed, not a migration): 72 demo students — 35 in Obedience (SQ-OB-001…035), 37 in Optimism (SQ-OP-001…037) — with random Week 1–3 lesson completion and one quiz attempt per completed lesson. Idempotent; removal query in header.
+- Commit: Add demo-student seed for Obedience and Optimism sections
+
+## VERSION_117
+- Fixed `supabase/seed_demo_students.sql` section names to match the real sections: `7 - Obedience` / `7 - Optimistic` (was `Obedience` / `Optimism`, so seeded students didn't show under the existing sections).
+- Commit: Fix demo-student seed section names
+
+## VERSION_118
+- Teacher portal section roster (My Sections → a section) now shows each student's code (`student_number`, e.g. SQ-OB-001) instead of their name, sorted by code; students without a code fall back to their name. `fetchTeacherDashboard` in `src/lib/teacher.js` now selects `student_number` and exposes it as `studentNumber`.
+- Commit: Show student codes instead of names in section roster
 - Lesson 1 (trial): the signature interactive ("Watch It: Four Models at Work") now opens in a pop-up side panel instead of sitting at the bottom of the page, so students can keep scrolling the lesson while using it.
   - New `src/components/InteractivePanel.jsx`: non-blocking panel (no backdrop, no scroll lock), docked right at 520px on desktop, 60vh bottom sheet on phones. Slides with transform only; the widget loads on first open and stays mounted so its progress survives close/reopen. Escape or ✕ closes it, and focus goes back to the button that opened it.
   - `LessonTemplate.jsx`: "Try the Interactive" CTA in the Contents sidebar just above the progress bar (toggles to "Hide Interactive"); on screens without the sidebar the CTA sits where the interactive used to be. At xl+ the lesson gets right padding while the panel is open so no text is hidden. Gated by `POPUP_INTERACTIVE_LESSONS` (currently just `lesson-1`); every other lesson is unchanged.

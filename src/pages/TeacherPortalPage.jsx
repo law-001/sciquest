@@ -766,8 +766,12 @@ function SectionsSlot({
   const activeSection = sectionId
     ? data.sections.find((s) => s.id === sectionId)
     : null;
+  // The roster identifies students by code; anyone without one falls back to name.
+  const rosterLabel = (s) => s.studentNumber || s.name;
   const rosterStudents = sectionId
-    ? data.students.filter((s) => s.section === sectionId)
+    ? data.students
+        .filter((s) => s.section === sectionId)
+        .sort((a, b) => rosterLabel(a).localeCompare(rosterLabel(b)))
     : [];
 
   return (
@@ -884,7 +888,7 @@ function SectionsSlot({
                           <div className="flex items-center gap-3">
                             <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                             <span className="text-sm font-bold text-stone-900 dark:text-white">
-                              {student.name}
+                              {rosterLabel(student)}
                             </span>
                           </div>
                         </td>
@@ -958,7 +962,7 @@ function SectionsSlot({
                       <Avatar avatarId={student.avatar} avatarStyle={student.avatarStyle} name={student.name} size={32} />
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                          {student.name}
+                          {rosterLabel(student)}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="w-14 h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
