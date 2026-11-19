@@ -257,6 +257,27 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  // Sends a recovery email. The link lands back on the app with
+  // type=recovery in the URL hash; App.jsx detects it and routes to the
+  // PasswordResetPage, which calls updatePassword below.
+  const sendPasswordReset = async (email) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      { redirectTo: window.location.origin },
+    )
+    if (error) throw error
+    return data
+  }
+
+  // Called from the PasswordResetPage once Supabase has restored the
+  // recovery session. Updating the password also closes that session so the
+  // user has to sign in again with the new password.
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) throw error
+    return data
+  }
+
   const verifyEmailOtp = async (email, token) => {
     signedOutRef.current = false
     const { data, error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token, type: 'signup' })
@@ -368,7 +389,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp, resendEmailOtp, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, verifyEmailOtp, resendEmailOtp, sendPasswordReset, updatePassword, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
