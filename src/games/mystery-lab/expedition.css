@@ -16,7 +16,11 @@
   --primary: #35755f; --primary-d: #183e30;
   background-image: none;
 }
-.mystery-lab-root .screen { max-width: 1520px; padding: 16px 24px 20px; }
+/* Cap gameplay screens for readability, but centre them so wide viewports don't
+   leave a chunk of empty cream on the right. Opening + intro are cinematic
+   full-bleed scenes — they ignore the cap and keep their zero padding. */
+.mystery-lab-root .screen { width: 100%; max-width: 1520px; margin-inline: auto; padding: 16px 24px 20px; }
+.mystery-lab-root .screen.full-bleed { max-width: none; padding: 0; }
 .mystery-lab-root .hud { background: var(--bg-paper); padding: 12px 24px; border-bottom: 2px solid var(--line); }
 .mystery-lab-root .hud .brand .logo { background: #35755f; border-radius: 12px; box-shadow: none; }
 .mystery-lab-root .hud .stat { border-radius: 10px; box-shadow: none; background: var(--bg); }
@@ -27,8 +31,8 @@
 .mystery-lab-root button:focus-visible { outline: 3px solid #d49b2b; outline-offset: 4px; }
 .mystery-lab-root .card { border-radius: 14px; }
 .mystery-lab-root .ml-map-grid { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 20px; height: 100%; min-height: 0; }
-.mystery-lab-root .ml-map-card { position: relative; padding: 0; overflow: hidden; background: #a9c783; border: 2px solid #8b9d73; min-height: 360px; }
-.mystery-lab-root .ml-expedition { height: 100%; min-height: 360px; display: flex; align-items: center; justify-content: center; position: relative; background: #a9c783; isolation: isolate; }
+.mystery-lab-root .ml-map-card { position: relative; padding: 0; overflow: hidden; background: #a9c783; border: 2px solid #8b9d73; min-height: clamp(220px, 50vh, 360px); }
+.mystery-lab-root .ml-expedition { height: 100%; min-height: clamp(220px, 50vh, 360px); display: flex; align-items: center; justify-content: center; position: relative; background: #a9c783; isolation: isolate; }
 /* The world fills the card. The terrain SVG stretches with it (preserveAspectRatio="none");
    sprites keep their own shape and only their positions spread. container-type: size is
    what lets sprites size themselves off the map's height (the cqh in spriteWidth). */
@@ -102,6 +106,17 @@
   .mystery-lab-root .ml-map-legend { gap: 10px; font-size: 9px; padding: 8px; }
   .mystery-lab-root .ml-map-legend span:last-child { display: none; }
   .mystery-lab-root .hud { padding: 6px 12px; }
+}
+@media (max-width: 480px) {
+  .mystery-lab-root .ml-map-heading { left: 10px; top: 8px; }
+  .mystery-lab-root .ml-map-heading h2 { font-size: 18px; }
+  .mystery-lab-root .ml-map-heading > span { font-size: 9px; letter-spacing: .14em; }
+  .mystery-lab-root .ml-compass { right: 10px; top: 8px; font-size: 9px; }
+  .mystery-lab-root .ml-map-legend { gap: 6px; font-size: 8px; padding: 6px; }
+  .mystery-lab-root .ml-location-label { min-width: 72px; padding: 3px 6px; }
+  .mystery-lab-root .ml-location-name { font-size: 10px; }
+  .mystery-lab-root .ml-location-label small { font-size: 8px; }
+  .mystery-lab-root .ml-map-sidebar > button { min-height: 44px; }
 }
 @media (max-height: 520px) {
   .mystery-lab-root .screen.no-scroll:has(.ml-map-grid) { overflow-y: auto; }

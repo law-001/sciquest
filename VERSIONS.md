@@ -804,3 +804,141 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_118
 - Teacher portal section roster (My Sections → a section) now shows each student's code (`student_number`, e.g. SQ-OB-001) instead of their name, sorted by code; students without a code fall back to their name. `fetchTeacherDashboard` in `src/lib/teacher.js` now selects `student_number` and exposes it as `studentNumber`.
 - Commit: Show student codes instead of names in section roster
+- Lesson 1 (trial): the signature interactive ("Watch It: Four Models at Work") now opens in a pop-up side panel instead of sitting at the bottom of the page, so students can keep scrolling the lesson while using it.
+  - New `src/components/InteractivePanel.jsx`: non-blocking panel (no backdrop, no scroll lock), docked right at 520px on desktop, 60vh bottom sheet on phones. Slides with transform only; the widget loads on first open and stays mounted so its progress survives close/reopen. Escape or ✕ closes it, and focus goes back to the button that opened it.
+  - `LessonTemplate.jsx`: "Try the Interactive" CTA in the Contents sidebar just above the progress bar (toggles to "Hide Interactive"); on screens without the sidebar the CTA sits where the interactive used to be. At xl+ the lesson gets right padding while the panel is open so no text is hidden. Gated by `POPUP_INTERACTIVE_LESSONS` (currently just `lesson-1`); every other lesson is unchanged.
+- Commit: Lesson 1: open signature interactive in a side panel beside the lesson
+
+## VERSION_117
+- Lesson 1 interactive is now a real centered pop-up modal instead of a side panel, per feedback (the side panel squeezed the interactive's proportions).
+  - `src/components/InteractivePanel.jsx` replaced by `src/components/InteractiveModal.jsx`: dimmed backdrop (no blur, so it stays smooth), lesson scroll locked while open, focus trapped inside, closes on ✕ Close, Escape or a backdrop click. Modal is up to 1024px wide (the width the interactive had in the lesson column), scrolls inside if it's taller than the screen. Fades and scales in with opacity/transform only. The widget stays mounted after first open, so progress survives closing and reopening.
+  - `LessonTemplate.jsx`: removed the side-panel page padding. Sidebar CTA just above the progress bar now always reads "Try the Interactive" with the interactive's name under it. On screens without the sidebar, a floating "Try the Interactive" button sits bottom-right above the Top button, so it can be opened from anywhere in the lesson.
+- Commit: Lesson 1: show signature interactive in a centered pop-up modal
+
+## VERSION_118
+- Lesson 1 interactive modal: sized to fit any screen, dims the navbar, gradient CTA.
+  - `InteractiveModal.jsx`: max width 896px (was 1024px). Height capped to the visible screen with `dvh`, so phone browser bars are accounted for; extra content scrolls inside. Tighter padding on phones (8px around the modal, 12px inside). Sets `--sim-height: clamp(240px, 100dvh − 360px, 440px)` so the simulation shrinks to fit the screen on desktop. Raised to `z-[55]`, above the main navbar (z-50), so the navbar now dims too. The widget sits in React's `<Activity>`: progress is kept while closed, but its animation loop pauses so the closed modal doesn't slow down lesson scrolling.
+  - `SimLayout.jsx`: desktop sim height reads `var(--sim-height, 62vh)`. Nothing sets the variable inline in a lesson, so every other lesson still gets 62vh.
+  - `XpToast.jsx`: `z-50` → `z-[60]` so the XP toast shows above the modal.
+  - `LessonTemplate.jsx`: both "Try the Interactive" buttons use the global orange gradient (`--sq-orange` → `--sq-orange-deep`, the same one as `.sq-ccard--active`) with its orange glow shadow.
+- Commit: Lesson 1 interactive modal: fit all screens, dim navbar, gradient CTA
+
+## VERSION_119
+- Lesson 1 sidebar "Try the Interactive" CTA is now a single line: removed the interactive's name under the label, centered the text, and trimmed the vertical padding (`py-2.5` → `py-2`). It's 44px tall, the minimum tap height.
+- Commit: Slim down the sidebar interactive CTA
+
+## VERSION_120
+- Signature interactive pop-up modal now on **every** lesson that has one (removed the Lesson 1-only `POPUP_INTERACTIVE_LESSONS` gate). The old inline interactive at the bottom of the page is gone everywhere.
+- Completion checker: students can't complete a lesson until they've finished its interactive.
+  - `LessonTemplate.jsx`: new `isInteractiveRequired` / `isInteractiveDone` props. While gated, scroll progress stops at 99% (no lesson XP, not marked complete), the sidebar shows "🔒 Finish the interactive to complete" under the progress bar, and the end-of-lesson card reads "One step left" with an "Open the Interactive" button in place of "Complete Lesson & Start Quiz". Finishing the interactive while at the bottom completes the lesson right then. The CTA buttons switch to "✓ Interactive Done" once finished.
+  - Only applies to students (`isStudent`); teachers/admins previewing and logged-out visitors aren't held. Lessons already completed before this change stay completed. A lesson whose `widgetId` isn't in `SIGNATURE_WIDGETS` is never gated, since it can't be finished.
+  - `App.jsx` derives "done" from the existing `lesson_interactions` rows (`block_id: 'signature'`), so it survives reloads; passed through `LessonContentPage.jsx`. No schema change.
+  - `CLAUDE.md`: noted the signature-interactive exception to "interactive blocks never gate lesson completion".
+- Commit: Pop-up interactive on all lessons; require it before a lesson completes
+
+## VERSION_121
+- Fixed interactive modals looking "zoomed in" (scene cropped at the sides) after the window resized. Cause: the sim row height came from the screen height (`--sim-height`), but every scene is drawn at ~16:10 and fills its frame by cropping. When the frame came out taller/narrower than 16:10 the scene's sides were cut off.
+  - `SimLayout.jsx`: `Stage` is now always `aspect-ratio: 16/10`, so the scene shows whole at every width. The grid row takes its height from the picture; the control panel uses `contain: size` on `lg+` so it matches the picture's height and scrolls inside instead of stretching the row. On short desktop screens the stage width is capped at `(100dvh − --stage-chrome) × 1.6`, min 240px, so the modal still fits. Phones stack at full width.
+  - `InteractiveModal.jsx`: replaced `--sim-height` with `--stage-chrome: 400px`.
+  - Applies to all 30 signature widgets (all use `<Stage bleed>`; ModelGallery adds a caption above it). None of them measure their container, and canvas widgets draw at a fixed size and are scaled by CSS, so nothing else needed changing.
+- Commit: Keep interactive scenes 16:10 so they never crop on resize
+
+## VERSION_122
+- Image Cards editor: each card's "Image URL" text box is now the shared `ImagePicker` (Upload / URL tabs). Teachers can upload a picture from their computer straight to the Supabase `lesson-media` bucket, so the file doesn't need to be added to the repo. `ImageCardsForm.jsx` now takes the `lessonId` prop, which the editor was already passing.
+- Commit: Add image upload to Image Cards editor
+
+## VERSION_123
+- Lock games behind their related lessons. Each gated game in [registry.js](src/lib/games/registry.js) declares the lesson IDs that unlock it (e.g. `w13-l1` opens Plant Cell + Animal Cell), with an `unlockHint` line for the locked card. Non-student roles bypass locks.
+  - `isGameUnlocked(game, completedLessonIds)` and `getGamesNewlyUnlockedBy(lessonId, prevCompleted)` in [registry.js](src/lib/games/registry.js).
+  - [GamesHubPage.jsx](src/pages/GamesHubPage.jsx): new `completedLessons` + `bypassLocks` props; `LockedCard` now takes `reason` (`"coming-soon"` vs `"lesson"`), shows the unlock hint for lesson-gated games, keeps the old "Coming Soon" badge for dev-locked ones.
+  - [App.jsx](src/App.jsx): passes `completedLessons={effectiveCompletedLessons}` and `bypassLocks={!isStudent}` to GamesHubPage; wires `onNavigate` into `XpToast`.
+- Pop-up when a game unlocks, clickable → goes to the Games hub.
+  - [App.jsx](src/App.jsx) `handleLessonComplete` fires a `kind: "game-unlocked"` notification for every game whose gate the just-completed lesson opens.
+  - [XpToast.jsx](src/components/XpToast.jsx): game-unlock toasts become real `<button>`s with hover/active states, a chevron, and a 7s linger (vs 3.2s) so there's time to click. Click dismisses + navigates to `"games"`.
+  - [NotificationBubble.jsx](src/components/NotificationBubble.jsx): bell entry for the new kind routes to `"games"` on click.
+- Commit: Lock games behind lessons + clickable unlock toast
+
+## VERSION_124
+- Food Chain Survival now gates on `w19-l1` with the hint "Finish the Energy Flow lesson to unlock" ([registry.js](src/lib/games/registry.js)).
+- Reordered the Games hub grid by curriculum: Quake Ready pinned first, then Mystery Lab (wk 1) → Matter State Sandbox (wk 3-4) → Animal Cell (wk 12-13) → Plant Cell (wk 13) → Cell Division Lab (wk 15-16) → Food Chain Survival (wk 19). Grid picks order up directly from `GAMES` key order via `listGames()`.
+- Commit: Reorder Games hub by week + gate Food Chain Survival on w19-l1
+
+## VERSION_125
+- Every lesson-gated game now unlocks on the **final** lesson of its primary week — scrolling that lesson's page to 100% flips the gate (unchanged mechanism: `handleLessonComplete` already fires on scroll to 100%).
+  - Mystery Lab → `lesson-3` (last of Week 1) — hint "Finish Week 1 to unlock".
+  - Matter State Sandbox → `w03-l2` (was `w03-l1`/`w04-l1`) — hint "Finish Week 3 to unlock".
+  - Cell Division Lab → `w12-l2` (was `w15-l1`/`w16-l1`) — hint "Finish Week 12 to unlock". Opens earlier in the curriculum per request.
+  - Animal Cell → `w13-l1` (last of Week 13) — hint "Finish Week 13 to unlock".
+  - Plant Cell → `w13-l1` (last of Week 13) — hint "Finish Week 13 to unlock".
+  - Food Chain Survival → `w19-l2` (was `w19-l1`) — hint "Finish Week 19 to unlock".
+- Reordered the Games grid: Quake Ready → Mystery Lab (wk 1) → Matter State Sandbox (wk 3) → Cell Division Lab (wk 12) → Animal Cell (wk 13) → Plant Cell (wk 13) → Food Chain Survival (wk 19). File: [registry.js](src/lib/games/registry.js).
+- Commit: Gate games on last-lesson-of-week; move Cell Division Lab to Week 12
+
+## VERSION_126
+- Mystery Lab now gates on Week 5 (Scientific Investigation and Measurement) instead of Week 1 — matches the game's scientific-method theme. Related lesson flipped to `w05-l2`, hint "Finish Week 5 to unlock". Grid order swap: Matter State Sandbox (wk 3) now comes before Mystery Lab (wk 5).
+- Commit: Move Mystery Lab gate to Week 5
+
+## VERSION_127
+- Quake Ready is now a single-level game — Levels 2 (Shake Safe) and 3 (Rescue Ops) removed.
+  - [public/games/quake-ready/js/levels.js](public/games/quake-ready/js/levels.js): stripped the Level2 and Level3 entries from the `LEVELS` array. Level 1 (Fault Lab) is the only mission; the level-select renderer and "X / Y missions complete" footer auto-size to it.
+  - [public/games/quake-ready/index.html](public/games/quake-ready/index.html): removed the `<script src="js/level2.js">` and `<script src="js/level3.js">` tags. The dormant JS files are kept on disk but never loaded.
+  - [src/games/quake-ready/index.jsx](src/games/quake-ready/index.jsx): clear-event guard tightened from `[1, 2, 3].includes(…)` to `Number(data.levelId) === 1` — no accidental persistence of level 2/3 clears if the old pages are cached.
+  - [src/lib/games/registry.js](src/lib/games/registry.js): `totalLevels: 3` → `1`; `countCompletedLevels` now returns 0 or 1 based on whether `l1` has been cleared.
+- Commit: Reduce Quake Ready to a single Fault Lab level
+
+## VERSION_128
+- Quake Ready skips the level-select screen entirely — opening the game goes straight into Fault Lab (Level 1) via its briefing modal. Fewer taps, no empty 1-card grid.
+  - [main.js](public/games/quake-ready/js/main.js): boot now calls `startLevel(1)` instead of `renderCards() + show('menu')`. Dead `renderCards` function removed.
+  - `quitToMenu` repurposed: still runs cleanup (cancels rAF, calls `level.cleanup()`) but then posts `qr:exit` to the host instead of returning to the menu. All in-game buttons that said "Level Select" are now "Exit" and call the same path.
+  - Back arrow in the top bar always exits to SciQuest (no level to quit back to).
+  - Pause menu: "Level Select" button removed — only Resume / Sound / Restart / Exit game remain.
+  - [index.html](public/games/quake-ready/index.html): `#menu` default class is now `screen` (not `screen show`) so the empty menu doesn't flash behind the briefing modal on load; header defaults to "Quake Ready" with the subtitle hidden.
+- Commit: Quake Ready — skip level select, open straight into Fault Lab
+
+## VERSION_129
+- Mystery Lab: responsive-design pass across every screen (phone ≤640/≤480, tablet 641–1023, desktop ≥1024).
+  - [styles.css](src/games/mystery-lab/styles.css): keyframes `ml-fly-across` + `ml-cloud-drift` use `110vw` instead of fixed `1400px` so bird/cloud animations always exit the viewport. `.ml-opening-grid` relaxed from `minmax(330px, 560px) minmax(440px, 1fr)` to `1fr 1fr` with a `@media (max-width: 900px)` collapse to one column + light-mode readability wash. Added utility responsive grid classes `.ml-twin-grid`, `.ml-cards-grid`, `.ml-tabs-grid` that collapse at 640/767px. Added `@media (max-width: 480px)` block tightening HUD, cards, buttons, opening copy, footer. Mascot speech bubble now capped at `min(220px, 100vw - 48px)` on phone.
+  - [expedition.css](src/games/mystery-lab/expedition.css): map card `min-height` fluid (`clamp(220px, 50vh, 360px)` from `360px` fixed). Added `@media (max-width: 480px)` block shrinking map heading, compass, legend, location labels so the pond map reads on small phones.
+  - [screens-b.jsx](src/games/mystery-lab/screens-b.jsx): observation `.ml-scene-card` height clamped (`clamp(260px, 56vh, 460px)` from `460`). Hypothesis grid → `.ml-cards-grid`; notebook sidebar → `.ml-tabs-grid`; two 1fr/1fr grids → `.ml-twin-grid`. Notebook padding + minHeight fluid.
+  - [screens-c.jsx](src/games/mystery-lab/screens-c.jsx): lab bench card `minHeight` clamped; bench surface height → `min(360px, 72%)`; 5-column tools row → auto-fit `minmax(84px, 1fr)` so tests wrap on narrow cards. pH + results grids → `.ml-twin-grid`.
+  - [screens-d.jsx](src/games/mystery-lab/screens-d.jsx): evidence grid, comic strip, conclusion form, supports checkboxes, case summary, rewards all switched to responsive utility classes. Comic strip `repeat(5, 1fr)` → auto-fit `minmax(96px, 1fr)`.
+- No change to the portrait-rotate overlay — intentional UX for phones that need landscape to play.
+- Commit: Mystery Lab — responsive across phone/tablet/desktop
+
+## VERSION_130
+- Games hub tidy-up pass (unslop/polish): every card now aligns in its grid row and the locked state wears a single quiet cue instead of four.
+  - [GamesHubPage.jsx](src/pages/GamesHubPage.jsx): shared `CARD_SHELL` + `THUMB_WRAP` so unlocked and locked cards use the same frame (`aspect-video` thumb, `h-full`, same border/shadow). CSS Grid row-stretches them to one height.
+  - Locked card redesigned: dropped the full-card `opacity-80`, the dark image wash, the giant centered lock button, and the top-right "LOCKED" pill. Kept the grayscale thumbnail and added a quiet lock chip at the bottom (same slot as Play) so both card types read as the same layout.
+  - `CategoryBadge` is now `inline-flex` so it never stretches to full width inside a flex-col.
+  - "LOCKED" / "Coming Soon" / "ALL GAMES" → sentence case ("Locked", "Coming soon", "All games").
+  - Unlocked card thumb changed from `aspect-25/9` to `aspect-video` to match the locked thumbnail and give the hero art more vertical room.
+- Commit: Tidy up Games hub cards and align unlocked/locked heights
+
+## VERSION_131
+- Locked game cards now mirror the unlocked density: difficulty dots + estimated time row, a 0/N progress bar, then the "Locked" chip. Same vertical skeleton as unlocked cards, zero dead space. [GamesHubPage.jsx `LockedCard`](src/pages/GamesHubPage.jsx).
+- Commit: Fill locked-card space with difficulty + progress rows
+
+## VERSION_132
+- Mystery Lab opening screen fluid-sizes on wide monitors. At 100% zoom on ≥1600px displays the title lockup and copy block were pinned to 470/560px absolute, which made the left half look empty next to the full-bleed map art. The absolute caps are now viewport-aware `clamp()`s so the content scales with the hero width.
+  - [styles.css](src/games/mystery-lab/styles.css): `.ml-opening-title` width `min(100%, 470px)` → `clamp(300px, 34vw, 640px)`; `.ml-opening-copy` max-width `min(46ch, 560px)` → `clamp(360px, 42vw, 680px)`; `.ml-opening-desc` cap `17px` → `19px`; `.ml-opening-hoot-line` + buttons get fluid font-sizes and padding; opening-grid padding cap raised (112px → 140px top, 96px → 128px side) so wide monitors don't look cramped against the edge.
+  - All `clamp()` floors unchanged, so phone/tablet layouts stay the same and the ≤900px collapse still fires.
+- Commit: Fluid opening title + copy so wide monitors stop looking empty
+
+## VERSION_133
+- Mystery Lab: ambient music now stops when the user exits the game. Before, `OpeningScreen` + `LegacyOpeningScreen` + `IntroScreen` started the procedural ambient loop on mount but never cleaned up — only `MapScreen` did — so exiting from the opening/intro left a `setInterval` scheduling melody notes against the Web Audio context forever.
+  - [index.jsx](src/games/mystery-lab/index.jsx): top-level unmount cleanup `useEffect(() => () => mlAudio.stopAmbient(), [])` fires the 1.2s fade-out whenever the whole game unmounts, regardless of which screen was active. Also wrapped the host-provided `onExit` as `handleExit` which calls `mlAudio.stopAmbient()` first so the fade starts the instant the Back button is clicked, not after React tears down the tree.
+- Commit: Fix Mystery Lab music continuing after exit
+
+## VERSION_134
+- Mystery Lab: whole game now fills wide viewports instead of pinning to the left edge. [expedition.css:19](src/games/mystery-lab/expedition.css#L19) was capping `.mystery-lab-root .screen` at `max-width: 1520px` with no auto margin, so anything past 1520px (100% zoom on a 1920-wide monitor) showed ~400px of empty cream on the right. The same rule was also overriding the `padding: 0` that `.screen.full-bleed` is supposed to apply to the cinematic opening / intro — so even the opening map art wasn't reaching the viewport edges.
+  - Added `width: 100%; margin-inline: auto` so capped gameplay screens centre instead of left-anchoring.
+  - Added a `.screen.full-bleed { max-width: none; padding: 0 }` override so the opening scene and intro cutscene go edge-to-edge again.
+- Commit: Center Mystery Lab screens + let opening go full-bleed on wide monitors
+
+## VERSION_135
+- Food Chain Survival: fixed the boot-size bug where the canvas rendered at the wrong dimensions until the user toggled browser zoom. `resizeCanvas()` reads `current.level.world` to cap the buffer to world extent (1720×1200), but on first entry it ran *before* `level.init()` — and `this.world` is created inside `init()`, so the cap silently skipped. Any later resize (e.g. zoom change) saw the real world and snapped the canvas to the correct size, which is why toggling zoom appeared to "fix" it. [main.js:249-251](public/games/food-chain-survival/js/main.js#L249-L251): re-run `resizeCanvas()` once after `level.init()` so the boot state matches what any subsequent resize would produce.
+- Commit: Fix Food Chain Survival canvas sizing on first entry
+
+## VERSION_136
+- AboutPage: added Aries Walao to the team but the entry referenced `ariesPhoto` / `ariesPhotoDark` without importing them, crashing the page with a `ReferenceError`. Added the two imports from the existing `src/assets/ARIES.jpg` and `src/assets/ARIESDARKMODE.jpg` files. [AboutPage.jsx:9](src/pages/AboutPage.jsx#L9) + [AboutPage.jsx:14](src/pages/AboutPage.jsx#L14).
+- Commit: Add missing Aries photo imports to AboutPage

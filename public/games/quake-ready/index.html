@@ -23,18 +23,21 @@
       <svg width="20" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
     </button>
     <div class="head-titles">
-      <h1 id="headTitle">Choose a level</h1>
-      <p id="headSub"><span class="dot dot-o"></span> Learn how earthquakes work, survive one, then lead the rescue. <span class="dot dot-t"></span></p>
+      <h1 id="headTitle">Quake Ready</h1>
+      <p id="headSub" style="display:none"><span class="dot dot-o"></span> Learn how earthquakes work. <span class="dot dot-t"></span></p>
     </div>
     <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Switch to dark mode"></button>
   </header>
 
-  <!-- ===================== LEVEL SELECT ===================== -->
-  <main id="menu" class="screen show">
+  <!-- ===================== LEVEL SELECT (retired) =====================
+       Single-level game — the level select never renders. The container is
+       kept so the existing `show('menu')` guard and CSS selectors keep
+       working. Boot path skips straight to `startLevel(1)`. -->
+  <main id="menu" class="screen">
     <div class="grid-bg"></div>
     <div class="sq-level-grid" id="cards"></div>
     <footer class="menu-foot">
-      <span id="progressLabel">0 / 3 missions complete</span>
+      <span id="progressLabel">0 / 1 missions complete</span>
     </footer>
   </main>
 
@@ -188,8 +191,6 @@
 <script src="js/levels.js"></script>
 <script src="js/buildings.js"></script>
 <script src="js/level1.js"></script>
-<script src="js/level2.js"></script>
-<script src="js/level3.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

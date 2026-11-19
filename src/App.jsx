@@ -62,6 +62,7 @@ import { fetchAchievements, syncAchievements, awardAchievements } from "./lib/ac
 import { CURIOUS_EXPLORER_KEY, BLACKED_KEY, achievementLabel, achievementXp, totalAchievementXp } from "./lib/achievements";
 import { supabase } from "./lib/supabase";
 import { writeGameProgress, fetchCompletedGames } from "./lib/games/progress";
+import { getGamesNewlyUnlockedBy } from "./lib/games/registry";
 import { XpToast } from "./components/XpToast";
 import { NotificationBubble } from "./components/NotificationBubble";
 import { quizAnswersKey, purgeLegacyStudentKeys } from "./lib/studentStorage";
@@ -876,6 +877,16 @@ function AppContent() {
       pushNotification({ kind: "level-up", level: newLevel });
     }
 
+    // Any game that flips from locked → unlocked because of this lesson gets
+    // a toast + bell entry that links back to the Games hub.
+    for (const game of getGamesNewlyUnlockedBy(lessonId, completedLessons)) {
+      pushNotification({
+        kind: "game-unlocked",
+        gameId: game.id,
+        gameTitle: game.title,
+      });
+    }
+
     if (studentId && isStudent) {
       markLessonComplete(studentId, weekId, lessonId, lessonXp).catch((err) => {
         console.error("Failed to mark lesson complete:", err);
@@ -1217,6 +1228,12 @@ function AppContent() {
             onGoToQuiz={handleGoToQuiz}
             onLessonComplete={handleLessonComplete}
             onInteractionComplete={handleInteractionComplete}
+            // Students must finish the lesson's signature interactive before
+            // the lesson can complete. Staff previewing a lesson aren't held.
+            isInteractiveRequired={isStudent}
+            isInteractiveDone={interactionRows.some(
+              (r) => r.lesson_id === activeLessonId && r.block_id === "signature",
+            )}
             quizLocked={isQuizLocked(activeWeekId, activeLessonId)}
             personalQuizGrant={getPersonalQuizGrant(activeWeekId, activeLessonId)}
             quizWindow={activeQuizWindow}
@@ -1318,6 +1335,8 @@ function AppContent() {
             totalXp={totalXp}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsAuthModalOpen(true)}
+            completedLessons={effectiveCompletedLessons}
+            bypassLocks={!isStudent}
           />
         );
 
@@ -1393,7 +1412,11 @@ function AppContent() {
         onLogin={handleLogin}
       />
 
-      <XpToast notifications={notifications} onDismiss={dismissNotification} />
+      <XpToast
+        notifications={notifications}
+        onDismiss={dismissNotification}
+        onNavigate={handleNavigate}
+      />
       {isLoggedIn && isStudent && !isPortalView && (
         <NotificationBubble
           notifications={notifHistory}

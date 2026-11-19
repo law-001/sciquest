@@ -244,10 +244,15 @@
     level.hud = hud;
     current = { meta, level };
     global.__cur = current;
-    // Size the viewport to the window (capped to this level's world) before init,
-    // so level.init() sees the real W/H (level 3 centres its camera on them).
+    // Size the viewport to the window before init, so level.init() sees real
+    // W/H (level 3 centres its camera on them). The world cap inside
+    // resizeCanvas() can't run yet — `this.world` is created *inside* init —
+    // so we re-run resizeCanvas() after init to apply the cap. Without this
+    // second call, the first-ever enter sizes the buffer without the cap and
+    // any later resize (e.g. a zoom change) would suddenly snap it smaller.
     resizeCanvas();
     level.init({ tweaks: tweaks() });
+    resizeCanvas();
     paused = false; lastTs = performance.now();
     cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
   }

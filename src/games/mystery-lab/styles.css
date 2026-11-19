@@ -43,12 +43,12 @@
   50%      { opacity: 0.1; }
 }
 @keyframes ml-fly-across {
-  from { transform: translateX(0); }
-  to   { transform: translateX(1400px); }
+  from { transform: translateX(-10%); }
+  to   { transform: translateX(110vw); }
 }
 @keyframes ml-cloud-drift {
-  from { transform: translateX(0); }
-  to   { transform: translateX(1400px); }
+  from { transform: translateX(-10%); }
+  to   { transform: translateX(110vw); }
 }
 @keyframes ml-btn-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(20,184,166,0.5), 0 4px 0 rgba(0,0,0,0.18); }
@@ -693,18 +693,24 @@
 .mystery-lab-root .ml-opening-map-art, .mystery-lab-root .ml-opening-map-wash { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .mystery-lab-root .ml-opening-map-art { display: block; object-fit: fill; object-position: center; filter: saturate(.82) contrast(.98); }
 .mystery-lab-root .ml-opening-map-wash { background: var(--opening-map-wash); }
-.mystery-lab-root .ml-opening-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(330px, 560px) minmax(440px, 1fr); gap: clamp(24px, 4vw, 80px); height: 100%; padding: clamp(78px, 10vh, 112px) clamp(24px, 5vw, 96px) clamp(18px, 3vh, 34px); }
-.mystery-lab-root .ml-opening-copy { z-index: 2; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; max-width: min(46ch, 560px); }
-.mystery-lab-root .ml-opening-title { width: min(100%, 470px); margin: 14px 0 0; line-height: 0; }
+.mystery-lab-root .ml-opening-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(16px, 4vw, 96px); height: 100%; padding: clamp(56px, 10vh, 140px) clamp(16px, 5vw, 128px) clamp(16px, 3vh, 48px); }
+@media (max-width: 900px) {
+  .mystery-lab-root .ml-opening-grid { grid-template-columns: 1fr; padding: clamp(40px, 8vh, 80px) clamp(16px, 5vw, 48px) clamp(14px, 3vh, 24px); }
+  /* The right-hand map pane disappears at this width, so add a readability wash
+     over the whole hero (light mode only — dark mode already has its own). */
+  .mystery-lab-root:not([data-theme="dark"]) .ml-opening-map-wash { background: linear-gradient(135deg, rgba(255, 251, 237, .88) 0%, rgba(255, 251, 237, .72) 50%, rgba(255, 251, 237, .4) 100%); }
+}
+.mystery-lab-root .ml-opening-copy { z-index: 2; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; max-width: clamp(360px, 42vw, 680px); }
+.mystery-lab-root .ml-opening-title { width: clamp(300px, 34vw, 640px); margin: 14px 0 0; line-height: 0; }
 .mystery-lab-root .ml-opening-title img { display: block; width: 100%; height: auto; }
-.mystery-lab-root .ml-opening-desc { max-width: 46ch; margin: 16px 0 0; color: var(--text-soft); font-size: clamp(14px, 1.15vw, 17px); line-height: 1.55; font-weight: 550; }
-.mystery-lab-root .ml-opening-hoot-line { max-width: 42ch; margin: 10px 0 0; color: var(--text); font-family: 'Trebuchet MS', sans-serif; font-size: 13px; font-weight: 700; line-height: 1.35; }
-.mystery-lab-root .ml-opening-btns { align-items: center; margin-top: 22px; flex-wrap: wrap; }
-.mystery-lab-root .ml-opening-btns .btn { min-height: 44px; }
+.mystery-lab-root .ml-opening-desc { max-width: 46ch; margin: 16px 0 0; color: var(--text-soft); font-size: clamp(14px, 1.15vw, 19px); line-height: 1.55; font-weight: 550; }
+.mystery-lab-root .ml-opening-hoot-line { max-width: 42ch; margin: 10px 0 0; color: var(--text); font-family: 'Trebuchet MS', sans-serif; font-size: clamp(13px, 1vw, 15px); font-weight: 700; line-height: 1.35; }
+.mystery-lab-root .ml-opening-btns { align-items: center; margin-top: clamp(18px, 2vw, 28px); flex-wrap: wrap; gap: clamp(10px, 1vw, 14px); }
+.mystery-lab-root .ml-opening-btns .btn { min-height: 44px; padding: clamp(14px, 1.4vw, 20px) clamp(20px, 1.8vw, 30px); font-size: clamp(15px, 1.1vw, 19px); }
 .mystery-lab-root .ml-opening-btns .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .mystery-lab-root .ml-opening-btns .btn.ghost {
-  padding: 18px 24px;
-  font-size: 17px;
+  padding: clamp(14px, 1.4vw, 20px) clamp(20px, 1.8vw, 28px);
+  font-size: clamp(15px, 1.1vw, 19px);
   border-radius: 18px;
   background: var(--bg-paper);
   border: 2px solid var(--primary);
@@ -730,14 +736,33 @@
   .mystery-lab-root .ml-cutscene-smoke { animation: none; }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+/* ===== Utility responsive grid classes (opt-in by className) ===== */
+/* 1fr | 1fr desktop → 1fr on phone. For any two-column split that should stack. */
+.mystery-lab-root .ml-twin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) {
+  .mystery-lab-root .ml-twin-grid { grid-template-columns: 1fr !important; gap: 12px; }
+}
+/* 2-col dense grid (auto-fit cards) with sane phone floor. */
+.mystery-lab-root .ml-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+@media (max-width: 640px) {
+  .mystery-lab-root .ml-cards-grid { grid-template-columns: 1fr !important; }
+}
+/* Notebook/tabs layout — sidebar collapses above the body on phone. */
+.mystery-lab-root .ml-tabs-grid { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: stretch; }
+@media (max-width: 767px) {
+  .mystery-lab-root .ml-tabs-grid { grid-template-columns: 1fr !important; gap: 12px; }
+}
+
+/* ===== Tablet (641-1023px) ===== */
+@media (min-width: 641px) and (max-width: 1023px) {
   .mystery-lab-root .ml-map-grid { grid-template-columns: 1fr 220px !important; }
   .mystery-lab-root .ml-2col-grid { grid-template-columns: 1fr 260px !important; }
 }
 
+/* ===== Phone + small tablet (≤767px) ===== */
 @media (max-width: 767px) {
   /* Compact HUD */
-  .mystery-lab-root .hud { padding: 6px 12px; gap: 8px; }
+  .mystery-lab-root .hud { padding: 6px 12px; gap: 8px; flex-wrap: wrap; }
   .mystery-lab-root .hud .brand .col { display: none; }
   .mystery-lab-root .hud .brand .logo { width: 28px; height: 28px; font-size: 13px; }
   .mystery-lab-root .hud .stat { padding: 4px 8px 4px 6px; font-size: 11px; gap: 4px; }
@@ -754,7 +779,7 @@
     height: auto !important;
     min-height: 0 !important;
   }
-  .mystery-lab-root .ml-map-card { height: clamp(200px, calc(100dvh - 130px), 300px) !important; }
+  .mystery-lab-root .ml-map-card { height: clamp(200px, calc(100dvh - 130px), 300px) !important; min-height: 0 !important; }
   .mystery-lab-root .ml-map-sidebar { overflow-y: auto; max-height: 260px; }
 
   /* Observation / Lab / Evidence — 2-col → 1-col */
@@ -764,6 +789,29 @@
     min-height: 0 !important;
   }
   .mystery-lab-root .ml-game-sidebar { max-height: 280px; overflow-y: auto; }
+
+  /* Cards: shrink padding so the content isn't pushed off-screen */
+  .mystery-lab-root .card { padding: 14px; border-radius: 14px; }
+
+  /* Mascot speech bubble: never wider than the viewport */
+  .mystery-lab-root .mascot .speech { max-width: min(220px, calc(100vw - 48px)); font-size: 12px; padding: 10px 12px; }
+}
+
+/* ===== Phone-tight (≤480px) ===== */
+@media (max-width: 480px) {
+  .mystery-lab-root .screen { padding: 6px 8px; }
+  .mystery-lab-root .card { padding: 12px; }
+  .mystery-lab-root .btn { padding: 11px 16px; font-size: 14px; }
+  .mystery-lab-root .btn.lg { padding: 14px 20px; font-size: 15px; border-radius: 14px; }
+  .mystery-lab-root .hud { padding: 6px 10px; }
+  /* Opening hero copy can't overshoot a phone. */
+  .mystery-lab-root .ml-opening-title { width: min(100%, 340px); }
+  .mystery-lab-root .ml-opening-desc { font-size: 13px; }
+  .mystery-lab-root .ml-opening-btns { gap: 8px; }
+  .mystery-lab-root .ml-opening-btns .btn { flex: 1 1 100%; justify-content: center; }
+  .mystery-lab-root .ml-opening-btns .btn.ghost { padding: 14px 18px; font-size: 15px; }
+  .mystery-lab-root .ml-opening-footer { padding: 10px 16px 12px; gap: 8px 16px; font-size: 11px; }
+  .mystery-lab-root .ml-opening-case-row { min-width: 0; }
 }
 
 /* ===== Landscape phones — height is the constraint, not width ===== */

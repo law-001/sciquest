@@ -68,6 +68,10 @@ first three and ignore the rest.
   `preview-` prefix so a teacher trying a block out never writes student state.
 - Interactive blocks are **practice, not assessment**: they never touch
   achievements, `quiz_attempts`, or the gradebook, and never gate lesson completion.
+- Exception: a lesson's pinned **signature interactive** (`lesson.signature`, opened from the
+  "Try the Interactive" pop-up modal) *does* gate completion for students: progress stops at
+  99% and the quiz button is replaced until its `lesson_interactions` row (`block_id:
+  'signature'`) exists. Staff and already-completed lessons aren't gated.
 
 Adding a slot type means adding an entry to each of: `slotMap.js` (`SLOT_MAP`),
 `lesson-slots/index.js`, and `lesson-slot-forms/index.js` (`FORM_MAP`, `SLOT_META`,
