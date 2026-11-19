@@ -968,3 +968,15 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - [PasswordResetPage.jsx](src/pages/PasswordResetPage.jsx): hidden `autocomplete="username"` field with the account email, so Chrome's password manager offers to update the saved login instead of keeping the old password for autofill.
 - Narrowed the VERSION_139 inactivity bypass in [AuthContext.jsx](src/context/AuthContext.jsx): it now applies only to the session the link itself created (`isRecoverySession` in [supabaseClient.js](src/lib/supabaseClient.js) matches the link's access token), so a hand-typed `#type=recovery` can no longer revive a stale session on a shared machine. That session also restarts the inactivity clock (fresh `sq_last_active`, remember-me off), so an old remember-me deadline can't sign the user out mid-reset.
 - Commit: Fix password reset link skipping the reset form and showing "expired" after success
+
+## VERSION_141
+- Teacher portal now identifies students by code everywhere (dashboard Needs attention, Latest submissions, rosters, gradebook, etc.): `fetchTeacherDashboard` in `src/lib/teacher.js` sets each student's `name` to `student_number`, falling back to full name only when a student has no code. Lists sort by code. Removed the roster-only `rosterLabel` helper from `TeacherPortalPage.jsx` (now redundant).
+- Commit: Show student codes instead of names across the teacher portal
+
+## VERSION_142
+- Admin portal now shows student codes instead of names (Users table, Recent users, student lists): `toUserRow` in `src/lib/users.js` uses `student_number`, falling back to full name when a student has no code. `STUDENT_COLUMNS` now selects `student_number`. Teachers/admins still show names.
+- Commit: Show student codes instead of names in the admin portal
+
+## VERSION_143
+- Admin portal no longer displays user/student emails: removed the email sub-line under names in Recent users, Users table + cards, and Students table + cards, and dropped the "(email)" from the Remove user / Wipe data confirm dialogs (`src/pages/AdminDashboardPage.jsx`). Users search still matches email. Teachers page keeps teacher emails.
+- Commit: Hide emails in the admin portal; show student codes only
