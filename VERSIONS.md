@@ -792,3 +792,15 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_115
 - Animal Cell Level 1 whole-animal view: the window now shows daylight — blue sky behind the glass and the plant game's sun in the top-left pane (`AnimalView.jsx`), matching PlantView at full sunlight.
 - Commit: Animal cell: add sky and sun to the dog's window
+
+## VERSION_116
+- Added `supabase/seed_demo_students.sql` (manual dev seed, not a migration): 72 demo students — 35 in Obedience (SQ-OB-001…035), 37 in Optimism (SQ-OP-001…037) — with random Week 1–3 lesson completion and one quiz attempt per completed lesson. Idempotent; removal query in header.
+- Commit: Add demo-student seed for Obedience and Optimism sections
+
+## VERSION_117
+- Fixed `supabase/seed_demo_students.sql` section names to match the real sections: `7 - Obedience` / `7 - Optimistic` (was `Obedience` / `Optimism`, so seeded students didn't show under the existing sections).
+- Commit: Fix demo-student seed section names
+
+## VERSION_118
+- Teacher portal section roster (My Sections → a section) now shows each student's code (`student_number`, e.g. SQ-OB-001) instead of their name, sorted by code; students without a code fall back to their name. `fetchTeacherDashboard` in `src/lib/teacher.js` now selects `student_number` and exposes it as `studentNumber`.
+- Commit: Show student codes instead of names in section roster
