@@ -2,7 +2,7 @@ import { normalizeAvatarStyle } from './avatar-personalization'
 import { getAvatar } from './avatars'
 import { supabase } from './supabase'
 
-const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, avatar, avatar_style, created_at'
+const STUDENT_COLUMNS = 'id, first_name, last_name, email, section, student_number, avatar, avatar_style, created_at'
 const STAFF_COLUMNS = 'id, role, first_name, last_name, email, created_at'
 const ROLE_LABELS = { admin: 'Admin', teacher: 'Teacher', student: 'Student' }
 
@@ -32,7 +32,8 @@ function fullName(row) {
 function toUserRow(row, role) {
   return {
     id: row.id,
-    name: fullName(row),
+    // Students are identified by code only; staff rows have no code and keep their name.
+    name: row.student_number || fullName(row),
     role: ROLE_LABELS[role] ?? 'Student',
     email: row.email ?? '—',
     status: 'Active',
