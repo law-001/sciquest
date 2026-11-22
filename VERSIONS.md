@@ -980,3 +980,11 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_143
 - Admin portal no longer displays user/student emails: removed the email sub-line under names in Recent users, Users table + cards, and Students table + cards, and dropped the "(email)" from the Remove user / Wipe data confirm dialogs (`src/pages/AdminDashboardPage.jsx`). Users search still matches email. Teachers page keeps teacher emails.
 - Commit: Hide emails in the admin portal; show student codes only
+
+## VERSION_144
+- Added `supabase/seed_live_quest_general_knowledge.sql`: a 20-question "Grade 7 General Knowledge" Live Quest set (14 multiple-choice, 6 true/false; science, Philippine history/geography, math, art). Manual seed, not a migration — run in the Supabase SQL Editor. Gives every staff member their own copy; idempotent by title. Last question is double points.
+- Commit: Add Grade 7 general knowledge Live Quest seed set
+
+## VERSION_145
+- TEMPORARY: all games force-unlocked on the Games hub for testing. Real lesson gate in `isGameUnlocked` (`src/lib/games/registry.js`) is commented out and replaced by a `return true` stub. Revert before shipping.
+- Commit: Temporarily unlock all games for testing
