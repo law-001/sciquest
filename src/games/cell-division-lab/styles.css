@@ -731,6 +731,25 @@
   padding: 14px 16px 16px;
 }
 
+.cdl-gate__stack { display: flex; flex-direction: column; gap: 14px; }
+
+.cdl-gate__readout { box-shadow: none; }
+.cdl-gate__readout-title { margin-bottom: 10px; }
+.cdl-gate__readout-rows { display: flex; flex-direction: column; gap: 7px; }
+.cdl-gate__readout-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14.5px;
+}
+
+.cdl-gate__options { display: flex; flex-direction: column; gap: 9px; }
+
+.cdl-gate__hint { font-size: 13.5px; }
+
+.cdl-gate__feedback { box-shadow: none; }
+.cdl-gate__feedback-text { color: var(--cdl-ink-1); }
+
 .cdl-timer {
   display: flex;
   flex-direction: column;
@@ -1246,10 +1265,26 @@
      needs more than the label does. */
   .cdl-tag > .cdl-eyebrow { display: none; }
   .cdl-tag__title { font-size: 15px; }
-  .cdl-gate { inset: 8px; width: auto; }
-  .cdl-gate__body { padding: 12px; }
-  .cdl-gate__head { padding: 10px 12px; }
-  .cdl-gate__prompt { font-size: 15px; }
+  /* Phones: the whole checkpoint has to fit the stage without scrolling, so
+     every gap and padding in the gate is trimmed here. */
+  .cdl-gate { inset: 6px; width: auto; }
+  .cdl-gate__head { padding: 8px 12px; }
+  .cdl-gate__title { font-size: 16px; }
+  .cdl-gate__body { padding: 10px 12px; }
+  .cdl-gate__stack { gap: 10px; }
+  .cdl-gate__prompt { font-size: 14.5px; line-height: 1.4; }
+  .cdl-gate__readout { padding: 8px 12px; }
+  .cdl-gate__readout-title { margin-bottom: 4px; }
+  .cdl-gate__readout-rows { gap: 3px; }
+  .cdl-gate__readout-row { font-size: 14px; }
+  .cdl-gate__options { gap: 6px; }
+  .cdl-gate__option { min-height: 46px; padding: 8px 12px; }
+  .cdl-gate__hint { font-size: 13px; line-height: 1.4; }
+  .cdl-gate__feedback { padding: 10px 12px; }
+  .cdl-gate__feedback-text { font-size: 13.5px; line-height: 1.45; }
+  /* Once answered, the option nobody picked is noise — the explanation below
+     says what the right call was — so it gives its row back. */
+  .cdl-gate__option--dimmed { display: none; }
   .cdl-notebook:not(.cdl-notebook--collapsed) { max-height: 58%; }
   .cdl-modal {
     padding: 12px;
@@ -1279,8 +1314,10 @@
   .cdl-star { font-size: 16px; }
   .cdl-instruct { padding: 10px 12px 12px; gap: 8px; }
   .cdl-instruct__text { font-size: 17px; }
-  .cdl-gate__option { flex-wrap: wrap; gap: 4px 10px; }
-  .cdl-gate__option-label { flex-basis: 100%; min-width: 0; }
+  /* GO / WAIT are short enough to keep their row; wrapping them onto a line
+     of their own made every option a row taller. */
+  .cdl-gate__option { gap: 10px; }
+  .cdl-gate__option-label { min-width: 52px; }
 }
 
 /* Landscape phones: height, not width, is what there is none of. */
