@@ -369,20 +369,21 @@ function AchievementToast({ show }) {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed z-50 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 bottom-6 transition-all duration-700 ease-out ${
+      className={`fixed z-50 right-4 sm:right-6 bottom-6 transition-all duration-700 ease-out ${
         show
           ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-10 pointer-events-none"
       }`}
     >
-      <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl shadow-2xl px-4 py-3 max-w-sm">
+      <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl shadow-2xl p-2 sm:px-4 sm:py-3 max-w-sm">
         <div className="relative shrink-0">
           <div className="w-11 h-11 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center">
             <AchievementMedal achievementKey="curious-explorer" className="w-12 h-12" />
           </div>
           <span className="absolute -inset-1 rounded-full border-2 border-amber-400/50 animate-ping" />
         </div>
-        <div className="min-w-0">
+        {/* Medal-only on phones; text stays for screen readers. */}
+        <div className="min-w-0 sr-only sm:not-sr-only">
           <p className="text-[10px] font-bold tracking-widest uppercase text-amber-400">
             Achievement Unlocked
           </p>

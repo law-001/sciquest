@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
-  ArrowUp,
   PlayCircle,
   CheckCircle2,
   Star,
@@ -25,10 +24,6 @@ import { SLOT_MAP } from './slotMap'
 import SignatureWidgetSection from './lesson-slots/interactive/SignatureWidgetSection'
 import { SIGNATURE_WIDGETS } from './lesson-slots/interactive/signatureWidgets'
 export { SLOT_MAP }
-
-// How far down the page the "Top" button appears. Below this a reader can get
-// back with one flick, so the button would just be in the way.
-const TOP_BUTTON_AFTER_PX = 640
 
 const MAX_TOC_ITEMS = 6;
 // Supporting slot types, most expendable first, folded out of the sidebar
@@ -162,7 +157,6 @@ export function LessonTemplate({
   const [scrollProgress, setScrollProgress] = useState(0);
   // Shown once the reader is far enough down that scrolling back by hand is a
   // chore. Driven by the same scroll listener as the progress bar.
-  const [showTopButton, setShowTopButton] = useState(false);
   const [isInteractiveOpen, setIsInteractiveOpen] = useState(false);
   // The widget is only loaded on first open, then kept alive so its state
   // survives closing and reopening the panel.
@@ -257,7 +251,6 @@ export function LessonTemplate({
         else break;
       }
       setActiveSection(current);
-      setShowTopButton(window.scrollY > TOP_BUTTON_AFTER_PX);
     };
     const onScroll = () => {
       if (rafId !== null) return;
@@ -314,10 +307,6 @@ export function LessonTemplate({
   const openInteractive = () => {
     setHasOpenedInteractive(true);
     setIsInteractiveOpen(true);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const scrollToSection = (i) => {
@@ -774,24 +763,6 @@ export function LessonTemplate({
           />
         </InteractiveModal>
       )}
-
-      {/* ── Back to top ──
-          Bottom-right, below the XP toast (z-50) and the notification bell
-          (z-40) so it can never cover either of them. */}
-      <button
-        type="button"
-        onClick={scrollToTop}
-        aria-label="Back to the top of the lesson"
-        className={cn(
-          "fixed bottom-6 right-6 z-30 flex min-h-11 items-center gap-2 rounded-xl border-2 border-orange-200 bg-white px-4 py-2.5 text-sm font-black text-stone-700 shadow-lg transition-all duration-200 hover:border-primary-400 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:text-primary-400",
-          showTopButton
-            ? "pointer-events-auto translate-y-0 opacity-100"
-            : "pointer-events-none translate-y-3 opacity-0",
-        )}
-      >
-        <ArrowUp className="h-4 w-4" />
-        Top
-      </button>
     </div>
   );
 }

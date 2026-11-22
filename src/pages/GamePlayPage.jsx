@@ -3,6 +3,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { getGame, getGameComponent } from '../lib/games/registry';
 import { GameAuthGate } from '../components/games/GameAuthGate';
 import { GameLoadingScreen } from '../components/games/GameLoadingScreen';
+import { PortraitOnlyPrompt } from '../components/games/PortraitOnlyPrompt';
 import { useReducedMotion } from '../games/_shared/hooks/useReducedMotion';
 
 function detectDeviceTier() {
@@ -17,6 +18,10 @@ function detectDeviceTier() {
 // keeps the corner from stacking two buttons on top of one another.
 const GAMES_WITH_OWN_BACK = new Set(['matter-state-sandbox', 'food-chain-survival', 'cell-division-lab', 'quake-ready', 'plant-cell', 'mystery-lab', 'animal-cell']);
 
+// Phone layouts for these give the stage half the visible height and refuse
+// landscape — see PortraitGameFrame.css.
+const PORTRAIT_ONLY_GAMES = new Set(['matter-state-sandbox', 'cell-division-lab']);
+
 export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgressUpdate }) {
   const reducedMotion = useReducedMotion();
   // window.innerHeight can include pixels hidden behind the always-on-top OS
@@ -30,7 +35,11 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgre
   const getViewportHeight = () => {
     const inner = window.innerHeight;
     const base = Math.min(inner, window.visualViewport?.height ?? inner);
-    if (document.fullscreenElement) return base;
+    // Phones have no taskbar, and their outerHeight/availHeight report the
+    // whole screen including system bars, so the overhang maths would cut a
+    // real strip of the game. visualViewport already excludes the browser's
+    // URL bar and bottom toolbar there.
+    if (document.fullscreenElement || window.matchMedia('(pointer: coarse)').matches) return base;
     const scr = window.screen;
     const workBottom = (scr?.availTop ?? 0) + (scr?.availHeight ?? Infinity);
     const overhang = Math.max(0, window.screenY + window.outerHeight - workBottom);
@@ -108,9 +117,15 @@ export function GamePlayPage({ activeGameId, user, profile, onNavigate, onProgre
   }
 
   const showOverlayBack = !GAMES_WITH_OWN_BACK.has(activeGameId);
+  const isPortraitOnly = PORTRAIT_ONLY_GAMES.has(activeGameId);
 
   return (
-    <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: vh, overflow: 'hidden', touchAction: 'none' }}>
+    <div
+      className={isPortraitOnly ? 'sq-portrait-frame' : undefined}
+      data-portrait-game={isPortraitOnly ? activeGameId : undefined}
+      style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: vh, overflow: 'hidden', touchAction: 'none', '--sq-game-vh': `${vh}px` }}
+    >
+      {isPortraitOnly && <PortraitOnlyPrompt />}
       <GameAuthGate user={user} onNavigateLogin={() => onNavigate('home')}>
         <Suspense fallback={<GameLoadingScreen progress={0} message="Loading game…" />}>
           <GameComponent

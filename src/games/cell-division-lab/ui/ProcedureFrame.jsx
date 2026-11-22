@@ -25,8 +25,11 @@ export function ProcedureFrame({
   const [stars, setStars] = useState(3);
   const [view, setView] = useState(DEFAULT_STAGE_VIEW);
 
+  const [isPanning, setIsPanning] = useState(false);
+
   const frameRef = useRef(null);
   const pinchRef = useRef(null);
+  const panRef = useRef(null);
   const viewRef = useRef(DEFAULT_STAGE_VIEW);
   const doneRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
@@ -137,6 +140,44 @@ export function ProcedureFrame({
     setView((v) => zoomAt(frame, v, clampZoom(v.zoom + delta), centre));
   }
 
+  // One-finger / mouse drag pans, but only from empty stage. React runs the
+  // procedures' handlers before this bubbles up to the frame, so anything they
+  // grabbed already holds pointer capture — and taps on their buttons are
+  // theirs too. That keeps dragging a chromosome from also sliding the camera.
+  function handlePanStart(e) {
+    if (e.button !== 0 || pinchRef.current) return;
+    if (viewRef.current.zoom <= 1) return;
+    if (e.target.closest('button, [role="button"]')) return;
+    for (let el = e.target; el && el !== e.currentTarget; el = el.parentElement) {
+      if (el.hasPointerCapture?.(e.pointerId)) return;
+    }
+    e.currentTarget.setPointerCapture(e.pointerId);
+    panRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, view: viewRef.current };
+    setIsPanning(true);
+  }
+
+  function handlePanMove(e) {
+    const pan = panRef.current;
+    if (!pan || pan.id !== e.pointerId) return;
+    // A second finger turns the gesture into a pinch, which owns the view.
+    if (pinchRef.current) {
+      handlePanEnd(e);
+      return;
+    }
+    const units = stageUnitsPerPixel(frameRef.current, pan.view.zoom);
+    setView(clampStageView({
+      zoom: pan.view.zoom,
+      panX: pan.view.panX - (e.clientX - pan.x) * units,
+      panY: pan.view.panY - (e.clientY - pan.y) * units,
+    }));
+  }
+
+  function handlePanEnd(e) {
+    if (!panRef.current || panRef.current.id !== e.pointerId) return;
+    panRef.current = null;
+    setIsPanning(false);
+  }
+
   function handleComplete(result) {
     if (doneRef.current) return;
     doneRef.current = true;
@@ -151,7 +192,15 @@ export function ProcedureFrame({
     : secondsLeft <= 12 ? 'var(--cdl-warn)' : 'var(--cdl-teal-deep)';
 
   return (
-    <div className="cdl-proc" ref={frameRef}>
+    <div
+      className="cdl-proc"
+      ref={frameRef}
+      style={{ cursor: isPanning ? 'grabbing' : view.zoom > 1 ? 'grab' : undefined }}
+      onPointerDown={handlePanStart}
+      onPointerMove={handlePanMove}
+      onPointerUp={handlePanEnd}
+      onPointerCancel={handlePanEnd}
+    >
       <div className="cdl-proc__stage">
         <StageViewContext.Provider value={view}>
           {Component
@@ -191,7 +240,7 @@ export function ProcedureFrame({
         </div>
       </div>
 
-      <div className="cdl-zoom" title="Scroll or pinch to zoom — two fingers also pan">
+      <div className="cdl-zoom" title="Scroll or pinch to zoom — once zoomed in, drag an empty spot to move around">
         <button
           type="button"
           className="cdl-icon-btn cdl-icon-btn--sm"

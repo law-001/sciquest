@@ -970,6 +970,25 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Commit: Fix password reset link skipping the reset form and showing "expired" after success
 
 ## VERSION_141
+- Achievement toasts on mobile are now medal-only and sit in the bottom-right corner instead of centered (`XpToast.jsx`, `LandingPage.jsx` `AchievementToast`). Text is kept for screen readers and shows again from the `sm` breakpoint up.
+- Quiz results / retry: scroll-to-top now runs after the quiz ↔ results swap commits, so the answer review always starts at Q1 instead of sometimes landing on the last question (`QuizContainer.jsx`).
+- Removed the floating "Top" back-to-top button from lesson pages (`LessonTemplate.jsx`).
+- Commit: Compact mobile achievement toasts, fix quiz review scroll start, remove lesson back-to-top button
+
+## VERSION_142
+- Added a dev-only `VITE_UNLOCK_ALL_GAMES=true` flag (`src/lib/games/registry.js` `isGameUnlocked`) that unlocks every lesson-gated game on the Games hub for testing. Ignored in production builds; "Coming soon" games stay locked.
+- Commit: Add dev-only VITE_UNLOCK_ALL_GAMES flag to unlock all games for testing
+
+## VERSION_143
+- Mobile layout for Matter State Sandbox and Cell Division Lab. In portrait on phones/tablets (≤ 900px wide) the game stage is now exactly 50% of the visible screen height; the controls (sandbox) / notebook (cell division) take the rest and scroll if they don't fit. New override file [PortraitGameFrame.css](src/components/games/PortraitGameFrame.css), scoped to a `sq-portrait-frame` wrapper, so no file inside either game was edited.
+- Landscape on a touch phone now shows a full-screen "Turn your phone upright" prompt over both games ([PortraitOnlyPrompt.jsx](src/components/games/PortraitOnlyPrompt.jsx)).
+- [GamePlayPage.jsx](src/pages/GamePlayPage.jsx): new `PORTRAIT_ONLY_GAMES` set; wrapper exposes the measured visible height as `--sq-game-vh`; the desktop taskbar-overhang correction is skipped on touch devices, where it could cut a strip off the game behind the browser's URL bar / bottom toolbar.
+- Commit: Half-screen portrait stage and landscape rotate prompt for sandbox and cell division games
+
+## VERSION_144
+- Cell Division Lab: drag to pan the camera. Once zoomed in past 100%, a one-finger or mouse drag that starts on an empty part of the stage now slides the view around the cell ([ProcedureFrame.jsx](src/games/cell-division-lab/ui/ProcedureFrame.jsx) `handlePanStart` / `handlePanMove` / `handlePanEnd`). Drags that start on something a procedure handles (chromosomes, poles, DNA bases, the drawing area, buttons) still go to the procedure. A second finger hands the gesture to the existing pinch. Cursor shows grab / grabbing while zoomed.
+- Updated the zoom tooltip and the How to Play text to mention dragging.
+- Commit: Add one-finger / mouse drag-to-pan on the zoomed Cell Division stage
 - Teacher portal now identifies students by code everywhere (dashboard Needs attention, Latest submissions, rosters, gradebook, etc.): `fetchTeacherDashboard` in `src/lib/teacher.js` sets each student's `name` to `student_number`, falling back to full name only when a student has no code. Lists sort by code. Removed the roster-only `rosterLabel` helper from `TeacherPortalPage.jsx` (now redundant).
 - Commit: Show student codes instead of names across the teacher portal
 
