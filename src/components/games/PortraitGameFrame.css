@@ -24,22 +24,21 @@
     align-content: start;
     padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
+}
 
-  /* Cell Division Lab — HUD / stage / notebook.
-     The stage never drops below 60% of the screen, and it also soaks up
-     whatever the HUD and notebook leave over, so there's no empty band at the
-     bottom on tall phones. It never shrinks (flex-shrink 0). */
-  .sq-portrait-frame[data-portrait-game] .cdl-stage-wrap {
-    flex: 1 0 calc(var(--sq-game-vh, 100dvh) * 0.6);
-  }
-  /* The notebook takes only the height its content needs. Opened on a short
-     screen it gives way instead (shrink 1, min-height 0) and its body, which
-     already scrolls, takes the overflow. */
-  .sq-portrait-frame[data-portrait-game] .cdl-notebook,
-  .sq-portrait-frame[data-portrait-game] .cdl-notebook:not(.cdl-notebook--collapsed) {
-    flex: 0 1 auto;
-    min-height: 0;
-    max-height: none;
+/* Cell Division Lab on a touch screen held upright: pin the frame to the
+   bottom edge instead of using the JS-measured height, so it ends wherever the
+   browser says the viewport ends. NOTE: Chrome on iPhone reports the same
+   height (innerHeight, visualViewport, 100dvh, fixed bottom: 0 — all 755pt on
+   a 16 Pro Max) whether its toolbar is expanded or minimised, so the band the
+   minimised toolbar frees up can't be detected or used from the page.
+   !important because the measured height is an inline style on the frame.
+   The game's own layout (styles.css, max-width 900px) handles the stage/notes
+   split. */
+@media (orientation: portrait) and (max-width: 900px) and (pointer: coarse) {
+  .sq-portrait-frame[data-portrait-game="cell-division-lab"] {
+    bottom: 0;
+    height: auto !important;
   }
 }
 
