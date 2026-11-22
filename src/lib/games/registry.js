@@ -195,20 +195,18 @@ export function getGameComponent(id) {
   return _lazyLoader(game.loader);
 }
 
-// Dev-only escape hatch so every game can be tested without finishing its
-// lessons. Set VITE_UNLOCK_ALL_GAMES=true in .env.local and restart the dev
-// server. `import.meta.env.DEV` keeps it from ever applying to a production build.
-const UNLOCK_ALL_GAMES =
-  import.meta.env.DEV && import.meta.env.VITE_UNLOCK_ALL_GAMES === "true";
-
+// TODO(kyouuuuka): TEMPORARY — all games force-unlocked for testing. REVERT before
+// shipping: uncomment the real gate below and delete the stub under it.
 // A game with no related lessons has no gate — stays unlocked.
 // A game with related lessons unlocks the moment *any* of them is completed.
-export function isGameUnlocked(game, completedLessonIds = []) {
-  if (UNLOCK_ALL_GAMES) return true;
-  const related = game?.relatedLessonIds ?? [];
-  if (related.length === 0) return true;
-  if (!completedLessonIds || completedLessonIds.length === 0) return false;
-  return related.some((id) => completedLessonIds.includes(id));
+// export function isGameUnlocked(game, completedLessonIds = []) {
+//   const related = game?.relatedLessonIds ?? [];
+//   if (related.length === 0) return true;
+//   if (!completedLessonIds || completedLessonIds.length === 0) return false;
+//   return related.some((id) => completedLessonIds.includes(id));
+// }
+export function isGameUnlocked() {
+  return true;
 }
 
 // Games whose lock flips from closed → open the moment `lessonId` is completed,

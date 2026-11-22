@@ -1000,48 +1000,10 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Admin portal no longer displays user/student emails: removed the email sub-line under names in Recent users, Users table + cards, and Students table + cards, and dropped the "(email)" from the Remove user / Wipe data confirm dialogs (`src/pages/AdminDashboardPage.jsx`). Users search still matches email. Teachers page keeps teacher emails.
 - Commit: Hide emails in the admin portal; show student codes only
 
+## VERSION_144
+- Added `supabase/seed_live_quest_general_knowledge.sql`: a 20-question "Grade 7 General Knowledge" Live Quest set (14 multiple-choice, 6 true/false; science, Philippine history/geography, math, art). Manual seed, not a migration — run in the Supabase SQL Editor. Gives every staff member their own copy; idempotent by title. Last question is double points.
+- Commit: Add Grade 7 general knowledge Live Quest seed set
+
 ## VERSION_145
-- Matter State Sandbox: the challenge hold-progress bar is now a progress ring inside the active challenge card, on the right edge ([ChallengePanel.jsx](src/games/matter-state-sandbox/ui/ChallengePanel.jsx)). The ring is absolutely positioned and the card always reserves its strip (`padding-right: 56px`), so the card no longer grows taller and pushes the HUD/stage down when a challenge starts progressing. Replaced `.sq-challenge-card__progress` / `.sq-progress-bar*` with `.sq-progress-ring*` in [index.css](src/index.css) (only this component used them).
-- Commit: Replace sandbox challenge progress bar with an in-card progress ring to stop layout shift
-
-## VERSION_146
-- Cell Division Lab, portrait phones/tablets: the stage is now at least 60% of the visible screen (was exactly 50%) and grows to take any height the HUD and notebook leave over, so there's no empty band at the bottom. The notebook takes only the height it needs, and when opened on a short screen its notes scroll instead of squeezing the stage ([PortraitGameFrame.css](src/components/games/PortraitGameFrame.css)).
-- Notes now start collapsed on every stacked layout (≤ 900px wide), not just phones ≤ 640px ([LabNotebook.jsx](src/games/cell-division-lab/ui/LabNotebook.jsx) `startsCollapsed`). Above 900px the notebook is a side column with no toggle, so it stays open there.
-- The stage drawing now fits the frame's shape instead of always fitting the full 1000-wide stage. On a narrow/tall frame the view closes in on the cell (down to 560 units wide), so the cell fills the stage rather than sitting small between empty bands; wide frames are unchanged. Anything outside the window is reachable by dragging. New `baseW` on the stage view, `baseWidthFor` / `stageWindow` / `canPanStageView` in [stage-zoom.js](src/games/cell-division-lab/ui/stage-zoom.js); a ResizeObserver in [ProcedureFrame.jsx](src/games/cell-division-lab/ui/ProcedureFrame.jsx) keeps it in step with the frame; [CellStage.jsx](src/games/cell-division-lab/ui/CellStage.jsx) reads the window size from it. Drag-to-pan now works whenever part of the stage is out of view, not only above 100% zoom.
-- Commit: Cell Division: 60%+ stage that fills leftover space, notes collapsed by default, frame-fitted cell view
-
-## VERSION_147
-- Cell Division Lab: checkpoint gate fits a phone stage without scrolling. Gate spacing moved from inline styles to classes (`cdl-gate__stack`, `__readout*`, `__options`, `__hint`, `__feedback*`) so the ≤640px block can trim padding, gaps, fonts and option height.
-- Phones: after answering, the unpicked dimmed option is hidden to give its row back; ≤420px no longer wraps GO/WAIT onto their own line.
-- Checkpoint "Do this now" hint shortened to "Check the readout, pick GO or WAIT" so it stays on one line.
-- Commit: Compact cell division checkpoint gate so it fits phone screens without scrolling
-
-## VERSION_148
-- Cell Division Lab (phones, portrait): the game frame is pinned to `bottom: 0` instead of the JS-measured height, which came up short on iOS Safari and left an empty band under the game (`PortraitGameFrame.css`, scoped to `cell-division-lab` + `pointer: coarse`).
-- Stacked layout (≤900px) is now a grid: the stage takes all the height above the "Do this now" strip, and opened notes rise over the stage as a bottom sheet (up to the full stage height) instead of squeezing it, so they rarely need to scroll. Removed the old notebook max-height caps and the now-unused cell-division flex overrides in `PortraitGameFrame.css`.
-- Added `--cdl-shadow-up` token (light + dark) for the sheet's upward shadow.
-- Commit: Fill phone screen in cell division and open notes as a sheet over the stage
-
-## VERSION_143
-- XP Earned toasts are now icon-only (star) on mobile, matching the achievement toasts; full text returns from the `sm` breakpoint up and stays available to screen readers (`XpToast.jsx`).
-- Commit: Make XP toasts icon-only on mobile like achievement toasts
-
-## VERSION_149
-- Cell Division Lab (stacked ≤900px): the "Do this now" strip is a fixed height, so the stage no longer resizes as the hint text changes. The hint box is two lines tall (`height: 2.8em`), one-line hints are centred, and longer hints step down in size (`data-fit` 1 → 2, set by `fitToBox` in `LabNotebook.jsx` with a ResizeObserver); only a hint that still overflows at the smallest size lets the box grow.
-- The "Carry on…" submit button now sits beside the hint (new `.cdl-instruct__row`) instead of under it on stacked layouts, so it appearing mid-step doesn't change the strip height. Desktop layout unchanged.
-- Commit: Keep cell division instruction strip at a fixed height on phones
-
-## VERSION_150
-- Cell Division Lab (stacked ≤900px): the notes sheet now slides up out of the "Do this now" strip when opened (0.38s ease-out) and slides back down when closed (0.26s). Collapsed is `visibility: hidden` + `translateY(100% + 24px)` instead of `display: none`; the strip got `position: relative; z-index: 6` so the sheet passes behind it.
-- The Notes toggle chevron is a single ▲ that rotates 180° when open instead of swapping characters.
-- Both transitions are off under the game's `reducedMotion` (`.cdl-app--still`) and `prefers-reduced-motion`.
-- Commit: Animate cell division notes sheet sliding up from the instruction strip
-
-## VERSION_151
-- Added a dev-only viewport readout (`src/components/games/ViewportDebug.jsx`), shown in games when the dev server is opened with `?vp`. Lists innerHeight, visualViewport, documentElement, screen, 100svh/lvh/dvh probes, safe-area bottom and the game frame's bottom, to find which value changes when iOS browser toolbars minimise. Lazy-imported behind `import.meta.env.DEV` in `GamePlayPage.jsx`, so it is absent from production builds (verified). Temporary — remove once toolbar detection is built.
-- Commit: Add dev-only viewport readout for diagnosing iOS toolbar heights
-
-## VERSION_152
-- Removed the temporary dev-only viewport readout (`ViewportDebug.jsx` and its hook-up in `GamePlayPage.jsx`). Its readings showed Chrome on iPhone reports identical heights with the toolbar expanded or minimised, so the freed band can't be detected; decided to leave the layout as is.
-- Corrected the comment on the cell-division frame rule in `PortraitGameFrame.css` to record that finding.
-- Commit: Remove viewport debug readout; document iOS Chrome toolbar limitation
+- TEMPORARY: all games force-unlocked on the Games hub for testing. Real lesson gate in `isGameUnlocked` (`src/lib/games/registry.js`) is commented out and replaced by a `return true` stub. Revert before shipping.
+- Commit: Temporarily unlock all games for testing
