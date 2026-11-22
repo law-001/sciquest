@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
 // Below the two-column breakpoint the notebook becomes a sheet under the
-// stage, and on a phone-sized or landscape-phone-sized viewport its notes
-// start collapsed — the instruction above them never does. Read once, so
-// rotating the device does not throw away whatever the student has chosen.
-// Only ever collapsed while stacked: above 900px there is no toggle on screen
-// to open the notes back up with.
+// stage, and its notes start collapsed so the stage gets the room — the
+// instruction above them never collapses. Read once, so rotating the device
+// does not throw away whatever the student has chosen. Only ever collapsed
+// while stacked: above 900px there is no toggle on screen to open the notes
+// back up with.
 function startsCollapsed() {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
-  return window.matchMedia(
-    '(max-width: 640px), (max-width: 900px) and (max-height: 500px)',
-  ).matches;
+  return window.matchMedia('(max-width: 900px)').matches;
 }
 
 // The notebook: the instruction the student is working to, then what this

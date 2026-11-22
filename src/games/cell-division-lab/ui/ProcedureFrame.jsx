@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { PROCEDURES } from '../procedures';
 import {
   DEFAULT_STAGE_VIEW, MAX_ZOOM, MIN_ZOOM, StageViewContext,
-  clampStageView, clampZoom, stageUnitsPerPixel, zoomAt,
+  baseWidthFor, canPanStageView, clampStageView, clampZoom, stageUnitsPerPixel, zoomAt,
 } from './stage-zoom';
 
 // DEFAULT_STAGE_VIEW is the framing every procedure is laid out for. Zooming
@@ -101,9 +101,9 @@ export function ProcedureFrame({
         pinch.mid,
       );
       const mid = midpoint(e.touches);
-      const units = stageUnitsPerPixel(frame, zoomed.zoom);
+      const units = stageUnitsPerPixel(frame, zoomed);
       setView(clampStageView({
-        zoom: zoomed.zoom,
+        ...zoomed,
         panX: zoomed.panX - (mid.x - pinch.mid.x) * units,
         panY: zoomed.panY - (mid.y - pinch.mid.y) * units,
       }));
@@ -129,6 +129,20 @@ export function ProcedureFrame({
 
   useEffect(() => { viewRef.current = view; }, [view]);
 
+  // The framing follows the frame's shape, so a portrait phone closes in on
+  // the cell instead of letterboxing the whole wide stage.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => {
+      const box = frame.getBoundingClientRect();
+      const baseW = baseWidthFor(box.width, box.height);
+      setView((v) => (v.baseW === baseW ? v : clampStageView({ ...v, baseW })));
+    });
+    ro.observe(frame);
+    return () => ro.disconnect();
+  }, []);
+
   // The buttons have no pointer to zoom about, so they use the middle of the
   // frame — which is what the reader is looking at.
   function zoomBy(delta) {
@@ -146,7 +160,7 @@ export function ProcedureFrame({
   // theirs too. That keeps dragging a chromosome from also sliding the camera.
   function handlePanStart(e) {
     if (e.button !== 0 || pinchRef.current) return;
-    if (viewRef.current.zoom <= 1) return;
+    if (!canPanStageView(viewRef.current)) return;
     if (e.target.closest('button, [role="button"]')) return;
     for (let el = e.target; el && el !== e.currentTarget; el = el.parentElement) {
       if (el.hasPointerCapture?.(e.pointerId)) return;
@@ -164,9 +178,9 @@ export function ProcedureFrame({
       handlePanEnd(e);
       return;
     }
-    const units = stageUnitsPerPixel(frameRef.current, pan.view.zoom);
+    const units = stageUnitsPerPixel(frameRef.current, pan.view);
     setView(clampStageView({
-      zoom: pan.view.zoom,
+      ...pan.view,
       panX: pan.view.panX - (e.clientX - pan.x) * units,
       panY: pan.view.panY - (e.clientY - pan.y) * units,
     }));
@@ -195,7 +209,7 @@ export function ProcedureFrame({
     <div
       className="cdl-proc"
       ref={frameRef}
-      style={{ cursor: isPanning ? 'grabbing' : view.zoom > 1 ? 'grab' : undefined }}
+      style={{ cursor: isPanning ? 'grabbing' : canPanStageView(view) ? 'grab' : undefined }}
       onPointerDown={handlePanStart}
       onPointerMove={handlePanMove}
       onPointerUp={handlePanEnd}
@@ -240,7 +254,7 @@ export function ProcedureFrame({
         </div>
       </div>
 
-      <div className="cdl-zoom" title="Scroll or pinch to zoom — once zoomed in, drag an empty spot to move around">
+      <div className="cdl-zoom" title="Scroll or pinch to zoom — drag an empty spot to move around">
         <button
           type="button"
           className="cdl-icon-btn cdl-icon-btn--sm"
@@ -253,7 +267,7 @@ export function ProcedureFrame({
         <button
           type="button"
           className="cdl-zoom__level cdl-mono"
-          onClick={() => setView(DEFAULT_STAGE_VIEW)}
+          onClick={() => setView((v) => clampStageView({ ...DEFAULT_STAGE_VIEW, baseW: v.baseW }))}
           aria-label={`Zoom ${Math.round(view.zoom * 100)} percent — reset to fit`}
         >
           {Math.round(view.zoom * 100)}%

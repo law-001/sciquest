@@ -25,14 +25,19 @@
     padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
 
-  /* Cell Division Lab — HUD / stage / notebook */
+  /* Cell Division Lab — HUD / stage / notebook.
+     The stage never drops below 60% of the screen, and it also soaks up
+     whatever the HUD and notebook leave over, so there's no empty band at the
+     bottom on tall phones. It never shrinks (flex-shrink 0). */
   .sq-portrait-frame[data-portrait-game] .cdl-stage-wrap {
-    flex: 0 0 calc(var(--sq-game-vh, 100dvh) * 0.5);
+    flex: 1 0 calc(var(--sq-game-vh, 100dvh) * 0.6);
   }
-  /* The notebook gets the rest; its body already scrolls on its own. */
+  /* The notebook takes only the height its content needs. Opened on a short
+     screen it gives way instead (shrink 1, min-height 0) and its body, which
+     already scrolls, takes the overflow. */
   .sq-portrait-frame[data-portrait-game] .cdl-notebook,
   .sq-portrait-frame[data-portrait-game] .cdl-notebook:not(.cdl-notebook--collapsed) {
-    flex: 1 1 0;
+    flex: 0 1 auto;
     min-height: 0;
     max-height: none;
   }
