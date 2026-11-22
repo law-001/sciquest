@@ -1,14 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-// Below the two-column breakpoint the notebook becomes a sheet under the
-// stage, and its notes start collapsed so the stage gets the room — the
-// instruction above them never collapses. Read once, so rotating the device
+// Below the two-column breakpoint the notebook is an instruction strip under
+// the stage, and its notes open as a sheet over the stage — so they start
+// collapsed, or the cell would be hidden from the first frame. The
+// instruction itself never collapses. Read once, so rotating the device
 // does not throw away whatever the student has chosen. Only ever collapsed
 // while stacked: above 900px there is no toggle on screen to open the notes
 // back up with.
 function startsCollapsed() {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
   return window.matchMedia('(max-width: 900px)').matches;
+}
+
+// On phones the instruction box has a fixed height so the stage above it never
+// resizes as the wording changes. A hint that does not fit steps down a size at
+// a time ('1', '2'); only one that still overflows at the smallest size lets
+// the box grow. Where the box has no fixed height nothing overflows and the
+// hint stays at full size.
+const FIT_STEPS = ['0', '1', '2', 'grow'];
+
+function fitToBox(box) {
+  for (const step of FIT_STEPS) {
+    box.dataset.fit = step;
+    if (box.firstElementChild.offsetHeight <= box.clientHeight) return;
+  }
 }
 
 // The notebook: the instruction the student is working to, then what this
@@ -21,12 +36,24 @@ function startsCollapsed() {
 export function LabNotebook({ phase, problems, stepLabel, instruction }) {
   const [collapsed, setCollapsed] = useState(startsCollapsed);
   const bodyRef = useRef(null);
+  const textRef = useRef(null);
+  const hasSubmit = !!instruction.submit;
 
   // The notes are a fresh read every step, so a scroll left over from the last
   // one would open the new step part-way down its own explanation.
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = 0;
   }, [stepLabel]);
+
+  // Layout effect, so the hint is sized before it is painted. Re-fitted when
+  // the box changes width too — rotating, or the submit button arriving.
+  useLayoutEffect(() => {
+    const box = textRef.current;
+    fitToBox(box);
+    const observer = new ResizeObserver(() => fitToBox(box));
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [instruction.hint, hasSubmit]);
 
   return (
     <aside
@@ -51,25 +78,27 @@ export function LabNotebook({ phase, problems, stepLabel, instruction }) {
                 <span className="cdl-sr"> problems so far</span>
               </span>
             )}
-            <span className="cdl-notebook__chevron" aria-hidden="true">{collapsed ? '▲' : '▼'}</span>
+            <span className="cdl-notebook__chevron" aria-hidden="true">▲</span>
           </button>
         </div>
 
-        {/* The paragraph stays mounted so the live region keeps announcing;
-            only the span inside is re-keyed, which restarts its entrance. */}
-        <p className="cdl-instruct__text" aria-live="polite">
-          <span key={instruction.hint} className="cdl-instruct__pop">{instruction.hint}</span>
-        </p>
+        <div className="cdl-instruct__row">
+          {/* The paragraph stays mounted so the live region keeps announcing;
+              only the span inside is re-keyed, which restarts its entrance. */}
+          <p className="cdl-instruct__text" aria-live="polite" ref={textRef}>
+            <span key={instruction.hint} className="cdl-instruct__pop">{instruction.hint}</span>
+          </p>
 
-        {instruction.submit && (
-          <button
-            type="button"
-            className="cdl-btn cdl-instruct__submit"
-            onClick={instruction.submit.onSubmit}
-          >
-            {instruction.submit.label}
-          </button>
-        )}
+          {hasSubmit && (
+            <button
+              type="button"
+              className="cdl-btn cdl-instruct__submit"
+              onClick={instruction.submit.onSubmit}
+            >
+              {instruction.submit.label}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="cdl-notebook__body" id="cdl-notebook-body" ref={bodyRef}>
