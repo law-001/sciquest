@@ -107,8 +107,8 @@ function RemoveUserModal({ user, onConfirm, onClose, isLoading, error }) {
       </div>
       <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
         Are you sure you want to remove{" "}
-        <strong className="text-stone-900 dark:text-white">{user.name}</strong>{" "}
-        ({user.email})? Their account, progress, and all associated records will
+        <strong className="text-stone-900 dark:text-white">{user.name}</strong>?{" "}
+        Their account, progress, and all associated records will
         be permanently deleted.
       </p>
       <div className="flex gap-3">
@@ -155,8 +155,8 @@ function WipeDataModal({ user, onConfirm, onClose, isLoading, error }) {
       </div>
       <p className="text-sm text-stone-600 dark:text-stone-300 mb-4">
         Wipe all learning and game data for{" "}
-        <strong className="text-stone-900 dark:text-white">{user.name}</strong>{" "}
-        ({user.email})? Lesson progress, quiz attempts, and game records will be
+        <strong className="text-stone-900 dark:text-white">{user.name}</strong>?{" "}
+        Lesson progress, quiz attempts, and game records will be
         permanently deleted, but their account stays active so they can be
         re-tested from a clean slate.
       </p>
@@ -439,12 +439,6 @@ function DashboardTab({
                             <span className="block text-[14px] font-medium text-stone-900 dark:text-white truncate">
                               {user.name}
                             </span>
-                            <span
-                              className="block text-[12px] text-stone-500 dark:text-stone-400 truncate"
-                              title={user.email}
-                            >
-                              {user.email}
-                            </span>
                           </span>
                         </div>
                       </td>
@@ -471,9 +465,6 @@ function DashboardTab({
                       <div className="min-w-0 flex-1">
                         <p className="text-[14px] font-medium text-stone-900 dark:text-white truncate">
                           {user.name}
-                        </p>
-                        <p className="text-[12px] text-stone-500 dark:text-stone-400 truncate">
-                          {user.email}
                         </p>
                       </div>
                       <span className="text-[13px] text-stone-600 dark:text-stone-300">
@@ -776,9 +767,6 @@ function UsersTab() {
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {user.name}
                           </p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">
-                            {user.email}
-                          </p>
                         </div>
                       </div>
                       <button
@@ -860,9 +848,6 @@ function UsersTab() {
                         <div>
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {user.name}
-                          </p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">
-                            {user.email}
                           </p>
                         </div>
                       </div>
@@ -952,9 +937,6 @@ function UsersTab() {
                         {user.role}
                       </Badge>
                     </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
-                      {user.email}
-                    </p>
                     <div className="flex items-center gap-3 mt-1">
                       {user.section !== "—" && (
                         <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
@@ -1189,9 +1171,6 @@ function ResetDataTab() {
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {user.name}
                           </p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">
-                            {user.email}
-                          </p>
                         </div>
                       </div>
                     </td>
@@ -1260,9 +1239,6 @@ function ResetDataTab() {
                         {user.role}
                       </Badge>
                     </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
-                      {user.email}
-                    </p>
                     {user.section !== "—" && (
                       <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
                         {user.section}
@@ -1849,9 +1825,6 @@ function StudentsTab() {
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {student.name}
                           </p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">
-                            {student.email}
-                          </p>
                         </div>
                       </div>
                       <button
@@ -1932,9 +1905,6 @@ function StudentsTab() {
                           <p className="text-sm font-bold text-stone-900 dark:text-white">
                             {student.name}
                           </p>
-                          <p className="text-xs text-stone-500 dark:text-stone-400">
-                            {student.email}
-                          </p>
                         </div>
                       </div>
                     </td>
@@ -2007,9 +1977,6 @@ function StudentsTab() {
                       {student.name}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="text-xs text-stone-500 dark:text-stone-400 truncate">
-                        {student.email}
-                      </span>
                       {student.section !== "—" && (
                         <Badge variant="outline" className="text-xs py-0">
                           {student.section}

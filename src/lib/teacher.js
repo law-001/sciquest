@@ -109,9 +109,9 @@ export async function fetchTeacherDashboard(sectionNames) {
   for (const s of studentRows) {
     byId.set(s.id, {
       id: s.id,
-      name: fullName(s),
+      // Portal identifies students by code only; name is the fallback for students without one.
+      name: s.student_number || fullName(s),
       email: s.email ?? '—',
-      studentNumber: s.student_number ?? null,
       section: s.section || 'Unassigned',
       avatar: s.avatar ?? null,
       avatarStyle: s.avatar_style,
@@ -145,7 +145,6 @@ export async function fetchTeacherDashboard(sectionNames) {
         id: st.id,
         name: st.name,
         email: st.email,
-        studentNumber: st.studentNumber,
         section: st.section,
         avatar: st.avatar,
         avatarStyle: st.avatarStyle,
