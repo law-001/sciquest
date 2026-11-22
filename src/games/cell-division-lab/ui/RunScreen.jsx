@@ -14,7 +14,7 @@ import { ProcedureFrame } from './ProcedureFrame';
 // own controls line, or for a checkpoint the decision it is waiting on.
 function fallbackInstruction(step, phase) {
   if (step.kind === 'checkpoint') {
-    return { hint: 'Read the cell readout, then choose GO or WAIT', tone: 'info' };
+    return { hint: 'Check the readout, pick GO or WAIT', tone: 'info' };
   }
   return { hint: phase.controls ?? 'Work on the cell', tone: 'info' };
 }

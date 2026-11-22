@@ -1009,3 +1009,9 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 - Notes now start collapsed on every stacked layout (≤ 900px wide), not just phones ≤ 640px ([LabNotebook.jsx](src/games/cell-division-lab/ui/LabNotebook.jsx) `startsCollapsed`). Above 900px the notebook is a side column with no toggle, so it stays open there.
 - The stage drawing now fits the frame's shape instead of always fitting the full 1000-wide stage. On a narrow/tall frame the view closes in on the cell (down to 560 units wide), so the cell fills the stage rather than sitting small between empty bands; wide frames are unchanged. Anything outside the window is reachable by dragging. New `baseW` on the stage view, `baseWidthFor` / `stageWindow` / `canPanStageView` in [stage-zoom.js](src/games/cell-division-lab/ui/stage-zoom.js); a ResizeObserver in [ProcedureFrame.jsx](src/games/cell-division-lab/ui/ProcedureFrame.jsx) keeps it in step with the frame; [CellStage.jsx](src/games/cell-division-lab/ui/CellStage.jsx) reads the window size from it. Drag-to-pan now works whenever part of the stage is out of view, not only above 100% zoom.
 - Commit: Cell Division: 60%+ stage that fills leftover space, notes collapsed by default, frame-fitted cell view
+
+## VERSION_147
+- Cell Division Lab: checkpoint gate fits a phone stage without scrolling. Gate spacing moved from inline styles to classes (`cdl-gate__stack`, `__readout*`, `__options`, `__hint`, `__feedback*`) so the ≤640px block can trim padding, gaps, fonts and option height.
+- Phones: after answering, the unpicked dimmed option is hidden to give its row back; ≤420px no longer wraps GO/WAIT onto their own line.
+- Checkpoint "Do this now" hint shortened to "Check the readout, pick GO or WAIT" so it stays on one line.
+- Commit: Compact cell division checkpoint gate so it fits phone screens without scrolling
