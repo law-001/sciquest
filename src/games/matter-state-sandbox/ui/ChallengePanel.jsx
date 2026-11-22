@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 
+const RING_RADIUS = 15;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
 export function ChallengePanel({
   challenges,
   activeChallenge,
@@ -39,19 +42,26 @@ export function ChallengePanel({
           <div className="sq-ccard__title">{activeChallenge.title}</div>
           <div className="sq-ccard__desc">{activeChallenge.description}</div>
           {holdProgress > 0 && (
-            <div className="sq-challenge-card__progress">
-              <div className="sq-progress-bar">
-                <div
-                  className="sq-progress-bar__fill"
-                  style={{ width: `${holdProgress * 100}%` }}
-                  role="progressbar"
-                  aria-valuenow={Math.round(holdProgress * 100)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label="Hold progress"
+            <div
+              className="sq-progress-ring"
+              role="progressbar"
+              aria-valuenow={Math.round(holdProgress * 100)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Hold progress"
+            >
+              <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+                <circle className="sq-progress-ring__track" cx="18" cy="18" r={RING_RADIUS} />
+                <circle
+                  className="sq-progress-ring__fill"
+                  cx="18"
+                  cy="18"
+                  r={RING_RADIUS}
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  strokeDashoffset={RING_CIRCUMFERENCE * (1 - holdProgress)}
                 />
-              </div>
-              <span>{Math.round(holdProgress * 100)}%</span>
+              </svg>
+              <span className="sq-progress-ring__label">{Math.round(holdProgress * 100)}</span>
             </div>
           )}
         </div>
