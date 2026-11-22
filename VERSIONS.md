@@ -999,3 +999,7 @@ Staged changes: fix(security): scope student data reads to owner/staff, add sect
 ## VERSION_143
 - Admin portal no longer displays user/student emails: removed the email sub-line under names in Recent users, Users table + cards, and Students table + cards, and dropped the "(email)" from the Remove user / Wipe data confirm dialogs (`src/pages/AdminDashboardPage.jsx`). Users search still matches email. Teachers page keeps teacher emails.
 - Commit: Hide emails in the admin portal; show student codes only
+
+## VERSION_145
+- Matter State Sandbox: the challenge hold-progress bar is now a progress ring inside the active challenge card, on the right edge ([ChallengePanel.jsx](src/games/matter-state-sandbox/ui/ChallengePanel.jsx)). The ring is absolutely positioned and the card always reserves its strip (`padding-right: 56px`), so the card no longer grows taller and pushes the HUD/stage down when a challenge starts progressing. Replaced `.sq-challenge-card__progress` / `.sq-progress-bar*` with `.sq-progress-ring*` in [index.css](src/index.css) (only this component used them).
+- Commit: Replace sandbox challenge progress bar with an in-card progress ring to stop layout shift

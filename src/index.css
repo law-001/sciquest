@@ -659,26 +659,52 @@ input[type="range"][data-reduced-motion]::-moz-range-thumb {
   .sq-modal-card     { animation: none !important; }
 }
 /* Legacy challenge card classes still used by ChallengePanel progress bar */
-.sq-challenge-card__progress {
+/* Hold-progress ring. Absolutely placed so it never changes the card's height;
+   the card always keeps the ring's strip free so text doesn't reflow when the
+   ring appears. Higher specificity than the mobile `padding` overrides. */
+.sq-cstack .sq-ccard--active {
+  padding-right: 56px;
+}
+.sq-progress-ring {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  margin: auto 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  justify-content: center;
 }
-.sq-progress-bar {
-  flex: 1;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-  overflow: hidden;
+.sq-progress-ring svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
 }
-.sq-progress-bar__fill {
-  height: 100%;
-  background: #ffffff;
-  border-radius: 999px;
-  transition: width 0.1s linear;
+.sq-progress-ring__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 3.5;
+}
+.sq-progress-ring__fill {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.1s linear;
+}
+.sq-progress-ring__label {
+  position: relative;
+  font-family: var(--sq-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sq-progress-ring__fill {
+    transition: none;
+  }
 }
 
 /* — State badge — */
