@@ -389,7 +389,6 @@ export function QuizContainer({
     } catch {
       /* ignore */
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
     setSaveError(null);
     // XP / persistence fires here on submit — not when leaving the results screen.
     // onComplete returns the save promise for students; a rejection means the
@@ -412,6 +411,18 @@ export function QuizContainer({
     handleSubmitRef.current = handleSubmit;
   });
 
+  // Scroll only after the quiz ↔ results swap has committed. A smooth scroll
+  // fired before the re-render got cut short by the page-height change, which
+  // sometimes left the student parked on the last question of the review.
+  const hasMountedRef = useRef(false);
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [isSubmitted]);
+
   const handleDone = () => {
     onFinish?.();
   };
@@ -431,7 +442,6 @@ export function QuizContainer({
       setStartedAt(ts);
       setNow(ts);
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // No attempts left and not currently viewing a fresh result — lock the quiz.

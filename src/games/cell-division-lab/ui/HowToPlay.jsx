@@ -3,7 +3,7 @@ import { markHowToPlaySeen } from './how-to-play-seen';
 const POINTS = [
   {
     title: 'The cell is the board',
-    body: 'You work straight on the cell itself — drag, press and draw on the chromosomes, the DNA and the outside of the cell. Scroll the wheel, pinch, or use the + and − buttons in the corner to zoom in and out. On a touchscreen, two fingers also slide the cell about once you have zoomed in.',
+    body: 'You work straight on the cell itself — drag, press and draw on the chromosomes, the DNA and the outside of the cell. Scroll the wheel, pinch, or use the + and − buttons in the corner to zoom in and out. Drag an empty part of the stage (or slide two fingers) to look around when the whole cell does not fit — after zooming in, or on a narrow phone screen.',
   },
   {
     title: 'Do this now',

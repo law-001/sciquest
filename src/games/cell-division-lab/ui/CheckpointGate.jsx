@@ -28,18 +28,15 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
       </div>
 
       <div className="cdl-gate__body">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="cdl-gate__stack">
           <p className="cdl-gate__prompt">{checkpoint.prompt}</p>
 
           {evidence.length > 0 && (
-            <div className="cdl-card" style={{ boxShadow: 'none' }}>
-              <div className="cdl-eyebrow" style={{ marginBottom: 10 }}>Cell readout</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div className="cdl-card cdl-gate__readout">
+              <div className="cdl-eyebrow cdl-gate__readout-title">Cell readout</div>
+              <div className="cdl-gate__readout-rows">
                 {evidence.map((row) => (
-                  <div
-                    key={row.label}
-                    style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14.5 }}
-                  >
+                  <div key={row.label} className="cdl-gate__readout-row">
                     <span style={{ color: 'var(--cdl-ink-3)' }}>{row.label}</span>
                     <span
                       className="cdl-mono"
@@ -58,10 +55,11 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+          <div className="cdl-gate__options">
             {checkpoint.options.map((opt) => {
               const isChosen = choice === opt.id;
               const isAnswer = choice && opt.id === correctId;
+              const isDimmed = choice && !isChosen && !isAnswer;
               return (
                 <button
                   key={opt.id}
@@ -69,7 +67,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
                   onClick={() => handleChoose(opt.id)}
                   disabled={!!choice}
                   aria-label={`${opt.label} — ${opt.detail}`}
-                  className="cdl-gate__option"
+                  className={`cdl-gate__option${isDimmed ? ' cdl-gate__option--dimmed' : ''}`}
                   style={{
                     cursor: choice ? 'default' : 'pointer',
                     background: isAnswer
@@ -78,7 +76,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
                     borderColor: isAnswer
                       ? 'var(--cdl-good)'
                       : isChosen ? 'var(--cdl-bad)' : 'var(--cdl-line-strong)',
-                    opacity: choice && !isChosen && !isAnswer ? 0.5 : 1,
+                    opacity: isDimmed ? 0.5 : 1,
                   }}
                 >
                   <span className="cdl-mono cdl-gate__option-label">{opt.label}</span>
@@ -98,7 +96,7 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
               conditional: WAIT only rewinds when WAIT is the right call, and
               spelling that out here would hand over the answer. */}
           {!choice && canRetry && (
-            <p className="cdl-teach" style={{ margin: 0, fontSize: 13.5 }}>
+            <p className="cdl-teach cdl-gate__hint">
               If the readout shows a problem, WAIT sends the cell back to redo the last step and fix it.
             </p>
           )}
@@ -106,14 +104,13 @@ export function CheckpointGate({ phase, checkpoint, evidence, correctId, canRetr
           {chosen && (
             <>
               <div
-                className="cdl-card"
+                className="cdl-card cdl-gate__feedback"
                 style={{
-                  boxShadow: 'none',
                   background: isCorrect ? 'var(--cdl-good-soft)' : 'var(--cdl-bad-soft)',
                   borderColor: isCorrect ? 'var(--cdl-good)' : 'var(--cdl-bad)',
                 }}
               >
-                <p className="cdl-teach" style={{ color: 'var(--cdl-ink-1)' }}>{chosen.explain}</p>
+                <p className="cdl-teach cdl-gate__feedback-text">{chosen.explain}</p>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button

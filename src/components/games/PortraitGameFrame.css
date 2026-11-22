@@ -1,0 +1,98 @@
+/* Portrait-only games (matter-state-sandbox, cell-division-lab).
+   GamePlayPage puts `sq-portrait-frame` + `data-portrait-game` on its wrapper and
+   sets --sq-game-vh to the measured visible height (URL bar + bottom toolbar
+   already subtracted). These rules only add overrides on top of each game's own
+   CSS, so the games' files stay untouched. The [data-portrait-game] attribute
+   bumps specificity above the games' own mobile media rules. */
+
+/* ── Phone/tablet portrait: the play area is exactly half the screen ── */
+@media (orientation: portrait) and (max-width: 900px) {
+  /* Matter State Sandbox — top bar / HUD + stage / controls */
+  .sq-portrait-frame[data-portrait-game] .sq-sandbox-shell {
+    grid-template-rows: 56px auto minmax(0, 1fr);
+  }
+  .sq-portrait-frame[data-portrait-game] .sq-sandbox-main {
+    grid-template-rows: auto calc(var(--sq-game-vh, 100dvh) * 0.5);
+  }
+  /* Controls take whatever is left and scroll if a short phone can't fit them. */
+  .sq-portrait-frame[data-portrait-game] .sq-sandbox-bottom {
+    max-height: none;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    align-content: start;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Cell Division Lab on a touch screen held upright: pin the frame to the
+   bottom edge instead of using the JS-measured height, so it ends wherever the
+   browser says the viewport ends. NOTE: Chrome on iPhone reports the same
+   height (innerHeight, visualViewport, 100dvh, fixed bottom: 0 — all 755pt on
+   a 16 Pro Max) whether its toolbar is expanded or minimised, so the band the
+   minimised toolbar frees up can't be detected or used from the page.
+   !important because the measured height is an inline style on the frame.
+   The game's own layout (styles.css, max-width 900px) handles the stage/notes
+   split. */
+@media (orientation: portrait) and (max-width: 900px) and (pointer: coarse) {
+  .sq-portrait-frame[data-portrait-game="cell-division-lab"] {
+    bottom: 0;
+    height: auto !important;
+  }
+}
+
+/* ── Landscape on a phone: block play and ask for portrait ── */
+.sq-rotate-prompt {
+  display: none;
+}
+
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 600px) {
+  .sq-rotate-prompt {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+    background: var(--sq-cream-0);
+    color: var(--sq-ink-1);
+    text-align: center;
+    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+.sq-rotate-prompt__icon {
+  color: var(--sq-orange);
+  transform: rotate(90deg);
+  animation: sq-rotate-hint 2.4s ease-in-out infinite;
+}
+.sq-rotate-prompt__title {
+  margin: 0;
+  font-family: var(--sq-font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+.sq-rotate-prompt__body {
+  margin: 0;
+  max-width: 340px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--sq-ink-2);
+}
+
+@keyframes sq-rotate-hint {
+  0%, 25% { transform: rotate(90deg); }
+  55%, 100% { transform: rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sq-rotate-prompt__icon {
+    animation: none;
+    transform: none;
+  }
+}

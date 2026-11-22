@@ -35,6 +35,9 @@ function ToastItem({ notification, onDismiss, onNavigate }) {
   const isAchievement = notification.kind === "achievement";
   const isQuizGraded = notification.kind === "quiz-graded";
   const isHidden = isAchievement && notification.hidden;
+  const isXpEarned = !isLevelUp && !isAchievement && !isQuizGraded && !isGameUnlocked;
+  // Icon-only on phones so the toast doesn't cover the page.
+  const isCompactOnMobile = isAchievement || isXpEarned;
 
   const handleClick = () => {
     if (!isGameUnlocked) return;
@@ -72,7 +75,9 @@ function ToastItem({ notification, onDismiss, onNavigate }) {
             ? `Open the Games hub — ${notification.gameTitle ?? "new game"} unlocked`
             : undefined
         }
-        className={`flex items-center gap-3 backdrop-blur-xl rounded-2xl shadow-2xl px-4 py-3 max-w-sm border ${bgClass} ${borderClass} ${
+        className={`flex items-center gap-3 backdrop-blur-xl rounded-2xl shadow-2xl max-w-sm border ${bgClass} ${borderClass} ${
+          isCompactOnMobile ? "p-2 sm:px-4 sm:py-3" : "px-4 py-3"
+        } ${
           isGameUnlocked
             ? "text-left w-full cursor-pointer hover:brightness-95 hover:-translate-y-0.5 active:translate-y-0 transition-[filter,transform] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             : ""
@@ -119,7 +124,9 @@ function ToastItem({ notification, onDismiss, onNavigate }) {
           />
         </div>
 
-        <div className="min-w-0">
+        {/* Achievement + XP toasts are icon-only on phones; the text stays for
+            screen readers and reappears from the sm breakpoint up. */}
+        <div className={isCompactOnMobile ? "min-w-0 sr-only sm:not-sr-only" : "min-w-0"}>
           {isLevelUp && (
             <>
               <p className="text-[10px] font-bold tracking-widest uppercase text-secondary-500 dark:text-secondary-300 flex items-center gap-1">
@@ -184,7 +191,7 @@ function ToastItem({ notification, onDismiss, onNavigate }) {
               </p>
             </>
           )}
-          {!isLevelUp && !isAchievement && !isQuizGraded && !isGameUnlocked && (
+          {isXpEarned && (
             <>
               <p className="text-[10px] font-bold tracking-widest uppercase text-amber-500 dark:text-amber-400">
                 XP Earned
@@ -228,7 +235,7 @@ export function XpToast({ notifications = [], onDismiss, onNavigate }) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed z-[60] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 bottom-6 flex flex-col gap-3 items-center sm:items-end"
+      className="fixed z-[60] right-4 sm:right-6 bottom-6 flex flex-col gap-3 items-end"
     >
       {notifications.map((n) => (
         <ToastItem
